@@ -1,0 +1,5 @@
+policy,burst_n,n_runs,n_recovered,tail_hit_mean,tail_backlog_mean,tail_sessions_per_s,n_not_recovered
+fcfs_lru,20,1,1,0.9200347674923948,0.0093928982061066,0.092,0
+fcfs_lru,100,1,0,0.0,93.35985767199313,0.067,1
+fcfs_random,20,1,1,0.9200347674923948,0.0093928982061066,0.092,0
+fcfs_random,100,1,0,0.0,93.4268710082752,0.0665,1
