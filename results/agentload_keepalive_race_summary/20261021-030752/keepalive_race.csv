@@ -1,0 +1,7 @@
+variant,force_close_connections,seed,run_dir,requests_total,requests_ok,requests_error,errors_transport,sessions_failed,sessions_started,first_error
+reuse_connections,False,0,/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_keepalive_race_summary/20261021-030752/runs/reuse_connections_seed0/20261021-030752,1057,1053,3,3,3,229,ServerDisconnectedError: Server disconnected
+force_close,True,0,/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_keepalive_race_summary/20261021-030752/runs/force_close_seed0/20261021-030800,1065,1065,0,0,0,229,
+reuse_connections,False,1,/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_keepalive_race_summary/20261021-030752/runs/reuse_connections_seed1/20261021-030808,895,890,5,5,5,208,ServerDisconnectedError: Server disconnected
+force_close,True,1,/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_keepalive_race_summary/20261021-030752/runs/force_close_seed1/20261021-030816,904,904,0,0,0,208,
+reuse_connections,False,2,/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_keepalive_race_summary/20261021-030752/runs/reuse_connections_seed2/20261021-030824,995,991,4,4,4,227,ServerDisconnectedError: Server disconnected
+force_close,True,2,/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_keepalive_race_summary/20261021-030752/runs/force_close_seed2/20261021-030832,1015,1015,0,0,0,227,

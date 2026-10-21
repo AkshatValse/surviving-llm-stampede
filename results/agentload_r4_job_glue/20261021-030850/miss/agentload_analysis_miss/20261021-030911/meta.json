@@ -1,0 +1,85 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "analysis.summarize",
+    "miss",
+    "--run-dirs",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_r4_job_glue/20261021-030850/miss/agentload_e0_miss/20261021-030857",
+    "--warmup-s",
+    "3",
+    "--out-root",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_r4_job_glue/20261021-030850/miss",
+    "--set",
+    "windows.window_s=3",
+    "--set",
+    "windows.fine_window_s=1",
+    "--set",
+    "burst.tail_window_s=6"
+  ],
+  "git": {
+    "commit": "ff3025751a12cc03693ee144404a877d31207e7a",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T03:09:11",
+  "end_time": "2026-10-21T03:09:11",
+  "wall_s": 0.011695,
+  "slurm_env": {},
+  "inputs": [
+    {
+      "run_dir": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_r4_job_glue/20261021-030850/miss/agentload_e0_miss/20261021-030857",
+      "label": "mock-fcfs",
+      "seed": 0,
+      "run_git": {
+        "commit": "ff3025751a12cc03693ee144404a877d31207e7a",
+        "dirty": false,
+        "branch": "harness/prefix-meta",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-21T03:08:57",
+      "hardware": "Apple M3 Max CPU (simulation)",
+      "slurm_env": {}
+    }
+  ],
+  "calibration": {
+    "hardware": "Apple M3 Max CPU (simulation)",
+    "hardware_all": [
+      "Apple M3 Max CPU (simulation)"
+    ],
+    "hostnames": [
+      "Akshats-MacBook-Pro.local"
+    ],
+    "output_ids_sources": [
+      "server_ids"
+    ],
+    "lambda_miss": 4.109868065989125,
+    "lambda_miss_turns_based": 4.502412478018706,
+    "lambda_miss_se": null,
+    "lambda_miss_turns_based_se": null,
+    "n_runs": 1,
+    "warmup_s": 3.0,
+    "labels": [
+      "mock-fcfs"
+    ],
+    "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>')."
+  },
+  "guard_problems": []
+}

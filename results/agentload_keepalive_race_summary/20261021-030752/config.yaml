@@ -1,0 +1,56 @@
+research_question: >-
+  Does reusing pooled HTTP connections (aiohttp keep-alive) kill sessions when the server's idle keep-alive timeout is
+  about the tool time, and does server.force_close_connections=true remove the failures? (Harness check against the
+  local mock server; says nothing about any real engine's keep-alive setting.)
+
+assumptions_note: >-
+  The mock server's keep-alive timeout (keepalive_timeout_s) is set equal to the constant tool time, the worst case
+  for connection reuse. Both variants use identical seeds, so arrivals, specs and content are the same. Failures are
+  counted by error_kind from each run's meta.json (outcome.errors_by_kind) and requests.csv.
+
+experiment:
+  seeds: [0, 1, 2]
+  variants:                       # name -> server.force_close_connections
+    reuse_connections: false
+    force_close: true
+  mock_server: {keepalive_timeout_s: 0.25, slots: 64, kv_capacity_tokens: 10000000, fixed_s: 0.001,
+                per_uncached_token_s: 0.0, per_completion_token_s: 0.0}
+
+server:
+  base_url: http://127.0.0.1:18199        # replaced by the experiment script (free port)
+  model: mock
+  request_timeout_s: 60
+  extra_body: {ignore_eos: true}
+  request_token_ids: true
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 100
+  new_prompt_tokens: 30
+  decode_tokens: 6
+  mean_turns: 6
+  max_turns: 10
+  tool_time_mean_s: 0.25
+  tool_time_dist: const
+
+arrivals:
+  kind: constant
+  rate: 25.0
+
+run:
+  duration_s: 8
+  seed: 0
+  max_inflight: 1000
+  max_errors: 100000                       # never abort on errors: we want to count them
+  preflight_wait_s: 10
+
+metrics:
+  enabled: false
+
+meta:
+  hardware: "Apple M3 Max CPU (simulation)"
+  engine_label: mock-keepalive
+
+output:
+  root: results
+  name: agentload_keepalive_race

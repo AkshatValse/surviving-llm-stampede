@@ -1,0 +1,85 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst",
+    "--run-dirs",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_r4_job_glue/20261021-030850/burst/agentload_e2_burst/20261021-030923",
+    "--out-root",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_r4_job_glue/20261021-030850/burst",
+    "--set",
+    "burst.trap_min_s=3",
+    "--set",
+    "burst.hit_eval_from_s=4",
+    "--set",
+    "windows.window_s=3",
+    "--set",
+    "windows.fine_window_s=1",
+    "--set",
+    "burst.tail_window_s=6"
+  ],
+  "git": {
+    "commit": "ff3025751a12cc03693ee144404a877d31207e7a",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T03:09:40",
+  "end_time": "2026-10-21T03:09:40",
+  "wall_s": 0.025524,
+  "slurm_env": {},
+  "inputs": [
+    {
+      "run_dir": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_r4_job_glue/20261021-030850/burst/agentload_e2_burst/20261021-030923",
+      "label": "mock-fcfs",
+      "seed": 0,
+      "run_git": {
+        "commit": "ff3025751a12cc03693ee144404a877d31207e7a",
+        "dirty": false,
+        "branch": "harness/prefix-meta",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-21T03:09:23",
+      "hardware": "Apple M3 Max CPU (simulation)",
+      "slurm_env": {}
+    }
+  ],
+  "n_runs": 1,
+  "kill_verdict": {
+    "interval": [
+      1.2,
+      2.0
+    ],
+    "fraction_min": 0.6666666666666666,
+    "min_runs_per_cell": 3,
+    "cells": {},
+    "n_fcfs_cells_with_data": 0,
+    "mechanism_transfers_any_fcfs_cell_strict": false,
+    "mechanism_transfers_any_fcfs_cell_loose": false,
+    "kill_strict": null,
+    "kill_loose": null,
+    "guards": {
+      "n_errors": 0,
+      "n_warnings": 0,
+      "codes": []
+    }
+  },
+  "guard_problems": []
+}
