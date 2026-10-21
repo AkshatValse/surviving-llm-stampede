@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.4, pluggy-1.0.0
+rootdir: /Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.2.0
+collected 307 items
+
+tests/test_agentload_canary.py ........                                  [  2%]
+tests/test_agentload_config.py ..............                            [  7%]
+tests/test_agentload_e2e.py .................                            [ 12%]
+tests/test_agentload_gate.py ...............                             [ 17%]
+tests/test_agentload_mock.py .....                                       [ 19%]
+tests/test_agentload_parse.py ......                                     [ 21%]
+tests/test_agentload_robustness.py ..................                    [ 27%]
+tests/test_agentload_workload.py ...........                             [ 30%]
+tests/test_analysis_closed.py ............                               [ 34%]
+tests/test_analysis_guards.py ...........                                [ 38%]
+tests/test_analysis_hysteresis.py ...................                    [ 44%]
+tests/test_analysis_pipeline.py ......                                   [ 46%]
+tests/test_analysis_trap_v2.py ..............................            [ 56%]
+tests/test_analysis_windows.py ..........                                [ 59%]
+tests/test_plan_budget.py .......                                        [ 61%]
+tests/test_prereg.py ........................                            [ 69%]
+tests/test_slurm_scripts.py ............................................ [ 83%]
+.........................................                                [ 97%]
+tests/test_trap_power.py ...                                             [ 98%]
+tests/test_trap_sim_traces.py ......                                     [100%]
+
+- generated xml file: /Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_tests/20261021-070445/junit.xml -
+======================= 307 passed in 654.16s (0:10:54) ========================

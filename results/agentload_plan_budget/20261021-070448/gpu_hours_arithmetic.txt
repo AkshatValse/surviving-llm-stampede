@@ -1,0 +1,28 @@
+S0_smoke_sglang: 1 x (0.25 + 1 x 0.5417 + 0 x 0.0500 + 0.05) = 0.842 h  =>  0.84 GPU-h
+S0_smoke_vllm: 1 x (0.25 + 1 x 0.5417 + 0 x 0.0500 + 0.05) = 0.842 h  =>  0.84 GPU-h
+C_closed_sglang_fcfs: 1 x (0.25 + 4 x 0.7917 + 4 x 0.0500 + 0.05) = 3.667 h  +  1 x (0.25 + 3 x 0.7917 + 3 x 0.0500 + 0.05) = 2.825 h  =>  6.49 GPU-h
+C_closed_sglang_lpm: 1 x (0.25 + 2 x 0.7917 + 2 x 0.0500 + 0.05) = 1.983 h  =>  1.98 GPU-h
+E0a_miss_sglang: 1 x (0.25 + 4 x 0.7917 + 3 x 0.0500 + 0.05) = 3.617 h  =>  3.62 GPU-h
+E0a_miss_vllm: 1 x (0.25 + 4 x 0.7917 + 3 x 0.0500 + 0.05) = 3.617 h  =>  3.62 GPU-h
+E0b_cap_sglang_fcfs: 3 x (0.25 + 3 x 0.8750 + 3 x 0.0500 + 0.05) = 3.075 h  =>  9.22 GPU-h
+E2a_kill_sglang_fcfs_paired: 27 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  75.82 GPU-h
+C_closed_sglang_fcfs_native: 1 x (0.25 + 4 x 0.7917 + 4 x 0.0500 + 0.05) = 3.667 h  +  1 x (0.25 + 3 x 0.7917 + 3 x 0.0500 + 0.05) = 2.825 h  =>  6.49 GPU-h
+E0b_cap_sglang_fcfs_native: 3 x (0.25 + 3 x 0.8750 + 3 x 0.0500 + 0.05) = 3.075 h  =>  9.22 GPU-h
+E2c_native_sglang_fcfs_paired: 9 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  25.27 GPU-h
+E2b_sglang_fcfs_r0: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_sglang_fcfs_r1_2x: 3 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  8.42 GPU-h
+E2b_sglang_lpm_r1: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_sglang_lpm_r0: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_sglang_lpm_inf: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_vllm_fcfs: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+
+gate0_smoke = 0.84 + 0.84 = 1.68 GPU-h  [S0_smoke_sglang, S0_smoke_vllm]
+gateC_closed_mu = 6.49 + 1.98 = 8.47 GPU-h  [C_closed_sglang_fcfs, C_closed_sglang_lpm]
+gate1_calibration = 3.62 + 3.62 + 9.22 = 16.46 GPU-h  [E0a_miss_sglang, E0a_miss_vllm, E0b_cap_sglang_fcfs]
+gate2_kill_test = 75.82 = 75.82 GPU-h  [E2a_kill_sglang_fcfs_paired]
+gate_native_pool = 6.49 + 9.22 + 25.27 = 40.99 GPU-h  [C_closed_sglang_fcfs_native, E0b_cap_sglang_fcfs_native, E2c_native_sglang_fcfs_paired]
+full_grid = 16.85 + 8.42 + 16.85 + 16.85 + 16.85 + 16.85 = 92.67 GPU-h  [E2b_sglang_fcfs_r0, E2b_sglang_fcfs_r1_2x, E2b_sglang_lpm_r1, E2b_sglang_lpm_r0, E2b_sglang_lpm_inf, E2b_vllm_fcfs]
+cheap_before_prereg = 1.68 + 8.47 + 16.46 = 26.62 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration]
+through_kill_test = 1.68 + 8.47 + 16.46 + 75.82 = 102.44 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration, gate2_kill_test]
+through_native_pool = 1.68 + 8.47 + 16.46 + 75.82 + 40.99 = 143.43 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration, gate2_kill_test, gate_native_pool]
+total = 1.68 + 8.47 + 16.46 + 75.82 + 40.99 + 92.67 = 236.11 GPU-h

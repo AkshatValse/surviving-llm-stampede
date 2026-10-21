@@ -2,12 +2,12 @@
 
 Status (2026-10-21, revision 3: response to the review of the kill-test harness at `6856fb1`): the harness (`src/agentload/`, `analysis/`, `slurm/`, `configs/agentload_*.yaml`) is implemented and tested against a local mock server. **Nothing was submitted to Nova, no Nova host was contacted, no engine or model was installed or run, no network was used.** Every engine flag, env var and metric name below is from memory of SGLang/vLLM and is marked UNVERIFIED until the Stage-0 test job. Needs Akshat's approval before any `sbatch` (project rule: ask first, run a short test job first).
 
-**Stage order: S0 smoke → C closed μ(n) → E0a λ_miss → E0b (REQUIRED, FCFS) → PRE-REGISTER (commit the filled `configs/agentload_prereg_template.yaml`) → E2 paired arms → native pool (own Stage C and E0b) → grid.** Total GPU-hours: **__TOTAL__** (§7; was 217.10 before this revision, 131.30 before the redesign).
+**Stage order: S0 smoke → C closed μ(n) → E0a λ_miss → E0b (REQUIRED, FCFS) → PRE-REGISTER (commit the filled `configs/agentload_prereg_template.yaml`) → E2 paired arms → native pool (own Stage C and E0b) → grid.** Total GPU-hours: **236.11** (§7; was 217.10 before this revision, 131.30 before the redesign).
 
 ### Review dispositions (11 findings; all fixed except where stated)
 | # | Finding | Disposition |
 |---|---|---|
-| 1 | CRITICAL: criterion (a) in sessions/s rejects the simulator's own traps | **Fixed.** (a) is now in uncached prefill tokens/s against E0a's all-miss rate (`all_miss_uncached_tokens_per_s`, resolved into every run as `arrivals.uncached_tokens_ref`). On the simulator's FCFS traps (`results/agentload_trap_sim_traces/__SIMDIR__`, span [t_b+5000, t_b+8000), 16 / 29 / 39 trapped runs at λ = 1.5 / 2 / 2.5 ×) the session rate is 1.17 / 1.34 / 1.52 × λ_miss and (a) fires in 38% / 0% / 0%; the token rate is 1.03 / 1.05 / 1.07 × the all-miss rate and (a) fires in 100%. The Poisson power table (P = 0.91-0.93) was circular and is retracted (§5). **New consequence, not decided here:** with (a) in tokens, (b) no longer follows from (a); on the same traps (b) fires in 69% / 100% / 100%, so (a and b) accepts only 69% of true traps at 1.5 × (open item O17). |
+| 1 | CRITICAL: criterion (a) in sessions/s rejects the simulator's own traps | **Fixed.** (a) is now in uncached prefill tokens/s against E0a's all-miss rate (`all_miss_uncached_tokens_per_s`, resolved into every run as `arrivals.uncached_tokens_ref`). On the simulator's FCFS traps (`results/agentload_trap_sim_traces/20261021-070449`, span [t_b+5000, t_b+8000), 16 / 29 / 39 trapped runs at λ = 1.5 / 2 / 2.5 ×) the session rate is 1.17 / 1.34 / 1.52 × λ_miss and (a) fires in 38% / 0% / 0%; the token rate is 1.03 / 1.05 / 1.07 × the all-miss rate and (a) fires in 100%. The Poisson power table (P = 0.91-0.93) was circular and is retracted (§5). **New consequence, not decided here:** with (a) in tokens, (b) no longer follows from (a); on the same traps (b) fires in 69% / 100% / 100%, so (a and b) accepts only 69% of true traps at 1.5 × (open item O17). |
 | 2 | HIGH: Stage C mis-measures μ(n) at large n (all n sessions start at t=0) | **Fixed by re-registering:** the recovery threshold / window lower edge is λ_miss (FCFS μ(∞); simulator R4 0.989); μ(300) stays as a recorded check. Simulator, window [1000, 3000) vs steady state [5000, 35000): μ(300) +65%, μ(100) +18%, μ(22-30) −9% to −25%. Staggered session ages **not implemented** (O18). |
 | 3 | HIGH: window upper edge contradicts the simulator's from-empty λ_cap | **Fixed.** Upper edge = min(max μ(n), E0b's largest all-stable multiple); E0b is **required**, runs under the registered cell (FCFS, refresh on), and repeats on the native pool; the NO-BURST prediction is horizon-dependent in the template. Simulator no-burst escapes: 1/5 at 2 ×, 2/5 at 2.5 × over 65,000 s, none before 18,000 s, i.e. none inside the 8700 s E2 horizon. |
 | 4 | HIGH: the pre-registration is not enforced | **Fixed.** Decisive = registered label (exact), registered λ multiple, λ in window, every run bound to the file by sha256 in meta.json and launched under the registered protocol / references / cap / hardware, and the file's last commit before the earliest run start. `mode_burst` requires `PREREG_FILE` and refuses to start otherwise (`analysis.prereg check-job`). The probe case (prereg of 1.2 × only, runs labelled `vllm-fcfs` at 1.5 ×) is a regression test: `decisive False`. |
@@ -41,7 +41,7 @@ The real-engine question: does the sim's mechanism (burst → queue → idle KV 
 
 Refresh facts are from `notes/lit/engine-sources-prefix-cache.md` (raw-file reads by a small model; no line numbers, no SHAs): `SGLANG_ENABLE_WAITING_PREFIX_REFRESH` (EnvBool, default true) bumps LRU recency of the first 128 waiting requests every 32 passes, only for non-cache-aware active policies (FCFS and the LPM fallback). It is a recency bump, not a pin.
 
-Predictions to compare against (from the sim; the kill-test boundaries are now pre-registered from the MEASURED real curve, §4, instead of the simulator's λ multiples): A traps at some λ inside the measured window (μ(300), max μ(n)) if the mechanism transfers; B ≈ A; C is the only cell where ordering could matter, and the sim predicts it does not rescue the system either; refresh off ≤ refresh on in hit rate if the bump helps.
+Predictions to compare against (from the sim; the kill-test boundaries are now pre-registered from the MEASURED real curve, §4, instead of the simulator's λ multiples): A traps at some λ inside the registered window (λ_miss, min(max μ(n), E0b edge)) if the mechanism transfers; B ≈ A; C is the only cell where ordering could matter, and the sim predicts it does not rescue the system either; refresh off ≤ refresh on in hit rate if the bump helps.
 
 ## 2. Hardware, model, engines
 
@@ -88,7 +88,7 @@ Known fidelity gaps (all flagged, none hidden):
 ### Stage C: closed-population μ(n) on the real engine, cache ON (before E0a/E2)
 `MODE=closed`, `configs/agentload_c_closed.yaml`. n ∈ {16, 20, 24, 32, 48, 96, 300} under SGLang `--schedule-policy fcfs` (n = 20 added after the review: the simulator's μ(n) peaks sharply at n = 20-22, and the grid {16, 24, 32} flipped its argmax between 16 and 24 with a 1.6% margin), and n ∈ {48, 300} under `lpm`; one seed per n; **warmup 900 s, measured 1800 s** (2700 s per run); the cache is flushed and verified empty between runs. `N_LIST` has no default (the grid is split over jobs so each fits 4 h: `N_LIST="16 20 24 32"`, `"48 96 300"`, and `POLICY=lpm N_LIST="48 300"`; 4, 3 and 2 runs per job; a 4-run job needs 3.7 h with the job script's own margins). Per run, over the measured window, the analysis (`python -m analysis.summarize closed --run-dirs … --warmup-s 900 [--primary-label LABEL]`) records: **completions/s** (completed sessions/s and the lower-variance turns/s ÷ E[T], both), **hit fraction** (turns with cached share > 0.5; first turns count as misses, so the ceiling is ≈ 1 − 1/E[T] ≈ 0.93), the follow-up-only hit fraction, the **token-weighted cached fraction** (Σcached/Σprompt), the **queue** (engine waiting gauge if the metric exists, else client in-flight requests; `queue_source` says which) and the hardware string. `mu_curve.json` holds per-cell curves, `argmax_n` and the top-level **`n_cap` = argmax μ(n) of the `primary_label` cell** (`mu_max`, `mu_300`, `primary_hardware`), a near-tie flag (`argmax_ambiguous`: runner-up within 5%, one run per n!), whether both estimators agree, and whether the n grid is complete. Ties go to the smaller n. The 300k and the native pool must be summarised SEPARATELY (a note is written if several FCFS cells share a curve). The CAPPED arm reads `n_cap` from this file (`CAP_FILE=…/mu_curve.json` or `N_CAP=<int>`) and the job refuses a file whose `primary_label`/hardware is not its own.
 
-**Known bias (simulator, same protocol; `results/agentload_trap_sim_traces/__SIMDIR__/transient_bias.csv`).** All n sessions start together at t = 0, so in the window [1000, 3000) of a 35,000 s simulator curve, μ(n) in sessions/s is +65% at n = 300 (a session lives ~6000 s there, longer than the whole run), +18% at n = 100 and 9-25% too LOW at n = 22-30, where μ(n) is also bistable between windows. In prefill-token units the same windows are +13% / +6% / +4-18%. Consequences: μ(300) is only a check (the registered recovery threshold is λ_miss); the argmax `n_cap` and max μ(n) are transient-affected and noisy; staggered session ages would remove the bias and are not implemented (O18).
+**Known bias (simulator, same protocol; `results/agentload_trap_sim_traces/20261021-070449/transient_bias.csv`).** All n sessions start together at t = 0, so in the window [1000, 3000) of a 35,000 s simulator curve, μ(n) in sessions/s is +65% at n = 300 (a session lives ~6000 s there, longer than the whole run), +18% at n = 100 and 9-25% too LOW at n = 22-30, where μ(n) is also bistable between windows. In prefill-token units the same windows are +13% / +6% / +4-18%. Consequences: μ(300) is only a check (the registered recovery threshold is λ_miss); the argmax `n_cap` and max μ(n) are transient-affected and noisy; staggered session ages would remove the bias and are not implemented (O18).
 
 ### E0a: λ_miss (cache disabled in the engine)
 `MODE=miss`, SGLang `--disable-radix-cache`, vLLM `--no-enable-prefix-caching`. Closed population 32 (sim: 60, insensitive across 30/60/120), 900 s warmup + 1800 s measured, 3 seeds, plus one population-64 check (analysed separately, not averaged in). Output `calibration.json` with `lambda_miss` (sessions/s, the sim's headline), `lambda_miss_turns_based` (turns/s ÷ E[T]; rates in later configs use it: lower variance for short runs) and **`all_miss_uncached_tokens_per_s`** (prompt tokens/s of the all-miss closed population: the reference of trap criterion (a); `all_miss_cached_frac_tokens_max` must be ≈ 0, else the cache was not off). The E2 jobs pass it as `arrivals.uncached_tokens_ref`. Deviation D2: sim used 5 seeds × 100,000 s.
@@ -137,7 +137,7 @@ Windows of 1000 s, complete windows only. Ported from `prefixmeta`: `trapped` = 
 - **backlog** = client sessions in the system (planned arrival minus completed/failed; **includes the gate queue and sessions asleep in tool time**); **slope** = OLS slope (sessions/s) of its 10 s bin means over W.
 - **TRAPPED** iff (a) the **uncached prefill-token rate** over W (Σ (prompt − cached) tokens of the turns completing in W, per second) is within ±15% of E0a's all-miss rate (`arrivals.uncached_tokens_ref`) AND (b) slope > 0.5 × (λ − λ_miss); plus the explicit condition λ > λ_miss (without it the bare formula would call a healthy system at 0.9 λ_miss "trapped"). The session and turns-based completion rates are still written (`crit_a_sessions`, `crit_a_turns`, `estimators_agree`) and can be selected with `trap_v2.rate_estimator`.
 - **DRAINING** iff slope < 0. **RECOVERED** (= "good") iff hit fraction > 0.8 and the **outstanding backlog** (requests in flight + sessions waiting at the client gate) < 20, both averaged over the last 300 s (`trap_v2.recovered_backlog_metric`; the sessions-in-system value is written as `backlog_end`). `state` ∈ trapped > recovered > draining > indeterminate. The old hit-rate verdict, hit_eval and the tail queue slope are carried next to it as secondary columns.
-- **Why tokens, not sessions** (review finding 1; `experiments/agentload_trap_sim_traces.py`, recorded in `results/agentload_trap_sim_traces/__SIMDIR__`): in a trap with a growing backlog the sessions in progress are mostly early in their lives, and early turns have short prompts, so the all-miss session throughput runs ABOVE the closed-population λ_miss. On the simulator's own FCFS traps (84 trapped runs: 16 / 29 / 39 at λ = 1.5 / 2 / 2.5 × λ_miss; trapped = hit < 0.2 in every window of the span and at the end of the run), span [t_b + 5000, t_b + 8000):
+- **Why tokens, not sessions** (review finding 1; `experiments/agentload_trap_sim_traces.py`, recorded in `results/agentload_trap_sim_traces/20261021-070449`): in a trap with a growing backlog the sessions in progress are mostly early in their lives, and early turns have short prompts, so the all-miss session throughput runs ABOVE the closed-population λ_miss. On the simulator's own FCFS traps (84 trapped runs: 16 / 29 / 39 at λ = 1.5 / 2 / 2.5 × λ_miss; trapped = hit < 0.2 in every window of the span and at the end of the run), span [t_b + 5000, t_b + 8000):
 
 | λ / λ_miss | trapped runs | sessions/s ÷ λ_miss (min-max) | (a) fires, sessions | turns/s ÷ E[T] ÷ λ_miss | (a) fires, turns | tokens/s ÷ all-miss (min-max) | (a) fires, tokens | (b) fires (conservation) |
 |---|---|---|---|---|---|---|---|---|
@@ -171,7 +171,7 @@ Windows of 1000 s, complete windows only. Ported from `prefixmeta`: `trapped` = 
 - **O13 (CRN scope).** Arrivals and session specs are common across the three arms. Token content is common too, because one arm per job gives every arm `content_salt = 1` (only the multi-arm default would differ; finding 9). Pairing validity is checked from the effective configs: only `meta.arm`, the start-state record, the burst, the gate, the output dir, the server URL and the salt may differ; hardware and label may not (`pairing_problems` in the verdict).
 - **O14 (Stage C has one run per n).** μ(n) noise is 5-10% (≈ 100-200 session completions in 1800 s); the argmax is flagged when ambiguous, but a wrong `n_cap` weakens the CAPPED arm, and the window edges inherit the noise (`boundary_margin_rel` in the template). Replicates at the knee (n = 24, 32) are the obvious extra spend (≈ 0.75 GPU-h per run plus startup).
 - **O15 (ASSUMPTIONS in the budget, not in the spec).** (i) Stage C is repeated on the native pool (6.49 GPU-h) because the 300k-pool window does not transfer; (ii) **E0b is repeated on the native pool (9.22)** because the window's upper edge now depends on it (new in revision 3); (iii) the native-pool replicate is 1 λ × 3 seeds × 3 arms; (iv) E0b is REQUIRED (it was a droppable cross-check) and runs under FCFS; (v) grid cells D (vLLM) and C (patched LPM) have no Stage-C curve of their own, so their boundaries are not pre-registered; (vi) grid λ points are two of the pre-registered ones; if only one is in E2a, `E2b_sglang_fcfs_r1_2x` covers the other.
-- **O16 (cost).** The paired kill test is 27 one-run jobs (__E2A__ GPU-h at 3 λ). Dropping to 2 λ saves __E2A_3RD__; shortening the NOBURST arm would break the CRN pairing window and is not done.
+- **O16 (cost).** The paired kill test is 27 one-run jobs (75.82 GPU-h at 3 λ). Dropping to 2 λ saves 25.27; shortening the NOBURST arm would break the CRN pairing window and is not done.
 - **O17 (OPEN DECISION for the lead: `slope_frac`).** With (a) in token units, (b) = slope > 0.5 (λ − λ_miss) is no longer implied by (a). On the simulator's traps (b) fires in 69% / 100% / 100% of the true traps at 1.5 / 2 / 2.5 ×, so (a and b) accepts 69% of true traps at 1.5 ×. I did not change `slope_frac`: tuning it on the simulator's own traces would be tuning on the answer. Options before registering: register only λ ≥ 2 × λ_miss (if inside the window), or choose a smaller `slope_frac` for a stated reason, or measure the young-session bias on the real engine first (E0b/E0a give the session rate of a trap-like all-miss state at open loop).
 - **O18 (not implemented: staggered session ages in Stage C).** The review offered it as one of four fixes for finding 2; I took the cheapest (recovery threshold = λ_miss, μ(300) as a check). The transient also moves the n = 22-30 values (−9% to −25% in the simulator window), so `n_cap` and `mu_max` remain transient-affected; the CAPPED arm is robust to that only if μ(n_cap) > λ + drain margin (checked in the registration) and the argmax margin is read from `argmax_ambiguous`. Implementing staggered starts means session specs with a start turn and synthetic history in `workload.py`/`client.py`.
 - **O19 (E0a population and warmup).** E0a runs a closed population of 32 with the same synchronised start; its warmup of 900 s is longer than the all-miss session lifetime at 32 (~675 s in the simulator), so its bias is small, but the token reference (`all_miss_uncached_tokens_per_s`) inherits whatever E0a's transient leaves; the population-64 check run is analysed separately.
@@ -179,63 +179,63 @@ Windows of 1000 s, complete windows only. Ported from `prefixmeta`: `trapped` = 
 
 ## 7. GPU-hour estimate (plan arithmetic, not a measurement)
 
-Source: `analysis/plan_budget.py` on `configs/agentload_plan_budget.yaml`; recorded in `results/agentload_plan_budget/20261021-053658` (`gpu_hours_by_stage.csv` with an `arithmetic` column, `gpu_hours_arithmetic.txt`, `gpu_hours_totals.json`, `gpu_hours_by_stage_alt_literal_e2.csv`).
+Source: `analysis/plan_budget.py` on `configs/agentload_plan_budget.yaml`; recorded in `results/agentload_plan_budget/20261021-070448` (`gpu_hours_by_stage.csv` with an `arithmetic` column, `gpu_hours_arithmetic.txt`, `gpu_hours_totals.json`, `gpu_hours_by_stage_alt_literal_e2.csv`).
 
-Per stage: jobs = ⌈n_runs / runs_per_job⌉; job wall = startup + runs_per_job·run_s/3600 + (runs_per_job−1)·gap/3600 + teardown, with startup = 0.25 h, gap = 180 s, teardown = 0.05 h (**guesses**, replaced by Stage-0 timings); a last, smaller job is charged for the runs it holds. Worked example, Stage C FCFS (6 runs of 2700 s, 3 per job): each job is 0.25 + 3·0.75 + 2·0.05 + 0.05 = 2.65 h, two jobs ⇒ 5.30 GPU-h; Stage C LPM (2 runs, one job): 0.25 + 2·0.75 + 0.05 + 0.05 = 1.85 h. E2 (one 8700 s arm per job): 0.25 + 2.4167 + 0 + 0.05 = 2.7167 h, 27 jobs ⇒ 73.35.
+Per stage: jobs = ⌈n_runs / runs_per_job⌉; job wall = startup + k·(run_s + overhead)/3600 + g·gap/3600 + teardown, with k = runs in the job, startup = 0.25 h, overhead = 150 s per run (the job script's own `RUN_OVERHEAD_S`), gap = 180 s, g = k gaps (the job script runs a gap + flush + canary check after the LAST run too; Stage 0 and the E0a job, which ends with the population check, have k − 1 or 0), teardown = 0.05 h (**guesses**, replaced by Stage-0 timings); a last, smaller job is charged for the runs it holds. Worked example, Stage C FCFS (7 runs of 2700 s, 4 per job): jobs of 4 and 3 runs, 0.25 + 4 × 0.7917 + 4 × 0.05 + 0.05 = 3.667 h and 0.25 + 3 × 0.7917 + 3 × 0.05 + 0.05 = 2.825 h ⇒ 6.49 GPU-h (the 4-run job fits the 4 h limit; the job script's own check needs 3.7 h). E2 (one 8700 s arm per job): 0.25 + 8850/3600 + 0.05 + 0.05 = 2.808 h, 27 jobs ⇒ 75.82.
 
 | Stage | Runs | Jobs | GPU-h |
 |---|---|---|---|
-| S0_smoke_sglang | 1 × 1800 s | 1 | 0.80 |
-| S0_smoke_vllm | 1 × 1800 s | 1 | 0.80 |
-| C_closed_sglang_fcfs | 6 × 2700 s | 2 | 5.30 |
-| C_closed_sglang_lpm | 2 × 2700 s | 1 | 1.85 |
-| E0a_miss_sglang | 4 × 2700 s | 1 | 3.45 |
-| E0a_miss_vllm | 4 × 2700 s | 1 | 3.45 |
-| E0b_cap_sglang_lpm | 9 × 3000 s | 3 | 8.70 |
-| E2a_kill_sglang_fcfs_paired | 27 × 8700 s | 27 | 73.35 |
-| C_closed_sglang_fcfs_native | 6 × 2700 s | 2 | 5.30 |
-| E2c_native_sglang_fcfs_paired | 9 × 8700 s | 9 | 24.45 |
-| E2b_sglang_fcfs_r0 | 6 × 8700 s | 6 | 16.30 |
-| E2b_sglang_fcfs_r1_2x | 3 × 8700 s | 3 | 8.15 |
-| E2b_sglang_lpm_r1 | 6 × 8700 s | 6 | 16.30 |
-| E2b_sglang_lpm_r0 | 6 × 8700 s | 6 | 16.30 |
-| E2b_sglang_lpm_inf | 6 × 8700 s | 6 | 16.30 |
-| E2b_vllm_fcfs | 6 × 8700 s | 6 | 16.30 |
-| **Total** | | 81 | **217.10** |
+| S0_smoke_sglang | 1 × 1800 s | 1 | 0.84 |
+| S0_smoke_vllm | 1 × 1800 s | 1 | 0.84 |
+| C_closed_sglang_fcfs | 7 × 2700 s | 2 | 6.49 |
+| C_closed_sglang_lpm | 2 × 2700 s | 1 | 1.98 |
+| E0a_miss_sglang | 4 × 2700 s | 1 | 3.62 |
+| E0a_miss_vllm | 4 × 2700 s | 1 | 3.62 |
+| E0b_cap_sglang_fcfs | 9 × 3000 s | 3 | 9.22 |
+| E2a_kill_sglang_fcfs_paired | 27 × 8700 s | 27 | 75.82 |
+| C_closed_sglang_fcfs_native | 7 × 2700 s | 2 | 6.49 |
+| E0b_cap_sglang_fcfs_native | 9 × 3000 s | 3 | 9.22 |
+| E2c_native_sglang_fcfs_paired | 9 × 8700 s | 9 | 25.27 |
+| E2b_sglang_fcfs_r0 | 6 × 8700 s | 6 | 16.85 |
+| E2b_sglang_fcfs_r1_2x | 3 × 8700 s | 3 | 8.42 |
+| E2b_sglang_lpm_r1 | 6 × 8700 s | 6 | 16.85 |
+| E2b_sglang_lpm_r0 | 6 × 8700 s | 6 | 16.85 |
+| E2b_sglang_lpm_inf | 6 × 8700 s | 6 | 16.85 |
+| E2b_vllm_fcfs | 6 × 8700 s | 6 | 16.85 |
+| **Total** | | 84 | **236.11** |
 
-Stage arithmetic, as printed by `plan_budget.py`:
+Stage arithmetic and gates, as printed by `plan_budget.py`:
 ```
-S0_smoke_sglang: 1 x (0.25 + 1 x 0.5000 + 0 x 0.0500 + 0.05) = 0.800 h  =>  0.80 GPU-h
-S0_smoke_vllm: 1 x (0.25 + 1 x 0.5000 + 0 x 0.0500 + 0.05) = 0.800 h  =>  0.80 GPU-h
-C_closed_sglang_fcfs: 2 x (0.25 + 3 x 0.7500 + 2 x 0.0500 + 0.05) = 2.650 h  =>  5.30 GPU-h
-C_closed_sglang_lpm: 1 x (0.25 + 2 x 0.7500 + 1 x 0.0500 + 0.05) = 1.850 h  =>  1.85 GPU-h
-E0a_miss_sglang: 1 x (0.25 + 4 x 0.7500 + 3 x 0.0500 + 0.05) = 3.450 h  =>  3.45 GPU-h
-E0a_miss_vllm: 1 x (0.25 + 4 x 0.7500 + 3 x 0.0500 + 0.05) = 3.450 h  =>  3.45 GPU-h
-E0b_cap_sglang_lpm: 3 x (0.25 + 3 x 0.8333 + 2 x 0.0500 + 0.05) = 2.900 h  =>  8.70 GPU-h
-E2a_kill_sglang_fcfs_paired: 27 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  73.35 GPU-h
-C_closed_sglang_fcfs_native: 2 x (0.25 + 3 x 0.7500 + 2 x 0.0500 + 0.05) = 2.650 h  =>  5.30 GPU-h
-E2c_native_sglang_fcfs_paired: 9 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  24.45 GPU-h
-E2b_sglang_fcfs_r0: 6 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  16.30 GPU-h
-E2b_sglang_fcfs_r1_2x: 3 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  8.15 GPU-h
-E2b_sglang_lpm_r1: 6 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  16.30 GPU-h
-E2b_sglang_lpm_r0: 6 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  16.30 GPU-h
-E2b_sglang_lpm_inf: 6 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  16.30 GPU-h
-E2b_vllm_fcfs: 6 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  16.30 GPU-h
+S0_smoke_sglang: 1 x (0.25 + 1 x 0.5417 + 0 x 0.0500 + 0.05) = 0.842 h  =>  0.84 GPU-h
+S0_smoke_vllm: 1 x (0.25 + 1 x 0.5417 + 0 x 0.0500 + 0.05) = 0.842 h  =>  0.84 GPU-h
+C_closed_sglang_fcfs: 1 x (0.25 + 4 x 0.7917 + 4 x 0.0500 + 0.05) = 3.667 h  +  1 x (0.25 + 3 x 0.7917 + 3 x 0.0500 + 0.05) = 2.825 h  =>  6.49 GPU-h
+C_closed_sglang_lpm: 1 x (0.25 + 2 x 0.7917 + 2 x 0.0500 + 0.05) = 1.983 h  =>  1.98 GPU-h
+E0a_miss_sglang: 1 x (0.25 + 4 x 0.7917 + 3 x 0.0500 + 0.05) = 3.617 h  =>  3.62 GPU-h
+E0a_miss_vllm: 1 x (0.25 + 4 x 0.7917 + 3 x 0.0500 + 0.05) = 3.617 h  =>  3.62 GPU-h
+E0b_cap_sglang_fcfs: 3 x (0.25 + 3 x 0.8750 + 3 x 0.0500 + 0.05) = 3.075 h  =>  9.22 GPU-h
+E2a_kill_sglang_fcfs_paired: 27 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  75.82 GPU-h
+C_closed_sglang_fcfs_native: 1 x (0.25 + 4 x 0.7917 + 4 x 0.0500 + 0.05) = 3.667 h  +  1 x (0.25 + 3 x 0.7917 + 3 x 0.0500 + 0.05) = 2.825 h  =>  6.49 GPU-h
+E0b_cap_sglang_fcfs_native: 3 x (0.25 + 3 x 0.8750 + 3 x 0.0500 + 0.05) = 3.075 h  =>  9.22 GPU-h
+E2c_native_sglang_fcfs_paired: 9 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  25.27 GPU-h
+E2b_sglang_fcfs_r0: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_sglang_fcfs_r1_2x: 3 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  8.42 GPU-h
+E2b_sglang_lpm_r1: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_sglang_lpm_r0: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_sglang_lpm_inf: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+E2b_vllm_fcfs: 6 x (0.25 + 1 x 2.4583 + 1 x 0.0500 + 0.05) = 2.808 h  =>  16.85 GPU-h
+
+gate0_smoke = 0.84 + 0.84 = 1.68 GPU-h  [S0_smoke_sglang, S0_smoke_vllm]
+gateC_closed_mu = 6.49 + 1.98 = 8.47 GPU-h  [C_closed_sglang_fcfs, C_closed_sglang_lpm]
+gate1_calibration = 3.62 + 3.62 + 9.22 = 16.46 GPU-h  [E0a_miss_sglang, E0a_miss_vllm, E0b_cap_sglang_fcfs]
+gate2_kill_test = 75.82 = 75.82 GPU-h  [E2a_kill_sglang_fcfs_paired]
+gate_native_pool = 6.49 + 9.22 + 25.27 = 40.99 GPU-h  [C_closed_sglang_fcfs_native, E0b_cap_sglang_fcfs_native, E2c_native_sglang_fcfs_paired]
+full_grid = 16.85 + 8.42 + 16.85 + 16.85 + 16.85 + 16.85 = 92.67 GPU-h  [E2b_sglang_fcfs_r0, E2b_sglang_fcfs_r1_2x, E2b_sglang_lpm_r1, E2b_sglang_lpm_r0, E2b_sglang_lpm_inf, E2b_vllm_fcfs]
+cheap_before_prereg = 1.68 + 8.47 + 16.46 = 26.62 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration]
+through_kill_test = 1.68 + 8.47 + 16.46 + 75.82 = 102.44 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration, gate2_kill_test]
+through_native_pool = 1.68 + 8.47 + 16.46 + 75.82 + 40.99 = 143.43 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration, gate2_kill_test, gate_native_pool]
+total = 1.68 + 8.47 + 16.46 + 75.82 + 40.99 + 92.67 = 236.11 GPU-h
 ```
-Gates and sums:
-```
-gate0_smoke = 0.80 + 0.80 = 1.60 GPU-h  [S0_smoke_sglang, S0_smoke_vllm]
-gateC_closed_mu = 5.30 + 1.85 = 7.15 GPU-h  [C_closed_sglang_fcfs, C_closed_sglang_lpm]
-gate1_calibration = 3.45 + 3.45 + 8.70 = 15.60 GPU-h  [E0a_miss_sglang, E0a_miss_vllm, E0b_cap_sglang_lpm]
-gate2_kill_test = 73.35 = 73.35 GPU-h  [E2a_kill_sglang_fcfs_paired]
-gate_native_pool = 5.30 + 24.45 = 29.75 GPU-h  [C_closed_sglang_fcfs_native, E2c_native_sglang_fcfs_paired]
-full_grid = 16.30 + 8.15 + 16.30 + 16.30 + 16.30 + 16.30 = 89.65 GPU-h  [E2b_sglang_fcfs_r0, E2b_sglang_fcfs_r1_2x, E2b_sglang_lpm_r1, E2b_sglang_lpm_r0, E2b_sglang_lpm_inf, E2b_vllm_fcfs]
-cheap_before_prereg = 1.60 + 7.15 + 15.60 = 24.35 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration]
-through_kill_test = 1.60 + 7.15 + 15.60 + 73.35 = 97.70 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration, gate2_kill_test]
-through_native_pool = 1.60 + 7.15 + 15.60 + 73.35 + 29.75 = 127.45 GPU-h  [gate0_smoke, gateC_closed_mu, gate1_calibration, gate2_kill_test, gate_native_pool]
-total = 1.60 + 7.15 + 15.60 + 73.35 + 29.75 + 89.65 = 217.10 GPU-h
-```
-Reading: the referee's "cheap stages" (Stage 0, calibration, closed μ(n); ≈ 20–25 GPU-h) come to **24.35** here, of which Stage C is 7.15. Through the kill test: 97.70; with the native-pool gate: 127.45; everything: **217.10** (49 jobs and 131.30 GPU-h before the redesign). The paired E2 stages (27 + 9 runs) are 97.80 of the total. Not included: CPU-only env build, model download, re-runs after failures, vLLM Stage C. For the literal timing (28,000 s per run: 3000 s warm-up + 25,000 s after the burst, job limit 9 h) the totals are gate-2 218.10, native pool 78.00, grid 266.57, total **587.02** GPU-h.
+Reading: the referee's "cheap stages" (Stage 0, calibration, closed μ(n); ≈ 20–25 GPU-h) come to **26.62** here (Stage C 8.47, calibration incl. the now-required E0b 16.46). Through the kill test: 102.44; with the native-pool gate (its own Stage C, E0b and paired arms): 143.43; everything: **236.11**. The paired E2 stages (27 + 9 runs) are 101.10 of the total. Change from the previous revision (217.10): +8.10 for the two terms the first budget left out (the gap after the last run and the per-run overhead; ~0.09 h per one-run job, 3.7%), +1.68 for n = 20 in the two Stage-C grids, +9.22 for E0b on the native pool; E0b under FCFS instead of LPM costs the same. Not included: CPU-only env build, model download, re-runs after failures, vLLM Stage C. For the literal timing (28,000 s per run: 3000 s warm-up + 25,000 s after the burst, job limit 9 h) the totals are gate-2 220.58, native pool 89.24, grid 269.59, total **606.03** GPU-h.
 
 Load per E2 run, sized with the **simulator's** λ_miss = 0.0474 sessions/s (`results/prefix_meta_e0/20261021-005706/e0_summary.json` in the main checkout; the real λ_miss is unknown until E0a): at 1.6× and seed 0 the BURST/CAPPED plan has 914 sessions (200 burst), 13,533 turns and 141,076,650 prompt tokens if every turn missed; max prompt 40,350 tokens (`results/agentload_e2_burst_planstats/20261021-021037/plan_stats.json`). About 1.6 requests/s average, so the client side is light; the in-flight cap (4000 requests) matters only in a runaway regime (outstanding requests ≤ sessions in the system).
 
@@ -259,4 +259,4 @@ PYTHONPATH=src:. python experiments/agentload_trap_sim_traces.py   # criterion (
 PYTHONPATH=src:. python experiments/agentload_trap_power.py        # Poisson noise floor of the SESSION estimator only (not an operating characteristic)
 ```
 
-Recorded at commit 367f8ac on a clean tree: tests in `results/agentload_tests/20261021-052646` (**274 passed, 0 failed, 0 skipped**, 560 s; `junit.xml`, `pytest_stdout.txt`, `meta.json`). The previous revision had 189. New in this revision: `test_agentload_gate.py` (15: gate unit tests incl. FIFO and both cancellation races, the three arms end to end on the mock server with identical session specs except the burst, cap never exceeded recomputed from the log, gate waits logged, censored waits), `test_analysis_trap_v2.py` (25: trapped / draining / recovered / noburst-collapse on synthetic traces, PASS rule, pairing checks, `burst2` CLI on synthetic run dirs and on mock-server arms), `test_analysis_closed.py` (11: Stage C on the mock server with a thrashing curve, synthetic μ(n) cases, hand-off of `n_cap` to the gate), `test_prereg.py` (9), `test_trap_power.py` (3), plus additions to `test_slurm_scripts.py` (MODE=closed and the three-arm job glue, input validation, KV_TOKENS=native, time budget; 82 tests in that file) and `test_plan_budget.py`. The mock numbers say nothing about SGLang or vLLM: the mock's thrashing curve is built to have a knee, so the Stage-C tests check the code path (argmax, flags, hand-off), not a result. A mock-server run of the new job modes (`slurm/local_smoke.sh closed` and `burst`: Stage C with N_LIST "2 4", then the three paired arms with the capped arm reading `n_cap` from a fake `mu_curve.json`, followed by the `closed`, `burst` and `burst2` analyses) is recorded in `results/agentload_v2_job_glue/20261021-053720`; earlier mock-server demos are in `results/agentload_mock_demo/…`. They show the file layout only.
+Recorded at commit f1f001e on a clean tree: tests in `results/agentload_tests/20261021-070445` (**307 passed, 0 failed, 0 skipped**, 654 s; `junit.xml`, `pytest_stdout.txt`, `meta.json`). The previous revision had 274 (recorded at 367f8ac, `results/agentload_tests/20261021-052646`). Changes in this revision: `test_prereg.py` rewritten (9 → 24 test items: fill by formula incl. the E0b-bounded window, capped-drain limit, one-pool-per-curve, `check-job`, every verdict-changing setting registered, and the regression test for the probe of the review: a prereg of 1.2 × only plus runs labelled `vllm-fcfs` at 1.5 × is NOT decisive), `test_analysis_trap_v2.py` (25 → 30: young-session trap seen in token units and missed in session units, token reference required, outstanding vs sessions backlog, gate queue, hardware / token-reference pairing, meta keys that may not differ), `test_trap_sim_traces.py` (6: the simulator-trace analysis on synthetic windows, plus the recorded simulator numbers, skipped if the main checkout's files are absent), `test_slurm_scripts.py` (burst refuses to start without a valid prereg; cap file of another pool or hardware refused; MULTS / label / reference / protocol must equal the registration), `test_plan_budget.py` (trailing gap and overhead), and additions to the guards, closed and pipeline tests. The mock numbers say nothing about SGLang or vLLM, and the synthetic trap fixtures serve at exactly λ_miss by construction: they check the verdict LOGIC, and the realism check of the criterion is the simulator-trace analysis (`results/agentload_trap_sim_traces/20261021-070449`, deterministic analysis of recorded simulator output, no new simulation). Budget outputs: `results/agentload_plan_budget/20261021-070448`.

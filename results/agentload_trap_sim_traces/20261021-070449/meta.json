@@ -1,0 +1,56 @@
+{
+  "experiment": "agentload_trap_sim_traces",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "experiments/agentload_trap_sim_traces.py"
+  ],
+  "git": {
+    "commit": "f1f001e712e39658aa9d56d320834d860ff2a142",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T07:04:49",
+  "end_time": "2026-10-21T07:04:49",
+  "wall_s": 0.187479,
+  "slurm_env": {},
+  "input_sha256": {
+    "burst_windows": "ceb1e3472782c6aeb5056dcaca2d6e8eeaa9f3bea700c046ed93a6959e9a3188",
+    "burst_runs": "ddd88de20d7993df74aba2de198261161016354f238e2095d77a54bddcfcb699",
+    "burst_meta": "299186eca199268079440334ecaa4a790b1fc0f70902781d80e175ca88581cda",
+    "burst_config": "08b08a55173c4d09f452ec4ec6d380605426dd056a27397a39d8b6fa35f0b83e",
+    "curve_windows": "12a784dd168a3790551ab34f5cb5ff6f575ff39eba62f2ba75bce817cd797df1",
+    "e0_windows": "5fdce7b0b5d6e4ac6c2b3db86e92b1bf9bc43dbb61c2b9bc021b11502912eb27",
+    "e0_runs": "19c2f6ae68798f011bae4b48615488ed7fa3ddbcd8745c3310a61b4a03a39328",
+    "e0_summary": "ff0812a6821e577510bd4f5c6896f58a085b28f67e8bdfa46ec6985acb2f9776"
+  },
+  "trap_v2_params": {
+    "eval_from_s": 4500.0,
+    "min_eval_s": 600.0,
+    "rate_estimator": "uncached_tokens",
+    "rate_tolerance": 0.15,
+    "slope_frac": 0.5,
+    "slope_dt_s": 10.0,
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "recovered_backlog_metric": "outstanding",
+    "end_window_s": 300.0,
+    "pass_fraction_min": 0.6666666666666666,
+    "min_seeds": 3,
+    "trace_bin_s": 50.0
+  },
+  "deterministic": true
+}
