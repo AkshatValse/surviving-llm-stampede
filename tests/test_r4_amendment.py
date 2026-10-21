@@ -45,7 +45,8 @@ def test_registered_text_is_untouched_and_amendment_is_appended():
     doc = yaml.safe_load(raw)
     pre = doc["preregistration"]
     assert list(doc)[0] == "research_question"
-    assert list(pre)[-1] == "amendment_1" and pre["amendment_1"]["date"].isoformat() == "2026-10-21"
+    assert list(pre)[-2:] == ["amendment_1", "amendment_2"] and pre["amendment_1"]["date"].isoformat() == "2026-10-21"
+    assert pre["amendment_2"]["posthoc_information_row"]["id"] == "R3-posthoc-b0-excluded"
     for k in ("disclosure_of_looks", "reclassification_of_predictions", "R4_amended_reading", "R1_R2_sensitivity",
               "R3_amended_reporting", "burst_info_cells", "R6_amended_reporting", "fluid_predictor_fix", "evaluator_hygiene",
               "findings_dispositions"):
@@ -406,6 +407,51 @@ def test_burst_info_rows_b0_controls_lambda_dependence_and_registered_consistenc
     assert E.eval_burst_info(cr, gap, reg, LAM_MISS, design, bi)[1]["verdict"] == E.NA
 
 
+def posthoc_inputs(cfg_bi: dict, per_seed_fail_from: Dict[int, int], baseline_trapped=(2103,)) -> tuple:
+    """(registered E-burst runs, burst_info runs) where seed s is not recovered at every size >= per_seed_fail_from[s] (None = never),
+    and the seeds in ``baseline_trapped`` also fail at b = 0 at lam_mult 2.0."""
+    rows = []
+    for b in SIZES:
+        for sd in cfg_bi["seeds"]:
+            f = per_seed_fail_from.get(sd)
+            rows.append({"policy": "fcfs_lru", "burst_n": b, "seed": sd, "recovered": not (f is not None and b >= f)})
+            rows.append({"policy": "fcfs_random", "burst_n": b, "seed": sd, "recovered": True})
+    info = []
+    for sd in cfg_bi["seeds"]:
+        info.append({"policy": "fcfs_lru", "lam_mult": 2.0, "burst_n": 0, "seed": sd, "recovered": sd not in baseline_trapped})
+    return pd.DataFrame(rows), pd.DataFrame(info)
+
+
+def test_posthoc_row_excludes_seeds_trapped_without_a_burst(cfg, design):
+    """Amendment 2: the observed pattern of the full runs, rebuilt by hand. Seed 2103 fails at every size (and at b = 0); 2100 fails from
+    20, 2102 from 40, 2101 and 2104 from 80. All seeds: counts [1, 2, 2, 3, 3, 3, 5, 5, 5] -> b_emp = 40; without 2103: [0, 1, 1, 2, 2, 2,
+    4, 4, 4] -> >= ceil(0.6 x 4) = 3 of 4 first at 80."""
+    bi = cfg["burst_info"]
+    reg, info = posthoc_inputs(bi, {2100: 20, 2101: 80, 2102: 40, 2103: 10, 2104: 80})
+    cr = synth_curve_runs(base_curves(), scale_seed=0.0)
+    assert E.eval_r3(cr, reg, LAM_MISS, design)["numbers"]["b_emp"] == 40                      # the headline is untouched by the row
+    row = E.eval_r3_posthoc_b0_excluded(cr, reg, info, LAM_MISS, design, bi)
+    n = row["numbers"]
+    assert row["id"] == "R3-posthoc-b0-excluded" and row["reading"] == "information" and row["verdict"] == E.INFO
+    assert n["baseline_trapped_seeds"] == [2103] and n["remaining_seeds"] == [2100, 2101, 2102, 2104]
+    assert list(n["not_recovered_by_size_all_seeds"].values()) == [1, 2, 2, 3, 3, 3, 5, 5, 5]
+    assert list(n["not_recovered_by_size_excluding_baseline_trapped"].values()) == [0, 1, 1, 2, 2, 2, 4, 4, 4]
+    assert n["b_emp_excl"] == 80 and n["b_emp_excl_status"] == "found" and n["min_count_rule"].endswith("3 of 4")
+    assert n["b_c_over_b_emp_excl"] == pytest.approx(n["b_c"] / 80) and n["b_c_over_b_emp_excl"] < 0.5
+    assert n["first_size_from_which_every_larger_size_is_not_recovered_by_seed"] == {"2100": 20, "2101": 80, "2102": 40, "2103": 10,
+                                                                                    "2104": 80}
+    assert "POST-HOC" in row["notes"]
+    # no baseline-trapped seed: the row reduces to the registered counts
+    reg2, info2 = posthoc_inputs(bi, {2100: 20, 2101: 80, 2102: 40, 2103: 10, 2104: 80}, baseline_trapped=())
+    n2 = E.eval_r3_posthoc_b0_excluded(cr, reg2, info2, LAM_MISS, design, bi)["numbers"]
+    assert n2["baseline_trapped_seeds"] == [] and n2["b_emp_excl"] == 40
+    # every seed trapped, or inputs missing -> NOT_EVALUABLE
+    _, allinfo = posthoc_inputs(bi, {}, baseline_trapped=tuple(bi["seeds"]))
+    assert E.eval_r3_posthoc_b0_excluded(cr, reg, allinfo, LAM_MISS, design, bi)["verdict"] == E.NA
+    assert E.eval_r3_posthoc_b0_excluded(cr, reg, None, LAM_MISS, design, bi)["verdict"] == E.NA
+    assert E.eval_r3_posthoc_b0_excluded(cr, None, info, LAM_MISS, design, bi)["verdict"] == E.NA
+
+
 # =========================================================================== R6: null-implied reporting
 LMK = {0.5: 0.5 * LAM_MISS, 1.0: LAM_MISS, 2.0: 2.05 * LAM_MISS}
 
@@ -498,7 +544,7 @@ def test_evaluate_all_with_every_input_orders_headlines_first_and_has_unique_ids
     ids = [r["id"] for r in rows]
     assert ids[:6] == ["R1", "R2", "R3", "R4", "R5", "R6"] and len(set(ids)) == len(ids)
     assert all(r["reading"] == "headline" for r in rows[:6]) and all(r["reading"] != "headline" for r in rows[6:])
-    for need in ("R1-nearmax", "R2-nearmax", "R1-per-seed", "R2-per-seed", "R1-bootstrap", "R2-bootstrap", "R3-robustness",
+    for need in ("R3-posthoc-b0-excluded", "R1-nearmax", "R2-nearmax", "R1-per-seed", "R2-per-seed", "R1-bootstrap", "R2-bootstrap", "R3-robustness",
                  "R3-envelope", "R3-info-b0", "R3-info-lambda", "R4-as-registered", "R4-bracket", "R4-mintail", "R4-bootstrap",
                  "R6-beyond-null", "R6-loo", "R6-bootstrap"):
         assert need in ids, need
@@ -586,6 +632,13 @@ def test_report_on_a_synthetic_complete_design_writes_verdicts_figures_and_table
             assert (rdir / f).read_bytes()[:4] == b"%PDF"
     bt = pd.read_csv(rdir / "table_bootstrap.csv")
     assert {"n_star", "b_c@2.0x", "rho"} <= set(bt["quantity"])
+    # amendment 2: table_curve normalises each row by lambda_miss(k) of its own k (the first report used lambda_miss(1) for all k)
+    tc = pd.read_csv(rdir / "table_curve.csv")
+    lmk_ = {0.5: 0.02456, 1.0: LAM_MISS, 2.0: 0.0910231578947368}
+    for k, lam_k in lmk_.items():
+        sub = tc[np.isclose(tc["k"], k)]
+        assert np.allclose(sub["lambda_miss_k"], lam_k, rtol=1e-6)
+        assert np.allclose(sub["mu_over_lambda_miss"], sub["mu_mean"] / lam_k, rtol=1e-6)
     # the same inputs from a dirty tree: every test verdict is suppressed
     meta = json.loads((cdir / "meta.json").read_text())
     meta["git"]["dirty"] = True

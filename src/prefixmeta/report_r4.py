@@ -391,9 +391,11 @@ def cmd_report(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     info_row = next((r for r in rows if r["id"] == "R3-info-lambda"), None)
     if ct is not None:
         ct2 = ct.copy()
-        ct2["mu_over_lambda_miss"] = ct2["mu_mean"] / lam_miss
+        # normalise by lambda_miss(k) of the row's own system size k (amendment 2: the first report divided every row by lambda_miss(1))
+        ct2["lambda_miss_k"] = [lmk.get(round(float(k), 6), float("nan")) for k in ct2["k"]]
+        ct2["mu_over_lambda_miss"] = ct2["mu_mean"] / ct2["lambda_miss_k"]
         if "mu_se" in ct2:
-            ct2["mu_se_over_lambda_miss"] = ct2["mu_se"] / lam_miss
+            ct2["mu_se_over_lambda_miss"] = ct2["mu_se"] / ct2["lambda_miss_k"]
         ct2.to_csv(out / "table_curve.csv", index=False)
         fig_curves(ct, lam_miss, r3v["lambda_cap"].get(1.0), n_lb, out / "fig1_mu_curves.pdf")
         fig_k_scaling(ct, lmk, r6_row, out / "fig4_k_scaling.pdf", r6_boot)

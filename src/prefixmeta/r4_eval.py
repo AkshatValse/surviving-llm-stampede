@@ -432,7 +432,9 @@ def eval_r3_robustness(cr: pd.DataFrame, burst_runs: Optional[pd.DataFrame], lam
                                                            for q in (5, 25, 50, 75, 95)} if np.isfinite(rep).any() else {}}
     return _row("R3-robustness", label, nums,
                 "ROBUST iff the registered R3 verdict is the same over the whole 95% bootstrap interval of b_c (seed resampling of "
-                "the FCFS-LRU curve; b_emp taken as observed); the label never changes the headline", "sensitivity")
+                "the FCFS-LRU curve; b_emp taken as observed); the label never changes the headline. With 3 seeds the bootstrap "
+                "interval is narrow, and the stage-2 review measured a larger sampling SD (0.67) over disjoint 3-seed sets on "
+                "non-registered seeds (not re-verified here), so a ROBUST label is optimistic (amendment 2)", "sensitivity")
 
 
 def eval_r3_envelope(cr: pd.DataFrame, burst_runs: Optional[pd.DataFrame], lam_miss: float, d: Dict[str, Any]
@@ -545,6 +547,54 @@ def eval_burst_info(cr: pd.DataFrame, info_runs: Optional[pd.DataFrame], burst_r
                      "lambda dependence of the fluid b_c and of the empirical critical burst on the fine grid (information; CRN with "
                      "the registered burst seeds); a weak trend may be unresolvable on a step-5 grid", "information"))
     return rows
+
+
+def eval_r3_posthoc_b0_excluded(cr: pd.DataFrame, burst_runs: Optional[pd.DataFrame], info_runs: Optional[pd.DataFrame],
+                                lam_miss: float, d: Dict[str, Any], info: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """POST-HOC, UNREGISTERED information row (amendment 2): the registered FCFS-LRU burst counts recomputed without the seeds that
+    are not recovered at b = 0 (no burst) at 2 lambda_miss in the burst_info cells. Never decides anything."""
+    pid = "R3-posthoc-b0-excluded"
+    if burst_runs is None or info_runs is None or not info:
+        return _row(pid, NA, {}, "needs the E-burst and burst_info runs", "information")
+    grid, seeds = d["curve"]["n_grid"], d["curve"]["seeds"]
+    sizes, bseeds = d["burst"]["sizes"], d["burst"]["seeds"]
+    pol = d["burst"]["policies"]["primary"]
+    try:
+        M = seed_matrix(cr, "fcfs_lru", 1.0, grid, seeds)
+        nr, nn = burst_table(burst_runs, pol, sizes, bseeds)
+    except Missing as e:
+        return _row(pid, NA, {}, str(e), "information")
+    g0 = info_runs[(info_runs["policy"] == pol) & np.isclose(info_runs["lam_mult"].astype(float), d["burst"]["lam_mult"])
+                   & (info_runs["burst_n"] == 0) & info_runs["seed"].isin(bseeds)]
+    if sorted(int(s_) for s_ in g0["seed"]) != sorted(int(s_) for s_ in bseeds):
+        return _row(pid, NA, {}, "burst_info b = 0 cell lacks the registered seeds", "information")
+    trapped0 = sorted(int(s_) for s_, rec in zip(g0["seed"], g0["recovered"]) if not _is_true(rec))
+    rest = [int(s_) for s_ in bseeds if int(s_) not in trapped0]
+    reg = burst_runs[burst_runs["policy"] == pol].assign(rec=lambda x: x["recovered"].map(_is_true))
+    nr_ex = [int(((~reg[(reg["burst_n"] == b) & reg["seed"].isin(rest)]["rec"]).sum())) for b in sizes]
+    first_fail: Dict[str, Optional[int]] = {}
+    for sd in bseeds:
+        fails = {int(b): not bool(reg[(reg["burst_n"] == b) & (reg["seed"] == sd)]["rec"].iloc[0]) for b in sizes}
+        ff = None
+        for j, b in enumerate(sizes):
+            if all(fails[int(x)] for x in sizes[j:]):
+                ff = int(b)
+                break
+        first_fail[str(int(sd))] = ff
+    n_rem = len(rest)
+    lam = d["burst"]["lam_mult"] * lam_miss
+    fp = fixed_points(make_curve(grid, M.mean(axis=1)), lam)
+    nums = {"baseline_trapped_seeds": trapped0, "remaining_seeds": rest, "not_recovered_by_size_all_seeds": dict(zip(map(int, sizes), nr)),
+            "not_recovered_by_size_excluding_baseline_trapped": dict(zip(map(int, sizes), nr_ex)),
+            "first_size_from_which_every_larger_size_is_not_recovered_by_seed": first_fail, "b_c": fp.b_c}
+    if n_rem == 0:
+        return _row(pid, NA, nums, "every seed is trapped at b = 0", "information")
+    need = int(math.ceil(0.6 * n_rem - 1e-9))
+    b_ex, st = empirical_critical_burst(sizes, nr_ex, [n_rem] * len(sizes), need)
+    nums.update({"min_count_rule": f">= ceil(0.6 x {n_rem}) = {need} of {n_rem}", "b_emp_excl": b_ex, "b_emp_excl_status": st,
+                 "b_c_over_b_emp_excl": (fp.b_c / b_ex) if (b_ex and math.isfinite(fp.b_c)) else float("nan")})
+    return _row(pid, INFO, nums, "POST-HOC and unregistered (amendment 2): the registered burst counts without the seeds that are not "
+                                 "recovered at b = 0; information only, the headline R3 is unchanged", "information")
 
 
 # ----------------------------------------------------------------------------------------------- R4
@@ -931,6 +981,7 @@ def _evaluate_all(cr, burst_runs, cap_runs, phase_runs, lambda_cap, lam_miss, de
             eval_r3_robustness(cr, burst_runs, lam_miss, d, boot), eval_r3_envelope(cr, burst_runs, lam_miss, d),
             eval_r3_info_random(cr, burst_runs, lam_miss, d),
             *eval_burst_info(cr, burst_info_runs, burst_runs, lam_miss, d, burst_info, boot),
+            eval_r3_posthoc_b0_excluded(cr, burst_runs, burst_info_runs, lam_miss, d, burst_info),
             *r4[1:], r5[1], *eval_r6_extras(cr, lambda_cap, lmk, d, boot)]
     return heads + sens
 
