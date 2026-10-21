@@ -3,7 +3,7 @@
 ## Five-line summary
 1. **Setup.** Nova `sinfo` re-verified the GPU layout in CLAUDE.md. The env plan is drafted but **not executed**. No PyTorch locally, so every pilot ran on CPU (NumPy, Numba, simulation). Nothing was pushed, submitted or installed.
 2. **Directions.** 21 candidates checked: 6 in round 1, then 15 more from a multi-agent search (5 math lenses, deep novelty checks, 2 adversarial refuters each). Every one came back NARROW or KILL; nothing was wide open.
-3. **Pilots.** Six pilots. Most are negative under their pre-stated criteria:
+3. **Pilots.** Six pilots plus five verified prediction rounds on the survivor. Most are negative under their pre-stated criteria:
    - KV rent-or-buy: killed.
    - VAT protocol: uninformative.
    - Delay edge-of-stability: killed.
@@ -14,7 +14,7 @@
    - Over a wide λ window a burst traps the server in the congested regime.
    - Recovery tracks congested throughput: FCFS 0.99, LPM 1.14, caps up to 3.3.
    - Caps at or below the curve's peak restore stability, whatever the eviction rule.
-5. **Recommendation: conditional GO.** Run the cheap Nova stages first (smoke, real μ(n), λ_miss, from-empty edge, about 27 GPU-h) before committing to the paper framing. I agree with the referee: about **40%** chance of a workshop-or-better paper by Dec 18. A round-5 check of whether the effect survives realistic KV allocation is _[see Round 5 below]_.
+5. **Recommendation: conditional GO.** Run the cheap Nova stages first (smoke, real μ(n), λ_miss, from-empty edge, about 27 GPU-h) before committing to the paper framing. I agree with the referee: about **40%** chance of a workshop-or-better paper by Dec 18. Round 5 retired one threat: under vLLM-like on-demand allocation and SGLang-like ratio reservation, the collapse persists (curves within 1–3% of the full-reservation model). That was not a severe test, and partial-prefix eviction is still untested.
 
 ## Pilot results ("verified" = an independent agent recomputed from raw data and re-ran bit-identically)
 | Direction (branch) | Verdict | Status | Results |
@@ -23,7 +23,7 @@
 | VAT, anytime-valid agent benchmarking (`pilot/vat`) | **Downgraded.** Bad candidate set. Side finding: candidate×process ICC up to 0.87, from grid placement / cache aliasing. Theory is prior art (Kalibera & Jones; Lindon, arXiv 2610.25613) | verified | `results/vat_collect/20261020-221946`, `results/vat_alignment/` |
 | Delayed-gradient edge of stability (`pilot/delay-eos`) | **Killed** by its pre-registered rule. Plateau is η·S_P≈2.1, not 1 | verified | `results/delay_eos/20261021-001318` |
 | Prefix-cache metastability, rounds 1–4 (`pilot/prefix-meta`) | **Supported in simulation**, after two reframes | verified | `results/prefix_meta*/` |
-| Prefix-cache metastability, round 5: realistic allocation | _[pending at time of writing; see below]_ | | `results/prefix_meta_r5*` |
+| Prefix-cache metastability, round 5: realistic allocation | **Survives** vLLM-like and SGLang-like allocation, S1–S4 PASS in both modes (weak test) | verified | `results/prefix_meta_r5*` |
 
 ### Prefix-meta: what the simulation shows
 All numbers below come from a simulator with assumed A100/8B constants (M = 300k tokens, Exp(5 s) tools), in units of λ_miss = 0.0474 sessions/s.
@@ -53,7 +53,24 @@ All numbers below come from a simulator with assumed A100/8B constants (M = 300k
   - Noise-driven escapes happen well below the fluid saddle-node.
 
 ### Round 5: does it survive realistic KV allocation?
-_[filled in when the workflow finishes]_
+- **Setup.** Two allocation modes were modelled from a scout's summarized read of the vLLM v0.32.0 and SGLang v0.5.22 sources (unverified):
+  - ONDEMAND_PREEMPT: full-prompt-fit admission, per-step decode growth, recompute preemption.
+  - RATIO_RESERVE: new_token_ratio admission plus retraction.
+- **Result.** The thrashing curve barely moves.
+  - Every mode peaks at n\*=20.
+  - μ\*/μ(300) is 4.07 and 4.10.
+  - μ(300) ≈ 0.97 λ_miss, with an FCFS hit rate of exactly 0.
+  - The maximum deviation from the full-reservation model is 1.2% / 3.3%.
+  - Burst traps in 5/5 runs and no-burst stays good in 5/5. The n\*=20 cap recovers 3/3; no cap recovers 0/3.
+  - Preemption is 0.002–0.008 per turn.
+- **Not a severe test.** The reservation excess is only about 2–4% of M, so the null was expected.
+- **Variants.**
+  - Alternative reading of vLLM admission: preemption thrash (λ_miss −28%), with the same absolute collapse.
+  - SGLang's real LPM-128: no LPM advantage once congested. Deployed LPM behaves like FCFS when it matters.
+- **Remaining simulator gaps:**
+  - Whole-session all-or-nothing eviction, versus real block-wise / radix partial-prefix eviction. This is probably the biggest remaining threat.
+  - Long decodes (the window already fails at d=400).
+- **Conclusion.** Both gaps are best settled by measuring μ(n) on the real engine (Stage C).
 
 ## Recommendation
 **Conditional GO** on "metastable failures in prefix-cached agent serving."
