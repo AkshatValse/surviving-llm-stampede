@@ -221,3 +221,9 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
 - Lock files: `/work/classtmp/avalse/swapp/envs/*.lock.txt`.
 - **Version check:** ENV_GEN's pandas 3 / numpy 2 differ from local (pandas 2.2 / numpy 1.26). All 113 parser/workload/config/analysis tests pass on Nova's env, run on the login node with nice, under 1 min.
 **Step D:** smoke job **17060003** submitted (1×A100, 1.5 h, account 6250). It was PENDING (Resources) at submission.
+- **Smoke attempt 1, job 17060003:** FAILED after 28 s on nova22-gpu-3 (A100 80GB PCIe, driver 580.178.04, CUDA 13.0). The pre-launch flag check reported every SGLang flag missing, so the server never started and less than one GPU-minute was used.
+  - Cause: a bug in my harness, not in SGLang. `help_has_flag` piped `printf` into `grep -q` under `set -o pipefail`. SGLang 0.5.22's `--help` runs to about 2700 lines, more than the pipe buffer, so `grep -q` exits at the first match and `printf` gets SIGPIPE, failing the whole pipeline.
+  - Fixed in 636da1b with a here-string, plus a regression test that fails on the old code and passes on the fix.
+  - Verified on the real captured help: all 11 required flags plus `--sampling-defaults` are found.
+  - SGLang notes `python -m sglang.launch_server` as still supported; `sglang serve` is the recommended entrypoint.
+- **Smoke attempt 2, job 17060022:** submitted with the same command.
