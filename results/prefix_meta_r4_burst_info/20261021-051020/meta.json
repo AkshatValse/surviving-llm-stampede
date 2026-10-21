@@ -1,0 +1,57 @@
+{
+  "experiment": "r4_burst_info",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_r4_run.py",
+    "burst_info",
+    "--workers",
+    "3"
+  ],
+  "git": {
+    "commit": "01252cdb622f738896d96e50ff6167be6777114d",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    2100,
+    2101,
+    2102,
+    2103,
+    2104
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T05:10:20",
+  "end_time": "2026-10-21T05:11:12",
+  "wall_s": 52.023051023483276,
+  "quick": false,
+  "workers": 3,
+  "overrides": [],
+  "tag": null,
+  "calibration": {
+    "lambda_miss": 0.047418947368421054,
+    "lambda_cap_lpm_round1": 0.11558368421052631,
+    "R_round1": 2.4375,
+    "N_lb": 28,
+    "E_lb": 10568.686518661441,
+    "_path": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta/results/prefix_meta_e0/20261021-005706/e0_summary.json"
+  },
+  "n_runs": 230,
+  "timing": {
+    "total_sim_s": 14950000.0,
+    "total_run_wall_s": 147.49388408684172,
+    "wall_s_per_10k_sim_s": 0.09865811644604797,
+    "max_run_wall_s": 1.001830791006796
+  },
+  "lambda_miss": 0.047418947368421054,
+  "informational": true,
+  "common_random_numbers": "same seed -> same random streams; at equal lambda the workload equals that of the registered E-burst run of the same seed, across lambda the coupling is partial (arrival counts differ). Cells are not independent"
+}
