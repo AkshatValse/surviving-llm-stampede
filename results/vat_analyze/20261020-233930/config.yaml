@@ -1,0 +1,77 @@
+research_question: How much does noisy wall-clock benchmarking inflate the speedup
+  reported by a select-the-best tuning loop, and can an anytime-valid sequential protocol
+  control false improvements while spending less benchmark time than a fixed-repetition
+  protocol?
+hardware: Apple M3 Max CPU (local pilot)
+output_root: results
+seeds:
+  collect: 20261020
+  analysis: 20261021
+kernel:
+  N: 2048
+  iters: 4
+  tiles:
+  - 0
+  - 16
+  - 32
+  - 64
+  - 128
+  - 256
+  orders:
+  - row
+  - col
+  parallel:
+  - false
+  - true
+  fastmath:
+  - false
+  - true
+collect:
+  R: 60
+  P: 6
+  numba_threads: 4
+  max_estimated_minutes: 100
+  calib_blocks: 2
+  quick:
+    N: 96
+    iters: 2
+    R: 4
+    P: 2
+    tiles:
+    - 0
+    - 16
+    - 64
+cs:
+  c: 0.5
+  clip_factor: 4.0
+analysis:
+  alpha: 0.05
+  delta: 0.03
+  holdout: 2
+  S: 500
+  r_values:
+  - 3
+  - 5
+  - 10
+  - 20
+  - 40
+  race_budget_per_candidate:
+  - 3
+  - 5
+  - 10
+  - 20
+  - 40
+  null_test:
+    K_values:
+    - 1
+    - 2
+    - 5
+    - 10
+    - 20
+    - 48
+    r_values:
+    - 5
+    - 10
+    - 20
+    - 40
+    S: 500

@@ -1,0 +1,31 @@
+{
+  "git": {
+    "commit": "1565403c991974849b851aa207cd88326d6c4620",
+    "branch": "pilot/vat",
+    "dirty": true
+  },
+  "seeds": {
+    "collect": 20261020,
+    "analysis": 20261021
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (local pilot)",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 08:22:19) [Clang 14.0.6 ]",
+  "versions": {
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "numba": "0.60.0",
+    "pandas": "2.2.2"
+  },
+  "NUMBA_NUM_THREADS": "4",
+  "start_time": "2026-10-20T23:40:12.418684",
+  "end_time": "2026-10-20T23:40:41.415358",
+  "note": "Machine shared with other processes during timing (confound).",
+  "timings_dir": "results/vat_collect/20261020-221946",
+  "holdout_procs": [
+    2,
+    3
+  ],
+  "K": 48
+}
