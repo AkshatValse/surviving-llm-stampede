@@ -206,3 +206,18 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
 ## 2026-10-21 — Decision: direction approved
 **Decision (Akshat, in chat):** pursue prefix-cache metastability in agent serving. Akshat will run the "Needs Akshat" commands first (account and QoS, quotas, modules, HF reachability). Next I prepare the Stage 0 smoke job and show the exact sbatch before any submission.
 **Next:** review the Stage 0 smoke scripts on `harness/prefix-meta`. List the prerequisites: env build and model weights, both needing approval. Draft the exact submission.
+
+## 2026-10-21 — Nova setup (steps A–C) done; Stage 0 smoke submitted
+**Authorization:** Akshat said "Just get everything done" after reviewing the runbook (steps A–D).
+**Read-only checks (via SSH):**
+- **Account:** verified. `f2026.coms.6250.02` with QoS `instruction,scavenger`.
+- **Storage:** class storage `/work/classtmp/avalse/swapp`. ISU deletes it at semester end. Details are in CLAUDE.md.
+- **Internet:** compute nodes have outbound access (pypi and huggingface returned HTTP 200 from nova22-25).
+**Step A:** the `harness/prefix-meta` git bundle was cloned to `/work/classtmp/avalse/swapp/repo` at fea94d1, clean tree.
+**Steps B+C:** CPU job **17059856** (`slurm/setup_nova.sbatch`, account 6250, nova22-25) COMPLETED 0:0 in 18:54.
+- ENV_GEN: Python 3.11, aiohttp 3.14.5, numpy 2.4.6, pandas 3.0.6, huggingface_hub 2.2.0.
+- ENV_SGLANG: sglang 0.5.22 with torch 2.14.1+cu130 (a CUDA 13.0 build, which needs driver ≥ 580).
+- Model: Qwen/Qwen2.5-7B-Instruct at revision a09a35458c702b33eeacc393d103063234e8bc28 (14 GB).
+- Lock files: `/work/classtmp/avalse/swapp/envs/*.lock.txt`.
+- **Version check:** ENV_GEN's pandas 3 / numpy 2 differ from local (pandas 2.2 / numpy 1.26). All 113 parser/workload/config/analysis tests pass on Nova's env, run on the login node with nice, under 1 min.
+**Step D:** smoke job **17060003** submitted (1×A100, 1.5 h, account 6250). It was PENDING (Resources) at submission.
