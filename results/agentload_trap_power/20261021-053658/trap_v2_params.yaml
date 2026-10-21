@@ -1,0 +1,12 @@
+end_window_s: 300.0
+eval_from_s: 4500.0
+min_eval_s: 600.0
+min_seeds: 3
+pass_fraction_min: 0.6666666666666666
+rate_estimator: sessions
+rate_tolerance: 0.15
+recovered_backlog_below: 20.0
+recovered_hit_above: 0.8
+slope_dt_s: 10.0
+slope_frac: 0.5
+trace_bin_s: 50.0

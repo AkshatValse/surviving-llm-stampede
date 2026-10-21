@@ -1,0 +1,46 @@
+{
+  "experiment": "agentload_trap_power",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "experiments/agentload_trap_power.py"
+  ],
+  "git": {
+    "commit": "bd88229c0d2f8810a11c2dc545e862c110556986",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T05:36:58",
+  "end_time": "2026-10-21T05:37:06",
+  "wall_s": 7.618709,
+  "slurm_env": {},
+  "trap_v2_params": {
+    "eval_from_s": 4500.0,
+    "min_eval_s": 600.0,
+    "rate_estimator": "sessions",
+    "rate_tolerance": 0.15,
+    "slope_frac": 0.5,
+    "slope_dt_s": 10.0,
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "end_window_s": 300.0,
+    "pass_fraction_min": 0.6666666666666666,
+    "min_seeds": 3,
+    "trace_bin_s": 50.0
+  }
+}

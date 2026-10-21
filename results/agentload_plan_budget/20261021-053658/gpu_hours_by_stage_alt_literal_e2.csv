@@ -1,0 +1,17 @@
+stage,protocol,run_s,n_runs,runs_per_job,jobs,job_wall_h_full,fits,gpu_h,arithmetic,note
+S0_smoke_sglang,s0_smoke,1800.0,1,1,1,0.8,True,0.8,1 x (0.25 + 1 x 0.5000 + 0 x 0.0500 + 0.05) = 0.800 h  =>  0.80 GPU-h,first GPU job; refines startup_h / gap_s
+S0_smoke_vllm,s0_smoke,1800.0,1,1,1,0.8,True,0.8,1 x (0.25 + 1 x 0.5000 + 0 x 0.0500 + 0.05) = 0.800 h  =>  0.80 GPU-h,same for vLLM
+C_closed_sglang_fcfs,c_closed,2700.0,6,3,2,2.65,True,5.3,2 x (0.25 + 3 x 0.7500 + 2 x 0.0500 + 0.05) = 2.650 h  =>  5.30 GPU-h,"n in {16,24,32,48,96,300}, 1 seed, FCFS; two jobs of 3 runs (N_LIST='16 24 32' and '48 96 300')"
+C_closed_sglang_lpm,c_closed,2700.0,2,2,1,1.85,True,1.85,1 x (0.25 + 2 x 0.7500 + 1 x 0.0500 + 0.05) = 1.850 h  =>  1.85 GPU-h,"n in {48,300}, SGLang lpm"
+E0a_miss_sglang,e0_miss,2700.0,4,4,1,3.4499999999999997,True,3.4499999999999997,1 x (0.25 + 4 x 0.7500 + 3 x 0.0500 + 0.05) = 3.450 h  =>  3.45 GPU-h,3 seeds @ pop 32 + 1 @ pop 64
+E0a_miss_vllm,e0_miss,2700.0,4,4,1,3.4499999999999997,True,3.4499999999999997,1 x (0.25 + 4 x 0.7500 + 3 x 0.0500 + 0.05) = 3.450 h  =>  3.45 GPU-h,"same, vLLM --no-enable-prefix-caching"
+E0b_cap_sglang_lpm,e0_cap,3000.0,9,3,3,2.9,True,8.7,3 x (0.25 + 3 x 0.8333 + 2 x 0.0500 + 0.05) = 2.900 h  =>  8.70 GPU-h,"6 bracket points + 3 refinement points, 1 seed"
+E2a_kill_sglang_fcfs_paired,e2_literal,28000.0,27,1,27,8.07777777777778,True,218.10000000000005,27 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  218.10 GPU-h,"3 lambda x 3 seeds x 3 arms (burst, noburst, capped); refresh on; one 8700 s run per job"
+C_closed_sglang_fcfs_native,c_closed,2700.0,6,3,2,2.65,True,5.3,2 x (0.25 + 3 x 0.7500 + 2 x 0.0500 + 0.05) = 2.650 h  =>  5.30 GPU-h,"ASSUMPTION (not in the spec): Stage C repeated on the native pool, because the window and n_cap of the 300k pool do not transfer"
+E2c_native_sglang_fcfs_paired,e2_literal,28000.0,9,1,9,8.07777777777778,True,72.70000000000002,9 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  72.70 GPU-h,1 lambda x 3 seeds x 3 arms on the native pool
+E2b_sglang_fcfs_r0,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,6 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  48.47 GPU-h,"refresh off; 2 lambda points, 3 seeds"
+E2b_sglang_fcfs_r1_2x,e2_literal,28000.0,3,1,3,8.07777777777778,True,24.233333333333338,3 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  24.23 GPU-h,refresh on at the second grid lambda (the first is in E2a)
+E2b_sglang_lpm_r1,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,6 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  48.47 GPU-h,"stock LPM (fallback at 128), refresh on"
+E2b_sglang_lpm_r0,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,6 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  48.47 GPU-h,"stock LPM, refresh off"
+E2b_sglang_lpm_inf,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,6 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  48.47 GPU-h,LPM with WAITING_QUEUE_PREFIX_MATCH_MAX patched huge (patch NOT applied here)
+E2b_vllm_fcfs,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,6 x (0.25 + 1 x 7.7778 + 0 x 0.0500 + 0.05) = 8.078 h  =>  48.47 GPU-h,"vLLM FCFS, prefix caching on"
