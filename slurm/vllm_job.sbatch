@@ -22,7 +22,9 @@
 
 set -u -o pipefail
 : "${MODE:?MODE must be miss|cap|burst}"
-: "${ENGINE_LABEL:=vllm-fcfs}"
+if [ -z "${ENGINE_LABEL:-}" ]; then
+  if [ "$MODE" = "miss" ]; then ENGINE_LABEL="vllm-nocache"; else ENGINE_LABEL="vllm-fcfs"; fi
+fi
 : "${SEEDS:=0}"
 export MODE ENGINE_LABEL SEEDS
 REPO_DIR="${SLURM_SUBMIT_DIR:-$PWD}"

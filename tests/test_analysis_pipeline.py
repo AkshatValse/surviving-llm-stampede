@@ -100,6 +100,8 @@ def test_stable_cli(open_runs, tmp_path):
     assert st["stable"].all() and set(st["queue_source"]) == {"engine_waiting"}
     by = pd.read_csv(d / "stable_by_rate.csv")
     assert by.iloc[0]["n_stable"] == 2 and by.iloc[0]["n_runs"] == 2
+    br = json.loads((d / "lambda_cap_bracket.json").read_text())
+    assert br["largest_all_stable_mult"] == 1.6 and br["first_unstable_mult_above"] is None and br["monotone"]
 
 
 def test_miss_calibration_from_a_closed_run(tmp_path):

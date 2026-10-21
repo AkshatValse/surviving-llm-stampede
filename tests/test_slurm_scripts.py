@@ -46,6 +46,35 @@ def test_shared_job_code_prints_what_the_spec_requires():
         assert needle in text, needle
 
 
+def test_default_engine_labels_name_the_kill_rule_cells():
+    sg = (SLURM / "sglang_job.sbatch").read_text()
+    vl = (SLURM / "vllm_job.sbatch").read_text()
+    for lab in ("sglang-nocache", "sglang-lpminf", "sglang-${POLICY:-fcfs}-r${REFRESH:-1}"):
+        assert lab in sg
+    assert "vllm-nocache" in vl and "vllm-fcfs" in vl                  # cells whose label contains 'fcfs'
+
+
+@pytest.mark.parametrize("script,env,label", [
+    ("sglang_job.sbatch", {"MODE": "miss"}, "sglang-nocache"),
+    ("sglang_job.sbatch", {"MODE": "burst"}, "sglang-fcfs-r1"),
+    ("sglang_job.sbatch", {"MODE": "burst", "POLICY": "lpm", "REFRESH": "0"}, "sglang-lpm-r0"),
+    ("sglang_job.sbatch", {"MODE": "burst", "POLICY": "lpm", "LPM_INF": "1"}, "sglang-lpminf"),
+    ("sglang_job.sbatch", {"MODE": "burst", "ENGINE_LABEL": "custom"}, "custom"),
+    ("vllm_job.sbatch", {"MODE": "miss"}, "vllm-nocache"),
+    ("vllm_job.sbatch", {"MODE": "cap"}, "vllm-fcfs"),
+])
+def test_default_labels_are_computed_by_the_scripts(script, env, label, tmp_path):
+    (tmp_path / "slurm").mkdir()
+    (tmp_path / "slurm" / "common.sh").write_text('job_main() { echo "LABEL=$ENGINE_LABEL SEEDS=$SEEDS"; }\n')
+    for n in ("engine_sglang.sh", "engine_vllm.sh"):
+        (tmp_path / "slurm" / n).write_text("")
+    e = {k: v for k, v in os.environ.items() if k not in ("MODE", "POLICY", "REFRESH", "LPM_INF", "ENGINE_LABEL", "SEEDS")}
+    e.update(env, SLURM_SUBMIT_DIR=str(tmp_path))
+    r = subprocess.run([BASH, str(SLURM / script)], capture_output=True, text=True, env=e, cwd=tmp_path)
+    assert r.returncode == 0, r.stderr
+    assert f"LABEL={label} " in r.stdout and "SEEDS=0" in r.stdout
+
+
 def test_no_executable_sbatch_and_placeholders_are_guarded():
     for p in ALL:
         for line in p.read_text().splitlines():

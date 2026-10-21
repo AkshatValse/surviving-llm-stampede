@@ -21,7 +21,8 @@ import yaml
 
 from agentload.runmeta import build_meta, default_hardware, git_info, json_default, new_result_dir, write_meta
 
-from .hysteresis import (burst_verdict, kill_table, kill_verdict, lambda_miss_closed, stable_verdict)
+from .hysteresis import (burst_verdict, kill_table, kill_verdict, lambda_cap_bracket, lambda_miss_closed,
+                         stable_verdict)
 from .load import Run, load_run
 from .params import AnalysisParams, load_params
 from .windows import queue_trace, window_table
@@ -121,7 +122,9 @@ def cmd_stable(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
     g = df.groupby(["label", "rate_mult"], dropna=False)["stable"].agg(["sum", "size"]).reset_index()
     g.columns = ["label", "rate_mult", "n_stable", "n_runs"]
     g.to_csv(out / "stable_by_rate.csv", index=False)
-    return {"n_runs": len(runs)}
+    br = lambda_cap_bracket(g[g["rate_mult"].notna()])
+    (out / "lambda_cap_bracket.json").write_text(json.dumps(_sanitize(br), indent=2))
+    return {"n_runs": len(runs), "lambda_cap_bracket_in_lambda_miss_units": _sanitize(br)}
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

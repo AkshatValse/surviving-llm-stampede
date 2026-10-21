@@ -16,7 +16,7 @@ import yaml
 from .client import run_experiment
 from .config import Config, load_config, resolve_ramp, resolve_rate
 from .parse import extract_usage, parse_prometheus
-from .runmeta import build_meta, git_info, new_result_dir, write_meta
+from .runmeta import build_meta, default_hardware, git_info, new_result_dir, write_meta
 from .workload import build_open_plan, effective_mean_turns, prompt_len
 
 
@@ -69,7 +69,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
         (d / "config.yaml").write_text(Path(args.config).read_text())
         (d / "config_effective.yaml").write_text(yaml.safe_dump(raw, sort_keys=False))
         write_meta(d, build_meta(experiment=f"{cfg.output.name}_planstats", argv=[sys.executable, "-m", "agentload",
-                   *sys.argv[1:]], seeds=[cfg.run.seed], hardware=cfg.meta.hardware, git=git, t_start=t0,
+                   *sys.argv[1:]], seeds=[cfg.run.seed], hardware=default_hardware(), git=git, t_start=t0,
                    t_end=datetime.now(), extra={"plan_stats": out}, status="finished"))
         print("result dir:", d)
     return 0

@@ -197,6 +197,23 @@ def stable_verdict(run: Run, trace: pd.DataFrame, p: AnalysisParams) -> Dict[str
             "queue_source": str(trace["source"].iloc[0]) if len(trace) else ""}
 
 
+def lambda_cap_bracket(by_rate: pd.DataFrame) -> Dict[str, Any]:
+    """From per-rate stability counts (columns rate_mult, n_stable, n_runs): the simulator's rule is that a rate is
+    stable iff ALL its seeds are stable. Returns the largest all-stable multiple and the smallest unstable multiple
+    above it, so R = lambda_cap / lambda_miss lies in that bracket if stability is monotone in the rate
+    (``monotone`` False flags a stable rate above an unstable one, i.e. noise or a non-monotone region)."""
+    g = by_rate.sort_values("rate_mult").reset_index(drop=True)
+    g["all_stable"] = g["n_stable"] == g["n_runs"]
+    stable = g[g["all_stable"]]["rate_mult"]
+    largest = float(stable.max()) if len(stable) else None
+    above = g[(~g["all_stable"]) & (g["rate_mult"] > (largest if largest is not None else -np.inf))]["rate_mult"]
+    first_unstable = float(above.min()) if len(above) else None
+    first_unstable_any = g[~g["all_stable"]]["rate_mult"]
+    monotone = bool(len(first_unstable_any) == 0 or len(stable) == 0 or stable.max() < first_unstable_any.min())
+    return {"largest_all_stable_mult": largest, "first_unstable_mult_above": first_unstable, "monotone": monotone,
+            "n_rates": int(len(g))}
+
+
 def ramp_transitions(trace: pd.DataFrame, lam_at: Callable[[float], float], escape_above: float,
                      reenter_below: float, reenter_bins: int, bin_s: float, leg_s: float) -> Dict[str, Any]:
     """Escape / re-entry rates of one ramp run (same definition as the simulator; see module docstring)."""

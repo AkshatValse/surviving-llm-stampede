@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from analysis.hysteresis import (agg_hit, burst_verdict, hysteresis_area, kill_table, kill_verdict, lambda_miss_closed,
-                                 longest_run_below, ramp_lam_at, ramp_transitions, select_windows, stable_verdict,
+from analysis.hysteresis import (agg_hit, burst_verdict, hysteresis_area, kill_table, kill_verdict, lambda_cap_bracket,
+                                 lambda_miss_closed, longest_run_below, ramp_lam_at, ramp_transitions, select_windows, stable_verdict,
                                  trend_rise)
 from helpers_analysis import fake_run, mk_win, params, req_df
 
@@ -200,3 +200,14 @@ def test_lambda_miss_closed_counts_post_warmup_completions():
     assert r["lambda_miss_turns_based"] == pytest.approx(0.2 / et) and r["closed_n"] == 4
     with pytest.raises(ValueError):
         lambda_miss_closed(run, 1000.0)
+
+
+def test_lambda_cap_bracket():
+    t = lambda rows: pd.DataFrame(rows, columns=["rate_mult", "n_stable", "n_runs"])
+    b = lambda_cap_bracket(t([(1.0, 3, 3), (1.5, 3, 3), (2.0, 2, 3), (2.5, 0, 3)]))
+    assert b == {"largest_all_stable_mult": 1.5, "first_unstable_mult_above": 2.0, "monotone": True, "n_rates": 4}
+    assert lambda_cap_bracket(t([(1.0, 3, 3), (2.0, 3, 3)]))["first_unstable_mult_above"] is None
+    none_stable = lambda_cap_bracket(t([(1.0, 0, 1), (2.0, 0, 1)]))
+    assert none_stable["largest_all_stable_mult"] is None and none_stable["first_unstable_mult_above"] == 1.0
+    nm = lambda_cap_bracket(t([(1.0, 3, 3), (1.5, 0, 3), (2.0, 3, 3)]))          # stable above an unstable rate
+    assert nm["monotone"] is False and nm["largest_all_stable_mult"] == 2.0

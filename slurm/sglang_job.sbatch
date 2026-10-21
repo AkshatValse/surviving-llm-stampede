@@ -34,7 +34,11 @@
 
 set -u -o pipefail
 : "${MODE:?MODE must be miss|cap|burst}"
-: "${ENGINE_LABEL:=sglang-${POLICY:-fcfs}-r${REFRESH:-1}}"
+if [ -z "${ENGINE_LABEL:-}" ]; then
+  if [ "$MODE" = "miss" ]; then ENGINE_LABEL="sglang-nocache"
+  elif [ "${LPM_INF:-0}" = "1" ]; then ENGINE_LABEL="sglang-lpminf"
+  else ENGINE_LABEL="sglang-${POLICY:-fcfs}-r${REFRESH:-1}"; fi
+fi
 : "${SEEDS:=0}"
 export MODE ENGINE_LABEL SEEDS
 REPO_DIR="${SLURM_SUBMIT_DIR:-$PWD}"
