@@ -1,0 +1,209 @@
+research_question: >-
+  In open multi-turn agent serving with prefix (KV) caching on a continuous-batching engine,
+  does cache-oblivious FCFS ordering have a metastable/hysteretic congested state above the
+  all-miss capacity, does a work-conserving hit-first order (LPM) remove it up to the
+  memory-time capacity, and does an LPM that falls back to FCFS when the waiting queue
+  exceeds 128 (as SGLang does) inherit the trap?
+
+assumptions_note: >-
+  ALL numeric constants below are rough A100 / ~8B-model-order ASSUMPTIONS chosen for a
+  simulation pilot. None is a measurement. Conclusions are about the qualitative dynamics of the
+  model, not about any real engine. Engine behavior simplifications (whole-session KV
+  eviction, waiting requests do not pin KV, reserve-at-admission, no mid-run preemption,
+  no radix-tree partial prefixes) are documented in src/prefixmeta/engine.py.
+
+# ---------------------------------------------------------------- engine
+engine:
+  # iteration time (seconds) = iter_fixed_s
+  #   + max(iter_floor_s, per_token_s * (prefill_tokens + n_decode_seqs))
+  #   + decode_attn_s * sum_over_decode_seqs(ctx_i / attn_ctx_norm)
+  #   + prefill_attn_s * sum_over_prefill_chunks(new_i * ctx_i)
+  iter_fixed_s: 0.002
+  iter_floor_s: 0.0095
+  per_token_s: 0.000084
+  decode_attn_s: 0.00071
+  attn_ctx_norm: 8192
+  prefill_attn_s: 3.5e-9
+  # ctx_i in the prefill-attention term: "end" = KV length after the chunk (prefix + new_i),
+  # "mid" = prefix + new_i / 2 (exact causal average). Spec text is ambiguous; "end" is the literal reading.
+  prefill_attn_ctx: end
+  prefill_chunk_budget: 8192      # prefill tokens per iteration (chunked prefill)
+  max_running_seqs: 256
+  kv_memory_tokens: 300000        # M (tokens); .inf allowed
+  cache_enabled: true             # false => every turn is a miss, KV freed at turn end
+  # Pass semantics. skip_ahead=false: stop the admission pass at the first request (in policy order)
+  # that does not fit (FCFS-engine behavior). true: keep scanning for a request that fits.
+  skip_ahead: false
+  # If true, a pass only admits while prefill budget remains for the next iteration (vLLM/SGLang-like:
+  # a request is admitted when it can receive prefill tokens). If false, admission is gated by memory and
+  # the running cap only and admitted requests queue for prefill FIFO (pins memory earlier).
+  admission_limited_by_prefill_budget: true
+  # Advance runs of pure-decode iterations in closed form (exact; see engine.py). false = one iteration at a time.
+  batch_decode_iterations: true
+
+# ---------------------------------------------------------------- workload
+workload:
+  initial_context_tokens: 2000    # L0: prompt of the first turn
+  new_prompt_tokens: 550          # Delta appended at each later turn
+  decode_tokens: 100              # d per turn
+  mean_turns: 15                  # Geometric(1/mean_turns) on {1,2,...}
+  max_turns: 60                   # cap
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp             # exp | lognormal
+  tool_time_cv: 1.5               # used by lognormal
+
+# ---------------------------------------------------------------- policies
+policies:
+  fcfs:     {kind: fcfs}
+  lpm:      {kind: lpm}
+  lpm128:   {kind: lpm_fallback, threshold: 128}
+  aging10:  {kind: aging_lpm, w_max_s: 10.0}
+  aging30:  {kind: aging_lpm, w_max_s: 30.0}
+  # session_cap: auto => floor(M / context at the mid-turn of an average session); or an integer.
+  fcfs_cap: {kind: fcfs, session_cap: auto}
+policy_order: [fcfs, lpm, lpm128, aging10, aging30, fcfs_cap]
+
+# ---------------------------------------------------------------- metrics
+metrics:
+  window_s: 1000.0
+  fine_window_s: 100.0            # queue trace resolution used by the stability test
+  tail_window_s: 5000.0           # "last 5k s" used by recovery criteria
+
+# ---------------------------------------------------------------- processes
+parallel:
+  max_workers: 3                  # hard cap (shared machine)
+
+output:
+  root: results
+  git_add_small_files_below_bytes: 400000
+
+# ---------------------------------------------------------------- E0 calibration
+e0:
+  # lambda_miss: caching disabled, FCFS, closed population (always miss_closed_population sessions in
+  # the system; each completed session is replaced immediately). Throughput = completed sessions / s
+  # over [miss_warmup_s, miss_horizon_s]. miss_population_check: sensitivity runs at other populations.
+  miss_closed_population: 60
+  miss_population_check: [30, 120]
+  miss_pool_sessions: 60000        # generated sessions available for replacement (must not run out)
+  miss_horizon_s: 100000.0
+  miss_warmup_s: 5000.0
+  miss_seeds: [0, 1, 2, 3, 4]
+  # lambda_cap: largest lambda at which pure LPM is stable from an empty start (bracket, then bisection).
+  # Stable at a lambda iff ALL cap_seeds are stable (conservative).
+  cap_horizon_s: 20000.0
+  cap_seeds: [0, 1, 2, 3, 4]
+  cap_bracket_mults: [1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0]  # multiples of lambda_miss; first unstable one brackets
+  cap_rel_tol: 0.02
+  cap_max_bisect_steps: 10
+  # Diagnostic only (does not change lambda_cap): "stable for 20k s" is a lifetime criterion, because the good
+  # state can collapse stochastically. Escape = waiting queue first exceeds escape_queue_above.
+  cap_hazard:
+    policies: [lpm, fcfs]
+    mults: [1.5, 2.0, 2.25, 2.5, 2.75, 3.0]
+    seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119]
+    horizon_s: 20000.0
+    escape_queue_above: 128
+  stable_final_queue_below: 50
+  stable_trend_window_s: 5000.0
+  stable_trend_max_rise: 10.0     # fitted rise (OLS slope * window) of the 100 s queue means must be <= this
+  unstable_queue_stop: 3000       # early-stop a run (declared unstable) when the waiting queue exceeds this
+  quick:
+    miss_population_check: []
+    miss_pool_sessions: 5000
+    miss_horizon_s: 4000.0
+    miss_warmup_s: 500.0
+    miss_seeds: [0]
+    cap_horizon_s: 3000.0
+    cap_seeds: [0]
+    cap_bracket_mults: [2.0, 4.0]
+    cap_max_bisect_steps: 2
+    cap_hazard: {policies: [lpm], mults: [2.0], seeds: [100, 101], horizon_s: 2000.0, escape_queue_above: 128}
+
+# ---------------------------------------------------------------- E1 recovery
+e1:
+  cold_sessions: 300
+  lam_mults: [1.25, 1.5, 2.0, 3.0, 4.0]    # multiples of lambda_miss; only those < lambda_cap are run
+  policies: all
+  seeds: [0, 1, 2]
+  horizon_s: 30000.0
+  recovered_queue_below: 20.0
+  recovered_hit_above: 0.8
+  robust_policies: [fcfs, lpm]             # lognormal CV 1.5 tool-time variant
+  robust_seeds: [0]
+  robust_cv: 1.5
+  quick:
+    lam_mults: [2.0]
+    policies: [fcfs, lpm, lpm128]
+    seeds: [0]
+    horizon_s: 3000.0
+    robust_policies: [fcfs]
+
+# ---------------------------------------------------------------- E2 burst
+e2:
+  lam_mult: 2.0
+  policies: all
+  seeds: [0, 1, 2, 3, 4]
+  warmup_s: 5000.0
+  burst_sessions: 200
+  burst_width_s: 60.0
+  after_s: 25000.0
+  hit_eval_from_s: 10000.0         # relative to burst start
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_queue_below: 20.0
+  quick:
+    policies: [fcfs, lpm128]
+    seeds: [0]
+    warmup_s: 1000.0
+    after_s: 3000.0
+    hit_eval_from_s: 1000.0
+
+# ---------------------------------------------------------------- E3 ramp
+e3:
+  lo_mult_of_lambda_miss: 0.5
+  hi_mult_of_lambda_cap: 0.9
+  leg_s: 30000.0
+  policies: all
+  seeds: [0, 1, 2]
+  grid_points: 40
+  quick:
+    leg_s: 3000.0
+    policies: [fcfs, lpm]
+    seeds: [0]
+
+# ---------------------------------------------------------------- E4 escape under LPM-128
+e4:
+  lam_mults: [2.0, 3.0]
+  policies: [lpm128]
+  seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  horizon_s: 50000.0
+  escape_queue_above: 128
+  quick:
+    lam_mults: [2.0]
+    seeds: [0, 1]
+    horizon_s: 3000.0
+
+# ---------------------------------------------------------------- ablation: skip_ahead flag
+ablation_skip_ahead:
+  lam_mult: 2.0
+  cold_sessions: 300
+  policies: [fcfs, lpm, lpm128]
+  seeds: [0, 1]
+  horizon_s: 10000.0
+  quick:
+    policies: [fcfs, lpm]
+    seeds: [0]
+    horizon_s: 2000.0
+
+# ---------------------------------------------------------------- decision rule (from the spec)
+decision:
+  go_R_min: 2.0
+  kill_R_below: 1.5
+  lam_mult_min: 1.5
+  lpm_recover_min: 3
+  fcfs_recover_max: 0
+  lpm128_recover_max: 1
+  burst_lpm128_trapped_min: 3
+  burst_lpm_recover_min: 4
+  aging30_fraction_of_lpm_lambda: 0.7
