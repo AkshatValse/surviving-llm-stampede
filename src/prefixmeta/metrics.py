@@ -1,0 +1,218 @@
+"""Windowed metric recording and post-hoc summaries for the simulator.
+
+``Recorder`` is fed by the engine at event times. Time-integrated quantities (queue length) use exact
+piecewise-constant integration; counters are attributed to the window containing the event stamp.
+Only *complete* windows (end <= end of simulation) are reported.
+"""
+from __future__ import annotations
+
+import math
+from typing import Dict, List, Sequence, Tuple
+
+import numpy as np
+
+
+class AreaTrace:
+    """Time-average and max of a piecewise-constant signal in fixed-width buckets."""
+
+    def __init__(self, width: float):
+        self.w = float(width)
+        self.k = 0               # index of the current (open) bucket
+        self.t = 0.0             # time up to which the signal has been integrated
+        self.v = 0.0             # current value
+        self.area = 0.0
+        self.vmax = 0.0
+        self.out: List[Tuple[float, float]] = []   # (mean, max) of closed buckets
+
+    def advance(self, t: float) -> None:
+        w = self.w
+        end = (self.k + 1) * w
+        while t >= end:
+            self.area += self.v * (end - self.t)
+            self.out.append((self.area / w, self.vmax))
+            self.k += 1
+            self.area = 0.0
+            self.vmax = self.v
+            self.t = end
+            end = (self.k + 1) * w
+        if t > self.t:
+            self.area += self.v * (t - self.t)
+            self.t = t
+
+    def set(self, t: float, v: float) -> None:
+        self.advance(t)
+        self.v = v
+        if v > self.vmax:
+            self.vmax = v
+
+
+def _pct(xs: Sequence[float], q: float) -> float:
+    return float(np.percentile(xs, q)) if len(xs) else float("nan")
+
+
+class Recorder:
+    """Per-window counters + queue traces. All time arguments are simulation seconds."""
+
+    def __init__(self, window_s: float, fine_window_s: float):
+        self.w = float(window_s)
+        self.q = AreaTrace(window_s)
+        self.gate = AreaTrace(window_s)
+        self.q_fine = AreaTrace(fine_window_s)
+        self._admits: List[int] = []
+        self._hits: List[int] = []
+        self._first_admits: List[int] = []
+        self._turns_done: List[int] = []
+        self._sessions_done: List[int] = []
+        self._busy: List[float] = []
+        self._pf_tokens: List[int] = []
+        self._lat: List[List[float]] = []
+        self._first_wait: List[List[float]] = []
+
+    # -- internal
+    def _ensure(self, k: int) -> None:
+        while len(self._admits) <= k:
+            self._admits.append(0)
+            self._hits.append(0)
+            self._first_admits.append(0)
+            self._turns_done.append(0)
+            self._sessions_done.append(0)
+            self._busy.append(0.0)
+            self._pf_tokens.append(0)
+            self._lat.append([])
+            self._first_wait.append([])
+
+    def _win(self, t: float) -> int:
+        k = int(t // self.w)
+        self._ensure(k)
+        return k
+
+    # -- signals
+    def set_queue(self, t: float, n_wait: int) -> None:
+        self.q.set(t, float(n_wait))
+        self.q_fine.set(t, float(n_wait))
+
+    def set_gate(self, t: float, n_gate: int) -> None:
+        self.gate.set(t, float(n_gate))
+
+    # -- events
+    def add_busy(self, t0: float, t1: float) -> None:
+        w = self.w
+        k = self._win(t0)
+        while True:
+            end = (k + 1) * w
+            if t1 <= end:
+                self._ensure(k)
+                self._busy[k] += t1 - t0
+                return
+            self._ensure(k)
+            self._busy[k] += end - t0
+            t0 = end
+            k += 1
+
+    def add_prefill_tokens(self, t: float, n: int) -> None:
+        self._pf_tokens[self._win(t)] += n
+
+    def on_admit(self, t: float, hit: bool, first_turn: bool, wait_first: float) -> None:
+        k = self._win(t)
+        self._admits[k] += 1
+        if hit:
+            self._hits[k] += 1
+        if first_turn:
+            self._first_admits[k] += 1
+            self._first_wait[k].append(wait_first)
+
+    def on_turn_done(self, t: float, latency: float) -> None:
+        k = self._win(t)
+        self._turns_done[k] += 1
+        self._lat[k].append(latency)
+
+    def on_session_done(self, t: float) -> None:
+        self._sessions_done[self._win(t)] += 1
+
+    # -- output
+    def finalize(self, t_end: float) -> List[Dict[str, float]]:
+        """Close buckets up to t_end and return one dict per complete 1000 s window."""
+        self.q.advance(t_end)
+        self.gate.advance(t_end)
+        self.q_fine.advance(t_end)
+        n_full = int(math.floor(t_end / self.w + 1e-9))
+        self._ensure(max(n_full - 1, 0))
+        rows: List[Dict[str, float]] = []
+        for k in range(n_full):
+            qm, qx = self.q.out[k] if k < len(self.q.out) else (float("nan"), float("nan"))
+            gm, gx = self.gate.out[k] if k < len(self.gate.out) else (float("nan"), float("nan"))
+            adm, hit, fa = self._admits[k], self._hits[k], self._first_admits[k]
+            fw = self._first_wait[k]
+            rows.append({
+                "window": k,
+                "t_start": k * self.w,
+                "t_end": (k + 1) * self.w,
+                "admitted_turns": adm,
+                "hit_rate": hit / adm if adm else float("nan"),
+                "hit_rate_followup": hit / (adm - fa) if adm - fa > 0 else float("nan"),
+                "queue_mean": qm,
+                "queue_max": qx,
+                "gate_mean": gm,
+                "gate_max": gx,
+                "sessions_per_s": self._sessions_done[k] / self.w,
+                "turns_per_s": self._turns_done[k] / self.w,
+                "lat_p50_s": _pct(self._lat[k], 50),
+                "lat_p99_s": _pct(self._lat[k], 99),
+                "first_turn_wait_mean_s": float(np.mean(fw)) if fw else float("nan"),
+                "first_turn_wait_p99_s": _pct(fw, 99),
+                "first_turn_admits": fa,
+                "busy_frac": self._busy[k] / self.w,
+                "prefill_tok_per_s": self._pf_tokens[k] / self.w,
+                "hits": hit,
+            })
+        return rows
+
+    def queue_trace(self) -> List[Tuple[float, float, float]]:
+        """(t_start, mean, max) of the waiting queue per fine bucket (complete buckets only)."""
+        fw = self.q_fine.w
+        return [(i * fw, m, x) for i, (m, x) in enumerate(self.q_fine.out)]
+
+
+# ----------------------------------------------------------------- post-hoc summaries
+def tail_stats(rows: List[Dict[str, float]], t_from: float, t_to: float) -> Dict[str, float]:
+    """Aggregate complete windows with t_start >= t_from and t_end <= t_to."""
+    sel = [r for r in rows if r["t_start"] >= t_from - 1e-9 and r["t_end"] <= t_to + 1e-9]
+    if not sel:
+        return {"n_windows": 0, "hit_rate": float("nan"), "queue_mean": float("nan"),
+                "queue_max": float("nan"), "turns_per_s": float("nan"), "sessions_per_s": float("nan"),
+                "busy_frac": float("nan")}
+    adm = sum(r["admitted_turns"] for r in sel)
+    hits = sum(r["hits"] for r in sel)
+    return {
+        "n_windows": len(sel),
+        "hit_rate": hits / adm if adm else float("nan"),
+        "queue_mean": float(np.mean([r["queue_mean"] for r in sel])),
+        "queue_max": float(np.max([r["queue_max"] for r in sel])),
+        "turns_per_s": float(np.mean([r["turns_per_s"] for r in sel])),
+        "sessions_per_s": float(np.mean([r["sessions_per_s"] for r in sel])),
+        "busy_frac": float(np.mean([r["busy_frac"] for r in sel])),
+    }
+
+
+def trend_rise(trace: List[Tuple[float, float, float]], t_from: float, t_to: float) -> float:
+    """OLS slope of the fine queue-mean series on [t_from, t_to), times (t_to - t_from): the fitted
+    rise (in requests) across the interval. NaN if fewer than 3 buckets."""
+    pts = [(t, m) for (t, m, _) in trace if t >= t_from - 1e-9 and t < t_to - 1e-9]
+    if len(pts) < 3:
+        return float("nan")
+    x = np.array([p[0] for p in pts])
+    y = np.array([p[1] for p in pts])
+    slope = np.polyfit(x, y, 1)[0]
+    return float(slope * (t_to - t_from))
+
+
+def longest_run_below(values: Sequence[float], thresh: float) -> int:
+    """Longest run of consecutive entries with value < thresh (NaN breaks a run)."""
+    best = cur = 0
+    for v in values:
+        if v == v and v < thresh:
+            cur += 1
+            best = max(best, cur)
+        else:
+            cur = 0
+    return best
