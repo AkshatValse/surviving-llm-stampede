@@ -39,6 +39,61 @@ class Run:
         return float(b["t_s"]) if b else None
 
     @property
+    def t_burst_ref(self) -> Optional[float]:
+        """The burst time the post-burst window is anchored to: the run's own burst, else (NOBURST arm) the recorded
+        ``arrivals.analysis_t_burst_s`` of the paired BURST arm."""
+        if self.t_burst is not None:
+            return self.t_burst
+        v = (self.cfg.get("arrivals") or {}).get("analysis_t_burst_s")
+        return float(v) if v is not None else None
+
+    @property
+    def arm(self) -> str:
+        """Explicit ``meta.arm`` recorded by the job script ("" if the run is not part of a paired set)."""
+        return str(self.meta.get("arm") or (self.cfg.get("meta") or {}).get("arm") or "")
+
+    @property
+    def gate_n_cap(self) -> Optional[int]:
+        v = self.meta.get("gate_n_cap_resolved")
+        return int(v) if v is not None else None
+
+    @property
+    def arm_derived(self) -> str:
+        """What the config structurally implies: no burst -> noburst; burst + gate -> capped; burst -> burst."""
+        if self.t_burst is None:
+            return "noburst"
+        capped = self.gate_n_cap is not None or (self.cfg.get("gate") or {}).get("n_cap") is not None
+        return "capped" if capped else "burst"
+
+    @property
+    def lam(self) -> Optional[float]:
+        """Resolved constant arrival rate, sessions/s (recorded in meta.json at run start)."""
+        v = self.meta.get("resolved_rate_sessions_per_s")
+        return float(v) if v is not None else None
+
+    @property
+    def lambda_ref_value(self) -> Optional[float]:
+        """lambda_miss the rate was set from (sessions/s): resolved ``arrivals.lambda_ref`` as recorded at run start,
+        else rate / rate_mult."""
+        v = self.meta.get("lambda_ref_resolved")
+        if v is not None:
+            return float(v)
+        if self.lam is not None and self.rate_mult:
+            return self.lam / self.rate_mult
+        return None
+
+    @property
+    def lambda_ref_key(self) -> str:
+        """Key part of ``arrivals.lambda_ref = 'path:key'`` ("" for a plain number)."""
+        ref = (self.cfg.get("arrivals") or {}).get("lambda_ref")
+        return ref.rsplit(":", 1)[1] if isinstance(ref, str) and ":" in ref else ""
+
+    @property
+    def closed_n(self) -> Optional[int]:
+        a = self.cfg.get("arrivals") or {}
+        return int(a["closed_n"]) if a.get("kind") == "closed" and a.get("closed_n") else None
+
+    @property
     def hardware(self) -> Optional[str]:
         return self.meta.get("hardware")
 
@@ -74,6 +129,9 @@ def load_run(run_dir: str | Path) -> Run:
         if c in req.columns:
             req[c] = pd.to_numeric(req[c], errors="coerce")
     ses = pd.read_csv(d / "sessions.csv") if (d / "sessions.csv").exists() else pd.DataFrame()
+    for c in ("arrival_s", "t_first_send", "t_end", "t_admit", "gate_wait_s", "n_turns", "turns_completed"):
+        if c in ses.columns:
+            ses[c] = pd.to_numeric(ses[c], errors="coerce")
     mpath = d / "metrics.csv"
     met = pd.read_csv(mpath) if mpath.exists() and mpath.stat().st_size > 0 else pd.DataFrame(
         columns=["t_s", "name", "labels", "value"])

@@ -1,0 +1,109 @@
+research_question: >-
+  Pre-registration of the E2 kill-test predictions for SGLang FCFS, to be filled from the measured real-engine closed
+  curve mu(n) (Stage C) and the all-miss capacity lambda_miss (E0a) BEFORE any E2 run: at which arrival rates lambda should
+  a 200-session burst trap the engine, and where should the no-burst and capped arms stay good?
+
+assumptions_note: >-
+  TEMPLATE: every `null` below is filled by `python -m analysis.prereg fill` (formulas, not typed numbers), except the
+  lambda points and the sentence saying how they were chosen, which are the lead's decision (lambda_selection). The
+  filled file must be COMMITTED before the first E2 job is submitted; `analysis.summarize burst2 --prereg FILE` then
+  records its sha256 and git state in kill_verdict_v2.json and refuses a rule that differs from the one it applies.
+  Theory behind the boundaries (notes/THEORY_prefix_meta.md; all rates in sessions/s): in a closed population of n
+  sessions the engine completes mu(n) sessions/s. For OPEN arrivals at rate lambda the backlog drifts at lambda - mu(n),
+  so n grows whenever mu(n) < lambda. If lambda < mu(300) the closed curve never falls below the arrival rate and any
+  burst drains (recovery threshold ~ mu(300)). If mu(300) < lambda < max_n mu(n) the good state exists (n small, mu(n) >
+  lambda) but a burst that pushes n past the point where mu(n) = lambda on the falling branch is not recoverable: the
+  window of metastability. If lambda > max_n mu(n) there is no good state at all (the NOBURST arm must collapse too).
+  These are predictions from ONE run per n (noise ~5-10% in mu); a lambda near a boundary tests the noise, not the theory,
+  hence the optional boundary_margin_rel.
+
+status: TEMPLATE                      # TEMPLATE -> FILLED (set by `analysis.prereg fill` when validate() finds no error)
+
+frozen:
+  rule: >-
+    Commit this file, FILLED, before submitting the first E2 job. Do not edit it afterwards; a change is a new file with a
+    new date and the reason.
+  committed_in: null                  # commit hash that added the filled file (fill by hand after committing; informational:
+                                      # the analysis reads the real git state)
+  date: null
+
+inputs:
+  engine_cell_label: sglang-fcfs-r1   # the Stage-C cell (engine label) these predictions are for: SGLang FCFS, refresh on
+  mu_curve_json: null                 # path of Stage C's mu_curve.json (set by fill)
+  calibration_json: null              # path of E0a's calibration.json (set by fill)
+  mu_estimator: sessions              # estimator of mu(n): must equal closed.mu_estimator in configs/agentload_analysis.yaml
+  lambda_ref_key: lambda_miss_turns_based   # calibration.json key the E2 jobs use as arrivals.lambda_ref (slurm/common.sh)
+
+measured:                             # copied from the two files above by fill; sessions/s
+  mu_by_n: {16: null, 24: null, 32: null, 48: null, 96: null, 300: null}
+  mu_300: null                        # mu(n=300): stands for mu(infinity)
+  mu_max: null                        # max_n mu(n)
+  n_cap: null                         # argmax_n mu(n): the CAPPED arm's session cap
+  n_cap_ambiguous: null               # true if the runner-up n is within closed.argmax_margin_warn
+  complete_grid: null
+  lambda_miss: null                   # E0a, completed sessions / s
+  lambda_miss_turns_based: null       # E0a, turns/s / E[T]
+  lambda_ref: null                    # = calibration[lambda_ref_key]: lambda = rate_mult * lambda_ref
+
+predicted_boundaries:                 # formulas, evaluated by fill
+  recovery_threshold:
+    rule: "mu_300"
+    sessions_per_s: null
+    mult_of_lambda_ref: null
+  metastable_window:
+    rule: "open interval (mu_300, mu_max)"
+    lo: null                          # sessions/s
+    hi: null
+    lo_mult: null                     # in units of lambda_ref (what the job scripts' MULTS use)
+    hi_mult: null
+  trapped_completion_rate:
+    rule: "lambda_ref: all-miss capacity (FCFS mu_infinity = lambda_miss), the value criterion (a) compares against"
+    value: null
+  consistency:
+    mu_300_vs_lambda_miss_rel_dev: null     # mu_300 / lambda_ref - 1; if |.| > pass_rule.rate_tolerance, criterion (a) may reject a real trap
+    window_nonempty: null                   # mu_max > mu_300; false => nothing to test, drop the framing before spending GPU-hours
+
+lambda_selection:                     # THE LEAD'S DECISION, written before fill
+  rule: null                          # one sentence: how the lambda points were chosen inside the window
+  lambda_mults: []                    # multiples of lambda_ref; each must lie strictly inside (lo_mult, hi_mult), and the E2
+                                      # runs use exactly these as MULTS
+  boundary_margin_rel: null           # optional (e.g. 0.1): require lambda >= (1+m)*mu_300 and <= (1-m)*mu_max
+  seeds: [0, 1, 2]
+  native_pool_lambda_mult: null       # the single REQUIRED native-pool lambda (KV_TOKENS=native); needs its own Stage-C curve
+
+predictions:                          # per regime of lambda; "good" = hit > 0.8 and backlog < 20 at the end of the run
+  lambda_below_recovery_threshold:    # lambda < mu_300
+    burst: "not trapped: draining or recovered"
+    noburst: "good"
+    capped: "recovered"
+  lambda_inside_window:               # mu_300 < lambda < mu_max: the claim under test
+    burst: "trapped: completion rate within +-rate_tolerance of lambda_miss, backlog slope > slope_frac*(lambda-lambda_miss)"
+    noburst: "good"
+    capped: "recovered (a cap at n_cap keeps the closed system on the rising branch of mu(n))"
+  lambda_above_window:                # lambda > mu_max
+    burst: "trapped"
+    noburst: "NOT good (no good state exists): predicts the no-burst arm collapses too"
+    capped: "NOT recovered (cap at n_cap serves at most mu_max < lambda)"
+
+pass_rule:                            # must equal trap_v2 in configs/agentload_analysis.yaml (validate() compares every key)
+  statement: >-
+    PASS per lambda iff, in >= pass_fraction_min of the seeds (>= min_seeds seeds), the BURST arm is TRAPPED and the
+    NOBURST arm is good and the CAPPED arm is RECOVERED. The kill test passes iff some lambda of the SGLang FCFS cell passes
+    and lies inside the registered window.
+  rate_estimator: sessions
+  rate_tolerance: 0.15
+  slope_frac: 0.5
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  end_window_s: 300.0
+  eval_from_s: 4500.0
+  min_eval_s: 600.0
+  slope_dt_s: 10.0
+  pass_fraction_min: 0.6666666666666666
+  min_seeds: 3
+
+kill_conditions:                      # from the referee's decisive-result text; each means: drop this framing
+  - "the NOBURST arm is not good in >= 1/3 of the seeds at some lambda inside the window (the good state does not exist there)"
+  - "the BURST arm is not trapped in >= 2/3 of the seeds at EVERY lambda inside the window (nothing traps)"
+  - "the CAPPED arm does not recover while the BURST arm traps (the cap does not rescue: the mechanism is not session count)"
+  - "the window (mu_300, mu_max) is empty or narrower than the noise of mu(n)"

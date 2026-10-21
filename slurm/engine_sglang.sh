@@ -21,7 +21,7 @@ SERVED_MODEL="$MODEL"        # the id /v1/models must list (checked after startu
 : "${POLICY:=fcfs}"          # fcfs | lpm
 : "${REFRESH:=1}"            # SGLANG_ENABLE_WAITING_PREFIX_REFRESH: 1 (shipped default) | 0
 : "${LPM_INF:=0}"            # 1: use the PATCHED sglang env (WAITING_QUEUE_PREFIX_MATCH_MAX effectively infinite)
-: "${KV_TOKENS:=300000}"     # cap on the KV pool to match the simulator's M (native pool ~0.9M tokens, see the plan)
+: "${KV_TOKENS:=300000}"     # cap on the KV pool to match the simulator's M (native pool ~0.9M tokens, see the plan); "native" = no cap
 : "${CONTEXT_LEN:=49152}"    # max prompt ~40350 tokens > Qwen2.5's default 32768
 : "${ENV_SGLANG:=/work/<group-dir>/avalse/swapp/envs/sglang}"          # PLACEHOLDER (notes/NOVA_ENV_PLAN.md)
 : "${ENV_SGLANG_PATCHED:=/work/<group-dir>/avalse/swapp/envs/sglang-lpm-inf}"   # PLACEHOLDER; only for LPM_INF=1
@@ -58,9 +58,10 @@ check_engine_flags() {
 }
 
 launch_engine() {
-  local extra="" help
+  local extra="" help kv_flag=""
   help=$(cat "$JOB_DIR/engine_help.txt" 2>/dev/null || true)
   [ "$RADIX" = "0" ] && extra="--disable-radix-cache"
+  [ "$KV_TOKENS" != "native" ] && kv_flag="--max-total-tokens $KV_TOKENS"     # KV_TOKENS=native: the engine sizes its own pool
   if help_has_flag "$help" --sampling-defaults; then extra="$extra --sampling-defaults openai"; fi
   if [ -n "${HF_REVISION:-}" ]; then extra="$extra --revision $HF_REVISION"; fi
   log "launching SGLang: policy=$POLICY refresh=$REFRESH radix=$RADIX lpm_inf=$LPM_INF kv_tokens=$KV_TOKENS extra='$extra'"
@@ -68,7 +69,7 @@ launch_engine() {
   "$(engine_env_prefix)/bin/python" -m sglang.launch_server \
       --model-path "$MODEL" --host 127.0.0.1 --port "$PORT" \
       --schedule-policy "$POLICY" \
-      --max-running-requests 256 --chunked-prefill-size 8192 --max-total-tokens "$KV_TOKENS" \
+      --max-running-requests 256 --chunked-prefill-size 8192 $kv_flag \
       --context-length "$CONTEXT_LEN" \
       --enable-metrics --enable-cache-report $extra \
       > "$SERVER_LOG" 2>&1 &

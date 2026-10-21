@@ -85,6 +85,19 @@ class ArrivalsCfg:
     ramp_is_mult: bool = False             # true: ramp rates are multiples of lambda_ref (resolve_ramp)
     closed_n: int = 0                      # closed: population kept constant (replace on completion)
     burst: Optional[BurstCfg] = None
+    # ANALYSIS REFERENCE ONLY (the generator ignores it): the burst time t_b of the paired BURST arm. The NOBURST arm has
+    # ``burst: null`` but is evaluated over the same post-burst window, so every arm's config records the same t_b.
+    analysis_t_burst_s: Optional[float] = None
+
+
+@dataclass
+class GateCfg:
+    """Client-side session cap (the CAPPED arm). Sessions still ARRIVE on the open-loop schedule; the gate sits between
+    arrival and the first request: at most ``n_cap`` sessions are admitted (= active: admitted and not yet ended,
+    including their tool-time sleeps); the rest wait in a FIFO queue and their wait is logged. ``n_cap`` is an int, or
+    ``"path/to/mu_curve.json:n_cap"`` (the Stage-C result, argmax of the closed-population curve mu(n)), resolved like
+    ``arrivals.lambda_ref``. null = no gate."""
+    n_cap: Optional[Any] = None
 
 
 @dataclass
@@ -135,6 +148,9 @@ class MetaCfg:
     # set by the job script from the post-flush canary check (slurm/common.sh); recorded verbatim in meta.json
     start_state_verified: Optional[bool] = None
     start_state_detail: str = ""
+    # which arm of a paired E2 set this run is: burst | noburst | capped | "" (not part of a paired set). Recorded in
+    # meta.json; the analysis cross-checks it against what the config structurally implies (burst / gate present).
+    arm: str = ""
 
 
 @dataclass
@@ -149,6 +165,7 @@ class Config:
     server: ServerCfg = field(default_factory=ServerCfg)
     workload: WorkloadCfg = field(default_factory=WorkloadCfg)
     arrivals: ArrivalsCfg = field(default_factory=ArrivalsCfg)
+    gate: GateCfg = field(default_factory=GateCfg)
     run: RunCfg = field(default_factory=RunCfg)
     metrics: MetricsCfg = field(default_factory=MetricsCfg)
     canary: CanaryCfg = field(default_factory=CanaryCfg)
@@ -156,7 +173,7 @@ class Config:
     output: OutputCfg = field(default_factory=OutputCfg)
 
 
-_NESTED = {"server": ServerCfg, "workload": WorkloadCfg, "arrivals": ArrivalsCfg, "run": RunCfg,
+_NESTED = {"server": ServerCfg, "workload": WorkloadCfg, "arrivals": ArrivalsCfg, "gate": GateCfg, "run": RunCfg,
            "metrics": MetricsCfg, "canary": CanaryCfg, "meta": MetaCfg, "output": OutputCfg}
 
 
@@ -185,6 +202,9 @@ def config_from_dict(d: Dict[str, Any]) -> Config:
     return cfg
 
 
+ARMS = {"", "burst", "noburst", "capped"}
+
+
 def validate(cfg: Config) -> None:
     w, a, r = cfg.workload, cfg.arrivals, cfg.run
     if w.prompt_mode not in ("tokens", "text"):
@@ -210,6 +230,18 @@ def validate(cfg: Config) -> None:
         raise ValueError("arrivals.ramp needs >= 2 knots [t_s, rate]")
     if r.duration_s <= 0:
         raise ValueError("run.duration_s must be positive")
+    if cfg.meta.arm not in ARMS:
+        raise ValueError(f"meta.arm must be one of {sorted(ARMS)}, got {cfg.meta.arm!r}")
+    if cfg.gate.n_cap is not None:
+        if a.kind == "closed":
+            raise ValueError("gate.n_cap is for open-loop arrivals; a closed population is its own cap (arrivals.closed_n)")
+        n = cfg.gate.n_cap
+        if isinstance(n, bool) or not (isinstance(n, int) or (isinstance(n, str) and ":" in n)):
+            raise ValueError(f"gate.n_cap must be an int or 'path/to/mu_curve.json:key', got {n!r}")
+        if isinstance(n, int) and n < 1:
+            raise ValueError("gate.n_cap must be >= 1")
+    if a.analysis_t_burst_s is not None and a.burst is not None and abs(a.analysis_t_burst_s - a.burst.t_s) > 1e-9:
+        raise ValueError("arrivals.analysis_t_burst_s must equal arrivals.burst.t_s when a burst is configured")
 
 
 def load_config(path: str | Path, overrides: Optional[Sequence[str]] = None) -> Tuple[Config, Dict[str, Any]]:
@@ -250,6 +282,17 @@ def resolve_lambda_ref(ref: Any, base_dir: Optional[Path] = None) -> float:
                                     f"set it with --set arrivals.lambda_ref=<path>/calibration.json:<key>)")
         return float(json.loads(p.read_text())[key])
     raise ValueError(f"cannot resolve lambda_ref {ref!r}")
+
+
+def resolve_n_cap(g: GateCfg, base_dir: Optional[Path] = None) -> Optional[int]:
+    """The gate's session cap as an int (None = no gate). ``"path:key"`` reads a top-level numeric ``key`` from a JSON
+    file (the Stage-C ``mu_curve.json:n_cap``); a non-integer or non-positive value is an error, not rounded."""
+    if g.n_cap is None:
+        return None
+    v = float(resolve_lambda_ref(g.n_cap, base_dir))
+    if v != v or v < 1 or abs(v - round(v)) > 1e-9:
+        raise ValueError(f"gate.n_cap resolved to {v!r}: need a positive integer (is the Stage-C n_cap null?)")
+    return int(round(v))
 
 
 def resolve_rate(a: ArrivalsCfg, base_dir: Optional[Path] = None) -> Optional[float]:

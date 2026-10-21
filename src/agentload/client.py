@@ -21,6 +21,13 @@ reset / server disconnected / payload error), ``timeout``, ``parse``, ``no_outpu
 are in ``meta.json`` (``outcome.errors_by_kind``). Connections are not reused by default
 (``server.force_close_connections``): reuse races the server's keep-alive timeout.
 
+Client-side session gate (``gate.n_cap``, the CAPPED arm). Sessions still arrive on the open-loop schedule, but at
+most ``n_cap`` of them are admitted (= active: admitted and not yet ended); the rest wait in a FIFO queue between
+arrival and their first request (:mod:`agentload.gate`). ``sessions.csv`` carries ``t_admit`` and ``gate_wait_s`` for
+every session (0.0 without a gate); a session cancelled while still queued has an empty ``t_admit`` and
+``gate_censored=1`` (its ``gate_wait_s`` is the wait up to the cancel). The first request's ``sched_delay_s`` is
+measured from the admission time when the session waited (the wait is reported separately).
+
 Time zero. ``meta.json`` records ``t0_unix`` (wall clock, ``time.time()``) taken at the instant the monotonic run
 clock starts, so ``wall time = t0_unix + t_s`` aligns these logs with server.log, gpu_util.csv and SLURM logs.
 """
@@ -42,7 +49,8 @@ import aiohttp
 import numpy as np
 import yaml
 
-from .config import Config, resolve_rate, resolve_ramp
+from .config import Config, resolve_lambda_ref, resolve_n_cap, resolve_rate, resolve_ramp
+from .gate import SessionGate
 from .parse import extract_output_ids, extract_output_text, extract_usage
 from .poller import MetricsPoller
 from .runmeta import build_meta, git_info, new_result_dir, write_meta
@@ -54,7 +62,7 @@ REQ_FIELDS = ["req_id", "sid", "origin", "turn", "n_turns", "t_planned", "t_send
               "prompt_tokens", "completion_tokens", "cached_tokens", "cached_source", "output_ids_source",
               "prompt_hash", "raw_usage_json", "error_kind"]
 SESSION_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "t_first_send", "t_end", "turns_completed",
-                  "status"]
+                  "status", "t_admit", "gate_wait_s", "gate_censored"]
 PLAN_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "tool_time_total_s"]
 
 
@@ -125,7 +133,9 @@ class SessionState:
     t_first_send: Optional[float] = None
     t_end: Optional[float] = None
     turns_completed: int = 0
-    status: str = "pending"          # pending | running | completed | failed | cancelled
+    status: str = "pending"          # pending | gated | running | completed | failed | cancelled
+    t_admit: Optional[float] = None  # when the session passed the gate (None: never admitted)
+    gate_wait_s: float = 0.0
 
 
 @dataclass
@@ -143,6 +153,7 @@ class LoadGenerator:
         self.content = ContentGen(self.seed, cfg.workload)
         self.rate = resolve_rate(cfg.arrivals, base_dir) if cfg.arrivals.kind == "constant" else None
         self.ramp = resolve_ramp(cfg.arrivals, base_dir) if cfg.arrivals.kind == "ramp" else []
+        self.n_cap = resolve_n_cap(cfg.gate, base_dir)
         self.url = cfg.server.base_url.rstrip("/") + cfg.server.completions_path
         self.states: Dict[int, SessionState] = {}
         self.tasks: Dict[int, asyncio.Task] = {}
@@ -164,6 +175,7 @@ class LoadGenerator:
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._t0 = 0.0
         self.http: Optional[aiohttp.ClientSession] = None
+        self.gate = SessionGate(self.n_cap, self.now)
 
     # ------------------------------------------------------------ time
     def now(self) -> float:
@@ -305,10 +317,16 @@ class LoadGenerator:
     # ------------------------------------------------------------ one session
     async def _session(self, sp: SessionPlan) -> None:
         st = self.states[sp.sid]
-        st.status = "running"
+        admitted = False
         try:
+            if self.n_cap is not None:
+                st.status = "gated"
+            st.gate_wait_s = await self.gate.acquire()           # FIFO; returns at once when there is no cap / room
+            admitted = True
+            st.t_admit = self.now()
+            st.status = "running"
             ctx = self.content.initial(sp)
-            t_planned = sp.arrival_s
+            t_planned = sp.arrival_s if st.gate_wait_s <= 0.0 else st.t_admit
             for turn in range(1, sp.n_turns + 1):
                 if turn > 1:
                     ctx = extend_context(ctx, self.content.delta(sp, turn))
@@ -329,10 +347,25 @@ class LoadGenerator:
             raise
         finally:
             st.t_end = self.now()
+            if not admitted:                                     # cancelled while queued: censored wait
+                st.gate_wait_s = st.t_end - sp.arrival_s
+            if admitted:
+                self.gate.release()
             if st.status == "running":
                 st.status = "failed"
             if self.cfg.arrivals.kind == "closed" and not self._closing and st.status in ("completed", "failed"):
                 self._spawn_closed()
+
+    def _lambda_ref_value(self) -> Optional[float]:
+        """Resolved ``arrivals.lambda_ref`` (sessions/s; the lambda_miss the arrival rate is a multiple of), if set and
+        resolvable. The analysis needs it to judge the trap criterion; a placeholder here already failed in resolve_rate."""
+        ref = self.cfg.arrivals.lambda_ref
+        if ref is None:
+            return None
+        try:
+            return float(resolve_lambda_ref(ref, self.base_dir))
+        except (FileNotFoundError, ValueError):
+            return None
 
     # ------------------------------------------------------------ spawning
     def _spawn(self, sp: SessionPlan) -> None:
@@ -354,7 +387,9 @@ class LoadGenerator:
     # ------------------------------------------------------------ run
     def _client_gauges(self) -> Dict[str, float]:
         active = sum(1 for s in self.states.values() if s.status == "running")
-        return {"agentload:inflight_requests": float(self.inflight), "agentload:active_sessions": float(active)}
+        gated = sum(1 for s in self.states.values() if s.status == "gated")
+        return {"agentload:inflight_requests": float(self.inflight), "agentload:active_sessions": float(active),
+                "agentload:gated_sessions": float(gated), "agentload:sessions_in_system": float(active + gated)}
 
     async def _preflight(self) -> Dict[str, Any]:
         """Wait (up to run.preflight_wait_s) for the health endpoint; record /v1/models for meta.json."""
@@ -416,7 +451,10 @@ class LoadGenerator:
             "rlimit_nofile": nofile, "force_close_connections": cfg.server.force_close_connections,
             "output_feedback_configured": cfg.workload.output_feedback, "prompt_mode": cfg.workload.prompt_mode,
             "request_token_ids": cfg.server.request_token_ids, "content_salt": cfg.workload.content_salt,
-            "start_state_verified": cfg.meta.start_state_verified, "start_state_detail": cfg.meta.start_state_detail}
+            "start_state_verified": cfg.meta.start_state_verified, "start_state_detail": cfg.meta.start_state_detail,
+            "arm": cfg.meta.arm, "analysis_t_burst_s": cfg.arrivals.analysis_t_burst_s,
+            "gate_n_cap_configured": cfg.gate.n_cap, "gate_n_cap_resolved": self.n_cap,
+            "lambda_ref_resolved": self._lambda_ref_value()}
 
         def meta(status: str, ended: bool = False) -> None:
             write_meta(self.out_dir, build_meta(experiment=cfg.output.name, argv=argv, seeds=[self.seed],
@@ -479,6 +517,7 @@ class LoadGenerator:
                   "sessions_completed": sum(s.status == "completed" for s in self.states.values()),
                   "sessions_failed": sum(s.status == "failed" for s in self.states.values()),
                   "sessions_cancelled": sum(s.status == "cancelled" for s in self.states.values()),
+                  "sessions_never_admitted": sum(s.t_admit is None for s in self.states.values()),
                   "requests_total": self.n_req, "requests_ok": self.n_ok, "requests_error": self.n_err,
                   "requests_cancelled": self.n_cancel, "max_inflight_seen": self.max_inflight_seen,
                   "metrics_scrapes": poller.n_scrapes if poller else 0,
@@ -489,7 +528,7 @@ class LoadGenerator:
             meta_extra["first_metrics_scrape_t_s"] = poller.first_scrape_t_s
         meta_extra["outcome"] = {"abort_reason": self.abort_reason, "t_abort_s": self.t_abort, "t_end_s": t_end,
                                  "t_end_incl_cancel_s": t_end_all, **counts,
-                                 "errors_by_kind": dict(self.err_kinds),
+                                 "errors_by_kind": dict(self.err_kinds), "gate": self.gate.summary(),
                                  "output_ids_source_counts": dict(self.src_counts),
                                  "prompt_tokens_mismatch": self.n_prompt_mismatch,
                                  "prompt_tokens_missing_in_response": self.n_prompt_missing}
@@ -514,7 +553,9 @@ class LoadGenerator:
                 s = self.states[sid]
                 w.writerow({"sid": sid, "origin": s.plan.origin, "idx": s.plan.idx, "arrival_s": s.plan.arrival_s,
                             "n_turns": s.plan.n_turns, "t_first_send": s.t_first_send, "t_end": s.t_end,
-                            "turns_completed": s.turns_completed, "status": s.status})
+                            "turns_completed": s.turns_completed, "status": s.status,
+                            "t_admit": "" if s.t_admit is None else s.t_admit, "gate_wait_s": s.gate_wait_s,
+                            "gate_censored": int(s.t_admit is None)})
         (self.out_dir / "events.log").write_text("\n".join(self.events) + ("\n" if self.events else ""))
 
 

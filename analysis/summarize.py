@@ -5,6 +5,10 @@ the analysis params (config.yaml), meta.json (git state at start, inputs, versio
   python -m analysis.summarize burst     --run-dirs RUN [RUN ...]          # trap / recovery / hysteresis + kill rule
   python -m analysis.summarize miss      --run-dirs RUN [...] --warmup-s N  # lambda_miss from closed-population runs
   python -m analysis.summarize stable    --run-dirs RUN [...]               # stable-from-empty verdict per run
+  python -m analysis.summarize closed    --run-dirs RUN [...] [--warmup-s N] # Stage C: mu(n) curve, n_cap = argmax (mu_curve.json)
+  python -m analysis.summarize burst2    --run-dirs RUN [...] [--prereg FILE] # paired-arm kill test, throughput criterion
+                                                                              # (kill_verdict_v2.json); `burst` stays the
+                                                                              # old hit-rate criterion (secondary)
 
 Every invocation also runs the consistency guards of ``analysis.guards`` (unverified from-empty start, mixed hardware or
 output-id source, prompt-token mismatches, transport errors): problems go to ``guards.json``, meta.json and stderr;
@@ -25,11 +29,15 @@ import yaml
 
 from agentload.runmeta import build_meta, default_hardware, git_info, json_default, new_result_dir, write_meta
 
+from . import prereg as prereg_mod
+from .closed import closed_point, mu_curve
 from .guards import check_runs, summarize_problems
 from .hysteresis import (burst_verdict, kill_table, kill_verdict, lambda_cap_bracket, lambda_miss_closed,
                          stable_verdict)
 from .load import Run, load_run
 from .params import AnalysisParams, load_params
+from .throughput import backlog_trace
+from .trap_v2 import (cell_verdicts, diagnose, legacy_secondary, pairing_problems, trap_v2_run)
 from .windows import queue_trace, window_table
 
 DEFAULT_PARAMS = "configs/agentload_analysis.yaml"
@@ -81,27 +89,148 @@ def cmd_windows(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Li
 
 
 def cmd_burst(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List[Run]) -> Dict[str, Any]:
-    rows, frames = [], []
+    """Legacy (hit-rate) criterion. Runs without a burst (the NOBURST arm) cannot be classified and are listed under
+    ``skipped_no_burst``; the kill table counts only BURST-arm (or unlabelled) runs, so the CAPPED and NOBURST arms of a
+    paired set cannot dilute it. The paired-arm verdict is ``burst2``."""
+    rows, frames, skipped = [], [], []
     for r in runs:
+        if r.t_burst is None:
+            skipped.append(str(r.dir))
+            continue
         w = window_table(r, p)
         v = burst_verdict(r, w, p)
         v["run_dir"] = str(r.dir)
+        v["arm"] = r.arm or r.arm_derived
         rows.append(v)
         w.insert(0, "run_dir", str(r.dir))
         frames.append(w)
     df = pd.DataFrame(rows)
     df.to_csv(out / "burst_runs.csv", index=False)
-    pd.concat(frames, ignore_index=True).to_csv(out / "windows.csv", index=False)
-    tab = kill_table(df, p.kill["trapped_fraction_min"], p.kill["min_runs_per_cell"])
+    if frames:
+        pd.concat(frames, ignore_index=True).to_csv(out / "windows.csv", index=False)
+    kdf = df[df["arm"].isin(["burst"])] if len(df) else df
+    tab = kill_table(kdf, p.kill["trapped_fraction_min"], p.kill["min_runs_per_cell"]) if len(kdf) else pd.DataFrame(
+        columns=["label", "rate_mult", "n_runs", "n_trap", "n_good_before", "n_hysteresis", "n_recovered", "n_aborted",
+                 "frac_hysteresis", "frac_trap_any", "meets_strict", "meets_loose"])
     tab.to_csv(out / "burst_cells.csv", index=False)
     kv = kill_verdict(tab, p, args.fcfs_substr)
     kv["guards"] = summarize_problems(args.guard_problems)       # a verdict next to unresolved guard errors is suspect
+    kv["skipped_no_burst"] = skipped
+    kv["arms_in_kill_table"] = ["burst"]
+    kv["role"] = ("SECONDARY: hit-rate criterion of the first draft. The pre-registered kill-test verdict is "
+                  "kill_verdict_v2.json (`summarize burst2`: throughput criterion, paired arms)")
     (out / "kill_verdict.json").write_text(json.dumps(_sanitize(kv), indent=2, default=json_default))
     return {"n_runs": len(runs), "kill_verdict": _sanitize(kv)}
 
 
+def cmd_burst2(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List[Run]) -> Dict[str, Any]:
+    """Paired-arm kill test with the throughput-based trap criterion -> kill_verdict_v2.json (see analysis.trap_v2)."""
+    recs, by_run, skipped, trace_frames = [], {}, [], []
+    for r in runs:
+        try:
+            rec = trap_v2_run(r, p)
+        except ValueError as e:
+            skipped.append({"run_dir": str(r.dir), "reason": str(e)})
+            continue
+        rec["legacy"] = legacy_secondary(r, p)
+        recs.append(rec)
+        by_run[rec["run_dir"]] = r
+        tr = backlog_trace(r.sessions, 0.0, r.t_end_s, float(p.trap_v2["trace_bin_s"]))
+        tr.insert(0, "run_dir", rec["run_dir"])
+        tr.insert(1, "arm", rec["arm"])
+        if len(tr):
+            trace_frames.append(tr)
+    flat = []
+    for rec in recs:
+        row = {k: v for k, v in rec.items() if k != "legacy"}
+        for k, v in (rec["legacy"] or {}).items():
+            row[f"legacy_{k}"] = v
+        flat.append(row)
+    pd.DataFrame(flat).to_csv(out / "trap_v2_runs.csv", index=False)
+    if trace_frames:
+        pd.concat(trace_frames, ignore_index=True).to_csv(out / "backlog_trace.csv", index=False)
+
+    # pairing validity per (label, rate_mult, seed)
+    groups: Dict[tuple, list] = {}
+    for rec in recs:
+        groups.setdefault((rec["label"], rec["rate_mult"], rec["seed"]), []).append((rec, by_run[rec["run_dir"]]))
+    pair_probs = {f"{k[0]}|{k[1]}|{k[2]}": pairing_problems(g) for k, g in groups.items()}
+    pair_probs = {k: v for k, v in pair_probs.items() if v}
+
+    cells = cell_verdicts(recs, p.trap_v2)
+    pr, pr_info = None, {"provided": False}
+    if args.prereg:
+        pr = prereg_mod.load_prereg(args.prereg)
+        probs = prereg_mod.validate(pr, p)
+        prov = prereg_mod.file_provenance(args.prereg)
+        pr_info = {"provided": True, "provenance": prov, "problems": probs, "status": pr.get("status"),
+                   "window": prereg_mod.window_of(pr),
+                   "valid": not any(x["severity"] == "error" for x in probs),
+                   "committed_clean": prov["committed_clean"]}
+    for c in cells:
+        c["diagnosis"] = diagnose(c)
+        c["in_registered_window"] = prereg_mod.lambda_in_window(pr, c["lambda"]) if pr is not None else None
+        c["pairing_problems"] = {k: v for k, v in pair_probs.items() if k.startswith(f"{c['label']}|{c['rate_mult']}|")}
+        c["meets_valid_pairing"] = bool(c["meets"] and not c["pairing_problems"])
+    fc = [c for c in cells if args.fcfs_substr in str(c["label"])]
+    pre_registered = bool(pr_info.get("valid") and pr_info.get("committed_clean"))
+    rule_only = [c for c in fc if c["meets_valid_pairing"]]
+    decisive = [c for c in rule_only if c["in_registered_window"] is True] if pre_registered else []
+    legacy_tab = pd.DataFrame([{"label": r["label"], "rate_mult": r["rate_mult"], "seed": r["seed"],
+                                "is_trap": (r["legacy"] or {}).get("is_trap")} for r in recs
+                               if r["arm"] == "burst" and r["legacy"] is not None])
+    legacy = {}
+    if len(legacy_tab):
+        for (lab, m), g in legacy_tab.groupby(["label", "rate_mult"], dropna=False):
+            legacy[f"{lab}|{m}"] = {"n_burst_runs": int(len(g)), "n_legacy_trap": int(g["is_trap"].sum())}
+    doc = {
+        "schema": "kill_verdict_v2",
+        "criterion": "TRAPPED iff session completion rate within +-rate_tolerance of lambda_miss AND backlog slope > "
+                     "slope_frac*(lambda-lambda_miss) over the post-burst window; DRAINING iff slope<0; RECOVERED iff hit "
+                     "> recovered_hit_above and backlog < recovered_backlog_below at the end. PASS per lambda: BURST "
+                     "trapped AND NOBURST good AND CAPPED recovered in >= pass_fraction_min of the seeds.",
+        "rule": dict(p.trap_v2), "hit_metric": p.w["hit_metric"],
+        "prereg": pr_info, "pre_registered": pre_registered,
+        "fcfs_substr": args.fcfs_substr, "cells": cells,
+        "fcfs_cells_meeting_rule": [{"label": c["label"], "rate_mult": c["rate_mult"]} for c in rule_only],
+        "kill_test_pass_rule_only": bool(rule_only) if fc else None,
+        "kill_test_pass_decisive": (bool(decisive) if pre_registered else None),
+        "decisive_note": ("a decisive PASS needs a valid, committed pre-registration file and a lambda inside its registered "
+                          "window; without --prereg the verdict is exploratory"),
+        "pairing_problems": pair_probs, "skipped_runs": skipped,
+        "legacy_secondary_burst_arm": legacy,
+        "guards": summarize_problems(args.guard_problems)}
+    (out / "kill_verdict_v2.json").write_text(json.dumps(_sanitize(doc), indent=2, default=json_default))
+    pd.DataFrame([{k: v for k, v in c.items() if k not in ("seeds", "pairing_problems", "incomplete")} for c in cells]
+                 ).to_csv(out / "trap_v2_cells.csv", index=False)
+    return {"n_runs": len(runs), "kill_verdict_v2": _sanitize({k: doc[k] for k in (
+        "pre_registered", "kill_test_pass_rule_only", "kill_test_pass_decisive", "fcfs_cells_meeting_rule", "pairing_problems")})}
+
+
+def cmd_closed(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List[Run]) -> Dict[str, Any]:
+    """Stage C: mu(n) from closed-population runs (cache on). Writes mu_points.csv, mu_curve.csv and mu_curve.json."""
+    warm = args.warmup_s if args.warmup_s is not None else float(p.closed["warmup_s"])
+    df = pd.DataFrame([closed_point(r, warm, p) for r in runs])
+    df.to_csv(out / "mu_points.csv", index=False)
+    curve = mu_curve(df, p.closed, args.fcfs_substr)
+    curve["warmup_s"] = warm
+    curve["inputs_unverified_start"] = sorted(df.loc[df["start_state_verified"] != True, "run_dir"].tolist())
+    (out / "mu_curve.json").write_text(json.dumps(_sanitize(curve), indent=2, default=json_default))
+    rows = []
+    for lab, c in curve["cells"].items():
+        for i, n in enumerate(c["n"]):
+            rows.append({"label": lab, "n": n, "n_runs": c["n_runs"][i], "mu_sessions": c["mu_sessions"][i],
+                         "mu_turns_based": c["mu_turns_based"][i], "turns_per_s": c["turns_per_s"][i],
+                         "hit_frac_turns": c["hit_frac_turns"][i], "cached_frac_tokens": c["cached_frac_tokens"][i],
+                         "queue_mean": c["queue_mean"][i]})
+    pd.DataFrame(rows).to_csv(out / "mu_curve.csv", index=False)
+    return {"n_runs": len(runs), "mu_curve": _sanitize({k: curve[k] for k in ("estimator", "primary_label", "n_cap", "mu_300",
+                                                                              "mu_max", "notes")})}
+
+
 def cmd_miss(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List[Run]) -> Dict[str, Any]:
-    rows = [lambda_miss_closed(r, args.warmup_s) for r in runs]
+    warm = args.warmup_s if args.warmup_s is not None else 0.0
+    rows = [lambda_miss_closed(r, warm) for r in runs]
     df = pd.DataFrame(rows)
     df.to_csv(out / "lambda_miss_runs.csv", index=False)
     n = len(df)
@@ -114,7 +243,7 @@ def cmd_miss(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List[
         "lambda_miss_turns_based": float(df["lambda_miss_turns_based"].mean()),
         "lambda_miss_se": float(df["lambda_miss_sessions"].std(ddof=1) / np.sqrt(n)) if n > 1 else None,
         "lambda_miss_turns_based_se": float(df["lambda_miss_turns_based"].std(ddof=1) / np.sqrt(n)) if n > 1 else None,
-        "n_runs": n, "warmup_s": args.warmup_s, "labels": sorted(set(df["label"])),
+        "n_runs": n, "warmup_s": warm, "labels": sorted(set(df["label"])),
         "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; "
                 "use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>')."}
     (out / "calibration.json").write_text(json.dumps(_sanitize(calib), indent=2))
@@ -140,14 +269,16 @@ def cmd_stable(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m analysis.summarize")
-    ap.add_argument("cmd", choices=["windows", "burst", "miss", "stable"])
+    ap.add_argument("cmd", choices=["windows", "burst", "burst2", "miss", "stable", "closed"])
     ap.add_argument("--run-dirs", nargs="+", required=True)
     ap.add_argument("--params", default=DEFAULT_PARAMS)
     ap.add_argument("--set", action="append", default=[], help="override an analysis param, e.g. burst.trap_min_s=6000")
     ap.add_argument("--out-root", default=None)
     ap.add_argument("--name", default=None)
-    ap.add_argument("--warmup-s", type=float, default=0.0, help="(miss) discard this many seconds at the start")
-    ap.add_argument("--fcfs-substr", default="fcfs", help="(burst) labels containing this are the FCFS cells")
+    ap.add_argument("--warmup-s", type=float, default=None,
+                    help="(miss, closed) discard this many seconds at the start (miss: 0 if omitted; closed: closed.warmup_s)")
+    ap.add_argument("--fcfs-substr", default="fcfs", help="(burst, burst2, closed) labels containing this are the FCFS cells")
+    ap.add_argument("--prereg", default=None, help="(burst2) filled pre-registration YAML; recorded and checked")
     ap.add_argument("--strict-guards", action="store_true",
                     help="exit 3 if any guard problem has severity 'error' (outputs are still written)")
     args = ap.parse_args(argv)
@@ -159,20 +290,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     name = args.name or f'{p.raw["output"]["name"]}_{args.cmd}'
     out = new_result_dir(root, name)
     runs = _runs(args.run_dirs)
-    problems = check_runs(runs, require_verified_start=args.cmd in ("burst", "stable"))
+    problems = check_runs(runs, require_verified_start=args.cmd in ("burst", "burst2", "stable"))
     args.guard_problems = problems
     (out / "guards.json").write_text(json.dumps({"summary": summarize_problems(problems), "problems": problems}, indent=2))
     for pr in problems:
         print(f"GUARD [{pr['severity']}] {pr['code']}: {pr['message']} ({pr['run_dir']})", file=sys.stderr)
-    fn = {"windows": cmd_windows, "burst": cmd_burst, "miss": cmd_miss, "stable": cmd_stable}[args.cmd]
+    fn = {"windows": cmd_windows, "burst": cmd_burst, "burst2": cmd_burst2, "miss": cmd_miss, "stable": cmd_stable,
+          "closed": cmd_closed}[args.cmd]
     extra = fn(args, p, out, runs)
     extra["guard_problems"] = problems
     _finish(out, args.params, p, [sys.executable, "-m", "analysis.summarize", *(argv if argv is not None else sys.argv[1:])],
             git, t0, runs, extra)
-    print(json.dumps({"out_dir": str(out), **{k: v for k, v in extra.items() if k not in ("kill_verdict", "guard_problems")},
+    print(json.dumps({"out_dir": str(out), **{k: v for k, v in extra.items() if k not in ("kill_verdict", "kill_verdict_v2", "guard_problems")},
                       "guards": summarize_problems(problems)}, indent=2, default=json_default))
     if "kill_verdict" in extra:
         print(json.dumps(extra["kill_verdict"], indent=2))
+    if "kill_verdict_v2" in extra:
+        print(json.dumps(extra["kill_verdict_v2"], indent=2))
     if args.strict_guards and any(pr["severity"] == "error" for pr in problems):
         print("strict guards: error-severity problems present", file=sys.stderr)
         return 3

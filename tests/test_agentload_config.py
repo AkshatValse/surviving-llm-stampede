@@ -7,7 +7,7 @@ from agentload.config import (apply_overrides, config_from_dict, load_config, re
                               resolve_ramp)
 from conftest import REPO, make_raw
 
-GEN_CONFIGS = ["agentload_mock", "agentload_e0_miss", "agentload_e0_cap", "agentload_e2_burst"]
+GEN_CONFIGS = ["agentload_mock", "agentload_e0_miss", "agentload_e0_cap", "agentload_e2_burst", "agentload_c_closed"]
 
 
 @pytest.mark.parametrize("name", GEN_CONFIGS)
@@ -18,7 +18,7 @@ def test_generator_configs_load(name):
 
 def test_all_agentload_configs_have_research_question_first():
     paths = sorted((REPO / "configs").glob("agentload_*.yaml"))
-    assert len(paths) >= 7
+    assert len(paths) >= 9 and "agentload_prereg_template.yaml" in {p.name for p in paths}
     for p in paths:
         first_key = next(iter(yaml.safe_load(p.read_text())))
         assert first_key == "research_question", p.name
@@ -26,7 +26,7 @@ def test_all_agentload_configs_have_research_question_first():
 
 def test_real_engine_configs_match_simulator_workload():
     # the simulator's constants (configs/prefix_meta.yaml on pilot/prefix-meta)
-    for name in ("agentload_e0_miss", "agentload_e0_cap", "agentload_e2_burst"):
+    for name in ("agentload_e0_miss", "agentload_e0_cap", "agentload_e2_burst", "agentload_c_closed"):
         cfg, _ = load_config(REPO / "configs" / f"{name}.yaml")
         w = cfg.workload
         assert (w.initial_context_tokens, w.new_prompt_tokens, w.decode_tokens) == (2000, 550, 100)
@@ -107,3 +107,15 @@ def test_plan_cli_writes_recorded_stats(tmp_path, capsys):
     assert st["max_prompt_tokens"] == 2000 + 59 * 650
     meta = json.loads((d / "meta.json").read_text())
     assert meta["seeds"] == [3] and meta["git"]["captured_at"] == "run start" and (d / "config.yaml").exists()
+
+
+def test_stage_c_and_e2_configs_encode_the_referee_design():
+    c, _ = load_config(REPO / "configs" / "agentload_c_closed.yaml")
+    assert c.arrivals.kind == "closed" and c.run.duration_s == 2700 and c.gate.n_cap is None      # warmup 900 + measure 1800
+    e, _ = load_config(REPO / "configs" / "agentload_e2_burst.yaml", ["arrivals.lambda_ref=0.05"])
+    assert e.gate.n_cap is None and e.meta.arm == "" and e.arrivals.analysis_t_burst_s == e.arrivals.burst.t_s == 1200
+    # the three arms are overrides of ONE config: NOBURST drops the burst, CAPPED adds the gate
+    nb, _ = load_config(REPO / "configs" / "agentload_e2_burst.yaml", ["arrivals.lambda_ref=0.05", "arrivals.burst=null", "meta.arm=\"noburst\""])
+    assert nb.arrivals.burst is None and nb.arrivals.analysis_t_burst_s == 1200 and nb.meta.arm == "noburst"
+    cp, _ = load_config(REPO / "configs" / "agentload_e2_burst.yaml", ["arrivals.lambda_ref=0.05", "gate.n_cap=22", "meta.arm=capped"])
+    assert cp.gate.n_cap == 22 and cp.arrivals.burst.n == 200

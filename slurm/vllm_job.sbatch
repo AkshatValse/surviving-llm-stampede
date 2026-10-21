@@ -17,11 +17,14 @@
 #
 # Before sbatch:  env | grep ^SBATCH_   (must print nothing, or only correct values: they override the #SBATCH lines)
 #                 mkdir -p logs        (logs/.gitkeep is committed, so a fresh clone has logs/)
-# MODE = smoke | miss | cap | burst, as in slurm/sglang_job.sbatch; node-class pin (--exclude) explained there.
+# MODE = smoke | miss | closed | cap | burst, as in slurm/sglang_job.sbatch (N_LIST, ARMS, N_CAP/CAP_FILE, KV_TOKENS=native
+# work the same way); node-class pin (--exclude) explained there.
 #   sbatch --export=ALL,MODE=smoke slurm/vllm_job.sbatch
 #   sbatch --export=ALL,MODE=miss,OUTPUT_FEEDBACK=server,SEEDS="0 1 2",ENGINE_LABEL=vllm-nocache slurm/vllm_job.sbatch
-#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,MULTS="1.6",SEEDS="0",CALIB_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
-# OUTPUT_FEEDBACK (server|synthetic) is required for miss/cap/burst and must equal the SGLang cells' value; see sglang_job.sbatch.
+#   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,N_LIST="16 24 32" slurm/vllm_job.sbatch      # Stage C (optional for vLLM)
+#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,MULTS="1.6",SEEDS="0",ARMS=burst,CALIB_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
+# OUTPUT_FEEDBACK (server|synthetic) is required for everything but smoke and must equal the SGLang cells' value; server is the
+# REQUIRED setting (see sglang_job.sbatch).
 #
 #  ENV_VLLM / ENV_GEN / HF_HOME: PLACEHOLDERS (notes/NOVA_ENV_PLAN.md says vLLM needs its own env: it pins its own torch).
 
@@ -45,10 +48,11 @@ unset -f _ctx; unset _acct _part _qos
 # ---- end billing guard ---------------------------------------------------------------------------------------
 
 set -u -o pipefail
-: "${MODE:?MODE must be smoke|miss|cap|burst}"
+: "${MODE:?MODE must be smoke|miss|closed|cap|burst}"
 if [ -z "${ENGINE_LABEL:-}" ]; then
   if [ "$MODE" = "smoke" ]; then ENGINE_LABEL="vllm-smoke"
   elif [ "$MODE" = "miss" ]; then ENGINE_LABEL="vllm-nocache"; else ENGINE_LABEL="vllm-fcfs"; fi
+  if [ "${KV_TOKENS:-}" = "native" ]; then ENGINE_LABEL="${ENGINE_LABEL}-native"; fi    # never mix pool sizes under one label
 fi
 : "${SEEDS:=0}"
 export MODE ENGINE_LABEL SEEDS

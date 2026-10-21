@@ -13,6 +13,9 @@ commit 8e71275) and ``configs/prefix_meta.yaml``:
                            (OLS slope of the fine queue means x window), and the run was not aborted.
 * ramp escape / re-entry : first fine bin with mean queue > 128; then first run of 5 bins with mean queue < 20.
 
+ROLE: since the referee review (notes/REFEREE_prefix_meta.md) this hit-rate rule is the SECONDARY criterion of the
+real-engine kill test; the primary one is the throughput-based criterion of ``analysis.trap_v2`` (paired arms).
+
 Additions that the simulator does not have (all reported separately, none silently changes a simulator rule):
 
 * ``good_before``  : the pre-burst state was good (aggregated hit > 0.5, mean queue < 20). A burst can only

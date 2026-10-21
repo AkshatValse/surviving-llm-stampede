@@ -65,13 +65,19 @@ def test_default_engine_labels_name_the_kill_rule_cells():
     ("sglang_job.sbatch", {"MODE": "burst", "ENGINE_LABEL": "custom"}, "custom"),
     ("vllm_job.sbatch", {"MODE": "miss"}, "vllm-nocache"),
     ("vllm_job.sbatch", {"MODE": "cap"}, "vllm-fcfs"),
+    ("sglang_job.sbatch", {"MODE": "closed"}, "sglang-fcfs-r1"),
+    ("sglang_job.sbatch", {"MODE": "closed", "POLICY": "lpm"}, "sglang-lpm-r1"),
+    ("sglang_job.sbatch", {"MODE": "burst", "KV_TOKENS": "native"}, "sglang-fcfs-r1-native"),
+    ("sglang_job.sbatch", {"MODE": "smoke", "KV_TOKENS": "300000"}, "sglang-smoke"),
+    ("vllm_job.sbatch", {"MODE": "closed"}, "vllm-fcfs"),
+    ("vllm_job.sbatch", {"MODE": "burst", "KV_TOKENS": "native"}, "vllm-fcfs-native"),
 ])
 def test_default_labels_are_computed_by_the_scripts(script, env, label, tmp_path):
     (tmp_path / "slurm").mkdir()
     (tmp_path / "slurm" / "common.sh").write_text('job_main() { echo "LABEL=$ENGINE_LABEL SEEDS=$SEEDS"; }\n')
     for n in ("engine_sglang.sh", "engine_vllm.sh"):
         (tmp_path / "slurm" / n).write_text("")
-    e = {k: v for k, v in os.environ.items() if k not in ("MODE", "POLICY", "REFRESH", "LPM_INF", "ENGINE_LABEL", "SEEDS")}
+    e = {k: v for k, v in os.environ.items() if k not in ("MODE", "POLICY", "REFRESH", "LPM_INF", "ENGINE_LABEL", "SEEDS", "KV_TOKENS")}
     e.update(env, SLURM_SUBMIT_DIR=str(tmp_path), **GOOD_CTX)
     r = subprocess.run([BASH, str(SLURM / script)], capture_output=True, text=True, env=e, cwd=tmp_path)
     assert r.returncode == 0, r.stderr
@@ -100,7 +106,11 @@ def test_engine_launch_commands_contain_the_spec_flags():
     assert "UNVERIFIED" in sg and "UNVERIFIED" in vl
 
 
-@pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093)])
+N_RUNS = {"smoke": 1, "miss": 1, "closed": 2, "cap": 1, "burst": 3}      # closed: N_LIST "2 4"; burst: the three paired arms
+
+
+@pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093),
+                                       ("closed", 18094)])
 def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
     env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
                POP_CHECK="6" if mode == "miss" else "")
@@ -115,13 +125,14 @@ def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
     for needle in ("hostname:", "nvidia-smi", "commit:", "SEEDS=\"0\"", "ENGINE=mock", f"MODE={mode}", "research_question"):
         assert needle in banner, needle
     assert "vllm:num_requests_waiting" in (logs[0] / "probe.txt").read_text()
+    assert "agentload_c_closed.yaml" in banner and 'N_LIST="' in banner and "ARMS=" in banner      # Stage-C config + new params
     ev = (logs[0] / "job_events.log").read_text()
     assert "flush HTTP 200" in ev and "reset_and_verify: verified=true" in ev
     assert "CANARY_RESULT" in (logs[0] / "canary.log").read_text()
     assert "PROBE_SUMMARY" in (logs[0] / "probe.txt").read_text()
     assert (logs[0] / "flag_check.txt").exists() and any(f.name.startswith("pip_freeze_") for f in logs[0].iterdir())
     run_dirs = (logs[0] / f"run_dirs_{mode}.txt").read_text().split()
-    assert len(run_dirs) == 1 and (Path(run_dirs[0]) / "meta.json").exists()
+    assert len(run_dirs) == N_RUNS[mode] and (Path(run_dirs[0]) / "meta.json").exists()
     meta = json.loads((Path(run_dirs[0]) / "meta.json").read_text())
     assert meta["engine_label"] == "mock-fcfs" and meta["seeds"] == [0] and meta["status"] == "finished"
     assert meta["start_state_verified"] is True and "canary" in meta["start_state_detail"]
@@ -131,6 +142,7 @@ def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
     assert meta["outcome"]["requests_ok"] > 5
     ana = {"smoke": ("agentload_analysis_windows", "windows.csv"),
            "miss": ("agentload_analysis_miss", "calibration.json"), "cap": ("agentload_analysis_stable", "stable_runs.csv"),
+           "closed": ("agentload_analysis_closed", "mu_curve.json"),
            "burst": ("agentload_analysis_burst", "burst_runs.csv")}[mode]
     d = sorted((tmp_path / ana[0]).iterdir())[-1]
     assert (d / ana[1]).exists()
@@ -141,8 +153,29 @@ def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
         assert cal["n_runs"] == 1
         d2 = sorted((tmp_path / "agentload_analysis_miss_popcheck").iterdir())[-1]
         assert json.loads((d2 / "calibration.json").read_text())["n_runs"] == 1
+    if mode == "closed":
+        curve = json.loads((d / "mu_curve.json").read_text())
+        assert curve["primary_label"] == "mock-fcfs" and curve["cells"]["mock-fcfs"]["n"] == [2, 4]
+        assert curve["n_cap"] in (2, 4) and (d / "mu_points.csv").exists()
+        pts = pd.read_csv(d / "mu_points.csv")
+        assert sorted(pts["n"]) == [2, 4] and (pts["warmup_s"] == 3.0).all() and (pts["mu_sessions"] > 0).all()
+        assert [json.loads((Path(r) / "meta.json").read_text())["content_salt"] for r in run_dirs] == [1, 2]
+        for r in run_dirs:
+            assert json.loads((Path(r) / "meta.json").read_text())["start_state_verified"] in (True, False)
     if mode == "burst":
-        assert pd.read_csv(d / "burst_runs.csv")["t_burst"].iloc[0] == 6.0
+        br = pd.read_csv(d / "burst_runs.csv")
+        assert br["t_burst"].iloc[0] == 6.0 and sorted(br["arm"]) == ["burst", "capped"]       # NOBURST has no legacy verdict
+        metas = [json.loads((Path(r) / "meta.json").read_text()) for r in run_dirs]
+        assert [m["arm"] for m in metas] == ["burst", "noburst", "capped"]                     # ARMS order, same seed and rate
+        assert len({(m["seeds"][0], m["resolved_rate_sessions_per_s"], m["lambda_ref_resolved"]) for m in metas}) == 1
+        assert [m["content_salt"] for m in metas] == [1, 2, 3] and all(m["analysis_t_burst_s"] == 6.0 for m in metas)
+        assert [m["gate_n_cap_resolved"] for m in metas] == [None, None, 3]                    # fake Stage-C mu_curve.json: n_cap 3
+        assert metas[2]["outcome"]["gate"]["max_active_seen"] <= 3
+        plans = [pd.read_csv(Path(r) / "plan.csv") for r in run_dirs]
+        assert (plans[0]["origin"] == "burst").sum() == 10 and (plans[1]["origin"] == "burst").sum() == 0
+        d2 = sorted((tmp_path / "agentload_analysis_burst2").iterdir())[-1]
+        kv = json.loads((d2 / "kill_verdict_v2.json").read_text())
+        assert kv["cells"][0]["n_seeds_complete"] == 1 and kv["pairing_problems"] == {} and kv["guards"]["n_errors"] == 0
     # the mock server process must be gone
     assert subprocess.run(["pgrep", "-f", f"agentload.mock_server --port {port}"], capture_output=True).returncode != 0
 
@@ -308,12 +341,16 @@ def test_wait_health_notices_a_dead_server_even_if_something_else_answers(tmp_pa
 
 
 TIME_ENV = {"SMOKE_RUN_S": "1800", "MISS_RUN_S": "2700", "GAP_S": "180", "RUN_OVERHEAD_S": "150", "CAP_RUN_S": "3000",
-            "BURST_RUN_S": "8700", "TIME_MARGIN_S": "600", "STARTUP_ALLOW_S": "600"}
+            "BURST_RUN_S": "8700", "TIME_MARGIN_S": "600", "STARTUP_ALLOW_S": "600", "CLOSED_RUN_S": "2700"}
 
 
 @pytest.mark.parametrize("env,want", [
     ({"MODE": "burst", "SEEDS": "0", "MULTS": "1.3"}, 8700 + 180 + 150),
     ({"MODE": "burst", "SEEDS": "0", "MULTS": "1.3 1.6"}, 2 * (8700 + 180 + 150)),
+    ({"MODE": "burst", "SEEDS": "0", "MULTS": "1.3", "ARMS": "burst noburst capped"}, 3 * (8700 + 180 + 150)),
+    ({"MODE": "burst", "SEEDS": "0 1", "MULTS": "1.3", "ARMS": "capped"}, 2 * (8700 + 180 + 150)),
+    ({"MODE": "closed", "SEEDS": "0", "N_LIST": "16 24 32", "CLOSED_RUN_S": "2700"}, 3 * (2700 + 180 + 150)),
+    ({"MODE": "closed", "SEEDS": "0", "N_LIST": "48 300", "CLOSED_RUN_S": "2700"}, 2 * (2700 + 180 + 150)),
     ({"MODE": "cap", "SEEDS": "0", "MULTS": "1 1.4 1.8 2.2"}, 4 * (3000 + 180 + 150)),
     ({"MODE": "miss", "SEEDS": "0 1 2", "POP_CHECK": "64"}, 3 * (2700 + 180 + 150) + 2700 + 150),
     ({"MODE": "miss", "SEEDS": "0 1 2", "POP_CHECK": ""}, 3 * (2700 + 180 + 150)),
@@ -392,3 +429,108 @@ def test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught(tmp_pat
     an = sorted((tmp_path / "lax" / "agentload_analysis_stable").iterdir())[-1]
     guards = json.loads((an / "guards.json").read_text())
     assert "start_state_unverified" in guards["summary"]["codes"] and guards["summary"]["n_errors"] >= 1
+
+
+# ---------------------------------------------------------------------------------------------------------------
+# Stage C (MODE=closed), paired arms, KV_TOKENS=native
+# ---------------------------------------------------------------------------------------------------------------
+def _validate(env, tmp_path):
+    """Run validate_mode_inputs (the pre-launch input check) with the given environment."""
+    e = {"ENV_GEN": sys.prefix, "REPO_DIR": str(REPO), "ENGINE_LABEL": "x-fcfs", "SEEDS": "0"}
+    e.update(env)
+    return bash_fn("validate_mode_inputs; echo rc=$? GATE=$GATE_N_CAP_YAML", env=e)
+
+
+def test_closed_needs_an_explicit_positive_integer_n_list(tmp_path):
+    r = _validate({"MODE": "closed", "N_LIST": ""}, tmp_path)
+    assert r.returncode == 1 and "needs N_LIST" in r.stderr
+    for bad in ("16 x", "0", "-3", "1.5"):
+        r = _validate({"MODE": "closed", "N_LIST": bad}, tmp_path)
+        assert r.returncode == 1 and "positive integers" in r.stderr, bad
+    r = _validate({"MODE": "closed", "N_LIST": "16 24 32"}, tmp_path)
+    assert r.returncode == 0 and "rc=0" in r.stdout
+
+
+def test_arms_must_be_known_and_the_capped_arm_needs_a_valid_cap(tmp_path):
+    ok = {"MODE": "burst", "ARMS": "burst noburst"}
+    assert "rc=0" in _validate(ok, tmp_path).stdout
+    r = _validate({"MODE": "burst", "ARMS": "burst bogus"}, tmp_path)
+    assert r.returncode == 1 and "burst|noburst|capped" in r.stderr
+    r = _validate({"MODE": "burst", "ARMS": "capped"}, tmp_path)                  # neither N_CAP nor CAP_FILE
+    assert r.returncode == 1 and "CAP_FILE is empty" in r.stderr
+    r = _validate({"MODE": "burst", "ARMS": "burst capped", "N_CAP": "22"}, tmp_path)
+    assert "rc=0" in r.stdout and "GATE=22" in r.stdout
+    for bad in ("0", "abc", "2.5"):
+        r = _validate({"MODE": "burst", "ARMS": "capped", "N_CAP": bad}, tmp_path)
+        assert r.returncode == 1 and "N_CAP must be a positive integer" in r.stderr, bad
+    good = tmp_path / "mu_curve.json"
+    good.write_text(json.dumps({"n_cap": 24}))
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(good)}, tmp_path)
+    assert "rc=0" in r.stdout and f'GATE="{good}:n_cap"' in r.stdout
+    for name, body in (("nullcap.json", {"n_cap": None}), ("floatcap.json", {"n_cap": 2.5}), ("nokey.json", {})):
+        f = tmp_path / name
+        f.write_text(json.dumps(body))
+        r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(f)}, tmp_path)
+        assert r.returncode == 1 and "no integer n_cap" in r.stderr, name
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(tmp_path / "missing.json")}, tmp_path)
+    assert r.returncode == 1 and "CAP_FILE not found" in r.stderr
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": "/work/<group-dir>/mu_curve.json"}, tmp_path)
+    assert r.returncode == 1 and "placeholder" in r.stderr
+    # an arm list without the capped arm needs no cap at all
+    assert "rc=0" in _validate({"MODE": "burst", "ARMS": "noburst"}, tmp_path).stdout
+
+
+def test_native_pool_requires_a_native_label(tmp_path):
+    r = _validate({"MODE": "burst", "ARMS": "burst", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1"}, tmp_path)
+    assert r.returncode == 1 and "contain 'native'" in r.stderr
+    r = _validate({"MODE": "burst", "ARMS": "burst", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1-native"}, tmp_path)
+    assert "rc=0" in r.stdout
+
+
+def test_three_arms_do_not_fit_one_4h_job_but_one_arm_does():
+    base = {**TIME_ENV, "MODE": "burst", "SEEDS": "0", "MULTS": "1.3", "REMAINING_S_OVERRIDE": "14400"}
+    r = bash_fn("check_time_budget pre", env={**base, "ARMS": "burst noburst capped"})
+    assert r.returncode == 1 and "do not fit" in r.stderr
+    for arm in ("burst", "noburst", "capped"):
+        assert bash_fn("check_time_budget pre", env={**base, "ARMS": arm}).returncode == 0
+    # Stage C: 3 runs per job fit (the budget's runs_per_job), 6 do not
+    cl = {**TIME_ENV, "MODE": "closed", "SEEDS": "0", "REMAINING_S_OVERRIDE": "14400"}
+    assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 24 32"}).returncode == 0
+    assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 24 32 48 96 300"}).returncode == 1
+
+
+def _fake_launch(tmp_path, engine_file, kv_tokens, extra_env=None):
+    """Source an engine file and run launch_engine with a fake python/vllm binary that records its argv."""
+    envdir = tmp_path / "env"
+    (envdir / "bin").mkdir(parents=True, exist_ok=True)
+    marker = tmp_path / "argv.txt"
+    for b in ("python", "vllm"):
+        f = envdir / "bin" / b
+        f.write_text(f'#!/bin/sh\necho "$@" > "{marker}"\n')
+        f.chmod(0o755)
+    (tmp_path / "jd").mkdir(exist_ok=True)
+    (tmp_path / "jd" / "engine_help.txt").write_text("")
+    e = {"ENV_SGLANG": str(envdir), "ENV_VLLM": str(envdir), "JOB_DIR": str(tmp_path / "jd"), "SERVER_LOG": str(tmp_path / "log"),
+         "PORT": "1", "MODE": "burst", "KV_TOKENS": kv_tokens, "HF_HOME": str(tmp_path)}
+    e.update(extra_env or {})
+    r = bash_fn(f'source "{SLURM / engine_file}"\nlaunch_engine\nwait', env=e)
+    assert r.returncode == 0, r.stderr
+    return marker.read_text()
+
+
+@pytest.mark.parametrize("engine_file,cap_flag", [("engine_sglang.sh", "--max-total-tokens 300000"),
+                                                  ("engine_vllm.sh", "--num-gpu-blocks-override 18750")])
+def test_kv_tokens_native_drops_the_pool_cap_and_a_number_sets_it(engine_file, cap_flag, tmp_path):
+    (tmp_path / "a").mkdir()
+    (tmp_path / "b").mkdir()
+    capped = _fake_launch(tmp_path / "a", engine_file, "300000")
+    native = _fake_launch(tmp_path / "b", engine_file, "native")
+    assert cap_flag in capped
+    assert cap_flag.split()[0] not in native and "native" not in native              # no cap flag, "native" not leaked to the CLI
+    assert "--port 1" in native and ("--context-length" in native or "--max-model-len" in native)   # rest of the command intact
+
+
+def test_synthetic_feedback_is_flagged_as_a_deviation_and_server_ids_are_not():
+    r = bash_fn("warn_synthetic_feedback", env={"OUTPUT_FEEDBACK": "synthetic"})
+    assert r.returncode == 0 and "deviation D5" in r.stdout and "REQUIRED" in r.stdout
+    assert bash_fn("warn_synthetic_feedback", env={"OUTPUT_FEEDBACK": "server"}).stdout == ""

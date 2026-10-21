@@ -19,7 +19,7 @@ FLUSH_METHOD=POST
 : "${MODEL:=Qwen/Qwen2.5-7B-Instruct}"
 SERVED_MODEL="$MODEL"        # the id /v1/models must list (checked after startup)
 : "${POLICY:=fcfs}"          # vLLM v0.32.0 scheduler policy is fcfs|priority only (engine-sources note); kept for the banner
-: "${KV_TOKENS:=300000}"
+: "${KV_TOKENS:=300000}"    # "native" = no cap on the KV pool
 : "${CONTEXT_LEN:=49152}"
 : "${ENV_VLLM:=/work/<group-dir>/avalse/swapp/envs/vllm}"              # PLACEHOLDER
 : "${ENV_GEN:=/work/<group-dir>/avalse/swapp/envs/swapp}"              # PLACEHOLDER
@@ -52,8 +52,9 @@ check_engine_flags() {
 }
 
 launch_engine() {
-  local cache_flag="--enable-prefix-caching" extra="" help
+  local cache_flag="--enable-prefix-caching" extra="" help kv_flag=""
   help=$(cat "$JOB_DIR/engine_help.txt" 2>/dev/null || true)
+  [ "$KV_TOKENS" != "native" ] && kv_flag="--num-gpu-blocks-override $((KV_TOKENS / 16))"   # KV_TOKENS=native: the engine sizes its own pool
   [ "$RADIX" = "0" ] && cache_flag="--no-enable-prefix-caching"
   if help_has_flag "$help" --generation-config; then extra="$extra --generation-config vllm"; fi
   if [ -n "${HF_REVISION:-}" ]; then extra="$extra --revision $HF_REVISION"; fi
@@ -61,7 +62,7 @@ launch_engine() {
   VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 VLLM_SERVER_DEV_MODE=1 \
   "$ENV_VLLM/bin/vllm" serve "$MODEL" --host 127.0.0.1 --port "$PORT" \
       $cache_flag --max-num-seqs 256 --max-num-batched-tokens 8192 --max-model-len "$CONTEXT_LEN" \
-      --num-gpu-blocks-override "$((KV_TOKENS / 16))" --enable-prompt-tokens-details \
+      $kv_flag --enable-prompt-tokens-details \
       --gpu-memory-utilization 0.90 $extra \
       > "$SERVER_LOG" 2>&1 &
   SERVER_PID=$!

@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import yaml
 
-from analysis.plan_budget import gate_totals, main, stage_rows
+from analysis.plan_budget import arithmetic, gate_arithmetic, gate_totals, main, stage_rows
 from conftest import REPO
 
 CFG = {
@@ -43,21 +43,63 @@ def test_job_that_exceeds_the_limit_is_flagged():
     assert not stage_rows(cfg).iloc[0]["fits"]                       # 0.25 + 4 + 0.15 + 0.05 = 4.45 h > 4 h
 
 
+def test_arithmetic_strings_spell_out_every_term():
+    job = CFG["job"]
+    assert arithmetic(job, 2700, 4, 4) == "1 x (0.25 + 4 x 0.7500 + 3 x 0.0500 + 0.05) = 3.450 h  =>  3.45 GPU-h"
+    # 6 runs in jobs of 4: a full job and a job with the 2 remaining runs
+    assert arithmetic(job, 2700, 6, 4) == ("1 x (0.25 + 4 x 0.7500 + 3 x 0.0500 + 0.05) = 3.450 h  +  "
+                                           "1 x (0.25 + 2 x 0.7500 + 1 x 0.0500 + 0.05) = 1.850 h  =>  5.30 GPU-h")
+    assert arithmetic(job, 8700, 27, 1).startswith("27 x (0.25 + 1 x 2.4167 + 0 x 0.0500 + 0.05) = 2.717 h  =>  73.35 GPU-h")
+    df = stage_rows(CFG)
+    assert df.set_index("stage").loc["b", "arithmetic"].endswith("=>  3.65 GPU-h")
+    lines = gate_arithmetic(CFG, df)
+    assert lines[0].startswith("g1 = 3.45 = 3.45 GPU-h") and lines[1].startswith("g2 = 3.65 + 2.35 = 6.00 GPU-h")
+    assert lines[-1] == "total = 3.45 + 6.00 = 9.45 GPU-h"
+    two_gpu = {**job, "gpus": 2}
+    assert arithmetic(two_gpu, 3600, 1, 1).endswith("=>  2.60 GPU-h (2 GPUs)")          # (0.25 + 1 + 0.05) h x 2
+
+
 def test_shipped_budget_config_is_consistent(tmp_path):
     cfg = yaml.safe_load((REPO / "configs" / "agentload_plan_budget.yaml").read_text())
     assert next(iter(cfg)) == "research_question"
     df = stage_rows(cfg)
     assert df["fits"].all()                                           # every job fits the 4 h limit in the draft scripts
-    names = set(df["stage"])
-    assert all(set(v) <= names for v in cfg["gates"].values())
-    assert set().union(*map(set, cfg["gates"].values())) == names     # every stage belongs to exactly one gate
+    names = list(df["stage"])
+    assert len(names) == len(set(names))
+    in_gates = [n for v in cfg["gates"].values() for n in v]
+    assert sorted(in_gates) == sorted(names)                          # every stage belongs to exactly ONE gate
     assert main(["--config", str(REPO / "configs" / "agentload_plan_budget.yaml"), "--out-root", str(tmp_path)]) == 0
     d = sorted((tmp_path / "agentload_plan_budget").iterdir())[-1]
     tot = json.loads((d / "gpu_hours_totals.json").read_text())
     assert tot["total"] == pytest.approx(pd.read_csv(d / "gpu_hours_by_stage.csv")["gpu_h"].sum())
+    assert tot["total"] == pytest.approx(sum(tot[g] for g in cfg["gates"]))
     alt = pd.read_csv(d / "gpu_hours_by_stage_alt_literal_e2.csv").set_index("stage")
-    assert alt["fits"].all() and alt.loc["E2a_kill_sglang_fcfs", "run_s"] == 28000
+    assert alt["fits"].all() and alt.loc["E2a_kill_sglang_fcfs_paired", "run_s"] == 28000
     assert tot["alt_literal_e2"]["total"] > tot["total"]
-    assert tot["total"] == pytest.approx(tot["gate0_smoke"] + tot["gate1_calibration"] + tot["gate2_kill_test"]
-                                         + tot["full_grid"])
     assert (d / "meta.json").exists() and (d / "config.yaml").exists()
+    arith = (d / "gpu_hours_arithmetic.txt").read_text()
+    assert "C_closed_sglang_fcfs: 2 x (0.25 + 3 x 0.7500 + 2 x 0.0500 + 0.05) = 2.650 h  =>  5.30 GPU-h" in arith
+    assert "total = " in arith and "cheap_before_prereg = " in arith
+    assert "arithmetic" in pd.read_csv(d / "gpu_hours_by_stage.csv").columns
+
+
+def test_shipped_budget_has_the_new_stage_order_and_the_hand_checked_numbers():
+    cfg = yaml.safe_load((REPO / "configs" / "agentload_plan_budget.yaml").read_text())
+    df = stage_rows(cfg).set_index("stage")
+    order = list(df.index)
+    pos = lambda n: order.index(n)
+    # S0 smoke -> C closed mu(n) -> E0a lambda_miss -> E2 paired arms (-> native pool -> grid)
+    assert (pos("S0_smoke_sglang") < pos("C_closed_sglang_fcfs") < pos("E0a_miss_sglang")
+            < pos("E2a_kill_sglang_fcfs_paired") < pos("E2c_native_sglang_fcfs_paired") < pos("E2b_sglang_fcfs_r0"))
+    # Stage C: n in {16,24,32,48,96,300} FCFS (6 runs) and {48,300} LPM (2 runs), warmup 900 + measured 1800
+    assert df.loc["C_closed_sglang_fcfs", "n_runs"] == 6 and df.loc["C_closed_sglang_fcfs", "run_s"] == 2700
+    assert df.loc["C_closed_sglang_lpm", "n_runs"] == 2
+    assert cfg["protocol"]["c_closed"]["fields"] == {"warmup_s": 900, "measure_s": 1800}
+    # by hand: 2 jobs x (0.25 + 3 x 0.75 + 2 x 0.05 + 0.05 = 2.65) = 5.30 ;  1 job x (0.25 + 2 x 0.75 + 0.05 + 0.05 = 1.85)
+    assert df.loc["C_closed_sglang_fcfs", "gpu_h"] == pytest.approx(5.30) and df.loc["C_closed_sglang_lpm", "gpu_h"] == pytest.approx(1.85)
+    # paired arms: 3 lambda x 3 seeds x 3 arms = 27 one-run jobs of 0.25 + 8700/3600 + 0.05 h
+    assert df.loc["E2a_kill_sglang_fcfs_paired", "n_runs"] == 27
+    assert df.loc["E2a_kill_sglang_fcfs_paired", "gpu_h"] == pytest.approx(27 * (0.25 + 8700 / 3600 + 0.05))
+    t = gate_totals(cfg, stage_rows(cfg))
+    assert t["gateC_closed_mu"] == pytest.approx(7.15) and t["cheap_before_prereg"] == pytest.approx(1.6 + 7.15 + 15.6)
+    assert 20 <= t["cheap_before_prereg"] <= 25                                  # the referee's "20-25 GPU-h" for the cheap stages

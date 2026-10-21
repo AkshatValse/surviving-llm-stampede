@@ -57,6 +57,34 @@ kill:
   trapped_fraction_min: 0.6666666666666666
   min_runs_per_cell: 3
 
+trap_v2:                        # THROUGHPUT-BASED trap criterion and PASS rule of the paired kill test (kill_verdict_v2.json).
+                                # Referee-requested (notes/REFEREE_prefix_meta.md, "Kill-test design changes"). These values are
+                                # copied into configs/agentload_prereg_template.yaml; `summarize burst2 --prereg FILE` errors if
+                                # the registered rule differs from the one applied. All rates are sessions/s.
+  eval_from_s: 4500.0           # post-burst evaluation window = [t_b + eval_from_s, end of run] (short protocol; job script
+                                # passes HIT_EVAL_FROM_S). A window shorter than min_eval_s makes the run indeterminate.
+  min_eval_s: 600.0
+  rate_estimator: sessions      # estimator of "session completion rate" in criterion (a): sessions (last-turn completions
+                                # / s, literal) | turns_based (ok turns / s / E[T], lower variance, same estimand). Both are
+                                # always written to the output; this key decides the verdict. FIX BEFORE PRE-REGISTERING.
+  rate_tolerance: 0.15          # (a) trapped needs |rate - lambda_miss| <= rate_tolerance * lambda_miss
+  slope_frac: 0.5               # (b) trapped needs backlog slope > slope_frac * (lambda - lambda_miss); both sides in sessions/s
+  slope_dt_s: 10.0              # backlog (client sessions in flight incl. gate) is averaged in bins of this width, OLS slope on bin means
+  recovered_hit_above: 0.8      # RECOVERED / "good": hit fraction > this ...
+  recovered_backlog_below: 20.0 # ... and backlog (sessions in flight incl. gate) < this, both over the last end_window_s
+  end_window_s: 300.0
+  pass_fraction_min: 0.6666666666666666   # PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= this fraction of seeds
+  min_seeds: 3
+  trace_bin_s: 50.0             # resolution of backlog_trace.csv (plots only; not used by the verdict)
+
+closed:                         # Stage C: closed-population mu(n) with the prefix cache ON (summarize closed)
+  warmup_s: 900.0                       # discarded at the start of every run (measure window = the rest: 1800 s in the plan)
+  n_grid: [16, 24, 32, 48, 96, 300]     # FCFS cell; a missing n is flagged (complete_grid)
+  lpm_n: [48, 300]                      # LPM cell
+  n_inf: 300                            # mu(n_inf) stands for mu(infinity): the predicted recovery threshold
+  mu_estimator: sessions                # decides argmax mu(n) = n_cap and mu_300: sessions (completions/s, literal) | turns_based
+  argmax_margin_warn: 0.05              # flag n_cap as ambiguous if the runner-up is within this relative margin (1 run per n)
+
 output:
   root: results
   name: agentload_analysis

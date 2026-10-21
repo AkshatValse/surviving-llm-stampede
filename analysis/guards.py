@@ -13,6 +13,8 @@ Checks (code: meaning)
   output_source_differs    runs in one comparison used different output-id sources
   prompt_tokens_mismatch   server prompt_tokens != tokens sent on some requests (tokens mode)
   transport_errors         connection-level request failures (they kill sessions and shed offered load)
+  gate_cap_exceeded        a run with a client-side session cap admitted more sessions at once than the cap (from the
+                           generator's own counter, and recomputed from sessions.csv)
 CLI:  python -m analysis.guards calib-hw --calib calibration.json --hardware "NVIDIA A100 80GB PCIe, 81920 MiB"
       (exit 1 if the calibration's hardware differs; used by slurm/common.sh before cap/burst runs)
 """
@@ -89,6 +91,29 @@ def check_runs(runs: Sequence[Run], require_verified_start: bool) -> List[Dict[s
         tr = (o.get("errors_by_kind") or {}).get("transport", 0)
         if tr:
             out.append(_problem(WARN, "transport_errors", f"{tr} transport-level request errors", r))
+    out.extend(check_gate(runs))
+    return out
+
+
+def max_active_from_log(ses: Any) -> int:
+    """Largest number of admitted-and-not-ended sessions at any admission instant, from sessions.csv alone."""
+    if ses is None or len(ses) == 0 or "t_admit" not in ses.columns:
+        return 0
+    a = ses[ses["t_admit"].notna()]
+    ta, te = a["t_admit"].to_numpy(float), a["t_end"].to_numpy(float)
+    return int(max(((ta <= t) & (te > t)).sum() for t in ta)) if len(ta) else 0
+
+
+def check_gate(runs: Sequence[Run]) -> List[Dict[str, Any]]:
+    out: List[Dict[str, Any]] = []
+    for r in runs:
+        cap = r.gate_n_cap
+        if cap is None:
+            continue
+        g = (r.meta.get("outcome") or {}).get("gate") or {}
+        seen = max(int(g.get("max_active_seen") or 0), max_active_from_log(r.sessions))
+        if seen > cap:
+            out.append(_problem(ERROR, "gate_cap_exceeded", f"{seen} sessions active at once with gate cap {cap}", r))
     return out
 
 

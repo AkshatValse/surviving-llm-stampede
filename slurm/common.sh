@@ -65,14 +65,16 @@ banner() {
   echo "dirty:     $(git -C "$REPO_DIR" status --porcelain 2>/dev/null | wc -l | tr -d ' ') changed/untracked paths"
   echo "--- run parameters"
   echo "ENGINE=$ENGINE MODE=$MODE POLICY=${POLICY:-} REFRESH=${REFRESH:-} LPM_INF=${LPM_INF:-} RADIX=${RADIX:-}"
-  echo "SEEDS=\"$SEEDS\" MULTS=\"${MULTS:-}\" KV_TOKENS=${KV_TOKENS:-} CONTEXT_LEN=${CONTEXT_LEN:-} PORT=$PORT"
+  echo "SEEDS=\"$SEEDS\" MULTS=\"${MULTS:-}\" N_LIST=\"${N_LIST:-}\" ARMS=\"${ARMS:-}\" N_CAP=${N_CAP:-} CAP_FILE=${CAP_FILE:-}"
+  echo "KV_TOKENS=${KV_TOKENS:-} CONTEXT_LEN=${CONTEXT_LEN:-} PORT=$PORT"
   echo "OUTPUT_FEEDBACK=$OUTPUT_FEEDBACK REQUEST_TOKEN_IDS=$REQUEST_TOKEN_IDS STRICT_FLUSH=$STRICT_FLUSH STRICT_FLAGS=${STRICT_FLAGS:-1}"
   echo "ENGINE_LABEL=$ENGINE_LABEL  CALIB_FILE=${CALIB_FILE:-}"
   echo "MODEL=${MODEL:-} SERVED_MODEL=$SERVED_MODEL HF_REVISION=${HF_REVISION:-unpinned} HF_HOME=${HF_HOME:-}"
   echo "HW=$HW"
   echo "--- configs (verbatim)"
-  for f in "$REPO_DIR"/configs/agentload_e0_miss.yaml "$REPO_DIR"/configs/agentload_e0_cap.yaml \
-           "$REPO_DIR"/configs/agentload_e2_burst.yaml "$REPO_DIR"/configs/agentload_analysis.yaml; do
+  for f in "$REPO_DIR"/configs/agentload_c_closed.yaml "$REPO_DIR"/configs/agentload_e0_miss.yaml \
+           "$REPO_DIR"/configs/agentload_e0_cap.yaml "$REPO_DIR"/configs/agentload_e2_burst.yaml \
+           "$REPO_DIR"/configs/agentload_analysis.yaml; do
     [ -f "$f" ] && { echo "##### $f"; cat "$f"; }
   done
   echo "============================================"
@@ -89,6 +91,14 @@ record_environment() {
   if [ -n "${HF_HOME:-}" ] && [ -n "${MODEL:-}" ]; then
     ls -1 "$HF_HOME/hub/models--$(echo "$MODEL" | sed 's#/#--#g')/snapshots" > "$JOB_DIR/hf_snapshot.txt" 2>&1 || true
   fi
+}
+
+# Server-returned output token ids are the REQUIRED setting (plan: required items); synthetic feedback is a documented deviation.
+warn_synthetic_feedback() {
+  [ "${OUTPUT_FEEDBACK:-}" = "synthetic" ] || return 0
+  log "WARNING: OUTPUT_FEEDBACK=synthetic is deviation D5 of notes/NOVA_PLAN_prefix_meta.md: every hit turn prefills Delta+d=650"
+  log "         uncached tokens, not Delta=550. Server token ids (OUTPUT_FEEDBACK=server) are REQUIRED unless the Stage-0 probe"
+  log "         shows the engine cannot return output ids (PROBE_SUMMARY.output_ids_present=false)."
 }
 
 # ------------------------------------------------------------------ ports
@@ -240,22 +250,34 @@ run_gen() {
 }
 
 # Quick post-hoc summaries of this job's runs (analysis is light CPU work; results go to new dirs under $RESULTS_ROOT).
+# For MODE=burst a job usually holds ONE run (8700 s), so burst2 here only sees the arms of this job; the paired verdict
+# is computed later over the run dirs of all jobs:  python -m analysis.summarize burst2 --run-dirs ... --prereg FILE
 post_analysis() {
   local f="$JOB_DIR/run_dirs_${MODE}.txt" dirs
   [ -s "$f" ] || { log "no run dirs recorded; skipping analysis"; return 0; }
   dirs=$(tr '\n' ' ' < "$f")
   case "$MODE" in
-    smoke) gen_python -m analysis.summarize windows --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} ;;
+    smoke) gen_python -m analysis.summarize windows --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} \
+               || log "post-analysis failed (raw results are intact)" ;;
     miss)  gen_python -m analysis.summarize miss --run-dirs $dirs --warmup-s "$MISS_WARMUP_S" \
-               --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-}
+               --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} || log "post-analysis failed (raw results are intact)"
            if [ -s "$JOB_DIR/run_dirs_miss_popcheck.txt" ]; then
              gen_python -m analysis.summarize miss --run-dirs $(tr '\n' ' ' < "$JOB_DIR/run_dirs_miss_popcheck.txt") \
-                 --warmup-s "$MISS_WARMUP_S" --out-root "$RESULTS_ROOT" --name agentload_analysis_miss_popcheck ${ANALYSIS_EXTRA:-}
+                 --warmup-s "$MISS_WARMUP_S" --out-root "$RESULTS_ROOT" --name agentload_analysis_miss_popcheck ${ANALYSIS_EXTRA:-} \
+                 || log "pop-check analysis failed (raw results are intact)"
            fi ;;
-    cap)   gen_python -m analysis.summarize stable --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} ;;
+    closed) gen_python -m analysis.summarize closed --run-dirs $dirs --warmup-s "$CLOSED_WARMUP_S" \
+               --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} || log "post-analysis failed (raw results are intact)" ;;
+    cap)   gen_python -m analysis.summarize stable --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} \
+               || log "post-analysis failed (raw results are intact)" ;;
     burst) gen_python -m analysis.summarize burst --run-dirs $dirs --out-root "$RESULTS_ROOT" \
-               --set "burst.trap_min_s=$TRAP_MIN_S" --set "burst.hit_eval_from_s=$HIT_EVAL_FROM_S" ${ANALYSIS_EXTRA:-} ;;
-  esac || log "post-analysis failed (raw results are intact)"
+               --set "burst.trap_min_s=$TRAP_MIN_S" --set "burst.hit_eval_from_s=$HIT_EVAL_FROM_S" ${ANALYSIS_EXTRA:-} \
+               || log "legacy burst analysis failed (raw results are intact)"
+           gen_python -m analysis.summarize burst2 --run-dirs $dirs --out-root "$RESULTS_ROOT" \
+               --set "burst.trap_min_s=$TRAP_MIN_S" --set "burst.hit_eval_from_s=$HIT_EVAL_FROM_S" \
+               --set "trap_v2.eval_from_s=$HIT_EVAL_FROM_S" ${ANALYSIS_EXTRA:-} \
+               || log "burst2 analysis failed (raw results are intact)" ;;
+  esac
 }
 
 between_runs() {   # let the server drain cancelled requests, then flush the prefix cache and verify it
@@ -283,14 +305,16 @@ remaining_seconds() {   # seconds left on this allocation; empty if unknown (REM
 }
 
 planned_seconds() {   # runs + gaps + per-run overhead of the selected MODE (startup and margin are added by the caller)
-  local ns nm total
+  local ns nm nn na total
   ns=$(echo "$SEEDS" | wc -w | tr -d ' '); nm=$(echo "${MULTS:-}" | wc -w | tr -d ' ')
+  nn=$(echo "${N_LIST:-}" | wc -w | tr -d ' '); na=$(echo "${ARMS:-burst}" | wc -w | tr -d ' ')
   case "$MODE" in
     smoke) total=$((SMOKE_RUN_S + RUN_OVERHEAD_S)) ;;
+    closed) total=$((ns * nn * (CLOSED_RUN_S + GAP_S + RUN_OVERHEAD_S))) ;;
     miss)  total=$((ns * (MISS_RUN_S + GAP_S + RUN_OVERHEAD_S)))
            if [ -n "${POP_CHECK:-}" ]; then total=$((total + MISS_RUN_S + RUN_OVERHEAD_S)); fi ;;   # popcheck: no gap after it
     cap)   total=$((ns * nm * (CAP_RUN_S + GAP_S + RUN_OVERHEAD_S))) ;;
-    burst) total=$((ns * nm * (BURST_RUN_S + GAP_S + RUN_OVERHEAD_S))) ;;
+    burst) total=$((ns * nm * na * (BURST_RUN_S + GAP_S + RUN_OVERHEAD_S))) ;;
     *)     total=0 ;;
   esac
   echo "$total"
@@ -306,7 +330,7 @@ check_time_budget() {   # check_time_budget pre|post   ("pre": before the engine
   [ "$need" -le "$rem" ] || die "planned runs do not fit the remaining wall time ($need s > $rem s); reduce SEEDS/MULTS/run lengths or request a longer --time"
 }
 
-# ------------------------------------------------------------------ the modes (smoke, miss, cap, burst)
+# ------------------------------------------------------------------ the modes (smoke, miss, closed, cap, burst)
 check_calib_hardware() {   # cap/burst must run on the hardware the calibration was measured on
   gen_python -m analysis.guards calib-hw --calib "$CALIB_FILE" --hardware "$HW" && return 0
   if [ "${ALLOW_HW_MISMATCH:-0}" = "1" ]; then log "WARNING: hardware differs from the calibration (ALLOW_HW_MISMATCH=1)"; return 0; fi
@@ -346,18 +370,73 @@ mode_cap() {   # E0b: caching on, open loop from empty at several multiples of l
   done
 }
 
-mode_burst() {  # E2: caching on, burst at t_burst, several rate multiples and seeds
+e2_run() {   # e2_run ARM MULT SEED [extra agentload args...]: one run of one arm (common arguments of all three arms)
+  local arm="$1" m="$2" seed="$3"; shift 3
+  run_gen configs/agentload_e2_burst.yaml "agentload_e2_burst" --seed "$seed" \
+      --set "arrivals.rate_mult=$m" --set "arrivals.lambda_ref=\"$CALIB_FILE:lambda_miss_turns_based\"" \
+      --set "arrivals.analysis_t_burst_s=$T_BURST" --set "meta.arm=\"$arm\"" --set "run.duration_s=$BURST_RUN_S" "$@" \
+      || { log "run failed (arm $arm mult $m seed $seed)"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
+}
+
+mode_burst() {  # E2: caching on, burst at t_burst; for each (mult, seed) the PAIRED ARMS in ARMS (same seed = same arrival and session streams)
   require_set CALIB_FILE; require_set MULTS
   check_calib_hardware
-  local m seed
+  local m seed arm
   for m in $MULTS; do
     for seed in $SEEDS; do
-      run_gen configs/agentload_e2_burst.yaml "agentload_e2_burst" --seed "$seed" \
-          --set "arrivals.rate_mult=$m" --set "arrivals.lambda_ref=\"$CALIB_FILE:lambda_miss_turns_based\"" \
-          --set "arrivals.burst.t_s=$T_BURST" --set "run.duration_s=$BURST_RUN_S" || { log "run failed (mult $m seed $seed)"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
+      for arm in $ARMS; do
+        case "$arm" in
+          burst)   e2_run burst "$m" "$seed" --set "arrivals.burst.t_s=$T_BURST" ;;
+          noburst) e2_run noburst "$m" "$seed" --set "arrivals.burst=null" ;;      # same plan, burst sessions removed
+          capped)  e2_run capped "$m" "$seed" --set "arrivals.burst.t_s=$T_BURST" --set "gate.n_cap=$GATE_N_CAP_YAML" ;;
+        esac
+        between_runs
+      done
+    done
+  done
+}
+
+mode_closed() {   # Stage C: caching on, closed population n in N_LIST, one run per (seed, n); flushed + verified between runs
+  local n seed
+  for seed in $SEEDS; do
+    for n in $N_LIST; do
+      run_gen configs/agentload_c_closed.yaml "agentload_c_closed" --seed "$seed" --set "arrivals.closed_n=$n" \
+          --set "run.duration_s=$CLOSED_RUN_S" || { log "run failed (n $n seed $seed)"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
       between_runs
     done
   done
+}
+
+# Validate ARMS / N_CAP / CAP_FILE / N_LIST BEFORE the engine is launched (a bad value must not cost GPU time).
+# Sets GATE_N_CAP_YAML (the YAML text for --set gate.n_cap=...) when the capped arm is requested.
+GATE_N_CAP_YAML=""
+validate_mode_inputs() {
+  local a v
+  case "$MODE" in
+    closed)
+      [ -n "${N_LIST:-}" ] || die "MODE=closed needs N_LIST (e.g. N_LIST=\"16 24 32\"; split the n grid over jobs so each fits the time limit)"
+      for v in $N_LIST; do case "$v" in ''|*[!0-9]*|0) die "N_LIST entries must be positive integers, got '$v'";; esac; done ;;
+    burst)
+      for a in $ARMS; do case "$a" in burst|noburst|capped) ;; *) die "ARMS entries must be burst|noburst|capped, got '$a'";; esac; done
+      [ -n "$ARMS" ] || die "ARMS is empty"
+      case " $ARMS " in *" capped "*)
+        if [ -n "${N_CAP:-}" ]; then
+          case "$N_CAP" in ''|*[!0-9]*|0) die "N_CAP must be a positive integer, got '$N_CAP'";; esac
+          GATE_N_CAP_YAML="$N_CAP"
+        else
+          require_set CAP_FILE
+          [ -f "$CAP_FILE" ] || die "CAP_FILE not found: $CAP_FILE (the mu_curve.json written by 'summarize closed')"
+          v=$(gen_python -c 'import json,sys; v=json.load(open(sys.argv[1])).get("n_cap"); print(v if isinstance(v,int) and not isinstance(v,bool) and v>=1 else "")' "$CAP_FILE") \
+              || die "cannot read $CAP_FILE"
+          [ -n "$v" ] || die "$CAP_FILE has no integer n_cap >= 1 (Stage C incomplete, or no FCFS cell?)"
+          GATE_N_CAP_YAML="\"$CAP_FILE:n_cap\""
+          log "capped arm: gate.n_cap = $v (from $CAP_FILE)"
+        fi ;;
+      esac ;;
+  esac
+  if [ "${KV_TOKENS:-}" = "native" ]; then
+    case "$ENGINE_LABEL" in *native*) ;; *) die "KV_TOKENS=native requires ENGINE_LABEL to contain 'native' (the analysis groups cells by label; do not mix pools)";; esac
+  fi
 }
 
 # ------------------------------------------------------------------ driver
@@ -377,6 +456,9 @@ job_main() {
   : "${GAP_S:=180}"
   : "${POP:=32}"; : "${POP_CHECK=64}"      # POP_CHECK="" disables the population-sensitivity run
   : "${SMOKE_RUN_S:=1800}"; : "${MISS_RUN_S:=2700}"; : "${MISS_WARMUP_S:=900}"; : "${CAP_RUN_S:=3000}"; : "${BURST_RUN_S:=8700}"; : "${T_BURST:=1200}"
+  : "${CLOSED_RUN_S:=2700}"; : "${CLOSED_WARMUP_S:=900}"      # Stage C protocol c_closed: 900 s warmup + 1800 s measured
+  : "${ARMS:=burst noburst capped}"                            # MODE=burst: the paired arms run for each (mult, seed)
+  # N_LIST (MODE=closed) has no default: the caller splits the n grid over jobs so that each job fits the time limit
   : "${TRAP_MIN_S:=3000}"; : "${HIT_EVAL_FROM_S:=4500}"      # short protocol (deviation D1); simulator: 10000 / 10000
   : "${RUN_OVERHEAD_S:=150}"; : "${TIME_MARGIN_S:=600}"; : "${STARTUP_ALLOW_S:=600}"
   : "${SERVED_MODEL:=${MODEL:-Qwen/Qwen2.5-7B-Instruct}}"
@@ -393,6 +475,7 @@ job_main() {
     *) die "OUTPUT_FEEDBACK must be server|synthetic (auto only for MODE=smoke), got '${OUTPUT_FEEDBACK:-}'" ;;
   esac
   : "${REQUEST_TOKEN_IDS:=$([ "$OUTPUT_FEEDBACK" = "server" ] && echo true || echo false)}"
+  warn_synthetic_feedback
   BASE_URL="http://127.0.0.1:$PORT"
   TS=$(date +%Y%m%d-%H%M%S)
   JOB_DIR="$RESULTS_ROOT/nova_job_logs/${SLURM_JOB_ID:-local}-$TS"
@@ -411,6 +494,7 @@ job_main() {
   check_engine_flags > "$JOB_DIR/flag_check.txt" 2>&1 || rc=$?
   cat "$JOB_DIR/flag_check.txt"
   [ "$rc" -eq 0 ] || die "engine flag/env-var check failed (STRICT_FLAGS=${STRICT_FLAGS:-1}); see $JOB_DIR/flag_check.txt"
+  validate_mode_inputs
   check_time_budget pre
   launch_engine
   wait_health "$BASE_URL$HEALTH_PATH" "${HEALTH_TIMEOUT_S:-900}"
@@ -424,9 +508,10 @@ job_main() {
   case "$MODE" in
     smoke) mode_smoke ;;
     miss)  mode_miss ;;
+    closed) mode_closed ;;
     cap)   mode_cap ;;
     burst) mode_burst ;;
-    *) die "MODE must be smoke|miss|cap|burst, got '$MODE'" ;;
+    *) die "MODE must be smoke|miss|closed|cap|burst, got '$MODE'" ;;
   esac
   post_analysis
   log "all runs finished ($FAILED_RUNS failed); results under $RESULTS_ROOT (job log dir $JOB_DIR)"

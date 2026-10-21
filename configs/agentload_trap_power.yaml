@@ -1,0 +1,25 @@
+research_question: >-
+  Operating characteristic of the pre-registered throughput-based trap criterion (analysis/trap_v2.py): in a
+  TRULY trapped regime (completions stuck at lambda_miss, arrivals at lambda > lambda_miss), how often do criteria (a)
+  (completion rate within +-15% of lambda_miss) and (b) (backlog slope > 0.5 (lambda - lambda_miss)) fire inside the
+  post-burst window of the short protocol?
+
+assumptions_note: >-
+  A counting-process MODEL, not an engine measurement: arrivals Poisson(lambda), departures Poisson(lambda_miss)
+  (a pessimistic, high-variance assumption: real departures come from many parallel multi-turn sessions and may be less
+  bursty or burstier), backlog = arrivals - departures on 10 s bins, OLS slope on the bin values, session completions
+  counted over the window (the "sessions" estimator; the turns-based estimator is NOT modelled). lambda_miss is the
+  simulator's 0.0474 sessions/s (results/prefix_meta_e0 in the main checkout; the real value is unknown until E0a).
+  The criterion's parameters are read from configs/agentload_analysis.yaml (trap_v2). Seeded; reproducible.
+
+experiment:
+  seed: 0
+  n_replicates: 20000
+  lambda_miss: 0.0474
+  lambda_mults: [1.1, 1.2, 1.3, 1.6, 1.9, 2.0]
+  window_s: [3000, 6000]              # evaluation window lengths: the short protocol's 8700 - 1200 - 4500 = 3000 s, and a doubled one
+  lambda_miss_rel_err: [0.0, 0.05]    # relative error of the lambda_miss the criterion is evaluated against (E0a noise)
+
+output:
+  root: results
+  name: agentload_trap_power

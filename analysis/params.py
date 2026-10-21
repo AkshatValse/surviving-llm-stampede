@@ -47,6 +47,14 @@ class AnalysisParams:
     def kill(self) -> Dict[str, Any]:
         return self.raw["kill"]
 
+    @property
+    def trap_v2(self) -> Dict[str, Any]:
+        return self.raw["trap_v2"]
+
+    @property
+    def closed(self) -> Dict[str, Any]:
+        return self.raw["closed"]
+
     def role(self, name: str) -> MetricRole:
         d = self.raw["engine_metrics"][name]
         return MetricRole(names=list(d["names"]), agg=str(d["agg"]))
