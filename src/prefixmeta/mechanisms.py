@@ -9,10 +9,16 @@ An *ordering* policy (``policies.py``) decides the order in which waiting reques
       fit, protection is released in latest-program-arrival order until it fits.
     * ``"rank"`` : ranking only (the PEEK paper: "protection is a ranking, not a pin"). Queued KV is evicted
       after every unprotected idle block, but it can still be evicted; admission never waits for it.
-``ttl_s``  (Continuum-like TTL pin). The KV of a session that just finished a NON-final turn is pinned until
+``ttl_s``  (TTL pin, "blocking pin"). The KV of a session that just finished a NON-final turn is pinned until
     ``finish + ttl_s``. Pinned KV is never evicted (admission waits if it does not fit). At expiry the pin is freed
     unless the session's next request is already queued (then it stays until that request is admitted).
-    The same deadlock breaker as above applies (it can only fire for pins whose session is queued).
+    ``ttl_unpin`` says when a pin is released BEFORE its expiry:
+    * ``"idle"``      (default, the round-2 pre-registered behaviour): only the idle-engine deadlock breaker releases
+      pins, so pins THROTTLE the admission of misses (a non-work-conserving admission control).
+    * ``"eager"``     (Continuum-faithful reading of the scout spec, Sec. 5.2, NOT checked against the paper or its
+      code): whenever the request being considered in a scheduling pass does not fit because of pinned KV, pins of
+      other sessions are released latest-program-arrival first until it fits or no pin is left.
+    * ``"eager_fit"`` (sensitivity): as ``eager`` but pins are released only if that makes the request fit.
 ``session_cap``  (CAP / LB-CAP / AIMD-CAP). Sessions beyond the cap wait in a gate and are not in the system.
     A static integer, ``lb`` (= N_lb = floor(M / E_lb), E_lb the length-biased mean context), ``{lb_mult: x}``
     (= floor(x N_lb)) or an AIMD controller (``{aimd: {...}}``) that is stepped every ``interval_s`` seconds.
@@ -79,11 +85,15 @@ def aimd_step(cap: int, hit_rate: float, usage: float, p: AimdParams) -> int:
     return new
 
 
+TTL_UNPIN_MODES = ("idle", "eager", "eager_fit")
+
+
 @dataclass(frozen=True)
 class Mechanisms:
     protect_queued: Optional[str] = None      # None | "pin" | "rank"
     ttl_s: Optional[float] = None
     aimd: Optional[AimdParams] = None
+    ttl_unpin: str = "idle"                   # one of TTL_UNPIN_MODES (only meaningful with ttl_s)
 
     @property
     def any_protection(self) -> bool:
@@ -134,4 +144,9 @@ def make_mechanisms(spec: Dict[str, Any], aimd: Optional[AimdParams]) -> Mechani
         ttl = float(ttl)
         if ttl <= 0:
             raise ValueError("ttl_pin_s must be > 0")
-    return Mechanisms(protect_queued=pq, ttl_s=ttl, aimd=aimd)
+    unpin = spec.get("ttl_unpin", "idle")
+    if unpin not in TTL_UNPIN_MODES:
+        raise ValueError(f"ttl_unpin must be one of {TTL_UNPIN_MODES}, got {unpin!r}")
+    if unpin != "idle" and ttl is None:
+        raise ValueError("ttl_unpin requires ttl_pin_s")
+    return Mechanisms(protect_queued=pq, ttl_s=ttl, aimd=aimd, ttl_unpin=unpin)

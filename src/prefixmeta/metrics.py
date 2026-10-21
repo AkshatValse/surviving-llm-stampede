@@ -256,3 +256,32 @@ def longest_run_below(values: Sequence[float], thresh: float) -> int:
         else:
             cur = 0
     return best
+
+
+def trailing_low_hit_onset(t_start: Sequence[float], hit_rate: Sequence[float], thresh: float, width: float
+                           ) -> float:
+    """Start time of the maximal TRAILING run of consecutive complete windows whose hit rate is < ``thresh`` (a NaN hit
+    rate, i.e. a window without admissions, breaks the run; so does a gap in ``t_start``). NaN if the last window is not
+    below the threshold. This is the single event time of the escape experiments (round-2 review finding 9)."""
+    t = list(t_start)
+    h = list(hit_rate)
+    onset = float("nan")
+    i = len(t) - 1
+    while i >= 0:
+        if not (h[i] == h[i] and h[i] < thresh):
+            break
+        if i + 1 < len(t) and abs(t[i + 1] - t[i] - width) > 1e-6:
+            break
+        onset = float(t[i])
+        i -= 1
+    return onset
+
+
+def first_good_window(rows: List[Dict[str, float]], hit_above: float, backlog_below: float) -> float:
+    """Start time of the first complete window with hit rate > ``hit_above`` AND (waiting queue + gate queue) mean
+    < ``backlog_below``; NaN if there is none. (Time to first good window; a lower bound on the recovery time.)"""
+    for r in sorted(rows, key=lambda x: x["t_start"]):
+        hr = r["hit_rate"]
+        if hr == hr and hr > hit_above and (r["queue_mean"] + r["gate_mean"]) < backlog_below:
+            return float(r["t_start"])
+    return float("nan")

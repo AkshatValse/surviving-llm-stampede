@@ -65,6 +65,10 @@ Round-2 mechanisms (``mechanisms.py``; all off by default, which reproduces the 
   and tool returns; a tool return at exactly the expiry time wins). At expiry the pin is dropped unless the session's
   next request is queued, in which case it stays until that request is admitted. An expired pin leaves the KV as
   ordinary evictable idle KV at its LRU position.
+* TTL-pin release before expiry (``Mechanisms.ttl_unpin``): "idle" (default) = only the deadlock breaker below
+  ("pins throttle admission"); "eager" / "eager_fit" = Continuum-style release of pins, latest program arrival first,
+  whenever the request under consideration does not fit (round-2 review finding 1; the Continuum rule is taken from
+  the scout summary and is NOT verified against the paper or its code).
 * Deadlock breaker: if the engine is idle (nothing running), a request is waiting, memory is blocked by hard
   protection and no pin expiry is pending, protection is released in LATEST-program-arrival order (largest session id
   first, never the blocked request's own session) until the blocked request fits. Counted in ``n_stall_breaks`` /
@@ -165,6 +169,7 @@ class Engine:
         self.mech = mech if mech is not None else Mechanisms()
         self._peek = self.mech.protect_queued          # None | "pin" | "rank"
         self._ttl = self.mech.ttl_s
+        self._unpin = self.mech.ttl_unpin               # "idle" | "eager" | "eager_fit" (see mechanisms.py)
         self.aimd = self.mech.aimd
         self.M = float(params.kv_memory_tokens)
         max_end = wl.end_len(wl.max_turns)
@@ -257,6 +262,7 @@ class Engine:
         self.max_queue_pre_stop = 0
         self.n_stall_breaks = 0
         self.n_released = 0
+        self.n_eager_unpins = 0            # pins released by the eager-unpin rule (ttl_unpin != "idle")
         self.n_pins = 0
         self.n_pin_expired = 0
         self.n_soft_evictions = 0
@@ -406,6 +412,31 @@ class Engine:
         self.n_released += released
         self.dirty = True
         return True
+
+    def _eager_unpin(self, req: Request) -> bool:
+        """Continuum-style release (``ttl_unpin`` "eager" / "eager_fit"): ``req`` does not fit because of hard-protected
+        KV of other sessions; release TTL pins of other sessions, latest program arrival (largest session id) first,
+        until it fits or no pin is left. With "eager_fit" nothing is released unless that makes ``req`` fit. Returns
+        True if at least one pin was released."""
+        own = req.sid
+        M = self.M
+        hard = self._hard
+        if self._unpin == "eager_fit":
+            nonpin = sum(kv for sid, kv in hard.items() if sid != own and sid not in self._pin)
+            if self.reserved + req.end + nonpin > M:
+                return False
+        released = 0
+        for sid in sorted(self._pin, reverse=True):
+            if self.reserved + req.end + self._hard_sum - hard.get(own, 0) <= M:
+                break
+            if sid == own:
+                continue
+            del self._pin[sid]
+            self._refresh_prot(sid)
+            released += 1
+        if released:
+            self.n_eager_unpins += released
+        return released > 0
 
     def _evict(self, need: int) -> None:
         """Free at least ``need`` tokens of idle KV: unprotected LRU-first, then soft-protected LRU-first. Hard
@@ -724,6 +755,8 @@ class Engine:
             if self._hard_sum:
                 # hard-protected idle KV of OTHER sessions cannot be evicted to make room
                 need_ok = self.reserved + req.end + self._hard_sum - self._hard.get(req.sid, 0) <= M
+                if not need_ok and self._unpin != "idle" and self._pin and self._eager_unpin(req):
+                    need_ok = (self.reserved + req.end + self._hard_sum - self._hard.get(req.sid, 0) <= M)
             else:
                 need_ok = self.reserved + req.end <= M
             if not need_ok:
@@ -943,6 +976,7 @@ class Engine:
             "n_pin_expired": self.n_pin_expired,
             "n_stall_breaks": self.n_stall_breaks,
             "n_released": self.n_released,
+            "n_eager_unpins": self.n_eager_unpins,
             "n_soft_evictions": self.n_soft_evictions,
         }
 

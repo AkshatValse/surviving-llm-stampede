@@ -26,11 +26,11 @@ import pandas as pd
 import yaml
 
 from . import runner as R1
-from .metrics import longest_run_below, tail_stats, trend_rise
+from .metrics import first_good_window, longest_run_below, tail_stats, trailing_low_hit_onset, trend_rise
 from .runner import (HARDWARE, Runner, apply_overrides, collect_frames, env_versions, git_info, new_result_dir,
                      sanitize, save_frames, timing_summary)
 from .sim import RunSpec, deep_update, load_config
-from .survival import summarize_escape
+from .survival import km_median_ci, summarize_escape
 from .workload import (ArrivalPlan, WorkloadParams, length_biased_mean_context, length_biased_session_cap)
 
 
@@ -162,9 +162,12 @@ def burst_columns(runs: pd.DataFrame, wins: pd.DataFrame, b: dict, W: float, tb:
 
 def burst_counts(runs: pd.DataFrame, keys: Sequence[str]) -> pd.DataFrame:
     g = runs.groupby(list(keys), sort=False)
-    return g.agg(n_runs=("seed", "size"), n_trapped=("trapped", "sum"), n_burst_recovered=("burst_recovered", "sum"),
-                 hit_eval_mean=("hit_eval", "mean"), hit_eval_min=("hit_eval", "min"),
-                 hit_eval_max=("hit_eval", "max"), tail_backlog_mean=("tail_backlog_mean", "mean")).reset_index()
+    out = g.agg(n_runs=("seed", "size"), n_trapped=("trapped", "sum"), n_burst_recovered=("burst_recovered", "sum"),
+                hit_eval_mean=("hit_eval", "mean"), hit_eval_min=("hit_eval", "min"),
+                hit_eval_max=("hit_eval", "max"), tail_backlog_mean=("tail_backlog_mean", "mean")).reset_index()
+    # strict reading (amendment 2): a burst run that did not return to hit > 0.8 AND backlog < 20 counts as congested
+    out["n_not_burst_recovered"] = out["n_runs"] - out["n_burst_recovered"]
+    return out
 
 
 # ======================================================================= lambda_miss and stable limits
@@ -240,6 +243,13 @@ def find_stable_limit(R: Runner, cfg: dict, policy: str, lam_miss: float, lim: d
         else:
             hi_m = m
             break
+    if lo_m == 0.0 and lim.get("lower_mults"):
+        # unstable already at lambda_miss (small systems): search downwards for a stable multiple
+        for m in sorted(lim["lower_mults"], reverse=True):
+            if test(m * lam_miss, m, "bracket_down"):
+                lo_m = m
+                break
+            hi_m = m
     unbounded = hi_m is None
     if not unbounded:
         lo, hi = lo_m * lam_miss, hi_m * lam_miss
@@ -266,23 +276,87 @@ def strip_for_storage(res: Dict[str, Any]) -> Dict[str, Any]:
     return {"summary": res["summary"], "windows": [], "qtrace": []}
 
 
+# ======================================================================= good-state capacity (P6, amendment 2)
+def capacity_by_population(rows: pd.DataFrame) -> pd.DataFrame:
+    """Mean / sd over seeds of the post-warmup closed-population throughput, per (policy, population)."""
+    g = rows.groupby(["policy", "population"], sort=False)
+    return g.agg(n_seeds=("seed", "size"), sessions_per_s=("sessions_per_s", "mean"),
+                 sessions_per_s_sd=("sessions_per_s", "std"), turns_per_s=("turns_per_s", "mean"),
+                 hit_rate=("hit_rate", "mean"), busy_frac=("busy_frac", "mean")).reset_index()
+
+
+def capacity_ceilings(by_pop: pd.DataFrame, ref: str = "lpm") -> pd.DataFrame:
+    """Good-state throughput ceiling of each policy = max over the population grid of the seed-mean closed-population
+    throughput (sessions/s), the population attaining it, and the ratio to the ``ref`` policy's ceiling. The max over
+    populations is deliberately generous to work-conserving policies (it picks their best-case population) and so
+    biases the ratio of a cap / pin policy DOWN, i.e. against the hypothesis."""
+    rows = []
+    for pol, g in by_pop.groupby("policy", sort=False):
+        i = g["sessions_per_s"].idxmax()
+        rows.append({"policy": pol, "ceiling_sessions_per_s": float(g.loc[i, "sessions_per_s"]),
+                     "population_at_ceiling": int(g.loc[i, "population"]),
+                     "hit_rate_at_ceiling": float(g.loc[i, "hit_rate"]),
+                     "throughput_at_largest_population": float(g.sort_values("population")["sessions_per_s"].iloc[-1])})
+    out = pd.DataFrame(rows)
+    r = out.loc[out["policy"] == ref, "ceiling_sessions_per_s"]
+    out["ratio_to_" + ref] = out["ceiling_sessions_per_s"] / float(r.iloc[0]) if len(r) else float("nan")
+    return out
+
+
 # ======================================================================= phase
+def phase_horizon(ph: dict, mult: float) -> float:
+    """Horizon of a phase run at ``mult`` x lambda_miss: ``long_horizon_s`` for mult <= ``long_horizon_up_to_mult``
+    (recovery just below lambda_miss takes 12k-73k s, round-2 review finding 7), else ``horizon_s``."""
+    lh, up = ph.get("long_horizon_s"), ph.get("long_horizon_up_to_mult")
+    if lh is not None and up is not None and mult <= float(up) + 1e-9:
+        return float(lh)
+    return float(ph["horizon_s"])
+
+
+def phase_derived(runs: pd.DataFrame, wins: pd.DataFrame, ph: dict) -> pd.DataFrame:
+    """Per-run derived columns, all computed from the recorded windows: ``recovered_registered_horizon`` (the same
+    criterion applied to the last ``tail`` seconds of the REGISTERED horizon ``horizon_s``, which is how the prediction
+    would have been judged without the long-horizon fix) and ``t_first_good_s`` (start of the first window with hit
+    rate > recovered_hit_above and backlog < recovered_backlog_below)."""
+    H0 = float(ph["horizon_s"])
+    tail = float(ph.get("registered_tail_s", 5000.0))
+    by_run = {rid: g.sort_values("t_start").to_dict("records") for rid, g in wins.groupby("run_id")}
+    ha, bb = ph["recovered_hit_above"], ph["recovered_backlog_below"]
+    reg, tfg = [], []
+    for rid in runs["run_id"]:
+        w = by_run[rid]
+        ts = tail_stats(w, H0 - tail, H0)
+        reg.append(bool(ts["n_windows"] > 0 and ts["hit_rate"] > ha and ts["queue_mean"] + ts["gate_mean"] < bb))
+        tfg.append(first_good_window(w, ha, bb))
+    out = runs.copy()
+    out["recovered_registered_horizon"] = reg
+    out["t_first_good_s"] = tfg
+    return out
+
+
 def cmd_phase(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     ph = exp_cfg_deep(cfg, "phase", args.quick)
     cal = base_calibration(cfg, args, repo_dir)
     ctx = begin("phase", "prefix_meta_phase", cfg, {**cfg, "phase_effective": ph, "calibration": cal}, args, repo_dir)
-    lam_miss, H, cold = cal["lambda_miss"], ph["horizon_s"], ph["cold_sessions"]
-    specs = [RunSpec(exp="phase", policy=p, seed=sd, horizon_s=H, variant="cold",
-                     plan=ArrivalPlan(kind="constant", horizon_s=H, rate=m * lam_miss, initial_cold=cold),
-                     meta=_meta(m * lam_miss, m, cold_sessions=cold))
+    lam_miss, cold = cal["lambda_miss"], ph["cold_sessions"]
+    specs = [RunSpec(exp="phase", policy=p, seed=sd, horizon_s=phase_horizon(ph, m), variant="cold",
+                     plan=ArrivalPlan(kind="constant", horizon_s=phase_horizon(ph, m), rate=m * lam_miss,
+                                      initial_cold=cold),
+                     meta=_meta(m * lam_miss, m, cold_sessions=cold, horizon_used_s=phase_horizon(ph, m)))
              for m in ph["lam_mults"] for p in ph["policies"] for sd in ph["seeds"]]
     with Runner(cfg, args.workers) as R:
         results = R.run(specs)
     runs, wins, qts = collect_frames(results, specs)
     runs = add_recovery(runs, ph["recovered_hit_above"], ph["recovered_backlog_below"])
+    runs = phase_derived(runs, wins, ph)
     save_frames(ctx.out, runs, wins, qts)
     tab = recovery_counts(runs, ["policy", "lam_mult"])
     tab.insert(2, "lam", [m * lam_miss for m in tab["lam_mult"]])
+    extra = runs.groupby(["policy", "lam_mult"], sort=False).agg(
+        n_recovered_registered_horizon=("recovered_registered_horizon", "sum"),
+        t_first_good_median_s=("t_first_good_s", "median"), n_first_good=("t_first_good_s", lambda x: int(x.notna().sum())),
+        horizon_used_s=("horizon_used_s", "max")).reset_index()
+    tab = tab.merge(extra, on=["policy", "lam_mult"])
     tab.to_csv(ctx.out / "phase_table.csv", index=False)
     finish(ctx, runs["seed"], {"calibration": cal, "n_runs": int(len(runs)), "timing": timing_summary(runs),
                                "lam_mults_ge_round1_lambda_cap": [m for m in ph["lam_mults"]
@@ -299,14 +373,17 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     if getattr(args, "only", None):
         mc["policies"] = [p for p in mc["policies"] if p in args.only]
         mc["limit"] = {**mc["limit"], "policies": [p for p in mc["limit"]["policies"] if p in args.only]}
+        if mc.get("capacity"):
+            mc["capacity"] = {**mc["capacity"], "policies": [p for p in mc["capacity"]["policies"] if p in args.only]}
     cal = base_calibration(cfg, args, repo_dir)
     ctx = begin("mech", "prefix_meta_mech", cfg, {**cfg, "mech_effective": mc, "calibration": cal}, args, repo_dir)
     lam_miss = cal["lambda_miss"]
     W = cfg["metrics"]["window_s"]
     pols = mc["policies"]
-    cd, bd, cs, lim = mc["cold"], mc["burst"], mc.get("cap_sweep"), mc["limit"]
+    cd, bd, cs, lim, cp = mc["cold"], mc["burst"], mc.get("cap_sweep"), mc["limit"], mc.get("capacity")
 
     specs: List[RunSpec] = []
+    parts: List[str] = []
     # (A) recovery from a cold start
     for m in cd["lam_mults"]:
         for p in pols:
@@ -315,7 +392,7 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
                                      plan=ArrivalPlan(kind="constant", horizon_s=cd["horizon_s"], rate=m * lam_miss,
                                                       initial_cold=cd["cold_sessions"]),
                                      meta=_meta(m * lam_miss, m, cold_sessions=cd["cold_sessions"])))
-    n_cold = len(specs)
+                parts.append("cold")
     # (B) burst on top of a good state
     tb = bd["warmup_s"]
     Hb = tb + bd["after_s"]
@@ -327,7 +404,7 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
                                                   burst_n=bd["burst_sessions"], burst_t0=tb,
                                                   burst_width_s=bd["burst_width_s"]),
                                  meta=_meta(lam_b, bd["lam_mult"], t_burst=tb, burst_sessions=bd["burst_sessions"])))
-    n_burst_end = len(specs)
+            parts.append("burst")
     # (C) supplementary static-cap sweep (cliff)
     N_lb = cal["N_lb"]
     sweep_caps: List[int] = []
@@ -341,6 +418,21 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
                                                       rate=cs["lam_mult"] * lam_miss, initial_cold=cs["cold_sessions"]),
                                      meta=_meta(cs["lam_mult"] * lam_miss, cs["lam_mult"],
                                                 cold_sessions=cs["cold_sessions"], cap=c)))
+                parts.append("capsweep")
+    # (E) good-state capacity: closed population WITH the cache, throughput ceiling over the population grid
+    cap_pols: List[str] = []
+    if cp:
+        cap_pols = list(cp["policies"])
+        for p in cap_pols:
+            for n_pop in cp["populations"]:
+                for sd in cp["seeds"]:
+                    specs.append(RunSpec(exp="mech", policy=p, seed=sd, horizon_s=cp["horizon_s"],
+                                         variant=f"closedN={n_pop}",
+                                         plan=ArrivalPlan(kind="closed", horizon_s=cp["horizon_s"], closed_n=int(n_pop),
+                                                          pool=int(cp["pool_sessions"])),
+                                         meta={"lam": float("nan"), "lam_mult": float("nan"),
+                                               "population": int(n_pop)}))
+                    parts.append("capacity")
     with Runner(cfg, args.workers) as R:
         results = R.run(specs)
         # (D) from-empty stable limits
@@ -355,7 +447,18 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
 
     # ---- assemble
     runs, wins, qts = collect_frames(results, specs)
-    runs["part"] = ["cold"] * n_cold + ["burst"] * (n_burst_end - n_cold) + ["capsweep"] * (len(specs) - n_burst_end)
+    runs["part"] = parts
+    # capacity rows: post-warmup closed-population throughput (before the windows of those runs are dropped)
+    cap_rows: List[Dict[str, Any]] = []
+    if cp:
+        for res, rs, part in zip(results, specs, parts):
+            if part != "capacity":
+                continue
+            thr = R1.miss_throughput(res, cp["warmup_s"], W)
+            tl = tail_stats(res["windows"], cp["warmup_s"], rs.horizon_s)
+            cap_rows.append({"policy": rs.policy, "population": rs.meta["population"], "seed": rs.seed,
+                             "sessions_per_s": thr["sessions_per_s"], "turns_per_s": thr["turns_per_s"],
+                             "hit_rate": tl["hit_rate"], "busy_frac": thr["busy_frac"]})
     runs = add_recovery(runs, cd["recovered_hit_above"], cd["recovered_backlog_below"])
     is_b = (runs["part"] == "burst").to_numpy()
     bruns = burst_columns(runs[is_b].reset_index(drop=True), wins, bd, W, tb)
@@ -373,9 +476,17 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
         t = recovery_counts(cap, ["variant", "lam_mult"])
         t["cap"] = [int(v.split("=")[1]) for v in t["variant"]]
         t.to_csv(ctx.out / "mech_capsweep_table.csv", index=False)
-    lrows = [r for s in limit_summaries for r in s["search_rows"]]
+    cap_ceil = None
+    if cap_rows:
+        cr = pd.DataFrame(cap_rows)
+        cr.to_csv(ctx.out / "mech_capacity_runs.csv", index=False)
+        bp = capacity_by_population(cr)
+        bp.to_csv(ctx.out / "mech_capacity_by_population.csv", index=False)
+        cap_ceil = capacity_ceilings(bp, "lpm")
+        cap_ceil.to_csv(ctx.out / "mech_capacity.csv", index=False)
+    lrows = [r for s_ in limit_summaries for r in s_["search_rows"]]
     pd.DataFrame(lrows).to_csv(ctx.out / "limit_search.csv", index=False)
-    lt = pd.DataFrame([{k: v for k, v in s.items() if k != "search_rows"} for s in limit_summaries])
+    lt = pd.DataFrame([{k: v for k, v in s_.items() if k != "search_rows"} for s_ in limit_summaries])
     ref = lt[lt["policy"] == "lpm"]["lambda_cap"]
     lt["ratio_to_lpm"] = lt["lambda_cap"] / float(ref.iloc[0]) if len(ref) else float("nan")
     lt.to_csv(ctx.out / "mech_limits.csv", index=False)
@@ -383,11 +494,13 @@ def cmd_mech(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     finish(ctx, [rs.seed for rs in allspecs],
            {"calibration": cal, "n_runs": int(len(specs)), "n_limit_search_runs": len(limit_specs),
             "timing": timing_summary(runs), "N_lb": N_lb, "E_lb": cal["E_lb"], "cap_sweep_caps": sweep_caps,
-            "cap_1p3": int(math.floor(1.3 * N_lb)), "lam_burst": lam_b})
+            "cap_1p3": int(math.floor(1.3 * N_lb)), "lam_burst": lam_b, "capacity_policies": cap_pols})
     with pd.option_context("display.width", 250, "display.max_rows", 500):
         print(recovery_counts(cold, ["policy", "lam_mult"]).to_string())
         print(burst_counts(bsub, ["policy", "lam_mult"]).to_string())
         print(lt.drop(columns=[]).to_string())
+        if cap_ceil is not None:
+            print(cap_ceil.to_string())
     print("result dir:", ctx.out)
     return ctx.out
 
@@ -411,15 +524,85 @@ def collapse_queue_threshold(engine_cfg: dict, wl: WorkloadParams, k: float, fac
     return int(math.floor(factor * float(engine_cfg["kv_memory_tokens"]) * k / length_biased_mean_context(wl)))
 
 
-def cmd_escape(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
-    ec = exp_cfg_deep(cfg, "escape", args.quick)
-    ctx = begin("escape", "prefix_meta_escape", cfg, {**cfg, "escape_effective": ec}, args, repo_dir)
+def scale_limit_cfg(lim: dict, k: float) -> dict:
+    """Stability thresholds of the from-empty limit search for a size-k system: the absolute backlog thresholds are
+    multiplied by max(1, k) (identical to the unscaled E0 procedure for k <= 1; a size-4 system has 4x the sessions,
+    so its steady-state backlog noise is larger)."""
+    f = max(1.0, float(k))
+    out = dict(lim)
+    out["unstable_backlog_stop"] = int(round(lim["unstable_backlog_stop"] * f))
+    out["stable_final_backlog_below"] = lim["stable_final_backlog_below"] * f
+    out["stable_trend_max_rise"] = lim["stable_trend_max_rise"] * f
+    return out
+
+
+def escape_event_times(runs: pd.DataFrame, wins: pd.DataFrame, hit_below: float, window_s: float) -> pd.DataFrame:
+    """Single, pre-specified event time of the escape experiments (round-2 review finding 9): the ONSET of the
+    hit-rate collapse = start of the maximal trailing run of complete windows with hit rate < ``hit_below`` at the
+    moment the run stopped. A hit-rule stop already is such an onset (``stop_time``); a queue-rule stop is
+    later than the onset (the queue needs ~2000 s to cross its threshold), so the onset is recovered from the windows;
+    if the last complete window before a queue stop is not below the threshold the crossing time is used (flagged).
+    Adds ``stop_time_s``, ``onset_source``, ``escape_time_s``, ``obs_time_s``."""
+    by_run = {rid: g.sort_values("t_start") for rid, g in wins.groupby("run_id")} if len(wins) else {}
+    out = runs.copy()
+    esc = out["stopped_early"].astype(bool).to_numpy()
+    stop = out["stop_time"].to_numpy(dtype=float)
+    reason = out["stop_reason"].astype(str).to_numpy()
+    onset, source = [], []
+    for i, rid in enumerate(out["run_id"]):
+        if not esc[i]:
+            onset.append(float("nan"))
+            source.append("")
+            continue
+        w = by_run.get(rid)
+        o = float("nan")
+        if w is not None and len(w):
+            o = trailing_low_hit_onset(w["t_start"].to_numpy(), w["hit_rate"].to_numpy(), hit_below, window_s)
+        if reason[i] == "hit":
+            onset.append(stop[i])             # the engine's own streak onset
+            source.append("hit")
+        elif o == o:
+            onset.append(o)
+            source.append("queue_trailing_low_hit")
+        else:
+            onset.append(stop[i])
+            source.append("queue_crossing_fallback")
+    out["stop_time_s"] = np.where(esc, stop, np.nan)
+    out["onset_source"] = source
+    out["escape_time_s"] = onset
+    return out
+
+
+def calib_row(k: float, pop: int, lm: float, per_seed: List[float], busy: float, lm1: Optional[float]) -> Dict[str, Any]:
+    """One row of escape_calib.csv: lambda_miss(k) with a 95 % t-interval over the calibration seeds and its deviation
+    from the exact fluid scaling k * lambda_miss(1)."""
+    from scipy import stats as _st
+    x = np.asarray(per_seed, dtype=float)
+    n = len(x)
+    sd = float(np.std(x, ddof=1)) if n > 1 else float("nan")
+    half = float(_st.t.ppf(0.975, n - 1) * sd / math.sqrt(n)) if n > 1 else float("nan")
+    row = {"k": k, "population": pop, "lambda_miss": lm, "lambda_miss_over_k": lm / k, "lambda_miss_sd": sd,
+           "lambda_miss_ci95_lo": lm - half, "lambda_miss_ci95_hi": lm + half, "n_seeds": n,
+           "tail_busy_frac": busy, "per_seed": json.dumps(per_seed)}
+    if lm1 is not None:
+        row["fluid_lambda_miss"] = k * lm1
+        row["rel_dev_from_fluid"] = lm / (k * lm1) - 1.0
+    return row
+
+
+def cmd_escape(cfg: dict, args: argparse.Namespace, repo_dir: Path, section: str = "escape",
+               name: str = "prefix_meta_escape") -> Path:
+    ec = exp_cfg_deep(cfg, section, args.quick)
+    ctx = begin("escape", name, cfg, {**cfg, f"{section}_effective": ec}, args, repo_dir)
     wl = WorkloadParams.from_dict(cfg["workload"])
     cc = ec["calib"]
+    scalings = list(ec.get("scalings", ["calibrated"]))
     # ---- lambda_miss(k)
-    calib_rows, lam_miss_k = [], {}
+    calib_rows, lam_miss_k, per_seed_k = [], {}, {}
     calib_specs: List[RunSpec] = []
     calib_res: List[Dict[str, Any]] = []
+    limit_summaries: List[Dict[str, Any]] = []
+    limit_specs: List[RunSpec] = []
     with Runner(cfg, args.workers) as R:
         for k in ec["sizes"]:
             eo = scaled_engine_overrides(cfg["engine"], k)
@@ -427,57 +610,109 @@ def cmd_escape(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
             lm, per_seed, sp, rs = measure_lambda_miss(R, cfg, pop, cc["seeds"], cc["horizon_s"], cc["warmup_s"],
                                                        cc["pool_sessions"], engine_overrides=eo, variant=f"k={k}")
             lam_miss_k[k] = lm
+            per_seed_k[k] = per_seed
             calib_specs += sp
             calib_res += [strip_for_storage(r) for r in rs]
             busy = float(np.mean([r["summary"]["tail_busy_frac"] for r in rs]))
-            calib_rows.append({"k": k, "population": pop, "lambda_miss": lm, "lambda_miss_over_k": lm / k,
-                               "tail_busy_frac": busy, "per_seed": json.dumps(per_seed)})
-        pd.DataFrame(calib_rows).to_csv(ctx.out / "escape_calib.csv", index=False)
+            calib_rows.append((k, pop, lm, per_seed, busy))
+        lm1 = lam_miss_k.get(1.0)
+        if "fluid" in scalings and lm1 is None:
+            raise ValueError("scaling 'fluid' needs k = 1.0 in sizes (lambda = m * k * lambda_miss(1))")
+        calib_df = pd.DataFrame([calib_row(k, pop, lm, ps, busy, lm1) for (k, pop, lm, ps, busy) in calib_rows])
+        calib_df.to_csv(ctx.out / "escape_calib.csv", index=False)
+        # ---- from-empty stable limit of the escape policy at each size (context for lambda / lambda_cap(k))
+        lim_cfg = ec.get("limit")
+        if lim_cfg:
+            for k in ec["sizes"]:
+                eo = scaled_engine_overrides(cfg["engine"], k)
+                summ, sp, _ = find_stable_limit(R, cfg, ec["policy"], lam_miss_k[k], scale_limit_cfg(lim_cfg, k),
+                                                engine_overrides=eo, variant=f"k={k}", exp="escape_limit")
+                summ["k"] = k
+                limit_summaries.append(summ)
+                limit_specs += sp
+            pd.DataFrame([r for sm in limit_summaries for r in sm["search_rows"]]).to_csv(
+                ctx.out / "escape_limit_search.csv", index=False)
+            lt = pd.DataFrame([{kk: v for kk, v in sm.items() if kk != "search_rows"} for sm in limit_summaries])
+            lt["lambda_cap_over_lambda_miss"] = lt["lambda_cap"] / lt["lambda_miss"]
+            lt.to_csv(ctx.out / "escape_limits.csv", index=False)
         # ---- escape runs
         specs: List[RunSpec] = []
-        for k in ec["sizes"]:
-            eo = scaled_engine_overrides(cfg["engine"], k)
-            thr = collapse_queue_threshold(cfg["engine"], wl, k, ec["queue_factor"])
-            for m in ec["lam_mults"]:
-                lam = m * lam_miss_k[k]
-                for sd in ec["seeds"]:
-                    specs.append(RunSpec(exp="escape", policy=ec["policy"], seed=sd, horizon_s=ec["horizon_s"],
-                                         variant=f"k={k}", engine_overrides=eo, stop_queue_above=thr,
-                                         stop_low_hit=(ec["hit_below"], int(ec["hit_windows"])),
-                                         plan=ArrivalPlan(kind="constant", horizon_s=ec["horizon_s"], rate=lam),
-                                         meta=_meta(lam, m, k=k, queue_threshold=thr)))
+        for scaling in scalings:
+            for k in ec["sizes"]:
+                if scaling == "fluid" and k == 1.0:
+                    continue                      # identical to the calibrated k = 1 runs (same lambda, same seeds)
+                eo = scaled_engine_overrides(cfg["engine"], k)
+                thr = collapse_queue_threshold(cfg["engine"], wl, k, ec["queue_factor"])
+                base_rate = lam_miss_k[k] if scaling == "calibrated" else k * lam_miss_k[1.0]
+                for m in ec["lam_mults"]:
+                    lam = m * base_rate
+                    for sd in ec["seeds"]:
+                        specs.append(RunSpec(exp="escape", policy=ec["policy"], seed=sd, horizon_s=ec["horizon_s"],
+                                             variant=f"k={k}", engine_overrides=eo, stop_queue_above=thr,
+                                             stop_low_hit=(ec["hit_below"], int(ec["hit_windows"])),
+                                             plan=ArrivalPlan(kind="constant", horizon_s=ec["horizon_s"], rate=lam),
+                                             meta=_meta(lam, m, k=k, queue_threshold=thr, scaling=scaling)))
         results = R.run(specs)
     runs, wins, qts = collect_frames(results, specs)
     runs["escaped"] = runs["stopped_early"].astype(bool)
-    runs["escape_time_s"] = np.where(runs["escaped"], runs["stop_time"], np.nan)
-    runs["obs_time_s"] = np.where(runs["escaped"], runs["stop_time"], ec["horizon_s"])
+    runs = escape_event_times(runs, wins, ec["hit_below"], cfg["metrics"]["window_s"])
+    runs["obs_time_s"] = np.where(runs["escaped"], runs["escape_time_s"], ec["horizon_s"])
     save_frames(ctx.out, runs, wins, qts)
-    tab = escape_table(runs, ec["horizon_s"])
+    lim_by_k = {sm["k"]: sm for sm in limit_summaries}
+    tab = escape_table(runs, ec["horizon_s"], lim_by_k, lam_miss_k)
     tab.to_csv(ctx.out / "escape_summary.csv", index=False)
-    runs[["policy", "seed", "k", "lam_mult", "lam", "queue_threshold", "escaped", "stop_reason", "escape_time_s",
-          "obs_time_s", "sim_end_s", "max_queue", "hit_rate_all"]].to_csv(ctx.out / "escape_runs.csv", index=False)
-    finish(ctx, runs["seed"], {"n_runs": int(len(runs)), "timing": timing_summary(runs),
-                               "lambda_miss_by_k": {str(k): v for k, v in lam_miss_k.items()},
-                               "queue_thresholds": {str(k): collapse_queue_threshold(cfg["engine"], wl, k,
-                                                                                     ec["queue_factor"])
-                                                    for k in ec["sizes"]}})
+    runs[["policy", "seed", "k", "scaling", "lam_mult", "lam", "queue_threshold", "escaped", "stop_reason",
+          "stop_time_s", "escape_time_s", "onset_source", "obs_time_s", "sim_end_s", "max_queue",
+          "hit_rate_all"]].to_csv(ctx.out / "escape_runs.csv", index=False)
+    finish(ctx, [rs.seed for rs in specs + limit_specs + calib_specs],
+           {"n_runs": int(len(runs)), "n_limit_search_runs": len(limit_specs), "timing": timing_summary(runs),
+            "lambda_miss_by_k": {str(k): v for k, v in lam_miss_k.items()}, "scalings": scalings,
+            "queue_thresholds": {str(k): collapse_queue_threshold(cfg["engine"], wl, k, ec["queue_factor"])
+                                 for k in ec["sizes"]},
+            "lambda_cap_by_k": {str(k): sm["lambda_cap"] for k, sm in lim_by_k.items()}})
     with pd.option_context("display.width", 250, "display.max_rows", 500):
-        print(pd.DataFrame(calib_rows).drop(columns=["per_seed"]).to_string())
+        print(calib_df.drop(columns=["per_seed"]).to_string())
+        if limit_summaries:
+            print(lt.to_string())
         print(tab.to_string())
     print("result dir:", ctx.out)
     return ctx.out
 
 
-def escape_table(runs: pd.DataFrame, horizon: float) -> pd.DataFrame:
-    """Per (k, lam_mult): Kaplan-Meier / exponential-MLE summaries of the time to collapse (right-censored at the
-    horizon), plus the stop reasons."""
+def escape_table(runs: pd.DataFrame, horizon: float, lim_by_k: Optional[Dict[float, Dict[str, Any]]] = None,
+                 lam_miss_k: Optional[Dict[float, float]] = None) -> pd.DataFrame:
+    """Per (scaling, k, lam_mult): Kaplan-Meier / exponential-MLE summaries of the time to collapse (right-censored at
+    the horizon; event time = hit-collapse onset), stop reasons, the KM median with a Greenwood log-log interval, and
+    lambda / lambda_cap(k) when the per-size limit was measured. The fluid k = 1 rows are copies of the calibrated
+    k = 1 rows (identical runs) and are flagged."""
+    if "scaling" not in runs.columns:
+        runs = runs.assign(scaling="calibrated")
     rows = []
-    for (k, m), g in runs.groupby(["k", "lam_mult"], sort=True):
-        s = summarize_escape(g["obs_time_s"].to_numpy(), g["escaped"].to_numpy(), horizon)
-        reasons = g.loc[g["escaped"], "stop_reason"].value_counts().to_dict()
-        rows.append({"k": k, "lam_mult": m, **s, "n_by_queue": int(reasons.get("queue", 0)),
-                     "n_by_hit": int(reasons.get("hit", 0))})
-    return pd.DataFrame(rows)
+    for (sc, k, m), g in runs.groupby(["scaling", "k", "lam_mult"], sort=True):
+        rows.append(_escape_row(g, sc, k, m, horizon, lim_by_k, lam_miss_k, False))
+    have_fluid = (runs["scaling"] == "fluid").any()
+    if have_fluid and (runs["k"] == 1.0).any():
+        for (k, m), g in runs[(runs["scaling"] == "calibrated") & (runs["k"] == 1.0)].groupby(["k", "lam_mult"]):
+            rows.append(_escape_row(g, "fluid", k, m, horizon, lim_by_k, lam_miss_k, True))
+    return pd.DataFrame(rows).sort_values(["scaling", "k", "lam_mult"]).reset_index(drop=True)
+
+
+def _escape_row(g: pd.DataFrame, scaling: str, k: float, m: float, horizon: float,
+                lim_by_k: Optional[Dict[float, Dict[str, Any]]], lam_miss_k: Optional[Dict[float, float]],
+                copied: bool) -> Dict[str, Any]:
+    sm = summarize_escape(g["obs_time_s"].to_numpy(), g["escaped"].to_numpy(), horizon)
+    med, lo, hi = km_median_ci(g["obs_time_s"].to_numpy(), g["escaped"].to_numpy())
+    reasons = g.loc[g["escaped"], "stop_reason"].value_counts().to_dict()
+    row = {"scaling": scaling, "k": k, "lam_mult": m, **sm, "km_median_ci_lo": lo, "km_median_ci_hi": hi,
+           "n_by_queue": int(reasons.get("queue", 0)), "n_by_hit": int(reasons.get("hit", 0)),
+           "lam": float(g["lam"].mean()), "copied_from_calibrated_k1": bool(copied)}
+    if "onset_source" in g.columns:
+        row["n_onset_fallback"] = int((g["onset_source"] == "queue_crossing_fallback").sum())
+    if lim_by_k and k in lim_by_k:
+        cap = float(lim_by_k[k]["lambda_cap"])
+        row["lambda_cap_k"] = cap
+        row["lam_over_cap"] = row["lam"] / cap if cap > 0 else float("nan")
+    return row
 
 
 # ======================================================================= robust
@@ -576,13 +811,17 @@ def cmd_evaluate(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     phase = _read_input(args.phase_dir, "runs.csv")
     mech = _read_input(args.mech_dir, "runs.csv")
     limits = _read_input(args.mech_dir, "mech_limits.csv")
+    capacity = _read_input(args.mech_dir, "mech_capacity.csv")
     esc = _read_input(args.escape_dir, "escape_summary.csv")
+    esc_iw = _read_input(getattr(args, "escape_inwindow_dir", None), "escape_summary.csv")
     rob = _read_input(args.robust_dir, "robust_summary.csv")
     needed = int(exp_cfg_deep(cfg, "robust", False).get("holds_variants_needed", 5))
     rows = evaluate_all(phase_runs=phase, mech_runs=mech, mech_limits=limits, escape_summary=esc,
-                        robust_summary=rob, p8_needed=needed)
+                        robust_summary=rob, p8_needed=needed, mech_capacity=capacity, escape_inwindow_summary=esc_iw)
     prov = {k: _input_provenance(v) for k, v in (("phase", args.phase_dir), ("mech", args.mech_dir),
-                                                 ("escape", args.escape_dir), ("robust", args.robust_dir))}
+                                                 ("escape", args.escape_dir),
+                                                 ("escape_inwindow", getattr(args, "escape_inwindow_dir", None)),
+                                                 ("robust", args.robust_dir))}
     flags = [f"{k}: quick run" for k, v in prov.items() if v and v.get("quick")]
     flags += [f"{k}: produced from a dirty git tree" for k, v in prov.items() if v and v.get("git_dirty")]
     _write_json(ctx.out / "prediction_eval.json", {"rows": rows, "inputs": prov, "flags": flags})
@@ -599,7 +838,7 @@ def cmd_evaluate(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
 # ======================================================================= CLI
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Prefix-cache metastability pilot, round 2 (simulation)")
-    ap.add_argument("cmd", choices=["phase", "mech", "escape", "robust", "evaluate"])
+    ap.add_argument("cmd", choices=["phase", "mech", "escape", "escape_inwindow", "robust", "evaluate", "report"])
     ap.add_argument("--config", default="configs/prefix_meta_mech.yaml")
     ap.add_argument("--quick", action="store_true", help="smoke-test sizes (short horizons, few seeds)")
     ap.add_argument("--workers", type=int, default=3, help="processes (hard-capped by config parallel.max_workers)")
@@ -608,7 +847,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--only", nargs="*", default=None, help="restrict mech to these policy names")
     ap.add_argument("--phase-dir", default=None, help="evaluate: phase result dir")
     ap.add_argument("--mech-dir", default=None, help="evaluate: mech result dir")
-    ap.add_argument("--escape-dir", default=None, help="evaluate: escape result dir")
+    ap.add_argument("--escape-dir", default=None, help="evaluate: escape result dir (registered sizes)")
+    ap.add_argument("--escape-inwindow-dir", default=None, help="evaluate: escape_inwindow result dir (k = 1, 2, 4)")
     ap.add_argument("--robust-dir", default=None, help="evaluate: robust result dir")
     ap.add_argument("--set", action="append", default=[], metavar="KEY=VAL", help="dotted config override")
     ap.add_argument("--tag", default=None, help="suffix for the result dir name")
@@ -619,6 +859,12 @@ def main(argv: Optional[List[str]] = None, repo_dir: Optional[Path] = None) -> i
     args = build_parser().parse_args(argv)
     repo_dir = repo_dir or Path(args.config).resolve().parent.parent
     cfg = apply_overrides(load_mech_config(args.config, repo_dir), args.set)
-    {"phase": cmd_phase, "mech": cmd_mech, "escape": cmd_escape, "robust": cmd_robust,
-     "evaluate": cmd_evaluate}[args.cmd](cfg, args, repo_dir)
+    if args.cmd == "escape_inwindow":
+        cmd_escape(cfg, args, repo_dir, section="escape_inwindow", name="prefix_meta_escape_inwindow")
+    elif args.cmd == "report":
+        from .report_r3 import cmd_report
+        cmd_report(cfg, args, repo_dir)
+    else:
+        {"phase": cmd_phase, "mech": cmd_mech, "escape": cmd_escape, "robust": cmd_robust,
+         "evaluate": cmd_evaluate}[args.cmd](cfg, args, repo_dir)
     return 0

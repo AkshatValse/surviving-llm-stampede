@@ -43,6 +43,32 @@ def km_median(km: Dict[str, np.ndarray]) -> float:
     return float(km["time"][idx[0]]) if len(idx) else float("nan")
 
 
+def km_median_ci(durations: Sequence[float], events: Sequence[bool], alpha: float = 0.05
+                 ) -> Tuple[float, float, float]:
+    """Kaplan-Meier median with a (1 - alpha) interval from the pointwise Greenwood log-log confidence band of S(t)
+    (Brookmeyer-Crowley style: the interval is the set of event times at which the band contains 0.5). Returns
+    (median, lo, hi); each is NaN when the corresponding curve never reaches 0.5 within the follow-up (the median
+    is then censored, a lower bound is the largest observation). Pure NumPy/SciPy."""
+    km = kaplan_meier(durations, events)
+    n_ev = len(km["time"])
+    if n_ev == 0:
+        return float("nan"), float("nan"), float("nan")
+    z = stats.norm.ppf(1.0 - alpha / 2.0)
+    S, n, d = km["surv"], km["at_risk"], km["deaths"]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        gw = np.cumsum(d / (n * (n - d)))                           # Greenwood sum
+        se_loglog = np.sqrt(gw) / np.abs(np.log(S))
+        lo_s = S ** np.exp(z * se_loglog)                            # lower band of S
+        hi_s = S ** np.exp(-z * se_loglog)                           # upper band of S
+    lo_s = np.where(S <= 0, 0.0, lo_s)
+    hi_s = np.where(S <= 0, 0.0, hi_s)
+    med = float(km["time"][np.nonzero(S <= 0.5)[0][0]]) if (S <= 0.5).any() else float("nan")
+    i_lo = np.nonzero(lo_s <= 0.5)[0]
+    i_hi = np.nonzero(hi_s <= 0.5)[0]
+    return med, (float(km["time"][i_lo[0]]) if len(i_lo) else float("nan")), \
+        (float(km["time"][i_hi[0]]) if len(i_hi) else float("nan"))
+
+
 def exponential_mle(durations: Sequence[float], events: Sequence[bool], alpha: float = 0.05
                     ) -> Dict[str, float]:
     """Exponential MLE with right censoring: rate = d / T (d events, T total exposure). Returns the mean time

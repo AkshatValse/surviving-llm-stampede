@@ -340,6 +340,89 @@ def test_continuum_order_is_pinned_first_then_program_order(cfg):
     assert [r.sid for r in prog.policy.candidates(prog, 5.0)] == [0, 1, 3, 4, 5]
 
 
+def test_eager_unpin_releases_a_pin_at_once_instead_of_waiting_for_expiry(cfg):
+    """Same scene as the blocking-pin test. s2 arrives at 3 s while s1 still runs and only s0 is pinned (from d0 on).
+    The idle-only rule makes s2 wait until s0's pin expires (d0 + 5 s); with ``ttl_unpin: eager`` the pin of s0 is
+    released the moment s0 finishes, so s2 is admitted at d0 and s0's KV is the one evicted (s0's second turn misses)."""
+    rows = [(0.0, 2, 100.0), (0.0, 2, 100.0), (3.0, 1, 0.0)]
+    eng = mk(cfg, {"kind": "fcfs", "ttl_pin_s": 5.0, "ttl_unpin": "eager"}, specs_of(rows), wo=BIG_WL, eo=BIG_EO)
+    eng.run(400.0)
+    d0 = [d for d in dones(eng) if d[1] == 0 and d[2] == 1][0][3]
+    a2 = [a for a in admits(eng) if a[1] == 2][0][4]
+    assert a2 == pytest.approx(d0, abs=1e-9)                           # admitted at once, no wait for the expiry
+    assert eng.n_eager_unpins == 1 and eng.n_stall_breaks == 0
+    assert {a[1]: a[3] for a in admits(eng) if a[2] == 2} == {0: False, 1: True}
+    idle_mode = mk(cfg, {"kind": "fcfs", "ttl_pin_s": 5.0}, specs_of(rows), wo=BIG_WL, eo=BIG_EO)
+    idle_mode.run(400.0)
+    a2_idle = [a for a in admits(idle_mode) if a[1] == 2][0][4]
+    assert idle_mode.n_eager_unpins == 0 and a2_idle == pytest.approx(d0 + 5.0, abs=1e-6)     # the registered rule waits
+
+
+def _eager_state(cfg, mode, reserved_extra=0):
+    """Sessions 1 and 2 hold pinned KV (E1 each, expiry far away); head = first turn of session 0 (needs E1)."""
+    rows = [(0.0, 1, 0.0), (0.0, 2, 1.0), (0.0, 2, 1.0)]
+    eng = mk(cfg, {"kind": "fcfs", "ttl_pin_s": 500.0, "ttl_unpin": mode}, specs_of(rows), wo=BIG_WL, eo=BIG_EO,
+             debug=False)
+    eng.run(0.0)
+    eng._next_idx = 3
+    eng.in_system = 3
+    for sid in (1, 2):
+        eng.idle[sid] = E1
+        eng.idle_sum += E1
+        eng._turn[sid] = 2
+        eng._arrived_t[sid] = 0.0
+        eng._pin_seq += 1
+        eng._pin[sid] = (500.0, eng._pin_seq)
+        eng._pin_heap.append((500.0, eng._pin_seq, sid))
+        eng._refresh_prot(sid)
+    eng._turn[0] = 1
+    eng._arrived_t[0] = 0.0
+    eng._enqueue_turn(0, 1.0, 1.0)
+    eng.reserved += reserved_extra
+    return eng
+
+
+@pytest.mark.parametrize("mode", ["eager", "eager_fit"])
+def test_eager_unpin_stops_as_soon_as_the_request_fits(cfg, mode):
+    eng = _eager_state(cfg, mode)
+    head = eng._q[0]
+    assert eng.reserved + head.end + eng._hard_sum > eng.M            # blocked by the two pins (3 x 18100 > 45000)
+    assert eng._eager_unpin(head) is True
+    assert eng.n_eager_unpins == 1 and set(eng._pin) == {1} and set(eng._hard) == {1}      # session 2 (latest) went
+
+
+def test_eager_unpin_variants_differ_when_unpinning_cannot_make_the_request_fit(cfg):
+    """Running requests hold so much memory that the head cannot fit even with no pins: ``eager`` (literal reading)
+    still releases every pin, ``eager_fit`` releases nothing."""
+    literal = _eager_state(cfg, "eager", reserved_extra=30_000)
+    assert literal._eager_unpin(literal._q[0]) is True and literal.n_eager_unpins == 2 and not literal._pin
+    fit = _eager_state(cfg, "eager_fit", reserved_extra=30_000)
+    assert fit._eager_unpin(fit._q[0]) is False and fit.n_eager_unpins == 0 and set(fit._pin) == {1, 2}
+
+
+def test_eager_unpin_never_releases_the_requests_own_pin(cfg):
+    eng = _eager_state(cfg, "eager")
+    eng._pin_seq += 1
+    own = 0                                                            # pin the head's own (resident) KV as well
+    eng.idle[own] = 0 + 10_000
+    eng.idle_sum += 10_000
+    eng._pin[own] = (500.0, eng._pin_seq)
+    eng._pin_heap.append((500.0, eng._pin_seq, own))
+    eng._refresh_prot(own)
+    head = eng._q[0]
+    eng._eager_unpin(head)
+    assert own in eng._pin                                             # kept; sessions 2 then 1 are the only victims
+
+
+def test_mechanisms_reject_bad_ttl_unpin_specs():
+    from prefixmeta.mechanisms import make_mechanisms
+    assert make_mechanisms({"ttl_pin_s": 5.0}, None).ttl_unpin == "idle"
+    with pytest.raises(ValueError):
+        make_mechanisms({"ttl_pin_s": 5.0, "ttl_unpin": "lazy"}, None)
+    with pytest.raises(ValueError):
+        make_mechanisms({"ttl_unpin": "eager"}, None)                  # no TTL, nothing to unpin
+
+
 # ============================================================================ (4) PEEK-like protection
 def _peek_state(cfg, mode, queued_sids, tool_sids, policy_extra=None):
     """Idle KV of sessions in LRU order [1, 2], head = miss of session 0 that needs one eviction."""
@@ -412,31 +495,71 @@ def test_peek_protection_follows_the_queue_state(cfg):
     eng.check_invariants()
 
 
-@pytest.mark.parametrize("pol", ["peek", "peek_rank", "peek_lpm", "ttl10", "ttlf10"])
+@pytest.mark.parametrize("pol", ["peek", "peek_rank", "ttl10", "ttlf10", "ttl10e"])
 def test_protected_kv_is_never_evicted_in_a_congested_run(cfg, pol):
-    """Wrap _evict: after every eviction every block that was hard-protected before it is still resident."""
+    """Wrap _evict: after every eviction every block that was hard-protected before it is still resident. The test is
+    only meaningful if protection was actually PRESENT at some eviction, so that is asserted per policy: hard
+    protection for peek / ttl*, soft protection for peek_rank (which has no hard protection and so must evict soft
+    blocks only after all unprotected blocks)."""
     plan = ArrivalPlan(kind="constant", horizon_s=900.0, rate=0.25, initial_cold=60, burst_n=40, burst_t0=200.0,
                        burst_width_s=20.0)
     c2 = deep_update(cfg, {})
     rs = RunSpec(exp="t", policy=pol, seed=5, horizon_s=900.0, plan=plan, debug=True,
                  engine_overrides={"kv_memory_tokens": 90_000})
     eng, _, _ = build_engine(c2, rs)
-    checks = {"n": 0, "bad": 0}
+    checks = {"n": 0, "bad": 0, "hard_present": 0, "soft_present": 0, "soft_order_bad": 0}
     orig = eng._evict
 
     def spy(need):
         before = dict(eng._hard)
+        soft_before = dict(eng._soft)
+        free_before = sum(kv for sid, kv in eng.idle.items() if sid not in before and sid not in soft_before)
         orig(need)
         checks["n"] += 1
+        checks["hard_present"] += int(bool(before))
+        checks["soft_present"] += int(bool(soft_before))
         if not all(s in eng.idle for s in before):
             checks["bad"] += 1
+        # soft ordering: a soft-protected block may be evicted only if the unprotected idle KV did not suffice
+        evicted_soft = [s for s in soft_before if s not in eng.idle]
+        if evicted_soft and free_before >= need:
+            checks["soft_order_bad"] += 1
     eng._evict = spy
     eng.run(900.0)
-    assert checks["n"] > 20 and checks["bad"] == 0
+    assert checks["n"] > 20 and checks["bad"] == 0 and checks["soft_order_bad"] == 0
+    if pol == "peek_rank":
+        assert checks["hard_present"] == 0 and checks["soft_present"] > 0 and eng.n_soft_evictions > 0
+    else:
+        assert checks["hard_present"] > 0, "hard protection never present at an eviction: the test would be vacuous"
     st = eng.stats()
     assert st["n_turns_done"] > 50
-    if pol in ("ttl10", "ttlf10"):
-        assert st["n_pins"] > 0 and st["n_pin_expired"] > 0
+    if pol in ("ttl10", "ttlf10", "ttl10e"):
+        assert st["n_pins"] > 0 and (st["n_pin_expired"] > 0 or st["n_eager_unpins"] > 0)
+
+
+def test_peek_lpm_protection_never_binds_in_this_workload_so_it_is_lpm(cfg):
+    """Round-2 review finding: under LPM order every queued session whose KV is resident is admitted before any miss
+    can evict, so the hard PEEK protection is never present at an eviction and ``peek_lpm`` equals ``lpm`` here. This
+    pins that observation (a property of this private-whole-session-KV workload, not of PEEK in general)."""
+    plan = ArrivalPlan(kind="constant", horizon_s=900.0, rate=0.25, initial_cold=60, burst_n=40, burst_t0=200.0,
+                       burst_width_s=20.0)
+    out = {}
+    for pol in ("lpm", "peek_lpm"):
+        rs = RunSpec(exp="t", policy=pol, seed=5, horizon_s=900.0, plan=plan, debug=True,
+                     engine_overrides={"kv_memory_tokens": 90_000})
+        eng, _, _ = build_engine(deep_update(cfg, {}), rs)
+        eng.trace = []
+        present = {"n": 0}
+        orig = eng._evict
+
+        def spy(need, eng=eng, orig=orig, present=present):
+            present["n"] += int(bool(eng._hard or eng._soft))
+            orig(need)
+        eng._evict = spy
+        eng.run(900.0)
+        out[pol] = (eng.trace, present["n"], eng.n_evictions)
+    assert out["peek_lpm"][1] == 0 and out["peek_lpm"][2] > 20
+    assert out["peek_lpm"][0] == out["lpm"][0]
 
 
 # ============================================================================ (5) AIMD in the engine
@@ -520,7 +643,12 @@ def test_memory_traces_and_protected_tokens_are_recorded(cfg):
     assert math.isnan(off["windows"][-1]["reserved_mean"])
 
 
-# ============================================================================ (7) independent reference simulator
+# ============================================================================ (7) reference simulator
+# NOTE (round-2 review): this simulator is INDEPENDENT of the engine's code (plain lists, a full re-sort and a scheduling
+# pass at every iteration boundary, no batching), but NOT independent of the specification: it re-implements the
+# implementer's reading of each mechanism (idle-only vs eager pin release, persisting pins, breaker order, tie rules).
+# It therefore catches implementation bugs, not misreadings of Continuum / PEEK / CONCUR; those are covered only by
+# the named eager-unpin variants, which are NOT verified against the papers or their code.
 def reference_trace2(cfg: dict, specs: SessionSpecs, spec: dict, horizon: float, *, M: float, cap: int | None = None,
                      aimd: dict | None = None, free_on_end: bool = True):
     """Naive iteration-by-iteration simulator with every round-2 mechanism written from the prose spec (plain lists, a
@@ -532,6 +660,7 @@ def reference_trace2(cfg: dict, specs: SessionSpecs, spec: dict, horizon: float,
     kind = spec["kind"]
     peek = spec.get("protect_queued")
     ttl = spec.get("ttl_pin_s")
+    unpin = spec.get("ttl_unpin", "idle")
     arr = specs.arrival.tolist()
     n = len(arr)
     nt = specs.n_turns.tolist()
@@ -601,6 +730,21 @@ def reference_trace2(cfg: dict, specs: SessionSpecs, spec: dict, horizon: float,
             return pw + sorted([r for r in waiting if r["rid"] not in ids], key=lambda r: r["sid"])
         raise ValueError(kind)
 
+    def eager_release(r):
+        """Prose spec of ``ttl_unpin`` eager / eager_fit: while the request does not fit because of hard-protected
+        KV of other sessions, unpin the pinned session with the largest session id (never its own); with eager_fit
+        nothing is unpinned unless the request can then fit."""
+        def blocked():
+            return reserved + r["end"] + sum(k for s, k in idle if s != r["sid"] and is_hard(s)) > M
+        if unpin == "eager_fit":
+            nonpin = sum(k for s, k in idle if s != r["sid"] and is_hard(s) and s not in pins)
+            if reserved + r["end"] + nonpin > M:
+                return
+        for s in sorted([s for s in pins if s != r["sid"]], reverse=True):
+            if not blocked():
+                break
+            del pins[s]
+
     def schedule(now):
         nonlocal reserved, n_adm, n_hit
         first_blocked[0] = None
@@ -613,6 +757,9 @@ def reference_trace2(cfg: dict, specs: SessionSpecs, spec: dict, horizon: float,
             if n_run >= e["max_running_seqs"] or budget_left <= 0:
                 break
             hard_other = sum(k for s, k in idle if s != r["sid"] and is_hard(s))
+            if reserved + r["end"] + hard_other > M and unpin != "idle" and pins:
+                eager_release(r)
+                hard_other = sum(k for s, k in idle if s != r["sid"] and is_hard(s))
             if reserved + r["end"] + hard_other > M:
                 if first_blocked[0] is None:
                     first_blocked[0] = r
@@ -802,6 +949,9 @@ REF_CASES = [
     ("ttl_cont", {"kind": "continuum", "ttl_pin_s": 5.0}, None, None),
     ("ttl_fcfs", {"kind": "fcfs", "ttl_pin_s": 5.0}, None, None),
     ("ttl_fcfs_long", {"kind": "fcfs", "ttl_pin_s": 20.0}, None, None),
+    ("ttl_cont_eager", {"kind": "continuum", "ttl_pin_s": 5.0, "ttl_unpin": "eager"}, None, None),
+    ("ttl_cont_eager_fit", {"kind": "continuum", "ttl_pin_s": 5.0, "ttl_unpin": "eager_fit"}, None, None),
+    ("ttl_fcfs_eager_long", {"kind": "fcfs", "ttl_pin_s": 20.0, "ttl_unpin": "eager"}, None, None),
     ("ttl_peek_rank", {"kind": "fcfs", "ttl_pin_s": 3.0, "protect_queued": "rank"}, None, None),
     ("ttl_peek_pin", {"kind": "continuum", "ttl_pin_s": 3.0, "protect_queued": "pin"}, None, None),
     ("prog", {"kind": "program_fcfs"}, None, None),
@@ -843,7 +993,11 @@ def test_engine_matches_naive_reference_with_mechanisms(cfg, name, pol, cap, aim
         assert eng.stats()["n_ticks"] in (89, 90)          # ticks at 10, ..., 890 (+ 900 if the last boundary reaches it)
     st = eng.stats()
     if "ttl_pin_s" in pol:
-        assert st["n_pins"] > 0 and st["n_pin_expired"] > 0
+        assert st["n_pins"] > 0
+        if pol.get("ttl_unpin", "idle") == "idle":
+            assert st["n_pin_expired"] > 0 and st["n_eager_unpins"] == 0
+        else:                                              # pins are released early; most never reach their expiry
+            assert st["n_eager_unpins"] > 0
     assert any(x[0] == "A" and x[3] for x in eng.trace) and any(x[0] == "A" and not x[3] and x[2] > 1 for x in eng.trace)
 
 
@@ -853,9 +1007,10 @@ def test_reference_scenarios_exercise_the_breaker_and_soft_evictions(cfg):
     plan = ArrivalPlan(kind="constant", horizon_s=500.0, rate=0.5, initial_cold=15, burst_n=20, burst_t0=100.0,
                        burst_width_s=10.0)
     specs = build_specs(wl, plan, 21)
-    seen = {"breaks": 0, "soft": 0}
+    seen = {"breaks": 0, "soft": 0, "eager": 0}
     for spec in ({"kind": "fcfs", "protect_queued": "pin"}, {"kind": "fcfs", "ttl_pin_s": 5.0},
-                 {"kind": "fcfs", "protect_queued": "rank"}):
+                 {"kind": "fcfs", "protect_queued": "rank"},
+                 {"kind": "continuum", "ttl_pin_s": 5.0, "ttl_unpin": "eager"}):
         c2 = deep_update(cfg, {"policies": {"x": spec}})
         rs = RunSpec(exp="t", policy="x", seed=0, horizon_s=900.0, plan=ArrivalPlan(kind="none", horizon_s=900.0),
                      engine_overrides={"kv_memory_tokens": 70_000})
@@ -863,7 +1018,8 @@ def test_reference_scenarios_exercise_the_breaker_and_soft_evictions(cfg):
         eng.run(900.0)
         seen["breaks"] += eng.n_stall_breaks
         seen["soft"] += eng.n_soft_evictions
-    assert seen["breaks"] > 0 and seen["soft"] > 0
+        seen["eager"] += eng.n_eager_unpins
+    assert seen["breaks"] > 0 and seen["soft"] > 0 and seen["eager"] > 0
 
 
 # ============================================================================ (8) determinism
