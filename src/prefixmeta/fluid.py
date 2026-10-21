@@ -11,6 +11,11 @@ approximated by the fluid ODE ``dn/dt = lambda - mu(n)``. For a unimodal curve w
 * ``lambda <= mu_inf``             : only ``n1`` (globally attracting); no instability, ``b_c = +inf``.
 * ``lambda == mu*``                : ``n1 = n2 = n*`` (``b_c = 0``).
 
+On a non-unimodal ("raw") curve the monostable condition is ``lambda <= min_{n >= n*} mu(n)`` (amendment 1 of the
+pre-registration; it equals ``mu_inf`` on a unimodal curve): a tail dip below ``lambda`` followed by a rise back above it still
+produces an unstable crossing. ``n2`` is then the FIRST downward crossing after ``n*``; with a tail bump the ODE started above
+``n2`` can settle at an intermediate stable point, so ``n2 - n1`` does not by itself imply divergence.
+
 Curve model (pre-registered, configs/prefix_meta_r4_prereg.yaml, ``operationalization.fluid_curve``): piecewise-linear
 interpolation through ``(0, 0)`` and the measured points, optionally after a pool-adjacent-violators projection of the
 measured values onto unimodal sequences (non-decreasing up to the first argmax, non-increasing after it; the peak value is
@@ -106,6 +111,11 @@ class FluidCurve:
         """``mu(n_max)``: the tail value of the (interpolated) curve."""
         return float(self.mu[-1])
 
+    @property
+    def mu_tail_min(self) -> float:
+        """``min_{n >= n*} mu(n)`` (equals ``mu_inf`` when the tail is non-increasing)."""
+        return float(np.min(self.mu[self.i_star:]))
+
 
 def make_curve(n: Sequence[float], mu: Sequence[float], *, unimodal: bool = True, origin: bool = True) -> FluidCurve:
     """Build the fluid curve from measured points (any order). ``origin`` adds the anchor ``(0, 0)`` (no session, no
@@ -128,7 +138,8 @@ def make_curve(n: Sequence[float], mu: Sequence[float], *, unimodal: bool = True
 @dataclass(frozen=True)
 class FixedPoints:
     """Fixed points of ``dn/dt = lambda - mu(n)``. ``kind``: ``"overload"`` (lambda > mu*), ``"critical"``
-    (lambda == mu*), ``"bistable"`` (mu_inf < lambda < mu*) or ``"monostable"`` (lambda <= mu_inf)."""
+    (lambda == mu*), ``"bistable"`` (min_{n >= n*} mu < lambda < mu*; on a unimodal curve the minimum is mu_inf) or
+    ``"monostable"`` (lambda <= min_{n >= n*} mu(n))."""
     lam: float
     kind: str
     n1: float          # stable (NaN if overload)
@@ -157,9 +168,9 @@ def fixed_points(curve: FluidCurve, lam: float) -> FixedPoints:
         n1 = float(n[i - 1] + (lam - mu[i - 1]) / (mu[i] - mu[i - 1]) * (n[i] - n[i - 1]))
     if lam == mu_star:
         return FixedPoints(lam, "critical", n1, float(n[i_star]))      # n1 == n* here (first argmax), so b_c = 0
-    if lam <= curve.mu_inf:
+    if lam <= curve.mu_tail_min:
         return FixedPoints(lam, "monostable", n1, math.inf)
-    # n2: first n >= n* with mu(n) <= lambda (a crossing exists because mu_inf < lambda < mu*)
+    # n2: first n >= n* with mu(n) <= lambda (a crossing exists because min_{n >= n*} mu < lambda < mu*)
     tail = mu[i_star:]
     j = int(np.argmax(tail <= lam)) + i_star
     n2 = float(n[j - 1] + (mu[j - 1] - lam) / (mu[j - 1] - mu[j]) * (n[j] - n[j - 1]))

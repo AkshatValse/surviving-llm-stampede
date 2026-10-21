@@ -4,6 +4,7 @@ Commands (config ``configs/prefix_meta_r4.yaml``, registered in ``configs/prefix
 
     curve   E-curve : closed-population mu(n) for FCFS-LRU / LPM-LRU / FCFS-RANDOM / FCFS-MRU_IDLE (+ FCFS-LRU at k = 0.5, 2)
     burst   E-burst : open system at 2 lambda_miss from empty, bursts of b sessions in 60 s, recovery after 60k s
+    burst_info      : INFORMATIONAL burst cells (amendment 1): b = 0 controls and lambda in {1.5, 2, 2.5} lambda_miss on a finer grid
     cap     E-cap   : cold 300 at 2 lambda_miss, static session cap x eviction rule
     report          : reads the three result dirs and writes results/prefix_meta_r4/<ts>/ (figures, tables, prediction_eval.csv)
 
@@ -113,13 +114,15 @@ def curve_specs(cfg: dict, cv: dict) -> List[RunSpec]:
 
 
 def curve_table(cr: pd.DataFrame) -> pd.DataFrame:
-    """Per (policy, k, n_nominal): seed-mean and sample sd (ddof = 1) of mu and the mean of the other metrics, plus the
-    per-seed mu as JSON (ordered by seed). The unit of replication is the seed."""
+    """Per (policy, k, n_nominal): seed-mean, sample sd (ddof = 1) and standard error (sd / sqrt(n_seeds)) of mu and the mean
+    of the other metrics, plus the per-seed mu as JSON (ordered by seed). The unit of replication is the seed. mu near the cliff
+    is a time average over a process that switches between regimes, not the mean of a stationary law."""
     rows = []
     for (pol, k, nn), g in cr.groupby(["policy", "k", "n_nominal"], sort=True):
         g = g.sort_values("seed")
         row = {"policy": pol, "k": float(k), "n_nominal": int(nn), "n": int(g["n"].iloc[0]), "n_seeds": int(len(g)),
                "mu_mean": float(g["mu"].mean()), "mu_sd": float(g["mu"].std(ddof=1)) if len(g) > 1 else float("nan"),
+               "mu_se": float(g["mu"].std(ddof=1) / math.sqrt(len(g))) if len(g) > 1 else float("nan"),
                "mu_per_seed": json.dumps([float(x) for x in g["mu"]]), "seeds": json.dumps([int(s) for s in g["seed"]])}
         for c in ("hit_rate", "gpu_busy", "resident_kv_tokens", "reserved_tokens", "idle_tokens", "evictions_per_s",
                   "turns_per_s", "mu_first_half", "mu_second_half"):
@@ -173,6 +176,52 @@ def burst_specs(cfg: dict, bd: dict, lam_miss: float) -> List[RunSpec]:
                                      burst_width_s=float(bd["burst_width_s"])),
                     meta=_meta(lam, float(bd["lam_mult"]), burst_n=int(b), t_burst=tb)))
     return specs
+
+
+def burst_info_specs(cfg: dict, bi: dict, lam_miss: float) -> List[RunSpec]:
+    """INFORMATIONAL cells (amendment 1): FCFS-LRU burst sweeps (incl. the no-burst control b = 0) at several lambda, and the
+    FCFS-RANDOM no-burst control. Same seeds as the registered E-burst (CRN-coupled with it)."""
+    tb = float(bi["warmup_s"])
+    H = tb + float(bi["after_s"])
+    ld, cr = bi["lambda_dependence"], bi["control_random"]
+    cells = [(ld["policy"], float(m), int(b)) for m in ld["lam_mults"] for b in ld["sizes"]]
+    cells += [(cr["policy"], float(cr["lam_mult"]), int(b)) for b in cr["sizes"]]
+    specs: List[RunSpec] = []
+    for pol, mult, b in cells:
+        for sd in bi["seeds"]:
+            specs.append(RunSpec(
+                exp="r4_burst_info", policy=pol, seed=int(sd), horizon_s=H, variant=f"lam={mult}|burst={b}",
+                plan=ArrivalPlan(kind="constant", horizon_s=H, rate=mult * lam_miss, burst_n=b, burst_t0=tb,
+                                 burst_width_s=float(bi["burst_width_s"])),
+                meta=_meta(mult * lam_miss, mult, burst_n=b, t_burst=tb)))
+    return specs
+
+
+def cmd_burst_info(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
+    bi = exp_cfg_deep(cfg, "burst_info", args.quick)
+    cal = base_calibration(cfg, args, repo_dir)
+    ctx = begin("r4_burst_info", "prefix_meta_r4_burst_info", cfg, {**cfg, "burst_info_effective": bi, "calibration": cal},
+                args, repo_dir)
+    specs = burst_info_specs(cfg, bi, cal["lambda_miss"])
+    with Runner(cfg, args.workers) as R:
+        results = R.run(specs)
+    runs, wins, qts = collect_frames(results, specs)
+    runs = add_recovery(runs, bi["recovered_hit_above"], bi["recovered_backlog_below"])
+    save_frames(ctx.out, runs, wins, qts)
+    bc = runs.groupby(["policy", "lam_mult", "burst_n"], sort=True).agg(
+        n_runs=("seed", "size"), n_recovered=("recovered", "sum"), tail_hit_mean=("tail_hit_rate", "mean"),
+        tail_backlog_mean=("tail_backlog_mean", "mean")).reset_index()
+    bc["n_not_recovered"] = bc["n_runs"] - bc["n_recovered"]
+    bc.to_csv(ctx.out / "burst_info_counts.csv", index=False)
+    finish(ctx, runs["seed"], {"calibration": cal, "n_runs": int(len(runs)), "timing": timing_summary(runs),
+                               "lambda_miss": cal["lambda_miss"], "informational": True,
+                               "common_random_numbers": "same seed -> same random streams; at equal lambda the workload equals that of "
+                                                        "the registered E-burst run of the same seed, across lambda the "
+                                                        "coupling is partial (arrival counts differ). Cells are not independent"})
+    with pd.option_context("display.width", 250, "display.max_rows", 500):
+        print(bc.to_string())
+    print("result dir:", ctx.out)
+    return ctx.out
 
 
 def burst_counts(runs: pd.DataFrame) -> pd.DataFrame:
@@ -257,7 +306,7 @@ def cmd_cap(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
 # ======================================================================= CLI
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Prefix-cache metastability pilot, round 4 (thrashing curve; simulation)")
-    ap.add_argument("cmd", choices=["curve", "burst", "cap", "report"])
+    ap.add_argument("cmd", choices=["curve", "burst", "burst_info", "cap", "report"])
     ap.add_argument("--config", default="configs/prefix_meta_r4.yaml")
     ap.add_argument("--quick", action="store_true", help="smoke-test sizes (short horizons, one seed)")
     ap.add_argument("--workers", type=int, default=3, help="processes (hard-capped by config parallel.max_workers = 3)")
@@ -265,6 +314,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--calib", default=None, help="round-1 E0 result dir or e0_summary.json (base workload)")
     ap.add_argument("--curve-dir", default=None, help="report: E-curve result dir")
     ap.add_argument("--burst-dir", default=None, help="report: E-burst result dir")
+    ap.add_argument("--burst-info-dir", default=None, help="report: burst_info (informational) result dir")
     ap.add_argument("--cap-dir", default=None, help="report: E-cap result dir")
     ap.add_argument("--set", action="append", default=[], metavar="KEY=VAL", help="dotted config override")
     ap.add_argument("--tag", default=None, help="suffix for the result dir name")
@@ -279,7 +329,7 @@ def main(argv: Optional[List[str]] = None, repo_dir: Optional[Path] = None) -> i
         from .report_r4 import cmd_report
         cmd_report(cfg, args, repo_dir)
     else:
-        {"curve": cmd_curve, "burst": cmd_burst, "cap": cmd_cap}[args.cmd](cfg, args, repo_dir)
+        {"curve": cmd_curve, "burst": cmd_burst, "burst_info": cmd_burst_info, "cap": cmd_cap}[args.cmd](cfg, args, repo_dir)
     return 0
 
 

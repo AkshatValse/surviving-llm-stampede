@@ -187,17 +187,26 @@ def test_measured_mu_is_the_completion_count_in_the_window_over_its_length(cfg):
 
 
 def test_littles_law_holds_for_the_closed_population(cfg):
-    """n = mu x (mean time in system of completed sessions): a stationarity / bookkeeping check of the closed mode."""
-    H, warm, n = 40000.0, 10000.0, 16
-    plan = ArrivalPlan(kind="closed", horizon_s=H, closed_n=n, pool=6000)
+    """n = mu x (mean time in system of completed sessions): a stationarity / bookkeeping check of the closed mode.
+
+    Amendment 1 (F7): the pool is large enough that it is never exhausted (the earlier pool of 6000 sessions ran dry at about
+    37000 s of the 40000-s horizon, so the system silently stopped being closed and the identity was only checked to 12%); the
+    tolerance is now 3% (the measured value is within 0.3%), and the exact accounting identity is checked as well: the session-time
+    inside the measurement window equals n x (window length), because exactly n sessions are present at every instant."""
+    H, warm, n, pool = 40000.0, 10000.0, 16, 12000
+    plan = ArrivalPlan(kind="closed", horizon_s=H, closed_n=n, pool=pool)
     rs = RunSpec(exp="t", policy="fcfs_lru", seed=1, horizon_s=H, plan=plan)
     eng, rec, _ = build_engine(cfg, rs)
     eng.trace = []
     eng.run(H)
-    life = [x[3] - eng._arrived_t[x[1]] for x in eng.trace if x[0] == "D" and x[2] == eng._nt[x[1]] and warm <= x[3] < H]
+    assert eng._next_idx < pool, "the replacement pool must not run dry, or the system stops being closed"
+    done = {x[1]: x[3] for x in eng.trace if x[0] == "D" and x[2] == eng._nt[x[1]]}
+    life = [t - eng._arrived_t[s] for s, t in done.items() if warm <= t < H]
     mu = len(life) / (H - warm)
     assert len(life) > 300
-    assert mu * float(np.mean(life)) == pytest.approx(n, rel=0.12)
+    assert mu * float(np.mean(life)) == pytest.approx(n, rel=0.03)
+    overlap = sum(max(0.0, min(done.get(s, H), H) - max(eng._arrived_t[s], warm)) for s in range(eng._next_idx))
+    assert overlap == pytest.approx(n * (H - warm), rel=1e-9)
 
 
 def test_closed_pool_exhaustion_is_an_error_not_a_silent_open_system(cfg):

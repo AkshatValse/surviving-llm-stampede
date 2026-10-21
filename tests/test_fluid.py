@@ -160,11 +160,14 @@ def test_projection_changes_tail_not_the_rising_branch():
     assert fixed_points(proj, lam).n2 == pytest.approx(fixed_points(raw, lam).n2)   # crossing is on the steep fall
     assert proj.mu_inf != raw.mu_inf                                                 # tail wiggle pooled
     assert raw.mu_inf == 0.0481 and proj.mu_inf == pytest.approx((0.0472 + 0.0473 + 0.0481) / 3)
-    # at a lambda between the two tail values the projected curve is bistable and the raw one is not
+    # lam2 lies between the pooled tail value and the raw end value; the raw tail also dips to 0.0472 < lam2 at n = 48, so after
+    # amendment 1 (monostable only if lambda <= min over n >= n* of mu) BOTH curves are bistable with n2 on the fall into the tail
     lam2 = 0.0478
-    assert fixed_points(raw, lam2).kind == "monostable"                     # raw tail ends at 0.0481 > lam2
-    fp = fixed_points(proj, lam2)
-    assert fp.kind == "bistable" and 40.0 < fp.n2 < 48.0                    # pooled tail 0.04753 < lam2: n2 on the fall into it
+    fr, fp = fixed_points(raw, lam2), fixed_points(proj, lam2)
+    assert fr.kind == "bistable" and 40.0 < fr.n2 < 48.0                    # raw: first downward crossing (0.0487 -> 0.0472)
+    assert fp.kind == "bistable" and 40.0 < fp.n2 < 48.0                    # pooled tail 0.04753 < lam2
+    # a lambda below every tail value is monostable on both
+    assert fixed_points(raw, 0.0470).kind == "monostable" and fixed_points(proj, 0.0470).kind == "monostable"
 
 
 def test_plateau_peak_uses_the_first_argmax_and_n1_is_first_crossing():
@@ -181,3 +184,41 @@ def test_lambda_equal_to_a_node_value_returns_the_node():
     c = FluidCurve(np.array([0.0, 10.0, 20.0, 40.0, 100.0]), np.array([0.0, 0.1, 0.2, 0.1, 0.02]))
     fp = fixed_points(c, 0.1)
     assert fp.n1 == pytest.approx(10.0) and fp.n2 == pytest.approx(40.0) and fp.b_c == pytest.approx(30.0)
+
+
+# ------------------------------------------------------------------------------------------ raw (non-unimodal) curves, amendment 1
+def test_raw_curve_with_a_tail_dip_is_bistable_not_monostable():
+    """Review finding F8: a tail dip below lambda followed by a rise back above it (mu(n_max) > lambda) used to be classified
+    monostable (b_c = +inf) on the raw curve."""
+    n = [4, 8, 16, 24, 28, 32, 40, 60, 100, 200, 300]
+    mu = [0.5, 1.0, 2.0, 3.0, 2.2, 1.5, 1.1, 1.1, 1.1, 1.6, 2.1]            # lambda_miss = 1 units; peak 3 at n = 24; dip to 1.1
+    lam = 2.0
+    raw, proj = make_curve(n, mu, unimodal=False), make_curve(n, mu)
+    assert raw.mu_inf > lam and raw.mu_tail_min == pytest.approx(1.1)
+    fr, fp = fixed_points(raw, lam), fixed_points(proj, lam)
+    assert fr.kind == "bistable" and np.isfinite(fr.n2) and np.isfinite(fr.b_c)
+    # n2 is the first downward crossing after n*: between n = 28 (mu 2.2) and 32 (mu 1.5), at 28 + 4 (2.2 - 2.0) / (2.2 - 1.5)
+    assert fr.n2 == pytest.approx(28.0 + 4.0 * (2.2 - 2.0) / (2.2 - 1.5))
+    # the unimodal projection pools the non-monotone tail; it is bistable too (its tail value 1.4 < lambda)
+    assert fp.kind == "bistable" and fp.n2 > 24.0
+    # unimodal curves are unaffected: mu_tail_min == mu_inf
+    c, _ = tent()
+    assert c.mu_tail_min == c.mu_inf
+
+
+def test_raw_curve_with_a_tail_bump_does_not_diverge_beyond_n2():
+    """The documented caveat: with a tail bump above lambda, n2 - n1 does not imply divergence; the ODE settles at the
+    intermediate stable point where the bump comes back down through lambda."""
+    n = [4, 8, 16, 24, 28, 32, 40, 50, 60, 70, 100, 300]
+    mu = [0.5, 1.0, 2.0, 3.0, 2.2, 1.5, 1.1, 1.4, 2.3, 1.5, 1.1, 1.05]      # bump to 2.3 at n = 60
+    lam = 2.0
+    raw = make_curve(n, mu, unimodal=False)
+    fp = fixed_points(raw, lam)
+    assert fp.kind == "bistable"
+    ts, ns = integrate_fluid(raw, lam, fp.n1 + fp.b_c + 1.0, t_end=50000.0, dt=0.05, n_cap=250.0)
+    assert ns[-1] < 250.0 - 1e-9                                            # did not diverge
+    # settled at the upward crossing of lambda on the rising side of the bump (n = 50 + 10 (2.0 - 1.4) / (2.3 - 1.4)), a stable point
+    assert ns[-1] == pytest.approx(50.0 + 10.0 * (2.0 - 1.4) / (2.3 - 1.4), abs=0.05)
+    # a burst below b_c still returns to n1
+    ts, ns = integrate_fluid(raw, lam, fp.n1 + 0.5 * fp.b_c, t_end=50000.0, dt=0.05, n_cap=250.0)
+    assert abs(ns[-1] - fp.n1) < 0.5
