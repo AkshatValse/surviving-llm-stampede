@@ -3,7 +3,7 @@
 _Last updated: 2026-10-21 ~07:20 (end of overnight session)_
 
 ## Phase
-Phase 0 (direction finding) is complete, pending Akshat's choice. The recommended direction is **metastable failures in prefix-cached agent serving**. It rests on simulation evidence across 5 verified rounds. The real-engine test is designed but not run.
+Phase 0 is complete. **Direction approved 2026-10-21: metastable failures in prefix-cached agent serving.** Phase 1/2 prep (Nova Stage 0) is in progress. It rests on simulation evidence across 5 verified rounds. The real-engine test is designed but not run.
 
 ## Branches (local only; nothing pushed)
 - `main`: notes, CLAUDE.md, lit checks, theory, LOG, MORNING.
@@ -17,7 +17,7 @@ None. No Nova jobs (`squeue` was empty at 22:30). No background agents.
 
 ## Open decisions (Akshat)
 See `notes/MORNING.md` → "Decisions needed". In short:
-1. Approve the direction.
+1. ~~Approve the direction~~ (approved 2026-10-21).
 2. Approve about 27 GPU-h for Nova cheap stages (S0, C, E0a, E0b).
 3. KV pool cap (300k vs native).
 4. Output-feedback mode.
