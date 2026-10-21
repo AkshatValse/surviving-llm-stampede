@@ -31,6 +31,8 @@ class WorkloadParams:
     tool_time_mean_s: float
     tool_time_dist: str
     tool_time_cv: float
+    tool_time_lo_s: float = 0.3      # bimodal: short mode (s)
+    tool_time_hi_s: float = 20.0     # bimodal: long mode (s); P(hi) is set so the mean equals tool_time_mean_s
 
     @classmethod
     def from_dict(cls, d: dict) -> "WorkloadParams":
@@ -98,8 +100,17 @@ def turn_counts(rng: np.random.Generator, n: int, mean_turns: float, max_turns: 
     return np.minimum(t, max_turns)
 
 
-def tool_times(rng: np.random.Generator, n: int, dist: str, mean: float, cv: float) -> np.ndarray:
-    """Tool-call durations: exponential(mean) or lognormal with the given mean and CV."""
+def bimodal_p_hi(mean: float, lo: float, hi: float) -> float:
+    """P(duration = hi) of the two-point distribution on {lo, hi} with the given mean."""
+    if not (lo < mean < hi):
+        raise ValueError(f"bimodal tool time needs lo < mean < hi, got {lo}, {mean}, {hi}")
+    return (mean - lo) / (hi - lo)
+
+
+def tool_times(rng: np.random.Generator, n: int, dist: str, mean: float, cv: float,
+               lo: float = 0.3, hi: float = 20.0) -> np.ndarray:
+    """Tool-call durations: exponential(mean), lognormal with the given mean and CV, or bimodal: ``lo`` or ``hi``
+    seconds with P(hi) = (mean - lo) / (hi - lo) so the mean is preserved."""
     if n == 0:
         return np.zeros(0)
     if dist == "exp":
@@ -107,6 +118,8 @@ def tool_times(rng: np.random.Generator, n: int, dist: str, mean: float, cv: flo
     if dist == "lognormal":
         s2 = np.log1p(cv * cv)
         return rng.lognormal(np.log(mean) - 0.5 * s2, np.sqrt(s2), size=n)
+    if dist == "bimodal":
+        return np.where(rng.random(n) < bimodal_p_hi(mean, lo, hi), hi, lo).astype(float)
     raise ValueError(f"unknown tool_time_dist {dist!r}")
 
 
@@ -135,7 +148,8 @@ def _make_block(arrivals: np.ndarray, turn_rng: np.random.Generator, tool_rng: n
                 wl: WorkloadParams):
     n = arrivals.shape[0]
     nt = turn_counts(turn_rng, n, wl.mean_turns, wl.max_turns)
-    flat = tool_times(tool_rng, int(np.sum(nt - 1)), wl.tool_time_dist, wl.tool_time_mean_s, wl.tool_time_cv)
+    flat = tool_times(tool_rng, int(np.sum(nt - 1)), wl.tool_time_dist, wl.tool_time_mean_s, wl.tool_time_cv,
+                      wl.tool_time_lo_s, wl.tool_time_hi_s)
     off = np.concatenate([[0], np.cumsum(nt - 1)[:-1]]).astype(np.int64) if n else np.zeros(0, np.int64)
     return arrivals.astype(float), nt, off, flat
 

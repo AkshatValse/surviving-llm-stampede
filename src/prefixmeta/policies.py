@@ -16,6 +16,10 @@ Policies only use this narrow view of the engine::
                                       returned request is stamped ``req.mark = view.pass_id``; with
                                       skip_marked=True requests already stamped in this pass are omitted
     view.pass_id                   -> int, unique id of the current pass
+    view.waiting_by_program()      -> live waiting requests in ascending program (session) arrival order; only
+                                      available to policies with ``needs_program_order = True``
+    view.pinned_waiting()          -> live waiting requests whose session KV is TTL-pinned, ascending program
+                                      arrival; each is stamped ``req.mark = view.pass_id``
 
 ``req.qtime`` is the time the request entered the waiting queue.
 """
@@ -29,6 +33,8 @@ class Policy:
     name = "base"
     #: True if the order depends on wall-clock time (aging); the engine then re-runs passes at every boundary
     time_dependent = False
+    #: True if the policy calls ``view.waiting_by_program()`` (the engine then maintains a sorted index)
+    needs_program_order = False
 
     def candidates(self, view, now: float) -> Iterator:
         raise NotImplementedError
@@ -118,6 +124,32 @@ class AgingLpm(Policy):
         return math.inf
 
 
+class ProgramFcfs(Policy):
+    """Work-conserving order by PROGRAM (session) arrival time, not request arrival: a later turn of an old session
+    goes before the first turn of a newer one. This is Continuum's tie-break without its pinning; it isolates the
+    effect of the order from the effect of the pin."""
+    name = "program_fcfs"
+    needs_program_order = True
+
+    def candidates(self, view, now: float) -> Iterator:
+        return view.waiting_by_program()
+
+
+class ContinuumOrder(Policy):
+    """Continuum's scheduling priority (without the 'preempted' class, which this engine has no use for):
+    requests whose session KV is TTL-pinned first, then everything else; both groups in program arrival order.
+    Used together with ``ttl_pin_s``; with no pins it equals ProgramFcfs."""
+    name = "continuum"
+    needs_program_order = True
+
+    def candidates(self, view, now: float) -> Iterator:
+        pid = view.pass_id
+        yield from view.pinned_waiting()
+        for r in view.waiting_by_program():
+            if r.mark != pid:
+                yield r
+
+
 def make_policy(spec: dict) -> Policy:
     kind = spec["kind"]
     if kind == "fcfs":
@@ -128,4 +160,8 @@ def make_policy(spec: dict) -> Policy:
         return LpmFallback(spec["threshold"])
     if kind == "aging_lpm":
         return AgingLpm(spec["w_max_s"])
+    if kind == "program_fcfs":
+        return ProgramFcfs()
+    if kind == "continuum":
+        return ContinuumOrder()
     raise ValueError(f"unknown policy kind {kind!r}")

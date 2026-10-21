@@ -58,6 +58,13 @@ class Recorder:
         self.q = AreaTrace(window_s)
         self.gate = AreaTrace(window_s)
         self.q_fine = AreaTrace(fine_window_s)
+        self.gate_fine = AreaTrace(fine_window_s)
+        self.cap = AreaTrace(window_s)               # session cap (only meaningful once set_cap was called)
+        self._cap_set = False
+        self.mem_on = False                           # opt-in memory-occupancy traces (round-2 experiments)
+        self.res = AreaTrace(window_s)                # tokens reserved by running requests
+        self.idl = AreaTrace(window_s)                # idle (tool-call / queued) KV tokens
+        self.prot = AreaTrace(window_s)               # of which hard-protected (pinned) tokens
         self._admits: List[int] = []
         self._hits: List[int] = []
         self._first_admits: List[int] = []
@@ -93,6 +100,16 @@ class Recorder:
 
     def set_gate(self, t: float, n_gate: int) -> None:
         self.gate.set(t, float(n_gate))
+        self.gate_fine.set(t, float(n_gate))
+
+    def set_cap(self, t: float, cap: int) -> None:
+        self._cap_set = True
+        self.cap.set(t, float(cap))
+
+    def set_mem(self, t: float, reserved: float, idle: float, protected: float) -> None:
+        self.res.set(t, float(reserved))
+        self.idl.set(t, float(idle))
+        self.prot.set(t, float(protected))
 
     # -- events
     def add_busy(self, t0: float, t1: float) -> None:
@@ -135,12 +152,23 @@ class Recorder:
         self.q.advance(t_end)
         self.gate.advance(t_end)
         self.q_fine.advance(t_end)
+        self.gate_fine.advance(t_end)
+        if self._cap_set:
+            self.cap.advance(t_end)
+        if self.mem_on:
+            self.res.advance(t_end)
+            self.idl.advance(t_end)
+            self.prot.advance(t_end)
         n_full = int(math.floor(t_end / self.w + 1e-9))
         self._ensure(max(n_full - 1, 0))
         rows: List[Dict[str, float]] = []
         for k in range(n_full):
             qm, qx = self.q.out[k] if k < len(self.q.out) else (float("nan"), float("nan"))
             gm, gx = self.gate.out[k] if k < len(self.gate.out) else (float("nan"), float("nan"))
+            cm = self.cap.out[k][0] if self._cap_set and k < len(self.cap.out) else float("nan")
+            rm = self.res.out[k][0] if self.mem_on and k < len(self.res.out) else float("nan")
+            im = self.idl.out[k][0] if self.mem_on and k < len(self.idl.out) else float("nan")
+            pm = self.prot.out[k][0] if self.mem_on and k < len(self.prot.out) else float("nan")
             adm, hit, fa = self._admits[k], self._hits[k], self._first_admits[k]
             fw = self._first_wait[k]
             rows.append({
@@ -154,6 +182,10 @@ class Recorder:
                 "queue_max": qx,
                 "gate_mean": gm,
                 "gate_max": gx,
+                "cap_mean": cm,
+                "reserved_mean": rm,
+                "idle_mean": im,
+                "protected_mean": pm,
                 "sessions_per_s": self._sessions_done[k] / self.w,
                 "turns_per_s": self._turns_done[k] / self.w,
                 "lat_p50_s": _pct(self._lat[k], 50),
@@ -167,6 +199,13 @@ class Recorder:
             })
         return rows
 
+    def backlog_trace(self) -> List[Tuple[float, float, float]]:
+        """(t_start, mean, max-bound) of waiting queue + gate queue per fine bucket (max-bound = sum of maxes)."""
+        fw = self.q_fine.w
+        n = min(len(self.q_fine.out), len(self.gate_fine.out))
+        return [(i * fw, self.q_fine.out[i][0] + self.gate_fine.out[i][0],
+                 self.q_fine.out[i][1] + self.gate_fine.out[i][1]) for i in range(n)]
+
     def queue_trace(self) -> List[Tuple[float, float, float]]:
         """(t_start, mean, max) of the waiting queue per fine bucket (complete buckets only)."""
         fw = self.q_fine.w
@@ -179,8 +218,8 @@ def tail_stats(rows: List[Dict[str, float]], t_from: float, t_to: float) -> Dict
     sel = [r for r in rows if r["t_start"] >= t_from - 1e-9 and r["t_end"] <= t_to + 1e-9]
     if not sel:
         return {"n_windows": 0, "hit_rate": float("nan"), "queue_mean": float("nan"),
-                "queue_max": float("nan"), "turns_per_s": float("nan"), "sessions_per_s": float("nan"),
-                "busy_frac": float("nan")}
+                "queue_max": float("nan"), "gate_mean": float("nan"), "turns_per_s": float("nan"),
+                "sessions_per_s": float("nan"), "busy_frac": float("nan")}
     adm = sum(r["admitted_turns"] for r in sel)
     hits = sum(r["hits"] for r in sel)
     return {
@@ -188,6 +227,7 @@ def tail_stats(rows: List[Dict[str, float]], t_from: float, t_to: float) -> Dict
         "hit_rate": hits / adm if adm else float("nan"),
         "queue_mean": float(np.mean([r["queue_mean"] for r in sel])),
         "queue_max": float(np.max([r["queue_max"] for r in sel])),
+        "gate_mean": float(np.mean([r["gate_mean"] for r in sel])),
         "turns_per_s": float(np.mean([r["turns_per_s"] for r in sel])),
         "sessions_per_s": float(np.mean([r["sessions_per_s"] for r in sel])),
         "busy_frac": float(np.mean([r["busy_frac"] for r in sel])),
