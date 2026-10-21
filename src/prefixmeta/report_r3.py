@@ -51,7 +51,7 @@ def _legend_families(ax, present: Sequence[str]) -> None:
         if f not in fams:
             fams.append(f)
     handles = [plt.Rectangle((0, 0), 1, 1, color=FAMILY_COLOR[f]) for f in fams]
-    ax.legend(handles, [FAMILY_NAME[f] for f in fams], fontsize=6, loc="best", frameon=False)
+    ax.legend(handles, [FAMILY_NAME[f] for f in fams], fontsize=6, loc="upper right", frameon=False)
 
 
 # ------------------------------------------------------------------------------------------------ figures
@@ -84,9 +84,9 @@ def fig_phase(phase_runs: pd.DataFrame, lam_miss: float, lam_cap_round1: float, 
         ax.grid(alpha=0.25)
     ymax = axes[0].get_ylim()[1]
     axes[0].text(1.0, 0.55, r" $\lambda_{\rm miss}$", rotation=90, fontsize=7, va="center")
-    axes[0].text(cap_mult, 0.55, r" $\lambda_{\rm cap}$ (LPM, from empty, round 1)", rotation=90, fontsize=7,
-                 va="center")
-    axes[0].set_ylabel("fraction of seeds recovered from 300 cold sessions")
+    axes[0].text(cap_mult, 0.55, r" $\lambda_{\rm cap}$ (LPM, round 1)", rotation=90, fontsize=7, va="center",
+                 ha="right")
+    axes[0].set_ylabel("fraction of seeds recovered\n(300 cold sessions)")
     axes[0].set_ylim(-0.05, max(1.05, ymax))
     axes[1].set_ylabel("tail hit rate (mean over seeds)")
     axes[1].set_ylim(-0.05, 1.05)
@@ -144,6 +144,7 @@ def fig_mechanisms(cold: pd.DataFrame, burst: pd.DataFrame, limits: Optional[pd.
         axes[2].barh(y - 0.2, v, 0.38, color=[_color(p) for p in pols], hatch="xx", edgecolor="white")
     axes[2].axvline(1.0, color="k", lw=0.7, ls=":")
     axes[2].set_xlabel(r"$/\lambda_{\rm miss}$: stable limit (solid), good-state ceiling (hatched)")
+    axes[2].set_xlim(0, 7.6)
     _legend_families(axes[2], pols)
     for ax in axes:
         ax.grid(alpha=0.25, axis="x")
@@ -207,7 +208,10 @@ def fig_escape(esc_reg: Optional[pd.DataFrame], esc_iw: Optional[pd.DataFrame], 
                                     label=f"{m:g}x {sc}")
                     cens = ~fin
                     if cens.any():
-                        ax.scatter(xs[cens], horizon[cens], marker="^", color=colr, s=36,
+                        # KM median: censored => larger than the horizon; exponential MLE with no event: only the
+                        # lower confidence bound exists. Either way an upward triangle at the known lower bound.
+                        ybound = horizon if col == "km_median" else dd["exp_mean_ci_lo"].to_numpy(dtype=float)
+                        ax.scatter(xs[cens], ybound[cens], marker="^", color=colr, s=36,
                                    facecolors=colr if fill else "none", zorder=3)
                     for _, rw in dd.iterrows():
                         rows.append({"panel": title, "estimator": col, "scaling": sc, "lam_mult": m, "k": rw["k"],
@@ -220,10 +224,11 @@ def fig_escape(esc_reg: Optional[pd.DataFrame], esc_iw: Optional[pd.DataFrame], 
             ax.set_xticks(ks)
             ax.set_xticklabels([f"{k:g}" for k in ks])
             ax.set_xlabel("system size k")
-            ax.set_ylabel(ylab)
+            ax.set_ylabel(ylab + ("\n(triangle: censored, value = horizon)" if r == 0 else
+                                  "\n(triangle: no event, value = lower 95% bound)"), fontsize=8)
             ax.grid(alpha=0.25, which="both")
             if r == 0:
-                ax.set_title(f"{title} (triangles: median censored at the horizon)", fontsize=8)
+                ax.set_title(f"{title}", fontsize=9)
             hl, _ = ax.get_legend_handles_labels()
             if hl and r == 0:
                 ax.legend(fontsize=6, frameon=False, loc="best")
@@ -258,9 +263,9 @@ def fig_robust(rob: pd.DataFrame, out: Path, r_threshold: float = 1.5) -> pd.Dat
         axes[1].text(i, 1.02, "holds" if hold else "fails", ha="center", fontsize=6)
     axes[1].set_xticks(x)
     axes[1].set_xticklabels(v["variant"], rotation=35, ha="right", fontsize=7)
-    axes[1].set_ylabel("FCFS, burst of 200 at 1.6x: fraction of seeds")
+    axes[1].set_ylabel("FCFS, burst of 200 at 1.6x\nfraction of seeds")
     axes[1].set_ylim(0, 1.12)
-    axes[1].legend(fontsize=7, frameon=False, loc="lower right")
+    axes[1].legend(fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=3)
     for ax in axes:
         ax.grid(alpha=0.25, axis="y")
     fig.tight_layout()

@@ -318,8 +318,13 @@ def _p7_one(summary: pd.DataFrame, col: str, ks: Sequence[float], min_events: in
         r = summary[np.isclose(summary["k"].astype(float), k)]
         means.append(float(r[col].iloc[0]) if len(r) else float("nan"))
         events.append(int(r["n_events"].iloc[0]) if len(r) else 0)
-    fin = [m for m in means if m == m]
-    order_viol = any(b <= a for a, b in zip(fin, fin[1:]))
+    # An order violation can only be asserted between sizes whose means are both ESTIMATED (>= min_events collapses). A
+    # censored size contributes a lower bound (Kaplan-Meier restricted mean: the horizon; exponential MLE with few
+    # events: very noisy), and two bounds that tie at the horizon are not a violation (evaluator fix made after the full
+    # runs; it changes no PASS / FAIL of a primary exponential-MLE row, see the report notes).
+    est = [(m, e) for m, e in zip(means, events)]
+    order_viol = any((a[0] == a[0] and b[0] == b[0] and a[1] >= min_events and b[1] >= min_events and b[0] <= a[0])
+                     for a, b in zip(est, est[1:]))
     out: Dict[str, Any] = {"estimator": col, "ks": list(ks), "means": means, "n_events": events}
     if order_viol:
         return {**out, "verdict": FAIL, "reason": "means are not strictly increasing in k"}

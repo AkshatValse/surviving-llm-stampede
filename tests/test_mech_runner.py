@@ -558,6 +558,14 @@ def test_eval_p7():
     mixed = _esc([1000.0, 5000.0, 60000.0], [20, 15, 8], rmst=[900.0, 800.0, 5000.0])
     p, s = PE.eval_p7(mixed)
     assert p["verdict"] == PE.PASS and s["verdict"] == PE.FAIL
+    # restricted means of censored sizes tie at the horizon: that is a lower bound, not an order violation
+    cens = _esc([float("nan"), float("nan"), float("nan")], [12, 0, 0], rmst=[251450.0, 400000.0, 400000.0],
+                ks=(1.0, 2.0, 4.0))
+    cens.loc[0, "exp_mean"] = 419083.0
+    p, s = PE.eval_p7(cens, ks=(1.0, 2.0, 4.0))
+    assert p["verdict"] == PE.NA and s["verdict"] == PE.NA
+    both_est = _esc([1000.0, 800.0, 60000.0], [20, 15, 8], rmst=[900.0, 800.0, 5000.0])          # estimated on both sides
+    assert PE.eval_p7(both_est)[0]["verdict"] == PE.FAIL
 
 
 def test_eval_p7_flags_sizes_outside_their_stability_window_and_selects_the_scaling():
