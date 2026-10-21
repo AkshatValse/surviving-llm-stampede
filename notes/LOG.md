@@ -227,3 +227,18 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
   - Verified on the real captured help: all 11 required flags plus `--sampling-defaults` are found.
   - SGLang notes `python -m sglang.launch_server` as still supported; `sglang serve` is the recommended entrypoint.
 - **Smoke attempt 2, job 17060022:** submitted with the same command.
+- **Smoke attempt 2, job 17060022:** FAILED after 1:49 on nova22-gpu-1. This time every flag passed.
+  - What worked:
+    - The model loaded.
+    - **The KV pool was allocated at exactly 300,000 tokens (K and V 8.01 GB each), so the cap is honored.** That is plan item (f).
+    - 48 GB of GPU memory was still free after the pool.
+    - Peak host RSS was 20 GB.
+    - The context-length override to 49152 was accepted with a warning: "greater than the derived context_length (32768)". That is plan item (e), partly verified.
+  - Why it died: FlashInfer's JIT, during prefill CUDA-graph capture, raised `FileNotFoundError: 'ninja'`. The env is never activated, so its `bin/` was not on PATH.
+  - Further problem: FlashInfer links with `-L$CUDA_HOME/lib64{,/stubs} -lcudart -lcuda`, but the pip CUDA 13 toolkit ships `lib/` with only versioned `.so` files and no libcuda stub.
+  - Fix (7cc31fb):
+    - `slurm/make_cuda_shim.sh` builds a symlink-only `CUDA_HOME` at `/work/classtmp/avalse/swapp/cuda13-home`. nvcc 13.4.92 resolves through it, `libcudart.so` points to the pip runtime, and `stubs/libcuda.so` points to `/usr/lib64/libcuda.so.1`, the node's driver 580.
+    - The launcher exports the env's `bin/` and the shim, and points the FlashInfer/Triton JIT caches at class storage.
+    - A fail-fast pre-launch toolchain check was added.
+    - `ATTN_BACKEND=triton` is available as a fallback. Not used yet, because FlashInfer is SGLang's A100 default.
+- **Smoke attempt 3, job 17060085:** submitted with `CUDA_HOME_SHIM` set.
