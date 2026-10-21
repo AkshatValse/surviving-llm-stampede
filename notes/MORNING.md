@@ -14,7 +14,7 @@
    - Over a wide λ window a burst traps the server in the congested regime.
    - Recovery tracks congested throughput: FCFS 0.99, LPM 1.14, caps up to 3.3.
    - Caps at or below the curve's peak restore stability, whatever the eviction rule.
-5. **Recommendation: conditional GO.** Run the cheap Nova stages first (smoke, real μ(n), λ_miss, about 20–25 GPU-h) before committing to the paper framing. I agree with the referee: about **40%** chance of a workshop-or-better paper by Dec 18. A round-5 check of whether the effect survives realistic KV allocation is _[see Round 5 below]_.
+5. **Recommendation: conditional GO.** Run the cheap Nova stages first (smoke, real μ(n), λ_miss, from-empty edge, about 27 GPU-h) before committing to the paper framing. I agree with the referee: about **40%** chance of a workshop-or-better paper by Dec 18. A round-5 check of whether the effect survives realistic KV allocation is _[see Round 5 below]_.
 
 ## Pilot results ("verified" = an independent agent recomputed from raw data and re-ran bit-identically)
 | Direction (branch) | Verdict | Status | Results |
@@ -72,9 +72,9 @@ _[filled in when the workflow finishes]_
 
 ## Decisions needed from you
 1. **Direction.** Approve prefix-cache metastability as the main line, or choose from `notes/DIRECTIONS.md` / `notes/DIRECTION_SEARCH_2.md`.
-2. **Nova, cheap stages first (≈20–25 GPU-h).** S0 smoke, then closed μ(n) on SGLang (C), then λ_miss (E0a). After that, pre-register and run the paired-arm kill test.
+2. **Nova, cheap stages first (≈26.6 GPU-h, plan arithmetic):** S0 smoke (1.7), then closed μ(n) on SGLang (C, 8.5), then λ_miss (E0a, 7.2), then the from-empty edge (E0b, 9.2). After that, pre-register and run the paired-arm kill test (≈76 GPU-h). The full plan is ≈236 GPU-h.
    - Jobs: 1×A100 on `instruction`, 4 h wall, account `f2026.coms.6250.02`.
-   - The harness now includes the referee's redesign: paired burst / no-burst / client-capped arms with common random numbers, plus a throughput-based trap criterion. See `harness/prefix-meta` and `notes/NOVA_PLAN_prefix_meta.md` (updated GPU-h table there).
+   - The harness now includes the referee's redesign: paired burst / no-burst / client-capped arms with common random numbers, plus a token-based trap criterion (the first, session-rate version would have missed the simulator's own traps; caught in review). See `harness/prefix-meta` and `notes/NOVA_PLAN_prefix_meta.md` (updated GPU-h table there).
 3. **KV pool.** Cap at 300k tokens to match the simulator (the referee warns reviewers will say "you shrank the cache"), plus at least one λ on the native pool (≈1M tokens).
 4. **Output feedback.** The default is to prefer server-returned token ids over synthetic ones; Stage 0 decides.
 5. **Codex folder.** An earlier session's `.claude/settings.local.json` still allows reads of the old Codex folder. I did not touch it tonight. Remove the rule?
