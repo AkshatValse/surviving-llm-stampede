@@ -72,6 +72,13 @@ if ! "$ENV_SGLANG/bin/python" -c "import sglang" 2>/dev/null; then
   fi
 fi
 "$ENV_SGLANG/bin/python" -c "import sglang, torch; print('sglang', sglang.__version__, 'torch', torch.__version__, 'cuda build', torch.version.cuda)" || exit 6
+# FlashInfer JIT needs every compiler-side CUDA wheel at torch's runtime major.minor. The [all] extra resolved nvcc, nvvm and
+# crt to 13.4 and cccl to 13.3 against runtime 13.0.96, which fails with "CUDA compiler and CUDA toolkit headers are
+# incompatible" and then "ptxas: Unsupported .version 9.4" (Nova job 17060085). Pin them to the runtime's major.minor.
+cuda_mm=$("$ENV_SGLANG/bin/python" -c "import importlib.metadata as m; v=m.version('nvidia-cuda-runtime').split('.'); print(v[0]+'.'+v[1])")
+"$ENV_SGLANG/bin/python" -m pip install "nvidia-cuda-nvcc==${cuda_mm}.*" "nvidia-nvvm==${cuda_mm}.*" "nvidia-cuda-crt==${cuda_mm}.*" "nvidia-cuda-cccl==${cuda_mm}.*" || exit 6
+"$ENV_SGLANG/bin/python" -m pip check || exit 6
+bash "$(dirname "$0")/make_cuda_shim.sh" "$ENV_SGLANG" "$SWAPP_ROOT/cuda13-home" || exit 6
 "$ENV_SGLANG/bin/python" -m pip freeze > "$SWAPP_ROOT/envs/sglang.lock.txt"
 "$ENV_GEN/bin/python" -m pip freeze > "$SWAPP_ROOT/envs/swapp.lock.txt"
 micromamba env export -p "$ENV_GEN" > "$SWAPP_ROOT/envs/swapp.micromamba.yml" 2>/dev/null || true
