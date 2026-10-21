@@ -1,0 +1,29 @@
+{
+  "git": {
+    "commit": "1565403c991974849b851aa207cd88326d6c4620",
+    "branch": "pilot/kvrent",
+    "dirty": true
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 08:22:19) [Clang 14.0.6 ]",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "packages": {
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "pandas": "2.2.2",
+    "pyyaml": "6.0.1"
+  },
+  "start_time": "2026-10-20T22:18:54.522344",
+  "end_time": "2026-10-20T22:20:19.534462",
+  "wall_seconds": 85.01211810112,
+  "mode": "sweep",
+  "n_runs": 1125
+}
