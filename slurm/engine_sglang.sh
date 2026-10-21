@@ -53,8 +53,32 @@ check_engine_flags() {
   "$py" -c "import sglang; print('sglang version:', sglang.__version__)" 2>&1 || true
   pkgdir=$("$py" -c "import sglang, os; print(os.path.dirname(sglang.__file__))" 2>/dev/null) || pkgdir=""
   check_envvars "$pkgdir" SGLANG_ENABLE_WAITING_PREFIX_REFRESH SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN || rc=1
-  if [ "$rc" = "1" ] && [ "${STRICT_FLAGS:-1}" = "1" ]; then echo "STRICT_FLAGS=1: required SGLang flag(s)/env var(s) missing; fix slurm/engine_sglang.sh"; return 1; fi
+  check_jit_toolchain || rc=1
+  if [ "$rc" = "1" ] && [ "${STRICT_FLAGS:-1}" = "1" ]; then echo "STRICT_FLAGS=1: required SGLang flag(s)/env var(s)/JIT toolchain missing; fix slurm/engine_sglang.sh"; return 1; fi
   return 0
+}
+
+# FlashInfer (SGLang's default attention backend on A100) JIT-compiles its kernels at startup: it needs ninja, nvcc under
+# $CUDA_HOME/bin and links -L$CUDA_HOME/lib64{,/stubs} -lcudart -lcuda (Nova job 17060022 died with "No such file: ninja").
+# The env is never activated, so its bin/ and the CUDA_HOME shim (slurm/make_cuda_shim.sh) are exported here. JIT and Triton
+# caches go to XDG_CACHE_HOME (class storage; home has a 10 GB quota). ATTN_BACKEND=triton needs none of this.
+setup_jit_env() {
+  export PATH="$(engine_env_prefix)/bin:$PATH"
+  if [ -n "${CUDA_HOME_SHIM:-}" ]; then export CUDA_HOME="$CUDA_HOME_SHIM"; export PATH="$CUDA_HOME/bin:$PATH"; fi
+  export FLASHINFER_WORKSPACE_BASE="${XDG_CACHE_HOME:-$HOME/.cache}"
+  export TRITON_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/triton"
+}
+check_jit_toolchain() {
+  [ "${ATTN_BACKEND:-flashinfer}" = "triton" ] && { echo "jit toolchain: skipped (ATTN_BACKEND=triton)"; return 0; }
+  local rc=0
+  setup_jit_env
+  if command -v ninja >/dev/null 2>&1; then echo "jit ok:      ninja $(ninja --version)"; else echo "jit MISSING: ninja on PATH"; rc=1; fi
+  if [ -z "${CUDA_HOME:-}" ]; then echo "jit MISSING: CUDA_HOME (set CUDA_HOME_SHIM, see slurm/make_cuda_shim.sh)"; return 1; fi
+  if [ -x "$CUDA_HOME/bin/nvcc" ]; then echo "jit ok:      $("$CUDA_HOME/bin/nvcc" --version | tail -1)"; else echo "jit MISSING: $CUDA_HOME/bin/nvcc"; rc=1; fi
+  local f; for f in "$CUDA_HOME/lib64/libcudart.so" "$CUDA_HOME/lib64/stubs/libcuda.so"; do
+    if [ -e "$f" ]; then echo "jit ok:      $f -> $(readlink "$f")"; else echo "jit MISSING: $f (or its target)"; rc=1; fi
+  done
+  return "$rc"
 }
 
 launch_engine() {
@@ -64,7 +88,9 @@ launch_engine() {
   [ "$KV_TOKENS" != "native" ] && kv_flag="--max-total-tokens $KV_TOKENS"     # KV_TOKENS=native: the engine sizes its own pool
   if help_has_flag "$help" --sampling-defaults; then extra="$extra --sampling-defaults openai"; fi
   if [ -n "${HF_REVISION:-}" ]; then extra="$extra --revision $HF_REVISION"; fi
-  log "launching SGLang: policy=$POLICY refresh=$REFRESH radix=$RADIX lpm_inf=$LPM_INF kv_tokens=$KV_TOKENS extra='$extra'"
+  if [ "${ATTN_BACKEND:-flashinfer}" = "triton" ]; then extra="$extra --attention-backend triton --sampling-backend pytorch"; fi
+  setup_jit_env
+  log "launching SGLang: policy=$POLICY refresh=$REFRESH radix=$RADIX lpm_inf=$LPM_INF kv_tokens=$KV_TOKENS attn=${ATTN_BACKEND:-flashinfer} CUDA_HOME=${CUDA_HOME:-unset} extra='$extra'"
   SGLANG_ENABLE_WAITING_PREFIX_REFRESH="$REFRESH" SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 \
   "$(engine_env_prefix)/bin/python" -m sglang.launch_server \
       --model-path "$MODEL" --host 127.0.0.1 --port "$PORT" \
