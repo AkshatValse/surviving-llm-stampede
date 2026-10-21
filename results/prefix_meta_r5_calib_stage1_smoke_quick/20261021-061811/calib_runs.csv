@@ -1,0 +1,4 @@
+mode,seed,sessions_per_s,turns_per_s,busy_frac,n_sessions,preemptions_per_s,recompute_tok_per_s,prefill_tok_per_s,n_windows,wall_s
+ondemand_preempt,7303,0.0434,0.6768,1.0,217.0,0.0046,45.8942,7359.3949999999995,5,0.04420879198005423
+ratio_reserve,7303,0.043,0.6784,1.0,215.0,0.0016,21.692,7354.7156,5,0.045623916026670486
+full_reserve,7303,0.0434,0.6788,1.0,217.0,0.0,0.0,7350.8135999999995,5,0.033573541964869946

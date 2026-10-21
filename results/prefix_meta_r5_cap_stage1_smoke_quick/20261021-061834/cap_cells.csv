@@ -1,0 +1,5 @@
+alloc_mode,arm,cap,n_runs,n_recovered,tail_hit_mean,tail_backlog_mean,tail_gate_mean,tail_sessions_per_s,n_preempt_mean
+ondemand_preempt,capped_at_nstar,24,1,1,0.9306821320077326,0.011289172610385019,0.0,0.08366666666666667,1.0
+ondemand_preempt,no_cap,-1,1,0,0.0,233.13410646308543,0.0,0.06033333333333333,82.0
+ratio_reserve,capped_at_nstar,24,1,1,0.9307563959955506,0.011622212102177551,0.0,0.08333333333333333,1.0
+ratio_reserve,no_cap,-1,1,0,0.0,230.25019795369977,0.0,0.06133333333333333,20.0

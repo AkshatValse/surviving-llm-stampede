@@ -1,0 +1,10 @@
+{
+  "lambda_miss": {
+    "ondemand_preempt": 0.0434,
+    "ratio_reserve": 0.043,
+    "full_reserve": 0.0434
+  },
+  "warmup_s": 1000.0,
+  "horizon_s": 6000.0,
+  "population": 60
+}

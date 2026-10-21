@@ -1,0 +1,5 @@
+alloc_mode,burst_n,n_runs,n_recovered,tail_hit_mean,tail_backlog_mean,tail_sessions_per_s,n_preempt_mean,n_not_recovered
+ondemand_preempt,0,1,1,0.9308380797396257,0.012187997446289274,0.08549999999999999,0.0,0
+ondemand_preempt,100,1,0,0.0,128.6050342443636,0.0675,36.0,1
+ratio_reserve,0,1,1,0.9310627821091506,0.011958349443538964,0.08299999999999999,0.0,0
+ratio_reserve,100,1,0,0.0,126.72161523644172,0.0665,12.0,1
