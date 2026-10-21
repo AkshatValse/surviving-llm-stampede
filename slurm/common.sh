@@ -20,7 +20,9 @@ require_set() {
 }
 
 # help_has_flag HELP_TEXT FLAG: exact-token match (so --port does not match --port-base, or a flag named inside prose)
-help_has_flag() { printf '%s\n' "$1" | grep -qE -- "(^|[^[:alnum:]-])$2([^[:alnum:]-]|\$)"; }
+# No pipe: `printf | grep -q` under `set -o pipefail` fails with SIGPIPE when the help text exceeds the pipe buffer and
+# grep exits at the first match (SGLang 0.5.22's --help is ~2700 lines; Nova job 17060003 reported every flag missing).
+help_has_flag() { grep -qE -- "(^|[^[:alnum:]-])$2([^[:alnum:]-]|\$)" <<< "$1"; }
 
 # check_flags HELP_TEXT FLAG...: prints one line per flag; returns 1 if any is missing
 check_flags() {

@@ -260,6 +260,20 @@ def test_help_has_flag_is_exact_token_match():
         assert r.returncode == want_rc, (flag, r.returncode)
 
 
+def test_help_has_flag_large_help_under_pipefail():
+    # Regression (Nova job 17060003): SGLang 0.5.22's --help is ~2700 lines (> pipe buffer). With `set -o pipefail`,
+    # `printf | grep -q` died of SIGPIPE when grep exited at an early match, so every PRESENT flag read as missing.
+    head = "usage: sglang serve [-h] --model-path MODEL_PATH\n  [--context-length CONTEXT_LENGTH] [--port PORT]\n"
+    help_text = head + "".join(f"  [--filler-option-{i} VALUE]  some description text here\n" for i in range(4000))
+    assert len(help_text.encode()) > 200_000
+    for flag, want_rc in {"--model-path": 0, "--context-length": 0, "--port": 0, "--filler-option-3999": 0,
+                          "--not-a-flag": 1}.items():
+        r = bash_fn(f'set -u -o pipefail; help_has_flag "$H" {flag}', env={"H": help_text})
+        assert r.returncode == want_rc, (flag, r.returncode, r.stderr)
+    r = bash_fn('set -u -o pipefail; check_flags "$H" --model-path --context-length --port', env={"H": help_text})
+    assert r.returncode == 0 and "MISSING" not in r.stdout, r.stdout
+
+
 def test_check_envvars_reports_missing_names(tmp_path):
     (tmp_path / "pkg").mkdir()
     (tmp_path / "pkg" / "envs.py").write_text('X = os.environ.get("REAL_VAR")\n')
