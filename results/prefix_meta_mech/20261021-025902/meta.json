@@ -1,0 +1,91 @@
+{
+  "experiment": "mech",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_mech_run.py",
+    "mech",
+    "--workers",
+    "3"
+  ],
+  "git": {
+    "commit": "47f2859855df0fd394ca91191952b95ab8cf9ce5",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T02:59:02",
+  "end_time": "2026-10-21T03:02:35",
+  "wall_s": 212.8241629600525,
+  "quick": false,
+  "workers": 3,
+  "overrides": [],
+  "tag": null,
+  "calibration": {
+    "lambda_miss": 0.047418947368421054,
+    "lambda_cap_lpm_round1": 0.11558368421052631,
+    "R_round1": 2.4375,
+    "N_lb": 28,
+    "E_lb": 10568.686518661441,
+    "_path": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta/results/prefix_meta_e0/20261021-005706/e0_summary.json"
+  },
+  "n_runs": 874,
+  "n_limit_search_runs": 800,
+  "timing": {
+    "total_sim_s": 26220000.0,
+    "total_run_wall_s": 329.37961141957203,
+    "wall_s_per_10k_sim_s": 0.12562151465277346,
+    "max_run_wall_s": 0.9641017090179957
+  },
+  "N_lb": 28,
+  "E_lb": 10568.686518661441,
+  "cap_sweep_caps": [
+    14,
+    21,
+    25,
+    28,
+    30,
+    33,
+    36,
+    42,
+    49
+  ],
+  "cap_1p3": 36,
+  "lam_burst": 0.09483789473684211,
+  "capacity_policies": [
+    "lpm",
+    "fcfs",
+    "peek",
+    "peek_rank",
+    "ttl5",
+    "ttl10",
+    "ttl20",
+    "ttlf5",
+    "ttlf10",
+    "ttlf20",
+    "ttl10e",
+    "ttl20e",
+    "ttl10ef",
+    "ttl20ef",
+    "progfcfs",
+    "lb_cap",
+    "cap_1p3",
+    "aimd_cap",
+    "concur_cap"
+  ]
+}
