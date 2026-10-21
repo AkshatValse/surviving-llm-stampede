@@ -1,0 +1,58 @@
+research_question: >-
+  E2 (real engine): does a finite arrival burst at lambda in (1.2, 2) x lambda_miss trap FCFS prefix-cache
+  serving in the low-hit congested state (hit rate < 0.2 for several consecutive 1000 s windows after a clean
+  good-state start), and do LPM / LPM-without-128-fallback / vLLM FCFS / SGLang waiting-prefix refresh change that?
+
+assumptions_note: >-
+  Burst of 200 sessions within 60 s (the simulator's E2 burst; bursts of >=100 trapped every work-conserving
+  policy in the simulator, bursts of 25 recovered). Timing is the SHORT protocol (deviation D1 in
+  notes/NOVA_PLAN_prefix_meta.md): burst at t=1200 s, run ends 7500 s later (8700 s total) so one run fits a 4 h job;
+  the simulator waited 25000 s after the burst. Analysis must be run with burst.trap_min_s=3000 and
+  burst.hit_eval_from_s=4500 for this protocol (the job script passes these). lambda_ref MUST be set to the
+  calibration.json from E0a (placeholder fails loudly).
+
+server:
+  base_url: http://127.0.0.1:8000
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  extra_body: {ignore_eos: true}
+  request_token_ids: false
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: auto
+
+arrivals:
+  kind: constant
+  rate_mult: 1.6                         # overridden per run by the job script
+  lambda_ref: "<RESULTS_DIR>/calibration.json:lambda_miss_turns_based"   # placeholder: set via --set
+  burst: {n: 200, t_s: 1200, width_s: 60}
+
+run:
+  duration_s: 8700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"                  # e.g. sglang-fcfs-r1 (policy, waiting-prefix-refresh flag)
+  notes: "E2 burst"
+
+output:
+  root: results
+  name: agentload_e2_burst
