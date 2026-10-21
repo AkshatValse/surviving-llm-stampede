@@ -884,3 +884,28 @@ def test_mechanism_runs_are_deterministic_and_pool_equals_serial(cfg, pol):
         assert keep(x) == keep(y) == keep(z)
         assert win(x) == win(y) == win(z) and x["qtrace"] == y["qtrace"] == z["qtrace"]
     assert keep(a[0]) != keep(a[1])                                                                 # seeds differ
+
+
+# ============================================================================ (9) regression against recorded round-1 results
+ROUND1_E1 = Path(__file__).resolve().parent.parent / "results" / "prefix_meta_e1" / "20261021-005837" / "runs.csv"
+ROUND1_E0 = Path(__file__).resolve().parent.parent / "results" / "prefix_meta_e0" / "20261021-005706" / "e0_summary.json"
+
+
+@pytest.mark.skipif(not (ROUND1_E1.exists() and ROUND1_E0.exists()), reason="round-1 result files not present")
+@pytest.mark.parametrize("policy", ["fcfs", "lpm", "lpm128", "aging10", "fcfs_cap", "fcfs_cap_lb"])
+def test_round2_engine_reproduces_recorded_round1_runs(cfg, policy):
+    """With every round-2 mechanism off the engine must give exactly the recorded round-1 E1 numbers (2x lambda_miss,
+    300 cold sessions, seed 0, 30000 s), which were produced at commit 7e9704e before this code existed."""
+    import json
+    import pandas as pd
+    lam_miss = json.loads(ROUND1_E0.read_text())["lambda_miss"]
+    rec = pd.read_csv(ROUND1_E1)
+    row = rec[(rec["variant"] == "base") & (rec["seed"] == 0) & (rec["policy"] == policy)
+              & np.isclose(rec["lam_mult"], 2.0)].iloc[0]
+    plan = ArrivalPlan(kind="constant", horizon_s=30000.0, rate=2.0 * lam_miss, initial_cold=300)
+    s = simulate(cfg, RunSpec(exp="t", policy=policy, seed=0, horizon_s=30000.0, plan=plan))["summary"]
+    for k in ("n_admitted", "n_hits", "n_evictions", "evicted_tokens", "final_queue", "n_turns_done",
+              "n_sessions_done", "max_queue"):
+        assert s[k] == row[k], (policy, k, s[k], row[k])
+    assert s["tail_hit_rate"] == pytest.approx(row["tail_hit_rate"], abs=1e-12)
+    assert s["tail_queue_mean"] == pytest.approx(row["tail_queue_mean"], rel=1e-9)
