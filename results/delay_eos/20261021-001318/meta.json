@@ -1,0 +1,36 @@
+{
+  "experiment": "delay_eos",
+  "research_question": "Under a one-step gradient delay, does Adam's preconditioned sharpness self-stabilize at eta*S_P ~ 1 (and at ~2.7 with update-extrapolation error feedback at beta1=0.9), and does that cap co-occur with the loss penalty of delay -- or is the delay penalty not a stability effect in the minibatch regime?",
+  "git": {
+    "commit": "868d1cc9020d453bbec9fe5cab20917f87d28d0f",
+    "branch": "pilot/delay-eos",
+    "dirty": false
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "pandas": "2.2.2",
+    "sklearn": "1.5.1",
+    "yaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T00:13:18",
+  "command": "experiments/delay_eos_run.py",
+  "n_runs_planned": 144,
+  "processes": 3,
+  "batches_run": [
+    1000,
+    64
+  ],
+  "end_time": "2026-10-21T00:20:35",
+  "wall_s": 436.58961176872253,
+  "n_runs_completed": 144
+}
