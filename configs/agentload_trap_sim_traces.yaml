@@ -1,0 +1,41 @@
+research_question: >-
+  Operating characteristic of trap criterion (a) on the SIMULATOR's own traps (not on a Poisson model): when the
+  simulator (branch pilot/prefix-meta, round 4) says an FCFS run is trapped, which completion-rate estimator stays
+  within +-15% of the all-miss reference -- completed sessions/s, turns/s / E[T], or uncached prefill tokens/s? And how
+  biased are the Stage-C closed-curve windows, and how often does the NO-BURST arm escape spontaneously, in the simulator?
+
+assumptions_note: >-
+  This is an analysis of RECORDED SIMULATOR OUTPUT (per-1000 s windows), not an engine measurement, and not a re-run of
+  the simulator. Inputs are read-only files of the main checkout (paths below; their sha256 is recorded in meta.json).
+  "Trapped" = every evaluation window has hit rate < trap_hit_below AND the run ends with tail hit rate < trap_hit_below
+  (FCFS-LRU runs of results/prefix_meta_r4_burst_info, lambda = 1.5 / 2.0 / 2.5 x lambda_miss, all burst sizes incl. 0).
+  Evaluation windows are whole 1000 s simulator windows after the burst; the E2 protocol uses [t_b+4500, t_b+7500), which
+  does not align with the 1000 s grid, so [t_b+4000, +7000) and [t_b+5000, +8000) are both shown (and a late window).
+  References: lambda_miss and the all-miss prefill-token rate come from the simulator's E0 (cache-off closed population 60,
+  warmup 5000 s); turns-based uses E[T] of the workload. The simulator's prefill_tok_per_s counts prefill tokens PROCESSED
+  per window (uncached tokens, incl. recompute), which in a long window equals the tokens of completed requests up to
+  boundary effects. Criterion (b) is shown by CONSERVATION (slope = lambda - session completion rate; exact when no
+  session fails), not from a backlog trace. Deterministic: no random numbers are drawn.
+
+inputs:
+  burst_info_dir: /Users/akshat/research/jannesari-swapp/results/prefix_meta_r4_burst_info/20261021-051020
+  curve_dir: /Users/akshat/research/jannesari-swapp/results/prefix_meta_r4_curve/20261021-050856
+  e0_dir: /Users/akshat/research/jannesari-swapp/results/prefix_meta_e0/20261021-005706
+
+analysis:
+  policy: fcfs_lru
+  window_s: 1000.0
+  eval_windows_after_burst_s: [[5000, 8000], [4000, 7000], [10000, 13000]]    # [from, to) after t_b
+  trap_hit_below: 0.2
+  noburst_trap_min_s: 3000              # a no-burst escape = this many seconds of consecutive windows with hit < trap_hit_below
+  e0_population: 60
+  e0_warmup_s: 5000
+  mean_turns: 15
+  max_turns: 60
+  curve_window_s: [1000, 3000]          # the Stage-C measured window analogue (900 s warmup + 1800 s measured on the real engine)
+  curve_steady_s: [5000, 35000]
+  noburst_horizon_s: 8700               # E2 run length on the real engine
+
+output:
+  root: results
+  name: agentload_trap_sim_traces

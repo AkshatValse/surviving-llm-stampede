@@ -5,6 +5,11 @@ One run = n sessions kept alive (a finished session is replaced at once), cache 
 fraction (turns whose cached share exceeds the threshold) and token-weighted cached fraction, queue (engine waiting
 gauge if present, else client in-flight requests), and the start-state flag.
 
+Known bias (review of 2026-10-21, finding 2; measured on the simulator's curve with the same protocol): all n sessions start at
+t=0, so over the measured window mu(n) is transient-biased: +65% at n=300 (a session lives ~6000 s there, longer than the whole
+run), +18% at n=100 and 9-25% LOW at n=22-30 (the cliff, where mu(n) is also bistable). Hence mu(300) is only a check (the
+pre-registered recovery threshold is lambda_miss) and n_cap / mu_max are noisy, transient-affected estimates.
+
 ``mu_curve``: per cell (engine label), mu at every n, argmax_n mu(n) by the configured estimator (both are reported; a
 disagreement is flagged), mu(n_inf) with n_inf = 300 standing for mu(infinity), mu_max, whether the n grid is complete,
 and how close the runner-up is (one run per n: the argmax is noisy, so a near-tie is flagged ``argmax_ambiguous``).
@@ -68,6 +73,7 @@ def _cell_curve(g: pd.DataFrame, cp: Dict[str, Any], grid: List[int]) -> Dict[st
                 "cached_frac_tokens", "queue_mean"):
         out[col] = [None if x != x else float(x) for x in by_n[col]]
     out["n_aborted_runs"] = int(by_n["n_aborted"].sum())
+    out["hardware"] = sorted({str(h) for h in g["hardware"]}) if "hardware" in g.columns else []
     am = {}
     for e, col in (("sessions", "mu_sessions"), ("turns_based", "mu_turns_based")):
         vals = by_n[col].to_numpy(dtype=float)
@@ -96,8 +102,13 @@ def _cell_curve(g: pd.DataFrame, cp: Dict[str, Any], grid: List[int]) -> Dict[st
     return out
 
 
-def mu_curve(points: pd.DataFrame, cp: Dict[str, Any], fcfs_substr: str = "fcfs") -> Dict[str, Any]:
-    """The Stage-C summary (see module docstring). ``points`` has one row per run (``closed_point`` dicts)."""
+def mu_curve(points: pd.DataFrame, cp: Dict[str, Any], fcfs_substr: str = "fcfs",
+             primary_label: str | None = None) -> Dict[str, Any]:
+    """The Stage-C summary (see module docstring). ``points`` has one row per run (``closed_point`` dicts).
+    ``primary_label`` names the cell whose n_cap / mu_300 / mu_max are exported at the top level; without it the FCFS cell
+    with the most distinct n is taken and, if several FCFS cells exist (e.g. the 300k and the native pool summarised
+    together), a note says so (the job scripts additionally refuse a mu_curve.json whose ``primary_label`` is not the
+    job's engine label)."""
     est = str(cp["mu_estimator"])
     if est not in ("sessions", "turns_based"):
         raise ValueError(f"closed.mu_estimator must be sessions|turns_based, got {est!r}")
@@ -108,8 +119,18 @@ def mu_curve(points: pd.DataFrame, cp: Dict[str, Any], fcfs_substr: str = "fcfs"
         cells[str(label)] = _cell_curve(g, cp, grid)
     fc = [(len(c["n"]), lab) for lab, c in cells.items() if fcfs_substr in lab]
     primary = sorted(fc, key=lambda x: (-x[0], x[1]))[0][1] if fc else None
+    if primary_label is not None:
+        if primary_label not in cells:
+            raise ValueError(f"primary_label {primary_label!r} is not a cell of this curve (cells: {sorted(cells)})")
+        primary = primary_label
     out: Dict[str, Any] = {"estimator": est, "cells": cells, "primary_label": primary,
+                           "primary_label_explicit": primary_label is not None,
+                           "primary_hardware": cells[primary]["hardware"] if primary is not None else None,
                            "fcfs_substr": fcfs_substr, "n_cap": None, "mu_300": None, "mu_max": None, "notes": []}
+    if primary_label is None and len(fc) > 1:
+        out["notes"].append(f"{len(fc)} FCFS cells {sorted(lab for _, lab in fc)} in one curve: n_cap/mu_300/mu_max are those of "
+                            f"{primary!r} (most distinct n, then label order). Pass --primary-label, or summarise the pools "
+                            "separately: a capped arm must use the n_cap of ITS OWN pool")
     if primary is None:
         out["notes"].append(f"no cell label contains {fcfs_substr!r}: n_cap is null (the CAPPED arm needs the FCFS cell)")
     else:

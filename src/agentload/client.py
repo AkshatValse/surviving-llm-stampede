@@ -49,7 +49,8 @@ import aiohttp
 import numpy as np
 import yaml
 
-from .config import Config, resolve_lambda_ref, resolve_n_cap, resolve_rate, resolve_ramp
+from .config import (Config, resolve_lambda_ref, resolve_n_cap, resolve_rate, resolve_ramp,
+                     resolve_uncached_tokens_ref)
 from .gate import SessionGate
 from .parse import extract_output_ids, extract_output_text, extract_usage
 from .poller import MetricsPoller
@@ -154,6 +155,7 @@ class LoadGenerator:
         self.rate = resolve_rate(cfg.arrivals, base_dir) if cfg.arrivals.kind == "constant" else None
         self.ramp = resolve_ramp(cfg.arrivals, base_dir) if cfg.arrivals.kind == "ramp" else []
         self.n_cap = resolve_n_cap(cfg.gate, base_dir)
+        self.uncached_tokens_ref = resolve_uncached_tokens_ref(cfg.arrivals, base_dir)
         self.url = cfg.server.base_url.rstrip("/") + cfg.server.completions_path
         self.states: Dict[int, SessionState] = {}
         self.tasks: Dict[int, asyncio.Task] = {}
@@ -454,7 +456,9 @@ class LoadGenerator:
             "start_state_verified": cfg.meta.start_state_verified, "start_state_detail": cfg.meta.start_state_detail,
             "arm": cfg.meta.arm, "analysis_t_burst_s": cfg.arrivals.analysis_t_burst_s,
             "gate_n_cap_configured": cfg.gate.n_cap, "gate_n_cap_resolved": self.n_cap,
-            "lambda_ref_resolved": self._lambda_ref_value()}
+            "lambda_ref_resolved": self._lambda_ref_value(),
+            "uncached_tokens_ref_resolved": self.uncached_tokens_ref,
+            "prereg_sha256": cfg.meta.prereg_sha256 or None, "prereg_file": cfg.meta.prereg_file or None}
 
         def meta(status: str, ended: bool = False) -> None:
             write_meta(self.out_dir, build_meta(experiment=cfg.output.name, argv=argv, seeds=[self.seed],

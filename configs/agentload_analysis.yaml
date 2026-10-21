@@ -64,14 +64,31 @@ trap_v2:                        # THROUGHPUT-BASED trap criterion and PASS rule 
   eval_from_s: 4500.0           # post-burst evaluation window = [t_b + eval_from_s, end of run] (short protocol; job script
                                 # passes HIT_EVAL_FROM_S). A window shorter than min_eval_s makes the run indeterminate.
   min_eval_s: 600.0
-  rate_estimator: sessions      # estimator of "session completion rate" in criterion (a): sessions (last-turn completions
-                                # / s, literal) | turns_based (ok turns / s / E[T], lower variance, same estimand). Both are
-                                # always written to the output; this key decides the verdict. FIX BEFORE PRE-REGISTERING.
-  rate_tolerance: 0.15          # (a) trapped needs |rate - lambda_miss| <= rate_tolerance * lambda_miss
-  slope_frac: 0.5               # (b) trapped needs backlog slope > slope_frac * (lambda - lambda_miss); both sides in sessions/s
+  rate_estimator: uncached_tokens # the "completion rate" of criterion (a): uncached_tokens (uncached prefill tokens/s over the window,
+                                # vs E0a's all-miss uncached tokens/s = arrivals.uncached_tokens_ref; DEFAULT) | sessions (last-turn
+                                # completions / s vs lambda_miss) | turns_based (ok turns / s / E[T] vs lambda_miss). All three are
+                                # always written to the output; this key decides the verdict. REGISTERED in the pre-registration.
+                                # Why tokens: in a trap with a growing backlog the sessions in progress are young and early turns
+                                # have short prompts, so sessions/s runs ABOVE the closed-population lambda_miss. Simulator traps,
+                                # span [t_b+5000, t_b+8000), lambda = 1.5 / 2 / 2.5 x lambda_miss (16 / 29 / 39 trapped runs): sessions
+                                # /s = 1.17 / 1.34 / 1.52 x lambda_miss, (a) fires in 38% / 0% / 0%; prefill tokens/s = 1.03 / 1.05 /
+                                # 1.07 x the all-miss rate, (a) fires in 100% (results/agentload_trap_sim_traces). FIX BEFORE
+                                # PRE-REGISTERING.
+  rate_tolerance: 0.15          # (a) trapped needs |rate/reference - 1| <= rate_tolerance (reference: E0a's all-miss uncached tokens/s, or
+                                # lambda_miss for the session/turn estimators)
+  slope_frac: 0.5               # (b) trapped needs backlog slope > slope_frac * (lambda - lambda_miss); both sides in sessions/s.
+                                # OPEN DECISION (lead): with (a) in token units, (b) no longer follows from (a). On the simulator's
+                                # traps (b) fires, by conservation, in 69% / 100% / 100% of true traps at lambda = 1.5 / 2 / 2.5 x
+                                # lambda_miss, so the pair (a and b) is weak at 1.5 x. Not changed here (it would be tuning on the
+                                # simulator); register lambda points >= 2 x, or decide a different slope_frac BEFORE registering.
   slope_dt_s: 10.0              # backlog (client sessions in flight incl. gate) is averaged in bins of this width, OLS slope on bin means
   recovered_hit_above: 0.8      # RECOVERED / "good": hit fraction > this ...
-  recovered_backlog_below: 20.0 # ... and backlog (sessions in flight incl. gate) < this, both over the last end_window_s
+  recovered_backlog_below: 20.0 # ... and backlog < this, both over the last end_window_s
+  recovered_backlog_metric: outstanding   # outstanding = requests in flight + sessions waiting at the client gate (the analogue of the
+                                # simulator's "waiting queue + gate" < 20; excludes sessions asleep in tool time) | sessions =
+                                # sessions in the system (arrived minus ended; includes tool-time sleepers, and in a saturated
+                                # CAPPED arm the n_cap admitted sessions, so it can never be < 20 while n_cap >= 20). Both are
+                                # always written (backlog_end, outstanding_end). REGISTERED.
   end_window_s: 300.0
   pass_fraction_min: 0.6666666666666666   # PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= this fraction of seeds
   min_seeds: 3
@@ -79,9 +96,12 @@ trap_v2:                        # THROUGHPUT-BASED trap criterion and PASS rule 
 
 closed:                         # Stage C: closed-population mu(n) with the prefix cache ON (summarize closed)
   warmup_s: 900.0                       # discarded at the start of every run (measure window = the rest: 1800 s in the plan)
-  n_grid: [16, 24, 32, 48, 96, 300]     # FCFS cell; a missing n is flagged (complete_grid)
+  n_grid: [16, 20, 24, 32, 48, 96, 300] # FCFS cell; a missing n is flagged (complete_grid). 20 added: the simulator's mu(n) peaks sharply at
+                                        # n = 20-22, the grid {16, 24, 32} straddled it and the argmax flipped between 16 (transient window)
+                                        # and 24 (steady state) with a 1.6% margin
   lpm_n: [48, 300]                      # LPM cell
-  n_inf: 300                            # mu(n_inf) stands for mu(infinity): the predicted recovery threshold
+  n_inf: 300                            # mu(n_inf) stands for mu(infinity). CHECK ONLY: all n sessions start at t=0, so in the 1800 s window
+                                        # mu(300) is transient-inflated (simulator +65%); the registered recovery threshold is lambda_miss
   mu_estimator: sessions                # decides argmax mu(n) = n_cap and mu_300: sessions (completions/s, literal) | turns_based
   argmax_margin_warn: 0.05              # flag n_cap as ambiguous if the runner-up is within this relative margin (1 run per n)
 

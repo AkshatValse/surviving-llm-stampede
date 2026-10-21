@@ -1,7 +1,9 @@
 research_question: >-
-  E2 (real engine, paired arms): does a finite arrival burst at lambda in (1.2, 2) x lambda_miss trap FCFS prefix-cache
-  serving in the low-hit congested state (hit rate < 0.2 for several consecutive 1000 s windows after a clean
-  good-state start), and do LPM / LPM-without-128-fallback / vLLM FCFS / SGLang waiting-prefix refresh change that?
+  E2 (real engine, paired arms): at the PRE-REGISTERED arrival rates lambda inside the measured metastable window
+  (lambda_miss, min(max_n mu(n), E0b from-empty stability edge)) -- the window comes from Stage C, E0a and E0b, not from fixed
+  multiples -- does a finite arrival burst of 200 sessions trap SGLang FCFS prefix-cache serving (post-burst prefill-token rate
+  stuck at the all-miss rate with a growing backlog), while the no-burst arm stays good and a client-side cap at argmax mu(n)
+  recovers; and, in the grid, do LPM / LPM-without-128-fallback / vLLM FCFS / SGLang waiting-prefix refresh change that?
 
 assumptions_note: >-
   Burst of 200 sessions within 60 s (the simulator's E2 burst; bursts of >=100 trapped every work-conserving
@@ -10,8 +12,10 @@ assumptions_note: >-
   the simulator waited 25000 s after the burst. Analysis must be run with burst.trap_min_s=3000 and
   burst.hit_eval_from_s=4500 for this protocol (the job script passes these). lambda_ref MUST be set to the
   calibration.json from E0a (placeholder fails loudly).
-  PAIRED ARMS (common random numbers: same seed => same Poisson arrivals and per-session specs; the content salt
-  differs per run by design): BURST = this config; NOBURST = arrivals.burst=null (same plan without the burst
+  PAIRED ARMS (common random numbers: same seed => same Poisson arrivals and per-session specs. The content salt is
+  per run IN A JOB (RUN_IDX): with ONE arm per job (how an 8700 s arm fits a 4 h job) every arm gets content_salt=1, so the
+  arms share token content as well as lengths and timing -- harmless, each job starts a fresh server; the salt differs
+  between arms only if several share a job): BURST = this config; NOBURST = arrivals.burst=null (same plan without the burst
   sessions); CAPPED = BURST plus gate.n_cap (client-side FIFO session cap at argmax mu(n) from Stage C).
   The kill test is judged by `analysis.summarize burst2` (throughput criterion, kill_verdict_v2.json); the hit-rate
   rule of `summarize burst` is secondary.
@@ -44,6 +48,8 @@ arrivals:
   kind: constant
   rate_mult: 1.6                         # overridden per run by the job script
   lambda_ref: "<RESULTS_DIR>/calibration.json:lambda_miss_turns_based"   # placeholder: set via --set
+  uncached_tokens_ref: "<RESULTS_DIR>/calibration.json:all_miss_uncached_tokens_per_s"   # placeholder: set via --set (the job script does);
+                                         # E0a's all-miss uncached prefill tokens/s, the reference of trap criterion (a). Analysis only.
   burst: {n: 200, t_s: 1200, width_s: 60}     # the BURST and CAPPED arms; the NOBURST arm sets arrivals.burst=null
   analysis_t_burst_s: 1200                    # t_b the post-burst window is anchored to, recorded in EVERY arm (must equal burst.t_s)
 

@@ -11,13 +11,23 @@ Shared by the Stage-C closed-population analysis (``analysis.closed``) and the t
   waiting at the client-side gate (CAPPED arm) are in the system; sessions cancelled at the end of the run are not
   "ended". For an uncapped run this equals the number of active sessions (in the engine queue, running, or in a
   tool-time sleep); by Little's law its healthy level is about lambda * (mean session duration), mostly tool time.
+* Uncached prefill tokens/s (``uncached_tokens_per_s``): sum over the ok turns completing in the interval of
+  ``prompt_tokens - cached_tokens`` (a missing ``cached_tokens`` counts as 0 once the run reports it at all; NaN if no
+  request of the run reports it), divided by the interval. This is the unit criterion (a) of the trap test uses: in a trap
+  with a growing backlog the sessions in progress are mostly early in their lives and early turns have short prompts, so
+  the session completion rate runs ABOVE the closed-population lambda_miss while the prefill-token rate stays at the
+  all-miss capacity (review of 2026-10-21, finding 1; sessions/s vs tokens/s on the simulator's own traps in
+  ``results/agentload_trap_sim_traces``).
+* Outstanding backlog (``outstanding_*``): requests in flight at the client + sessions waiting at the client gate. It is the
+  closest client-side analogue of the simulator's "waiting queue + gate" (``prefixmeta/sim.py``): it excludes sessions
+  asleep in tool time, which the sessions-in-system backlog counts.
 * Hit fraction: ``hit_frac_turns`` = fraction of ok turns with cached_tokens / prompt_tokens > the analysis threshold
   (the windows' ``frac_turns_cached_gt50``, first turns included, so < 1 even for a perfect cache),
   ``hit_frac_followup`` the same over turns >= 2 only, ``cached_frac_tokens`` = sum(cached) / sum(prompt).
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -86,6 +96,51 @@ def backlog_trace(ses: pd.DataFrame, t0: float, t1: float, dt: float) -> pd.Data
     return pd.DataFrame({"t_start": edges[:-1], "backlog_mean": mean})
 
 
+# ---------------------------------------------------------------- outstanding backlog (requests in flight + gate queue)
+def outstanding_events(run: Run) -> Tuple[np.ndarray, np.ndarray]:
+    """Event times and the number of outstanding units after each event: +1 when a request is sent, -1 when it
+    completes (any status), +1 when a session arrives at a client gate that makes it wait, -1 when it is admitted (or ends
+    still queued). Gate intervals come from sessions.csv (``arrival_s`` -> ``t_admit``; ``t_end`` if never admitted) and
+    exist only for sessions with ``gate_wait_s`` > 0."""
+    ts: List[np.ndarray] = []
+    ds: List[np.ndarray] = []
+    if len(run.requests):
+        rq = run.requests
+        ts += [rq["t_send"].to_numpy(dtype=float), rq["t_complete"].to_numpy(dtype=float)]
+        ds += [np.ones(len(rq)), -np.ones(len(rq))]
+    ses = run.sessions
+    if len(ses) and "gate_wait_s" in ses.columns and "t_admit" in ses.columns:
+        waited = ses[ses["gate_wait_s"].fillna(0.0) > 0.0]
+        if len(waited):
+            t_out = waited["t_admit"].where(waited["t_admit"].notna(), waited["t_end"]).to_numpy(dtype=float)
+            t_in = waited["arrival_s"].to_numpy(dtype=float)
+            ts += [t_in, t_out]
+            ds += [np.ones(len(waited)), -np.ones(len(waited))]
+    if not ts:
+        return np.zeros(0), np.zeros(0)
+    t, d = np.concatenate(ts), np.concatenate(ds)
+    keep = np.isfinite(t)
+    t, d = t[keep], d[keep]
+    order = np.lexsort((-d, t))
+    return t[order], np.cumsum(d[order])
+
+
+def outstanding_mean(run: Run, t0: float, t1: float) -> float:
+    """Time-average number of outstanding units (requests in flight + gated sessions) on [t0, t1)."""
+    if t1 <= t0:
+        return NAN
+    t, v = outstanding_events(run)
+    if len(t) == 0:
+        return NAN
+    return float(step_bins(t, v, np.array([t0, t1]))[0][0])
+
+
+def outstanding_at(run: Run, t: float) -> float:
+    te, v = outstanding_events(run)
+    i = int(np.searchsorted(te, t, side="right"))
+    return float(v[i - 1]) if i > 0 else 0.0
+
+
 # ---------------------------------------------------------------- rates
 def mean_turns_of(run: Run) -> float:
     return effective_mean_turns(config_from_dict(run.cfg).workload)
@@ -101,17 +156,34 @@ def completion_rates(run: Run, t0: float, t1: float) -> Dict[str, Any]:
     n_turns = int(len(ok))
     n_sessions = int((ok["turn"] == ok["n_turns"]).sum())
     et = mean_turns_of(run)
+    prompt_sum, uncached_sum, cached_reported = _prompt_token_sums(ok, r)
     return {"interval_s": dur, "n_sessions_completed": n_sessions, "n_turns_completed": n_turns,
             "sessions_per_s": n_sessions / dur, "turns_per_s": n_turns / dur,
-            "turns_based_per_s": (n_turns / dur) / et, "effective_mean_turns": et}
+            "turns_based_per_s": (n_turns / dur) / et, "effective_mean_turns": et,
+            "prompt_tokens_per_s": prompt_sum / dur, "cached_reported": cached_reported,
+            "uncached_tokens_per_s": (uncached_sum / dur) if cached_reported else NAN}
+
+
+def _prompt_token_sums(ok: pd.DataFrame, all_requests: pd.DataFrame) -> Tuple[float, float, bool]:
+    """(sum of prompt tokens, sum of uncached prompt tokens, whether the run reports cached_tokens at all) of the ok
+    requests ``ok`` (a slice of ``all_requests``). Prompt tokens: the server's count, else the client's."""
+    prompt = ok["prompt_tokens"].where(ok["prompt_tokens"].notna(), ok["prompt_tokens_client"]).astype(float)
+    cached = ok["cached_tokens"].fillna(0.0).astype(float)
+    reported = bool(all_requests["cached_tokens"].notna().any()) if "cached_tokens" in all_requests.columns else False
+    return float(prompt.sum()), float((prompt - cached).sum()), reported
+
+
+RATE_ESTIMATORS = ("uncached_tokens", "sessions", "turns_based")
 
 
 def pick_rate(rates: Dict[str, Any], estimator: str) -> float:
+    if estimator == "uncached_tokens":
+        return float(rates["uncached_tokens_per_s"])
     if estimator == "sessions":
         return float(rates["sessions_per_s"])
     if estimator == "turns_based":
         return float(rates["turns_based_per_s"])
-    raise ValueError(f"rate estimator must be sessions|turns_based, got {estimator!r}")
+    raise ValueError(f"rate estimator must be {'|'.join(RATE_ESTIMATORS)}, got {estimator!r}")
 
 
 # ---------------------------------------------------------------- hit

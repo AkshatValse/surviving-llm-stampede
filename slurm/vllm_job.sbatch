@@ -21,8 +21,10 @@
 # work the same way); node-class pin (--exclude) explained there.
 #   sbatch --export=ALL,MODE=smoke slurm/vllm_job.sbatch
 #   sbatch --export=ALL,MODE=miss,OUTPUT_FEEDBACK=server,SEEDS="0 1 2",ENGINE_LABEL=vllm-nocache slurm/vllm_job.sbatch
-#   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,N_LIST="16 24 32" slurm/vllm_job.sbatch      # Stage C (optional for vLLM)
-#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,MULTS="1.6",SEEDS="0",ARMS=burst,CALIB_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
+#   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,N_LIST="16 20 24 32" slurm/vllm_job.sbatch      # Stage C (optional for vLLM)
+#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,MULTS="1.6",SEEDS="0",ARMS=burst,CALIB_FILE=...,PREREG_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
+#   (MODE=burst needs a committed PREREG_FILE whose registered cell is this ENGINE_LABEL: the registered kill-test cell is
+#    SGLang FCFS; a vLLM grid cell needs its own Stage-C curve and its own pre-registration, see the plan)
 # OUTPUT_FEEDBACK (server|synthetic) is required for everything but smoke and must equal the SGLang cells' value; server is the
 # REQUIRED setting (see sglang_job.sbatch).
 #

@@ -170,3 +170,15 @@ def test_replicates_at_one_n_are_averaged_and_ties_go_to_the_smaller_n():
 def test_unknown_estimator_is_rejected():
     with pytest.raises(ValueError, match="mu_estimator"):
         mu_curve(pts(full_curve()), {**CP, "mu_estimator": "bogus"})
+
+
+def test_shipped_grid_has_n_20_and_cells_record_their_hardware():
+    """Review finding 6: the grid {16, 24, 32} straddled the sharp peak of mu(n) (simulator: n = 20-22)."""
+    cp = params().closed
+    assert cp["n_grid"] == [16, 20, 24, 32, 48, 96, 300] and cp["n_inf"] == 300
+    pts = pd.DataFrame([dict(label="c", seed=0, n=n, mu_sessions=0.1, mu_turns_based=0.1, turns_per_s=1.0, hit_frac_turns=0.9,
+                             hit_frac_followup=0.9, cached_frac_tokens=0.9, queue_mean=0.0, aborted=False, hardware="A100 80GB")
+                        for n in cp["n_grid"]])
+    c = mu_curve(pts, cp, "c")
+    assert c["cells"]["c"]["hardware"] == ["A100 80GB"] and c["primary_hardware"] == ["A100 80GB"] and c["cells"]["c"]["complete_grid"]
+    assert c["cells"]["c"]["argmax_n"] == 16 and c["primary_label_explicit"] is False       # ties go to the smaller n

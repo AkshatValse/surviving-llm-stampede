@@ -1,11 +1,16 @@
 """GPU-hour arithmetic for the real-engine plan (configs/agentload_plan_budget.yaml).
 
 Per stage:  jobs = ceil(n_runs / runs_per_job);
-            job_wall_h = startup_h + runs_per_job * run_s / 3600 + (runs_per_job - 1) * gap_s / 3600 + teardown_h;
+            job_wall_h = startup_h + k * (run_s + overhead_s) / 3600 + g * gap_s / 3600 + teardown_h,  k = runs in the job,
+            g = k gaps if the job script runs a gap + flush + canary check after the LAST run too (``gap_after_last_run``;
+            slurm/common.sh ``between_runs`` does, in every mode but smoke and the E0a population check), else k - 1;
             GPU-h = jobs * job_wall_h * gpus.
+``overhead_s`` is the per-run overhead the job script itself budgets (RUN_OVERHEAD_S = 150 s: client start, preflight, drain,
+analysis), so the wall-time check in the job script and this table use the same terms (review finding 10: the first version
+left out the trailing gap and the overhead, ~0.09 h per one-run job, ~3% overall).
 The last job of a stage may hold fewer runs; it is charged for the runs it actually holds.
 A job must fit in ``time_limit_h`` (``fits`` column). The ``arithmetic`` column spells out every sum, e.g.
-``1 x (0.25 + 3 x 0.7500 + 2 x 0.0500 + 0.05) = 2.650 h  +  ...  => 5.300 GPU-h``, and the CLI prints it, so the table can be
+``1 x (0.25 + 3 x 0.7917 + 3 x 0.0500 + 0.05) = 2.825 h  +  ...  => 5.650 GPU-h``, and the CLI prints it, so the table can be
 checked by hand.
 """
 from __future__ import annotations
@@ -24,22 +29,28 @@ import yaml
 from agentload.runmeta import build_meta, default_hardware, git_info, new_result_dir, write_meta
 
 
-def job_wall_h(job: Dict[str, Any], run_s: float, k: int) -> float:
+def n_gaps(k: int, gap_after_last_run: bool) -> int:
+    return k if gap_after_last_run else k - 1
+
+
+def job_wall_h(job: Dict[str, Any], run_s: float, k: int, gap_after_last_run: bool = True) -> float:
     """Wall hours of a job holding k runs of run_s seconds."""
-    return job["startup_h"] + k * run_s / 3600.0 + (k - 1) * job["gap_s"] / 3600.0 + job["teardown_h"]
+    return (job["startup_h"] + k * (run_s + job.get("overhead_s", 0.0)) / 3600.0
+            + n_gaps(k, gap_after_last_run) * job["gap_s"] / 3600.0 + job["teardown_h"])
 
 
-def arithmetic(job: Dict[str, Any], run_s: float, n_runs: int, runs_per_job: int) -> str:
+def arithmetic(job: Dict[str, Any], run_s: float, n_runs: int, runs_per_job: int, gap_after_last_run: bool = True) -> str:
     """The stage's GPU-hour sum written out term by term (see module docstring)."""
     full, rem = divmod(n_runs, runs_per_job)
-    run_h, gap_h = run_s / 3600.0, job["gap_s"] / 3600.0
+    run_h, gap_h = (run_s + job.get("overhead_s", 0.0)) / 3600.0, job["gap_s"] / 3600.0
     parts: List[str] = []
     total = 0.0
     for count, k in ((full, runs_per_job), (1 if rem else 0, rem)):
         if count:
-            w = job_wall_h(job, run_s, k)
+            w = job_wall_h(job, run_s, k, gap_after_last_run)
             total += count * w
-            parts.append(f"{count} x ({job['startup_h']:g} + {k} x {run_h:.4f} + {k - 1} x {gap_h:.4f} + {job['teardown_h']:g}) = {w:.3f} h")
+            parts.append(f"{count} x ({job['startup_h']:g} + {k} x {run_h:.4f} + {n_gaps(k, gap_after_last_run)} x {gap_h:.4f} + "
+                         f"{job['teardown_h']:g}) = {w:.3f} h")
     return "  +  ".join(parts) + f"  =>  {total * job['gpus']:.2f} GPU-h" + ("" if job["gpus"] == 1 else f" ({job['gpus']} GPUs)")
 
 
@@ -48,18 +59,20 @@ def stage_rows(cfg: Dict[str, Any]) -> pd.DataFrame:
     rows: List[Dict[str, Any]] = []
     for st in cfg["stages"]:
         run_s = float(sum(cfg["protocol"][st["protocol"]]["fields"].values()))
+        gal = bool(st.get("gap_after_last_run", cfg["protocol"][st["protocol"]].get("gap_after_last_run", True)))
         n, rpj = int(st["n_runs"]), int(st["runs_per_job"])
         jobs = math.ceil(n / rpj)
         full, rem = divmod(n, rpj)
 
-        def wall(k: int) -> float:
-            return job_wall_h(job, run_s, k)
+        def wall(k: int, gal: bool = gal, run_s: float = run_s) -> float:
+            return job_wall_h(job, run_s, k, gal)
 
         total_wall = full * wall(rpj) + (wall(rem) if rem else 0.0)
         rows.append({"stage": st["name"], "protocol": st["protocol"], "run_s": run_s, "n_runs": n,
                      "runs_per_job": rpj, "jobs": jobs, "job_wall_h_full": wall(rpj),
                      "fits": wall(rpj) <= job["time_limit_h"], "gpu_h": total_wall * job["gpus"],
-                     "arithmetic": arithmetic(job, run_s, n, rpj), "note": st.get("note", "")})
+                     "arithmetic": arithmetic(job, run_s, n, rpj, gal), "gap_after_last_run": gal,
+                     "note": st.get("note", "")})
     return pd.DataFrame(rows)
 
 
@@ -118,7 +131,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                git=git, t_start=t0, t_end=datetime.now(), extra={"totals": totals}, status="finished"))
     with pd.option_context("display.width", 200, "display.max_columns", 20):
         print(df.drop(columns=["note", "arithmetic"]).round(3).to_string(index=False))
-    print("\nArithmetic (jobs x (startup + runs x run_h + (runs-1) x gap_h + teardown) per stage):")
+    print("\nArithmetic (jobs x (startup + runs x (run_h + overhead_h) + gaps x gap_h + teardown) per stage):")
     for _, r in df.iterrows():
         print(f"  {r['stage']}: {r['n_runs']} runs x {r['run_s']:.0f} s, {r['runs_per_job']} per job: {r['arithmetic']}")
     glines = gate_arithmetic(cfg, df)

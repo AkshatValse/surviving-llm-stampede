@@ -1,9 +1,13 @@
 """Synthetic E2 runs for the throughput-based trap criterion: a single FIFO server whose service rate depends on the
 time a session STARTS service (a stand-in for the good / thrashing states), driven by deterministic arrivals plus an
-optional burst. It is a test fixture for the verdict LOGIC, not a model of any engine."""
+optional burst. It is a test fixture for the verdict LOGIC, not a model of any engine. CAUTION (review of 2026-10-21): its trapped service rate is
+exactly lambda_miss by construction, so tests built on it check the logic, not that a real trap looks like this; the
+discrepancy between session and token units on realistic traps is tested separately (young_session_trap in
+test_analysis_trap_v2.py; the simulator's traces in test_trap_sim_traces.py)."""
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -17,6 +21,8 @@ from conftest import make_raw
 LAM_MISS = 0.04          # sessions/s, "all-miss capacity"
 MULT = 1.5               # lambda = 0.06
 T_B, T_END, K = 1200.0, 8700.0, 15
+PROMPT = 1000.0          # tokens per turn in the fixture (constant, so one session = K * PROMPT prompt tokens)
+FIXTURE_START = time.time() + 86400.0          # wall-clock start of every synthetic run: a day from now, i.e. after any commit made in a test
 
 
 def synth_run(*, arm: str, seed: int = 0, mu_fn: Callable[[float], float], hit_fn: Callable[[float], float],
@@ -41,18 +47,32 @@ def synth_run(*, arm: str, seed: int = 0, mu_fn: Callable[[float], float], hit_f
     sid = np.repeat(np.arange(len(arr)), K)
     turn = np.tile(np.arange(1, K + 1), len(arr))
     t_c = start[sid] + (end[sid] - start[sid]) * turn / K
-    keep = t_c < t_end
-    sid, turn, t_c = sid[keep], turn[keep], t_c[keep]
-    hit = (rng.random(len(t_c)) < np.array([hit_fn(t) for t in t_c])) & (turn >= 2)
-    req = pd.DataFrame({"req_id": np.arange(len(t_c)), "sid": sid, "turn": turn, "n_turns": K, "t_send": t_c - 0.5,
-                        "t_complete": t_c, "latency_s": 0.5, "status": "ok", "prompt_tokens": 1000.0,
-                        "prompt_tokens_client": 1000.0, "cached_tokens": np.where(hit, 900.0, 0.0)})
     # CAPPED arm: the FIFO queue in front of the single server plays the gate (admitted = starts service, at most 1 active)
     t_admit = start if arm == "capped" else arr
+    # a turn's request is outstanding from the previous turn's completion; the first one from the session's arrival (queued in
+    # the engine) or, behind the gate, from its admission -- as in the real client
+    t_prev = np.where(turn == 1, t_admit[sid], start[sid] + (end[sid] - start[sid]) * (turn - 1) / K)
+    keep = t_c < t_end
+    sid, turn, t_c, t_prev = sid[keep], turn[keep], t_c[keep], t_prev[keep]
+    hit = (rng.random(len(t_c)) < np.array([hit_fn(t) for t in t_c])) & (turn >= 2)
+    req = pd.DataFrame({"req_id": np.arange(len(t_c)), "sid": sid, "turn": turn, "n_turns": K, "t_send": t_prev,
+                        "t_complete": t_c, "latency_s": t_c - t_prev, "status": "ok", "prompt_tokens": PROMPT,
+                        "prompt_tokens_client": PROMPT, "cached_tokens": np.where(hit, 0.9 * PROMPT, 0.0)})
+    # requests still outstanding when the run ends (queued or in service) are cancelled at t_end, as the real client logs them
+    n_done = np.bincount(sid, minlength=len(arr))
+    pend = np.nonzero((n_done < K) & (t_admit < t_end))[0]
+    t_send_pend = np.where(n_done[pend] == 0, t_admit[pend],
+                           start[pend] + (end[pend] - start[pend]) * n_done[pend] / K)
+    pend_df = pd.DataFrame({"req_id": len(req) + np.arange(len(pend)), "sid": pend, "turn": n_done[pend] + 1, "n_turns": K,
+                            "t_send": t_send_pend, "t_complete": t_end, "latency_s": t_end - t_send_pend, "status": "cancelled",
+                            "prompt_tokens": np.nan, "prompt_tokens_client": PROMPT, "cached_tokens": np.nan})
+    req = pd.concat([req, pend_df], ignore_index=True)
     ses = pd.DataFrame({"sid": np.arange(len(arr)), "arrival_s": arr, "n_turns": K,
                         "t_end": np.where(ended, end, t_end), "status": np.where(ended, "completed", "cancelled"),
                         "t_admit": t_admit, "gate_wait_s": t_admit - arr, "gate_censored": 0})
+    tok_ref = lam_miss * K * PROMPT            # all-miss uncached prefill tokens/s of the fixture: lambda_miss sessions/s x K turns x PROMPT
     raw = make_raw(arrivals={"rate": None, "rate_mult": mult, "lambda_ref": "/x/calibration.json:lambda_miss",
+                             "uncached_tokens_ref": "/x/calibration.json:all_miss_uncached_tokens_per_s",
                              "burst": None if arm == "noburst" else {"n": burst_n, "t_s": t_b, "width_s": 60.0},
                              "analysis_t_burst_s": t_b},
                    workload={"mean_turns": 15, "max_turns": 60}, run={"duration_s": t_end, "seed": seed},
@@ -61,6 +81,7 @@ def synth_run(*, arm: str, seed: int = 0, mu_fn: Callable[[float], float], hit_f
     if cfg_edit:
         cfg_edit(raw)
     meta = {"engine_label": label, "seeds": [seed], "resolved_rate_sessions_per_s": lam, "lambda_ref_resolved": lam_miss,
+            "uncached_tokens_ref_resolved": tok_ref, "t0_unix": FIXTURE_START, "prereg_sha256": None,
             "arm": arm if explicit_arm is None else explicit_arm, "analysis_t_burst_s": t_b,
             "gate_n_cap_resolved": n_cap if arm == "capped" else None, "hardware": "synthetic",
             "outcome": {"t_end_s": t_end, "abort_reason": None}}

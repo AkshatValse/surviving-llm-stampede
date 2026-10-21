@@ -102,6 +102,22 @@ def test_stable_cli(open_runs, tmp_path):
     assert by.iloc[0]["n_stable"] == 2 and by.iloc[0]["n_runs"] == 2
     br = json.loads((d / "lambda_cap_bracket.json").read_text())
     assert br["largest_all_stable_mult"] == 1.6 and br["first_unstable_mult_above"] is None and br["monotone"]
+    # the pre-registration reads the bracket PER LABEL (E0b must come from the registered cell) and its hardware
+    assert set(br["by_label"]) == {"mock-fcfs"} and br["by_label"]["mock-fcfs"]["largest_all_stable_mult"] == 1.6
+    assert br["by_label"]["mock-fcfs"]["hardware"] == ["Apple M3 Max CPU (simulation)"]
+
+
+def test_stable_bracket_is_kept_per_label(tmp_path):
+    """An LPM bracket must not be readable as the FCFS cell's: two labels at the same rates give two entries."""
+    outs = []
+    for label, mult in (("cell-a", 1.2), ("cell-b", 1.6)):
+        raw = make_raw(arrivals={"rate": None, "rate_mult": mult, "lambda_ref": 5.0}, run={"duration_s": 7.0},
+                       workload={"tool_time_mean_s": 0.25}, meta={"engine_label": label})
+        outs.append(run_gen(raw, None, tmp_path / label)[0])
+    d = an(tmp_path, "stable", "--run-dirs", *[str(o.out_dir) for o in outs])
+    br = json.loads((d / "lambda_cap_bracket.json").read_text())
+    assert set(br["by_label"]) == {"cell-a", "cell-b"}
+    assert br["by_label"]["cell-a"]["largest_all_stable_mult"] == 1.2 and br["by_label"]["cell-b"]["largest_all_stable_mult"] == 1.6
 
 
 def test_miss_calibration_from_a_closed_run(tmp_path):
@@ -115,7 +131,14 @@ def test_miss_calibration_from_a_closed_run(tmp_path):
     done = sum(r["turn"] == r["n_turns"] for r in rows)
     assert cal["lambda_miss"] == pytest.approx(done / (out.t_end_s - 2.0)) and cal["n_runs"] == 1
     assert cal["lambda_miss_turns_based"] > 0 and cal["lambda_miss_se"] is None
+    # the all-miss uncached prefill token rate (criterion (a)'s reference): every prompt token is uncached when the cache is off
+    allrows = [r for r in csv.DictReader(open(out.out_dir / "requests.csv")) if r["status"] == "ok"
+               and 2.0 <= float(r["t_complete"]) < out.t_end_s]
+    prompt = sum(float(r["prompt_tokens"]) - float(r["cached_tokens"] or 0) for r in allrows)
+    assert cal["all_miss_uncached_tokens_per_s"] == pytest.approx(prompt / (out.t_end_s - 2.0)) and cal["all_miss_uncached_tokens_per_s"] > 0
+    assert cal["all_miss_uncached_tokens_per_s_se"] is None and 0.0 <= cal["all_miss_cached_frac_tokens_max"] <= 1.0
     assert cal["lambda_miss"] > 1.0                                # a toy server: several sessions per second
     # the calibration file is directly usable as arrivals.lambda_ref
     from agentload.config import resolve_lambda_ref
     assert resolve_lambda_ref(f"{d / 'calibration.json'}:lambda_miss_turns_based") == cal["lambda_miss_turns_based"]
+    assert resolve_lambda_ref(f"{d / 'calibration.json'}:all_miss_uncached_tokens_per_s") == cal["all_miss_uncached_tokens_per_s"]

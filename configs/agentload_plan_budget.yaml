@@ -12,36 +12,41 @@ job:
   gpus: 1
   time_limit_h: 4.0          # #SBATCH --time in the draft scripts
   startup_h: 0.25            # GUESS: weights load + CUDA graphs + health wait + cache warmup
-  gap_s: 180                 # GUESS: cancel clients, drain, flush cache between runs in one job
+  gap_s: 180                 # GUESS: cancel clients, drain, flush cache between runs in one job (GAP_S in the job script)
+  overhead_s: 150            # per run: client start, preflight, drain, analysis (RUN_OVERHEAD_S in the job script, the same term its wall-time check uses)
   teardown_h: 0.05
 
-# run length in seconds = sum of the listed protocol fields
+# run length in seconds = sum of the listed protocol fields. gap_after_last_run (default true): slurm/common.sh between_runs
+# (gap + flush + canary check) runs after the last run of a job as well, except in MODE=smoke (no between_runs) and for the E0a
+# population-check run (the last run of an E0a job)
 protocol:
-  s0_smoke: {fields: {run_s: 1800}, note: "stage-0 test job: flag check, probe, ~30 min closed run (cache on) to time everything"}
+  s0_smoke: {fields: {run_s: 1800}, gap_after_last_run: false, note: "stage-0 test job: flag check, probe, ~30 min closed run (cache on) to time everything"}
   c_closed: {fields: {warmup_s: 900, measure_s: 1800}, note: "Stage C: closed population n, cache ON, warmup 900 s + measured 1800 s (MODE=closed)"}
-  e0_miss:  {fields: {warmup_s: 900,  measure_s: 1800}, note: "closed population 32 (64 for the check run), cache disabled"}
+  e0_miss:  {fields: {warmup_s: 900,  measure_s: 1800}, gap_after_last_run: false, note: "closed population 32 (64 for the check run), cache disabled"}
   e0_cap:   {fields: {run_s: 3000},                     note: "open loop from empty, one rate multiple per run"}
   e2_short: {fields: {t_burst_s: 1200, after_s: 7500},  note: "4 h-job protocol: trap_min_s 3000, hit_eval_from_s 4500 (deviation D1); one ARM (burst | noburst | capped) per run"}
   e2_literal: {fields: {t_burst_s: 3000, after_s: 25000}, note: "simulator-literal: trap_min_s 10000, hit_eval_from_s 10000; needs --time ~8.5 h"}
 
-# Stage order (notes/NOVA_PLAN_prefix_meta.md): S0 smoke -> C closed mu(n) -> E0a lambda_miss -> [E0b cross-check] ->
+# Stage order (notes/NOVA_PLAN_prefix_meta.md): S0 smoke -> C closed mu(n) -> E0a lambda_miss -> E0b (REQUIRED) ->
 # PRE-REGISTER (configs/agentload_prereg_template.yaml, committed) -> E2 paired arms -> native-pool replicate -> grid.
 stages:
   # ---- gate 0: smoke
   - {name: S0_smoke_sglang,        protocol: s0_smoke, n_runs: 1,  runs_per_job: 1, note: "first GPU job; refines startup_h / gap_s"}
   - {name: S0_smoke_vllm,          protocol: s0_smoke, n_runs: 1,  runs_per_job: 1, note: "same for vLLM"}
   # ---- Stage C: closed-population mu(n) on the real engine (300k-token pool), cache on
-  - {name: C_closed_sglang_fcfs,   protocol: c_closed, n_runs: 6,  runs_per_job: 3, note: "n in {16,24,32,48,96,300}, 1 seed, FCFS; two jobs of 3 runs (N_LIST='16 24 32' and '48 96 300')"}
+  - {name: C_closed_sglang_fcfs,   protocol: c_closed, n_runs: 7,  runs_per_job: 4, note: "n in {16,20,24,32,48,96,300}, 1 seed, FCFS; two jobs (N_LIST='16 20 24 32' and '48 96 300'); n=20 added (sharp peak at n=20-22 in the simulator); a 4-run job is 3.7 h with the job script's own margins, inside the 4 h limit"}
   - {name: C_closed_sglang_lpm,    protocol: c_closed, n_runs: 2,  runs_per_job: 2, note: "n in {48,300}, SGLang lpm"}
   # ---- E0a: lambda_miss (cache disabled)
   - {name: E0a_miss_sglang,        protocol: e0_miss,  n_runs: 4,  runs_per_job: 4, note: "3 seeds @ pop 32 + 1 @ pop 64"}
   - {name: E0a_miss_vllm,          protocol: e0_miss,  n_runs: 4,  runs_per_job: 4, note: "same, vLLM --no-enable-prefix-caching"}
-  # ---- E0b: lambda_cap from empty. Cross-check of the Stage-C window; NOT an input of the pre-registration, can be dropped if GPU-hours are short
-  - {name: E0b_cap_sglang_lpm,     protocol: e0_cap,   n_runs: 9,  runs_per_job: 3, note: "6 bracket points + 3 refinement points, 1 seed"}
+  # ---- E0b: lambda_cap from empty, under the REGISTERED cell (SGLang FCFS, refresh on). REQUIRED: its largest all-stable multiple is the
+  # window's upper edge (min with max mu(n)); the no-burst arm cannot be predicted 'good' above it. Not droppable.
+  - {name: E0b_cap_sglang_fcfs,    protocol: e0_cap,   n_runs: 9,  runs_per_job: 3, note: "6 bracket points + 3 refinement points, 1 seed, POLICY=fcfs REFRESH=1 (an LPM bracket says nothing about the FCFS no-burst arm); REQUIRED input of the pre-registration"}
   # ---- E2 kill test, PAIRED ARMS. lambda points come from the pre-registration (inside the measured window)
   - {name: E2a_kill_sglang_fcfs_paired, protocol: e2_short, n_runs: 27, runs_per_job: 1, note: "3 lambda x 3 seeds x 3 arms (burst, noburst, capped); refresh on; one 8700 s run per job"}
   # ---- required: one lambda on the NATIVE KV pool (KV_TOKENS=native, ~1M tokens); needs its own mu(n) to pre-register
-  - {name: C_closed_sglang_fcfs_native, protocol: c_closed, n_runs: 6, runs_per_job: 3, note: "ASSUMPTION (not in the spec): Stage C repeated on the native pool, because the window and n_cap of the 300k pool do not transfer"}
+  - {name: C_closed_sglang_fcfs_native, protocol: c_closed, n_runs: 7, runs_per_job: 4, note: "ASSUMPTION (not in the spec): Stage C repeated on the native pool, because the window and n_cap of the 300k pool do not transfer"}
+  - {name: E0b_cap_sglang_fcfs_native, protocol: e0_cap, n_runs: 9, runs_per_job: 3, note: "ASSUMPTION (not in the spec): E0b repeated on the native pool, because the window's upper edge is min(max mu(n), E0b edge) and the edge of the 300k pool does not transfer; its own E0a is the same (cache disabled, the pool cap does not matter for all-miss)"}
   - {name: E2c_native_sglang_fcfs_paired, protocol: e2_short, n_runs: 9, runs_per_job: 1, note: "1 lambda x 3 seeds x 3 arms on the native pool"}
   # ---- grid (BURST arm only; lambda points re-set from the pre-registration)
   - {name: E2b_sglang_fcfs_r0,     protocol: e2_short, n_runs: 6,  runs_per_job: 1, note: "refresh off; 2 lambda points, 3 seeds"}
@@ -55,9 +60,9 @@ gates:
   # stage names whose total is spent before the next decision; every stage is in exactly one gate
   gate0_smoke: [S0_smoke_sglang, S0_smoke_vllm]
   gateC_closed_mu: [C_closed_sglang_fcfs, C_closed_sglang_lpm]
-  gate1_calibration: [E0a_miss_sglang, E0a_miss_vllm, E0b_cap_sglang_lpm]
+  gate1_calibration: [E0a_miss_sglang, E0a_miss_vllm, E0b_cap_sglang_fcfs]
   gate2_kill_test: [E2a_kill_sglang_fcfs_paired]
-  gate_native_pool: [C_closed_sglang_fcfs_native, E2c_native_sglang_fcfs_paired]
+  gate_native_pool: [C_closed_sglang_fcfs_native, E0b_cap_sglang_fcfs_native, E2c_native_sglang_fcfs_paired]
   full_grid: [E2b_sglang_fcfs_r0, E2b_sglang_fcfs_r1_2x, E2b_sglang_lpm_r1, E2b_sglang_lpm_r0,
               E2b_sglang_lpm_inf, E2b_vllm_fcfs]
 

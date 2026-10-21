@@ -17,13 +17,16 @@ Checks (code: meaning)
                            generator's own counter, and recomputed from sessions.csv)
 CLI:  python -m analysis.guards calib-hw --calib calibration.json --hardware "NVIDIA A100 80GB PCIe, 81920 MiB"
       (exit 1 if the calibration's hardware differs; used by slurm/common.sh before cap/burst runs)
+      python -m analysis.guards cap-file --file mu_curve.json --label sglang-fcfs-r1 --hardware "..."
+      (prints n_cap and exits 0 only if the curve's primary_label IS the job's engine label and its hardware is the job's:
+       a capped native-pool arm must not silently take the 300k pool's cap; used by slurm/common.sh before the engine starts)
 """
 from __future__ import annotations
 
 import argparse
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .load import Run
 
@@ -123,13 +126,49 @@ def summarize_problems(problems: List[Dict[str, Any]]) -> Dict[str, Any]:
             "codes": sorted({p["code"] for p in problems})}
 
 
+def check_cap_file(curve: Dict[str, Any], label: str, hardware: Optional[str], allow_hw_mismatch: bool = False
+                   ) -> Tuple[Optional[int], List[str]]:
+    """(n_cap, problems) of a Stage-C ``mu_curve.json`` offered to a CAPPED job with engine label ``label`` on ``hardware``.
+    The top-level n_cap belongs to ``primary_label``; it must be this job's cell, measured on this job's hardware."""
+    probs: List[str] = []
+    v = curve.get("n_cap")
+    n_cap = int(v) if isinstance(v, int) and not isinstance(v, bool) and v >= 1 else None
+    if n_cap is None:
+        probs.append("no integer n_cap >= 1 (Stage C incomplete, or no FCFS cell?)")
+    pl = curve.get("primary_label")
+    if pl != label:
+        probs.append(f"mu_curve.json primary_label is {pl!r} but this job's ENGINE_LABEL is {label!r}: the cap of another "
+                     "cell (e.g. the 300k pool when running the native pool) must not be used; summarise each pool separately "
+                     "(summarize closed --primary-label)")
+    hw = curve.get("primary_hardware")
+    if hardware is not None and not allow_hw_mismatch:
+        if not hw:
+            probs.append("mu_curve.json records no hardware for its primary cell")
+        elif list(hw) != [str(hardware)]:
+            probs.append(f"mu_curve.json was measured on {hw} but this job runs on {hardware!r}")
+    return n_cap, probs
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m analysis.guards")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    k = sub.add_parser("cap-file", help="print n_cap; exit 1 unless the Stage-C curve is this job's cell and hardware")
+    k.add_argument("--file", required=True)
+    k.add_argument("--label", required=True)
+    k.add_argument("--hardware", default=None)
+    k.add_argument("--allow-hw-mismatch", action="store_true")
     c = sub.add_parser("calib-hw", help="exit 1 unless calibration.json's hardware equals --hardware")
     c.add_argument("--calib", required=True)
     c.add_argument("--hardware", required=True)
     args = ap.parse_args(argv)
+    if args.cmd == "cap-file":
+        n_cap, probs = check_cap_file(json.loads(Path(args.file).read_text()), args.label, args.hardware, args.allow_hw_mismatch)
+        for x in probs:
+            print(f"CAP_FILE PROBLEM: {x}")
+        if probs:
+            return 1
+        print(f"N_CAP={n_cap}")
+        return 0
     cal = json.loads(Path(args.calib).read_text())
     ch = cal.get("hardware")
     if ch is None:

@@ -149,3 +149,23 @@ def test_windows_table_counts_transport_errors(three_runs, tmp_path):
     d = sorted((tmp_path / "w" / "agentload_analysis_windows").iterdir())[-1]
     w = pd.read_csv(d / "windows.csv")
     assert "n_errors_transport" in w.columns and (w["n_errors_transport"] == 0).all()
+
+
+def test_cap_file_must_be_this_jobs_cell_and_hardware(tmp_path, capsys):
+    """Review finding 5: a native-pool capped job must not silently take the 300k pool's cap."""
+    from analysis.guards import check_cap_file, main as guards_main
+    curve = {"n_cap": 24, "primary_label": "sglang-fcfs-r1", "primary_hardware": ["A100 80GB"]}
+    assert check_cap_file(curve, "sglang-fcfs-r1", "A100 80GB") == (24, [])
+    n, probs = check_cap_file(curve, "sglang-fcfs-r1-native", "A100 80GB")
+    assert n == 24 and len(probs) == 1 and "primary_label" in probs[0] and "sglang-fcfs-r1-native" in probs[0]
+    n, probs = check_cap_file(curve, "sglang-fcfs-r1", "H200")
+    assert any("measured on" in x for x in probs) and check_cap_file(curve, "sglang-fcfs-r1", "H200", allow_hw_mismatch=True)[1] == []
+    assert any("no hardware" in x for x in check_cap_file({**curve, "primary_hardware": None}, "sglang-fcfs-r1", "A100 80GB")[1])
+    for bad in (None, 0, 2.5, True, "3"):
+        assert check_cap_file({**curve, "n_cap": bad}, "sglang-fcfs-r1", "A100 80GB")[0] is None
+    f = tmp_path / "mu_curve.json"
+    f.write_text(json.dumps(curve))
+    assert guards_main(["cap-file", "--file", str(f), "--label", "sglang-fcfs-r1", "--hardware", "A100 80GB"]) == 0
+    assert "N_CAP=24" in capsys.readouterr().out
+    assert guards_main(["cap-file", "--file", str(f), "--label", "sglang-fcfs-r1-native", "--hardware", "A100 80GB"]) == 1
+    assert "CAP_FILE PROBLEM" in capsys.readouterr().out

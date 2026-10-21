@@ -1,31 +1,48 @@
 """Throughput-based trap criterion and the PASS rule of the paired kill test (kill_verdict_v2.json).
 
 Referee-requested (notes/REFEREE_prefix_meta.md, "Kill-test design changes"); the hit-rate criterion of
-``analysis.hysteresis`` is kept as a SECONDARY output. Everything is in sessions and seconds.
+``analysis.hysteresis`` is kept as a SECONDARY output.
 
 Per run, over the post-burst evaluation window  W = [t_b + eval_from_s, end of run]   (t_b = burst time of the paired set;
 the NOBURST arm has no burst and uses the recorded ``arrivals.analysis_t_burst_s``):
 
-  lambda        arrival rate of the run (sessions/s);      lambda_miss  the all-miss capacity lambda was set from
-  rate          session completion rate over W (estimator ``trap_v2.rate_estimator``: sessions | turns_based)
+  lambda        arrival rate of the run (sessions/s);      lambda_miss  the all-miss session capacity lambda was set from
+  rate          completion rate over W (estimator ``trap_v2.rate_estimator``: uncached_tokens | sessions | turns_based)
   slope         OLS slope of the backlog (client sessions in the system INCLUDING the gate queue), on bin means over W
 
-  TRAPPED   iff (a) |rate - lambda_miss| <= rate_tolerance * lambda_miss     (completion stuck at the all-miss capacity)
+  TRAPPED   iff (a) the PREFILL-TOKEN rate is stuck at the all-miss capacity:  |R - R_miss| <= rate_tolerance * R_miss,
+                    R = uncached prompt tokens/s over W, R_miss = E0a's all-miss uncached tokens/s (``arrivals.
+                    uncached_tokens_ref``, resolved at run start)                      [estimator ``uncached_tokens``]
                 AND (b) slope > slope_frac * (lambda - lambda_miss)           (backlog grows at about lambda - lambda_miss)
                 [and lambda > lambda_miss: below it no trap is defined; the formula alone would accept a healthy system
                  running at 0.9 * lambda_miss, so this is an explicit extra condition, reported as ``lambda_above_miss``]
   DRAINING  iff slope < 0
   RECOVERED iff hit fraction > recovered_hit_above AND backlog < recovered_backlog_below, both averaged over the last
-                end_window_s (the NOBURST arm's "good" is the same predicate)
+                end_window_s (the NOBURST arm's "good" is the same predicate). The backlog is the OUTSTANDING backlog
+                (requests in flight + sessions waiting at the client gate) by default (``recovered_backlog_metric``), the
+                analogue of the simulator's "waiting queue + gate" < 20; the sessions-in-system backlog (it counts sessions
+                asleep in tool time and, in a saturated CAPPED arm, the n_cap admitted sessions) is written next to it.
+
+WHY TOKENS (review of 2026-10-21, finding 1). In a trap with a growing backlog the sessions in progress are mostly early in
+their lives, and early turns have short prompts, so the all-miss throughput in SESSIONS/s runs above the closed-population
+lambda_miss. On the simulator's own FCFS traps (``results/agentload_trap_sim_traces``, evaluation span [t_b+5000, t_b+8000),
+16 / 29 / 39 trapped runs at lambda = 1.5 / 2 / 2.5 x lambda_miss) the session rate is 1.17 / 1.34 / 1.52 x lambda_miss, so a
++-15% band on it accepts 38% / 0% / 0% of true traps; the uncached prefill-token rate is 1.03 / 1.05 / 1.07 x the all-miss
+rate and the same band accepts 100% at every lambda. The sessions and turns-based estimators are still computed and written
+(``crit_a_sessions`` / ``crit_a_turns``) but no longer decide the verdict unless ``rate_estimator`` says so. CONSEQUENCE for
+(b): under the session band, (b) followed from (a)'s upper bound for lambda >= 1.3 lambda_miss; under the token band it is
+independent, and on the same simulator traps (b) fires (by conservation, slope = lambda - session completion rate) in
+69% / 100% / 100% of the true traps at 1.5 / 2 / 2.5 x, i.e. at 1.5 x the pair (a and b) accepts only 69% of true traps.
 
 ``state`` is one label: trapped > recovered > draining > indeterminate (a window shorter than ``min_eval_s`` is
 ``indeterminate``, reason ``window_too_short``). The three flags are written independently as well.
 
 PASS per (cell label, lambda): over seeds, BURST trapped AND NOBURST good AND CAPPED recovered, in >= pass_fraction_min
 of the seeds (>= min_seeds seeds present; a seed missing an arm counts as a failure and is listed under ``incomplete``).
-The kill test passes if some lambda of an FCFS cell meets this (and, if a pre-registration file is given, lies inside the
-registered window). Arms of one (label, lambda, seed) must be common-random-number pairs: ``pairing_problems`` compares
-their effective configs.
+The kill test passes if some lambda of an FCFS cell meets this (and, if a pre-registration file is given, the cell and
+lambda are registered: see ``analysis.summarize`` / ``analysis.prereg``). Arms of one (label, lambda, seed) must be
+common-random-number pairs: ``pairing_problems`` compares their effective configs (only the arm, the burst, the gate, the
+output dir, the server URL, the content salt and the start-state record may differ; hardware and label may not).
 """
 from __future__ import annotations
 
@@ -37,15 +54,20 @@ import pandas as pd
 from .hysteresis import burst_verdict
 from .load import Run
 from .params import AnalysisParams
-from .throughput import (backlog_at, backlog_mean, backlog_slope, completion_rates, hit_stats, hit_value, pick_rate)
+from .throughput import (RATE_ESTIMATORS, backlog_at, backlog_mean, backlog_slope, completion_rates, hit_stats, hit_value,
+                         outstanding_at, outstanding_mean, pick_rate)
 from .windows import window_table
 
 NAN = float("nan")
 ARM_ORDER = ("burst", "noburst", "capped")
 
-# Config sections/keys that legitimately differ between the arms of one pair (everything else must be identical).
-_ALLOWED_DIFF_PREFIXES = ("arrivals.burst", "gate", "meta.", "output.", "server.base_url", "workload.content_salt",
+# Config sections/keys that legitimately differ between the arms of one pair (everything else must be identical). Under
+# ``meta`` ONLY the arm and the per-run start-state record may differ: the hardware string, the engine label and the
+# pre-registration binding must be equal, so arms that ran on different GPU variants are flagged.
+_ALLOWED_DIFF_PREFIXES = ("arrivals.burst", "gate", "output.", "server.base_url", "workload.content_salt",
                           "research_question", "assumptions_note")
+_ALLOWED_DIFF_EXACT = ("meta.arm", "meta.start_state_verified", "meta.start_state_detail")
+_BACKLOG_METRICS = ("outstanding", "sessions")
 
 
 def _isnan(x: Any) -> bool:
@@ -69,6 +91,7 @@ def config_diff(a: Dict[str, Any], b: Dict[str, Any]) -> List[str]:
     fa, fb = _flatten(a), _flatten(b)
     keys = sorted(set(fa) | set(fb))
     return [k for k in keys if fa.get(k, "<absent>") != fb.get(k, "<absent>")
+            and k not in _ALLOWED_DIFF_EXACT
             and not any(k == pre.rstrip(".") or k.startswith(pre) for pre in _ALLOWED_DIFF_PREFIXES)]
 
 
@@ -82,26 +105,40 @@ def trap_v2_run(run: Run, p: AnalysisParams) -> Dict[str, Any]:
     lam, lam_miss = run.lam, run.lambda_ref_value
     if lam is None or lam_miss is None:
         raise ValueError(f"{run.dir}: meta.json lacks the resolved arrival rate / lambda_ref (not an open-loop E2 run?)")
+    est = str(tp["rate_estimator"])
+    if est not in RATE_ESTIMATORS:
+        raise ValueError(f"trap_v2.rate_estimator must be {'|'.join(RATE_ESTIMATORS)}, got {est!r}")
+    bmetric = str(tp.get("recovered_backlog_metric", "outstanding"))
+    if bmetric not in _BACKLOG_METRICS:
+        raise ValueError(f"trap_v2.recovered_backlog_metric must be {'|'.join(_BACKLOG_METRICS)}, got {bmetric!r}")
+    tok_ref = run.uncached_tokens_ref_value
+    if est == "uncached_tokens" and tok_ref is None:
+        raise ValueError(f"{run.dir}: meta.json lacks uncached_tokens_ref_resolved (arrivals.uncached_tokens_ref was not set: "
+                         "E0a's all-miss uncached tokens/s is the reference of criterion (a); set it, or choose another "
+                         "trap_v2.rate_estimator for an exploratory analysis)")
     end = run.t_end_s
     t0 = tb + float(tp["eval_from_s"])
     eval_len = end - t0
     too_short = eval_len < float(tp["min_eval_s"]) - 1e-9
-    est = str(tp["rate_estimator"])
     arm_explicit, arm_derived = run.arm, run.arm_derived
     rec: Dict[str, Any] = {
         "run_dir": str(run.dir), "label": run.label, "seed": run.seed, "rate_mult": run.rate_mult,
         "arm": arm_explicit or arm_derived, "arm_explicit": arm_explicit, "arm_derived": arm_derived,
         "arm_consistent": (arm_explicit in ("", arm_derived)), "gate_n_cap": run.gate_n_cap,
         "lambda": lam, "lambda_miss": lam_miss, "lambda_ref_key": run.lambda_ref_key, "lambda_above_miss": bool(lam > lam_miss),
+        "uncached_tokens_ref": tok_ref,
         "t_burst": tb, "t_end_s": end, "eval_from": t0, "eval_len_s": eval_len, "window_too_short": bool(too_short),
-        "aborted": run.aborted, "abort_reason": run.abort_reason, "rate_estimator": est,
-        "hit_metric": p.w["hit_metric"]}
-    nan_fields = ("rate_sessions", "rate_turns_based", "rate_primary", "rate_rel_dev", "backlog_slope", "slope_threshold",
-                  "hit_eval", "backlog_eval_mean", "backlog_eval_start", "hit_end", "backlog_end", "backlog_end_inst")
+        "aborted": run.aborted, "abort_reason": run.abort_reason, "rate_estimator": est, "recovered_backlog_metric": bmetric,
+        "hit_metric": p.w["hit_metric"], "prereg_sha256": run.prereg_sha256, "hardware": run.hardware,
+        "t0_unix": run.t0_unix}
+    nan_fields = ("rate_sessions", "rate_turns_based", "rate_uncached_tokens", "rate_primary", "rate_rel_dev",
+                  "rate_rel_dev_sessions", "rate_rel_dev_turns", "rate_rel_dev_tokens", "backlog_slope", "slope_threshold",
+                  "hit_eval", "backlog_eval_mean", "backlog_eval_start", "hit_end", "backlog_end", "backlog_end_inst",
+                  "outstanding_end", "outstanding_end_inst", "outstanding_eval_mean")
     for k in nan_fields:
         rec[k] = NAN
-    rec.update(crit_a=False, crit_a_sessions=False, crit_a_turns=False, estimators_agree=True, crit_b=False,
-               trapped=False, draining=False, recovered=False, good=False, state="indeterminate",
+    rec.update(crit_a=False, crit_a_sessions=False, crit_a_turns=False, crit_a_tokens=False, estimators_agree=True,
+               crit_b=False, trapped=False, draining=False, recovered=False, good=False, state="indeterminate",
                state_reason="", n_slope_bins=0)
 
     # end-of-run state (RECOVERED / good) is defined even when the evaluation window is too short
@@ -113,8 +150,11 @@ def trap_v2_run(run: Run, p: AnalysisParams) -> Dict[str, Any]:
         rec["hit_available"] = h_end["cached_available"]
         rec["backlog_end"] = backlog_mean(run.sessions, end - ew, end)
         rec["backlog_end_inst"] = backlog_at(run.sessions, end)
+        rec["outstanding_end"] = outstanding_mean(run, end - ew, end)
+        rec["outstanding_end_inst"] = outstanding_at(run, end)
+    b_end = rec["outstanding_end"] if bmetric == "outstanding" else rec["backlog_end"]
     rec["recovered"] = bool(not _isnan(rec["hit_end"]) and rec["hit_end"] > float(tp["recovered_hit_above"])
-                            and not _isnan(rec["backlog_end"]) and rec["backlog_end"] < float(tp["recovered_backlog_below"]))
+                            and not _isnan(b_end) and b_end < float(tp["recovered_backlog_below"]))
     rec["good"] = rec["recovered"]
 
     if too_short:
@@ -124,20 +164,33 @@ def trap_v2_run(run: Run, p: AnalysisParams) -> Dict[str, Any]:
 
     rates = completion_rates(run, t0, end)
     rec["rate_sessions"], rec["rate_turns_based"] = rates["sessions_per_s"], rates["turns_based_per_s"]
+    rec["rate_uncached_tokens"] = rates["uncached_tokens_per_s"]
+    rec["prompt_tokens_per_s_eval"] = rates["prompt_tokens_per_s"]
     rec["n_sessions_completed_eval"], rec["n_turns_completed_eval"] = rates["n_sessions_completed"], rates["n_turns_completed"]
+    tol = float(tp["rate_tolerance"])
+    rec["rate_rel_dev_sessions"] = rates["sessions_per_s"] / lam_miss - 1.0
+    rec["rate_rel_dev_turns"] = rates["turns_based_per_s"] / lam_miss - 1.0
+    rec["crit_a_sessions"] = bool(abs(rec["rate_rel_dev_sessions"]) <= tol)
+    rec["crit_a_turns"] = bool(abs(rec["rate_rel_dev_turns"]) <= tol)
+    if tok_ref is not None and not _isnan(rates["uncached_tokens_per_s"]):
+        rec["rate_rel_dev_tokens"] = rates["uncached_tokens_per_s"] / tok_ref - 1.0
+        rec["crit_a_tokens"] = bool(abs(rec["rate_rel_dev_tokens"]) <= tol)
+    elif tok_ref is not None:
+        rec["state_reason"] = "cached_tokens not reported by the server: uncached prefill rate undefined"
     rec["rate_primary"] = pick_rate(rates, est)
-    tol = float(tp["rate_tolerance"]) * lam_miss
-    rec["crit_a_sessions"] = bool(abs(rates["sessions_per_s"] - lam_miss) <= tol)
-    rec["crit_a_turns"] = bool(abs(rates["turns_based_per_s"] - lam_miss) <= tol)
-    rec["crit_a"] = rec["crit_a_sessions"] if est == "sessions" else rec["crit_a_turns"]
-    rec["estimators_agree"] = rec["crit_a_sessions"] == rec["crit_a_turns"]
-    rec["rate_rel_dev"] = rec["rate_primary"] / lam_miss - 1.0
+    rec["crit_a"] = {"uncached_tokens": rec["crit_a_tokens"], "sessions": rec["crit_a_sessions"],
+                     "turns_based": rec["crit_a_turns"]}[est]
+    rec["rate_rel_dev"] = {"uncached_tokens": rec["rate_rel_dev_tokens"], "sessions": rec["rate_rel_dev_sessions"],
+                           "turns_based": rec["rate_rel_dev_turns"]}[est]
+    votes = {rec["crit_a_sessions"], rec["crit_a_turns"]} | ({rec["crit_a_tokens"]} if not _isnan(rec["rate_rel_dev_tokens"]) else set())
+    rec["estimators_agree"] = len(votes) == 1
     slope, nb = backlog_slope(run.sessions, t0, end, float(tp["slope_dt_s"]))
     rec["backlog_slope"], rec["n_slope_bins"] = slope, nb
     rec["slope_threshold"] = float(tp["slope_frac"]) * (lam - lam_miss)
     rec["crit_b"] = bool(not _isnan(slope) and slope > rec["slope_threshold"])
     rec["backlog_eval_mean"] = backlog_mean(run.sessions, t0, end)
     rec["backlog_eval_start"] = backlog_at(run.sessions, t0)
+    rec["outstanding_eval_mean"] = outstanding_mean(run, t0, end)
     rec["hit_eval"] = hit_value(hit_stats(run, p, t0, end + 1e-9), p)
     rec["trapped"] = bool(rec["crit_a"] and rec["crit_b"] and rec["lambda_above_miss"])
     rec["draining"] = bool(not _isnan(slope) and slope < 0)
@@ -149,8 +202,8 @@ def trap_v2_run(run: Run, p: AnalysisParams) -> Dict[str, Any]:
         rec["state"] = "draining"
     else:
         rec["state"] = "indeterminate"
-        rec["state_reason"] = ("hit fraction unavailable" if not rec.get("hit_available", True) else
-                               "neither trapped, drained nor recovered by the end")
+        rec["state_reason"] = rec["state_reason"] or ("hit fraction unavailable" if not rec.get("hit_available", True) else
+                                                      "neither trapped, drained nor recovered by the end")
     return rec
 
 
@@ -190,6 +243,11 @@ def pairing_problems(group: Sequence[Tuple[Dict[str, Any], Run]]) -> List[str]:
                 probs.append(f"{arm} vs {ref_arm}: different resolved lambda / lambda_miss")
             if rec["t_burst"] != rec0["t_burst"]:
                 probs.append(f"{arm} vs {ref_arm}: different burst reference time")
+            if str(rec["hardware"]) != str(rec0["hardware"]):
+                probs.append(f"{arm} vs {ref_arm}: different hardware ({rec['hardware']!r} vs {rec0['hardware']!r})")
+            ra, rb = rec["uncached_tokens_ref"], rec0["uncached_tokens_ref"]
+            if (ra is None) != (rb is None) or (ra is not None and abs(ra - rb) > 1e-9 * max(1.0, abs(rb))):
+                probs.append(f"{arm} vs {ref_arm}: different resolved uncached-token reference")
     b, c = by_arm.get("burst"), by_arm.get("capped")
     if b and c and (b[0][1].cfg.get("arrivals") or {}).get("burst") != (c[0][1].cfg.get("arrivals") or {}).get("burst"):
         probs.append("burst vs capped: different burst specification")

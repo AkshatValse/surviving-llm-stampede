@@ -83,6 +83,34 @@ class Run:
         return None
 
     @property
+    def uncached_tokens_ref_value(self) -> Optional[float]:
+        """All-miss uncached prefill tokens/s (E0a) the run's trap criterion (a) is judged against, as resolved at run start
+        from ``arrivals.uncached_tokens_ref`` (None if the run did not record it)."""
+        v = self.meta.get("uncached_tokens_ref_resolved")
+        return float(v) if v is not None else None
+
+    @property
+    def prereg_sha256(self) -> Optional[str]:
+        """sha256 of the committed pre-registration file the job script validated before this run (None: not bound)."""
+        v = self.meta.get("prereg_sha256") or (self.cfg.get("meta") or {}).get("prereg_sha256")
+        return str(v) if v else None
+
+    @property
+    def t0_unix(self) -> Optional[float]:
+        """Wall-clock time (unix seconds) at which the run clock started; falls back to the parsed ``start_time``."""
+        v = self.meta.get("t0_unix")
+        if v is not None:
+            return float(v)
+        st = self.meta.get("start_time")
+        if st:
+            try:
+                from datetime import datetime
+                return datetime.fromisoformat(str(st)).timestamp()
+            except ValueError:
+                return None
+        return None
+
+    @property
     def lambda_ref_key(self) -> str:
         """Key part of ``arrivals.lambda_ref = 'path:key'`` ("" for a plain number)."""
         ref = (self.cfg.get("arrivals") or {}).get("lambda_ref")

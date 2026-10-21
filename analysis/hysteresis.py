@@ -279,9 +279,16 @@ def lambda_miss_closed(run: Run, warmup_s: float) -> Dict[str, Any]:
     n_turns = len(ok)
     n_sessions = int((ok["turn"] == ok["n_turns"]).sum())
     et = effective_mean_turns(cfg.workload)
+    prompt = ok["prompt_tokens"].where(ok["prompt_tokens"].notna(), ok["prompt_tokens_client"]).astype(float)
+    cached = ok["cached_tokens"].fillna(0.0).astype(float)
+    cached_sum, prompt_sum = float(cached.sum()), float(prompt.sum())
     return {"label": run.label, "seed": run.seed, "warmup_s": warmup_s, "measure_s": dur,
             "sessions_completed": n_sessions, "turns_completed": n_turns,
             "sessions_per_s": n_sessions / dur, "turns_per_s": n_turns / dur,
             "lambda_miss_sessions": n_sessions / dur, "lambda_miss_turns_based": (n_turns / dur) / et,
+            # uncached prefill tokens/s: the unit of trap criterion (a). With the engine's cache disabled (E0a) every prompt
+            # token is uncached; `cached_frac_tokens` is a sanity check that the cache really was off (should be ~0).
+            "uncached_tokens_per_s": (prompt_sum - cached_sum) / dur, "prompt_tokens_per_s": prompt_sum / dur,
+            "cached_frac_tokens": (cached_sum / prompt_sum) if prompt_sum > 0 else float("nan"),
             "effective_mean_turns": et, "aborted": run.aborted,
             "closed_n": cfg.arrivals.closed_n}

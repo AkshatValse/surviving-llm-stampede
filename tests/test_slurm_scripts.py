@@ -171,11 +171,18 @@ def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
         assert [m["content_salt"] for m in metas] == [1, 2, 3] and all(m["analysis_t_burst_s"] == 6.0 for m in metas)
         assert [m["gate_n_cap_resolved"] for m in metas] == [None, None, 3]                    # fake Stage-C mu_curve.json: n_cap 3
         assert metas[2]["outcome"]["gate"]["max_active_seen"] <= 3
+        # the pre-registration the job validated is bound into every run, with the E0a token reference (fake calibration: 1000 tokens/s)
+        assert len({m["prereg_sha256"] for m in metas}) == 1 and re.fullmatch(r"[0-9a-f]{64}", metas[0]["prereg_sha256"])
+        assert all(m["uncached_tokens_ref_resolved"] == 1000.0 and m["prereg_file"].endswith("prereg.yaml") for m in metas)
+        assert "PREREG_OK" in r.stdout and "PREREG_ALLOW_UNCOMMITTED=1" in r.stdout
         plans = [pd.read_csv(Path(r) / "plan.csv") for r in run_dirs]
         assert (plans[0]["origin"] == "burst").sum() == 10 and (plans[1]["origin"] == "burst").sum() == 0
         d2 = sorted((tmp_path / "agentload_analysis_burst2").iterdir())[-1]
         kv = json.loads((d2 / "kill_verdict_v2.json").read_text())
         assert kv["cells"][0]["n_seeds_complete"] == 1 and kv["pairing_problems"] == {} and kv["guards"]["n_errors"] == 0
+        assert kv["prereg"]["provided"] and kv["prereg"]["valid"] and kv["pre_registered"] is False       # smoke prereg is not committed
+        assert kv["prereg"]["provenance"]["sha256"] == metas[0]["prereg_sha256"]
+        assert kv["kill_test_pass_decisive"] is None
     # the mock server process must be gone
     assert subprocess.run(["pgrep", "-f", f"agentload.mock_server --port {port}"], capture_output=True).returncode != 0
 
@@ -404,11 +411,25 @@ def test_auto_output_feedback_is_refused_for_everything_but_smoke(tmp_path):
 def test_cap_and_burst_refuse_hardware_that_differs_from_the_calibration(tmp_path):
     for i, mode in enumerate(("cap", "burst")):
         r = _smoke(mode, tmp_path / mode, 18104 + i, FAKE_CALIB_HW="NVIDIA A100-SXM4-80GB, 81920 MiB")
-        assert r.returncode != 0 and "hardware differs from the calibration" in r.stderr, mode
+        assert r.returncode != 0, mode
+        # cap: the calibration check; burst: the capped arm's mu_curve.json and the pre-registration are refused even earlier
+        assert ("hardware differs from the calibration" in r.stderr) if mode == "cap" else ("hardware" in r.stdout + r.stderr), mode
         jd = next((tmp_path / mode / "nova_job_logs").iterdir())
         assert not (jd / f"run_dirs_{mode}.txt").exists()                                  # no run was started
-    r = _smoke("cap", tmp_path / "ok", 18106, FAKE_CALIB_HW="NVIDIA A100-SXM4-80GB, 81920 MiB", ALLOW_HW_MISMATCH="1")
-    assert r.returncode == 0 and "ALLOW_HW_MISMATCH=1" in r.stdout
+    for i, mode in enumerate(("cap", "burst")):
+        r = _smoke(mode, tmp_path / f"ok{mode}", 18106 + 10 * i, FAKE_CALIB_HW="NVIDIA A100-SXM4-80GB, 81920 MiB", ALLOW_HW_MISMATCH="1")
+        assert r.returncode == 0 and "ALLOW_HW_MISMATCH=1" in r.stdout, (mode, r.stdout[-1500:] + r.stderr[-1500:])
+
+
+def test_burst_refuses_to_start_without_a_valid_prereg(tmp_path):
+    """Review finding 4: mode_burst neither required nor recorded the prereg file."""
+    r = _smoke("burst", tmp_path / "none", 18121, PREREG_FILE="/nonexistent/prereg.yaml")
+    assert r.returncode != 0 and "PREREG_FILE not found" in r.stderr
+    jd = next((tmp_path / "none" / "nova_job_logs").iterdir())
+    assert not (jd / "run_dirs_burst.txt").exists()
+    # the unfilled template is not a registration
+    r = _smoke("burst", tmp_path / "tmpl", 18122, PREREG_FILE=str(REPO / "configs" / "agentload_prereg_template.yaml"))
+    assert r.returncode != 0 and "does not authorise this E2 job" in r.stdout + r.stderr
 
 
 def test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught(tmp_path):
@@ -434,11 +455,34 @@ def test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught(tmp_pat
 # ---------------------------------------------------------------------------------------------------------------
 # Stage C (MODE=closed), paired arms, KV_TOKENS=native
 # ---------------------------------------------------------------------------------------------------------------
+ANALYSIS_EXTRA = ("--set windows.window_s=3 --set windows.fine_window_s=1 --set burst.tail_window_s=6 --set trap_v2.min_eval_s=2 "
+                  "--set trap_v2.slope_dt_s=1 --set trap_v2.end_window_s=3 --set trap_v2.trace_bin_s=1")
+HW = "Apple M3 Max CPU (simulation)"
+
+
+def _fake_inputs(tmp_path, label, hw=HW, mult="1.5"):
+    """Fake calibration / mu_curve (n_cap 3) / E0b / pre-registration for `label`, as local_smoke.sh writes them."""
+    d = tmp_path / "fake"
+    r = subprocess.run([sys.executable, str(SLURM / "local_smoke_prereg.py"), "--dir", str(d), "--label", label, "--hardware", hw,
+                        "--mult", mult, "--duration-s", "14", "--t-burst-s", "6", "--prereg", "--set", "trap_v2.eval_from_s=4",
+                        *ANALYSIS_EXTRA.split()], capture_output=True, text=True, cwd=REPO)
+    assert r.returncode == 0, r.stdout + r.stderr
+    return d
+
+
 def _validate(env, tmp_path):
-    """Run validate_mode_inputs (the pre-launch input check) with the given environment."""
-    e = {"ENV_GEN": sys.prefix, "REPO_DIR": str(REPO), "ENGINE_LABEL": "x-fcfs", "SEEDS": "0"}
+    """Run validate_mode_inputs (the pre-launch input check) with the given environment. MODE=burst gets a fake, uncommitted
+    pre-registration for the engine label (the way local_smoke.sh does), unless the test passes its own PREREG_FILE."""
+    label = env.get("ENGINE_LABEL", "x-fcfs")
+    e = {"ENV_GEN": sys.prefix, "REPO_DIR": str(REPO), "ENGINE_LABEL": label, "SEEDS": "0", "HW": HW, "BURST_RUN_S": "14",
+         "T_BURST": "6", "HIT_EVAL_FROM_S": "4", "ANALYSIS_EXTRA": ANALYSIS_EXTRA}
+    if env.get("MODE") == "burst":
+        d = _fake_inputs(tmp_path, label)
+        e.update(PREREG_FILE=str(d / "prereg.yaml"), CALIB_FILE=str(d / "calibration.json"), MULTS="1.5", PREREG_ALLOW_UNCOMMITTED="1")
+        if "capped" in env.get("ARMS", "") and "N_CAP" not in env:
+            e["CAP_FILE"] = str(d / "mu_curve.json")
     e.update(env)
-    return bash_fn("validate_mode_inputs; echo rc=$? GATE=$GATE_N_CAP_YAML", env=e)
+    return bash_fn("validate_mode_inputs; echo rc=$? GATE=$GATE_N_CAP_YAML SHA=$PREREG_SHA256", env=e)
 
 
 def test_closed_needs_an_explicit_positive_integer_n_list(tmp_path):
@@ -453,37 +497,80 @@ def test_closed_needs_an_explicit_positive_integer_n_list(tmp_path):
 
 def test_arms_must_be_known_and_the_capped_arm_needs_a_valid_cap(tmp_path):
     ok = {"MODE": "burst", "ARMS": "burst noburst"}
-    assert "rc=0" in _validate(ok, tmp_path).stdout
-    r = _validate({"MODE": "burst", "ARMS": "burst bogus"}, tmp_path)
+    r = _validate(ok, tmp_path / "a")
+    assert "rc=0" in r.stdout and re.search(r"SHA=[0-9a-f]{64}", r.stdout)                   # the registration's sha256 is exported
+    r = _validate({"MODE": "burst", "ARMS": "burst bogus"}, tmp_path / "b")
     assert r.returncode == 1 and "burst|noburst|capped" in r.stderr
-    r = _validate({"MODE": "burst", "ARMS": "capped"}, tmp_path)                  # neither N_CAP nor CAP_FILE
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": ""}, tmp_path / "c")        # neither N_CAP nor CAP_FILE
     assert r.returncode == 1 and "CAP_FILE is empty" in r.stderr
-    r = _validate({"MODE": "burst", "ARMS": "burst capped", "N_CAP": "22"}, tmp_path)
-    assert "rc=0" in r.stdout and "GATE=22" in r.stdout
+    r = _validate({"MODE": "burst", "ARMS": "burst capped", "N_CAP": "3"}, tmp_path / "d")
+    assert "rc=0" in r.stdout and "GATE=3" in r.stdout
     for bad in ("0", "abc", "2.5"):
-        r = _validate({"MODE": "burst", "ARMS": "capped", "N_CAP": bad}, tmp_path)
+        r = _validate({"MODE": "burst", "ARMS": "capped", "N_CAP": bad}, tmp_path / f"e{bad}")
         assert r.returncode == 1 and "N_CAP must be a positive integer" in r.stderr, bad
-    good = tmp_path / "mu_curve.json"
-    good.write_text(json.dumps({"n_cap": 24}))
-    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(good)}, tmp_path)
+    # a cap that is not the registered one is refused by the pre-registration binding
+    r = _validate({"MODE": "burst", "ARMS": "capped", "N_CAP": "22"}, tmp_path / "f")
+    assert r.returncode == 1 and "n_cap 22 != registered n_cap 3" in r.stdout
+    d = _fake_inputs(tmp_path / "g", "x-fcfs")
+    good = d / "mu_curve.json"
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(good)}, tmp_path / "h")
     assert "rc=0" in r.stdout and f'GATE="{good}:n_cap"' in r.stdout
-    for name, body in (("nullcap.json", {"n_cap": None}), ("floatcap.json", {"n_cap": 2.5}), ("nokey.json", {})):
+    curve = json.loads(good.read_text())
+    for name, edit, msg in (("nullcap.json", {"n_cap": None}, "no integer n_cap"), ("floatcap.json", {"n_cap": 2.5}, "no integer n_cap"),
+                            ("otherpool.json", {"primary_label": "x-fcfs-native"}, "primary_label"),
+                            ("otherhw.json", {"primary_hardware": ["A100"]}, "was measured on")):
         f = tmp_path / name
-        f.write_text(json.dumps(body))
-        r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(f)}, tmp_path)
-        assert r.returncode == 1 and "no integer n_cap" in r.stderr, name
-    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(tmp_path / "missing.json")}, tmp_path)
+        f.write_text(json.dumps({**curve, **edit}))
+        r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(f)}, tmp_path / ("i" + name))
+        assert r.returncode == 1 and msg in r.stdout + r.stderr, name
+    nokey = tmp_path / "nokey.json"
+    nokey.write_text("{}")
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(nokey)}, tmp_path / "j")
+    assert r.returncode == 1 and "no integer n_cap" in r.stdout + r.stderr
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": str(tmp_path / "missing.json")}, tmp_path / "k")
     assert r.returncode == 1 and "CAP_FILE not found" in r.stderr
-    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": "/work/<group-dir>/mu_curve.json"}, tmp_path)
+    r = _validate({"MODE": "burst", "ARMS": "capped", "CAP_FILE": "/work/<group-dir>/mu_curve.json"}, tmp_path / "l")
     assert r.returncode == 1 and "placeholder" in r.stderr
     # an arm list without the capped arm needs no cap at all
-    assert "rc=0" in _validate({"MODE": "burst", "ARMS": "noburst"}, tmp_path).stdout
+    assert "rc=0" in _validate({"MODE": "burst", "ARMS": "noburst"}, tmp_path / "m").stdout
+
+
+def test_the_native_pool_job_cannot_use_the_300k_pools_cap_file(tmp_path):
+    """Review finding 5: validate_mode_inputs read n_cap from any mu_curve.json without checking its primary_label."""
+    d300 = _fake_inputs(tmp_path / "p300", "sglang-fcfs-r1")
+    r = _validate({"MODE": "burst", "ARMS": "capped", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1-native",
+                   "CAP_FILE": str(d300 / "mu_curve.json")}, tmp_path / "x")
+    assert r.returncode == 1 and "primary_label" in r.stdout + r.stderr and "sglang-fcfs-r1-native" in r.stdout + r.stderr
+    dnat = _fake_inputs(tmp_path / "pnat", "sglang-fcfs-r1-native")
+    r = _validate({"MODE": "burst", "ARMS": "capped", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1-native",
+                   "CAP_FILE": str(dnat / "mu_curve.json")}, tmp_path / "y")
+    assert "rc=0" in r.stdout
+
+
+def test_burst_inputs_must_match_the_registration(tmp_path):
+    d = _fake_inputs(tmp_path / "f", "x-fcfs")
+    base = {"MODE": "burst", "ARMS": "burst", "PREREG_FILE": str(d / "prereg.yaml"), "CALIB_FILE": str(d / "calibration.json"),
+            "MULTS": "1.5", "PREREG_ALLOW_UNCOMMITTED": "1"}
+    assert "rc=0" in _validate(base, tmp_path / "ok").stdout
+    r = _validate({**base, "MULTS": "1.5 1.8"}, tmp_path / "m")
+    assert r.returncode == 1 and "MULTS entry 1.8 not in the registered lambda_mults" in r.stdout
+    r = _validate({**base, "ENGINE_LABEL": "vllm-fcfs"}, tmp_path / "l")
+    assert r.returncode == 1 and "ENGINE_LABEL" in r.stdout and "registered cell" in r.stdout
+    bad = tmp_path / "bad_cal.json"
+    bad.write_text(json.dumps({**json.loads((d / "calibration.json").read_text()), "all_miss_uncached_tokens_per_s": 2000.0}))
+    r = _validate({**base, "CALIB_FILE": str(bad)}, tmp_path / "c")
+    assert r.returncode == 1 and "CALIB_FILE" in r.stdout
+    r = _validate({**base, "BURST_RUN_S": "9000"}, tmp_path / "t")                                 # the job's protocol is not the registered one
+    assert r.returncode == 1 and "run.duration_s" in r.stdout
+    # without the test-only escape hatch an uncommitted file is refused
+    r = _validate({**base, "PREREG_ALLOW_UNCOMMITTED": "0"}, tmp_path / "u")
+    assert r.returncode == 1 and "not committed" in r.stdout
 
 
 def test_native_pool_requires_a_native_label(tmp_path):
-    r = _validate({"MODE": "burst", "ARMS": "burst", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1"}, tmp_path)
+    r = _validate({"MODE": "burst", "ARMS": "burst", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1"}, tmp_path / "a")
     assert r.returncode == 1 and "contain 'native'" in r.stderr
-    r = _validate({"MODE": "burst", "ARMS": "burst", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1-native"}, tmp_path)
+    r = _validate({"MODE": "burst", "ARMS": "burst", "KV_TOKENS": "native", "ENGINE_LABEL": "sglang-fcfs-r1-native"}, tmp_path / "b")
     assert "rc=0" in r.stdout
 
 
@@ -493,10 +580,12 @@ def test_three_arms_do_not_fit_one_4h_job_but_one_arm_does():
     assert r.returncode == 1 and "do not fit" in r.stderr
     for arm in ("burst", "noburst", "capped"):
         assert bash_fn("check_time_budget pre", env={**base, "ARMS": arm}).returncode == 0
-    # Stage C: 3 runs per job fit (the budget's runs_per_job), 6 do not
+    # Stage C: 4 runs per job fit (the budget's runs_per_job for the FCFS grid with n = 20), 5 and 7 do not
     cl = {**TIME_ENV, "MODE": "closed", "SEEDS": "0", "REMAINING_S_OVERRIDE": "14400"}
     assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 24 32"}).returncode == 0
-    assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 24 32 48 96 300"}).returncode == 1
+    assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 20 24 32"}).returncode == 0
+    assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 20 24 32 48"}).returncode == 1
+    assert bash_fn("check_time_budget pre", env={**cl, "N_LIST": "16 20 24 32 48 96 300"}).returncode == 1
 
 
 def _fake_launch(tmp_path, engine_file, kv_tokens, extra_env=None):

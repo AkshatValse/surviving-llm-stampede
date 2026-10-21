@@ -1,8 +1,9 @@
 research_question: >-
   Stage C (real engine): what is the closed-population throughput curve mu(n) of Qwen2.5-7B-Instruct on one A100-80GB
-  with the prefix cache ON, at n in {16, 24, 32, 48, 96, 300} concurrent sessions (FCFS) and n in {48, 300} (LPM)? Its
-  argmax is the session cap N_cap of the CAPPED arm; mu(300) and max_n mu(n) are the pre-registered recovery threshold
-  and upper edge of the metastable window (configs/agentload_prereg_template.yaml).
+  with the prefix cache ON, at n in {16, 20, 24, 32, 48, 96, 300} concurrent sessions (FCFS) and n in {48, 300} (LPM)? Its
+  argmax is the session cap N_cap of the CAPPED arm and max_n mu(n) bounds the pre-registered metastable window from above
+  (together with E0b's from-empty stability edge, configs/agentload_prereg_template.yaml). mu(300) is only a CHECK of the
+  recovery threshold (= lambda_miss): all n sessions start at t=0, so mu(300) over the measured window is transient-biased.
 
 assumptions_note: >-
   Same workload constants and engine pins as E0a (configs/agentload_e0_miss.yaml), but caching ENABLED and the schedule
@@ -11,6 +12,11 @@ assumptions_note: >-
   Protocol c_closed: warmup 900 s discarded, 1800 s measured (analysis: summarize closed --warmup-s 900). One run per n
   (no replicate): the argmax is noisy and is flagged when the runner-up is within 5%. Throughput is both completed
   sessions/s and turns/s / E[T]; hit fractions and the queue are recorded next to it.
+  KNOWN BIAS (review of 2026-10-21, finding 2; simulator, same protocol): all n sessions start together at t=0, so in
+  the window [900 s, 2700 s) mu(n) is +65% too high at n=300 (session lifetime there is ~6000 s, longer than the run),
+  +17-20% at n=100, and 9-25% too LOW at n=22-30 (the cliff region), where mu(n) is bistable between windows. Do not read
+  n_cap or the window edges off this curve as steady-state values: the argmax is flagged when the runner-up is within 5%
+  and n_cap is only the capped arm's cap. Staggered session ages (not implemented) would remove the bias.
 
 server:
   base_url: http://127.0.0.1:8000       # overridden by the job script (--set server.base_url=...)

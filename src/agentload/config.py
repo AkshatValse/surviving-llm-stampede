@@ -81,6 +81,10 @@ class ArrivalsCfg:
     rate: Optional[float] = None           # sessions/s (constant)
     rate_mult: Optional[float] = None      # alternative: rate = rate_mult * lambda_ref
     lambda_ref: Optional[Any] = None       # float, or "path/to/summary.json:key" (see config.resolve_rate)
+    # ANALYSIS REFERENCE ONLY (the generator never uses it for load): the all-miss uncached prefill tokens/s of E0a that trap
+    # criterion (a) compares the post-burst prefill-token rate with. float, or "path/to/calibration.json:key"
+    # (``all_miss_uncached_tokens_per_s``); resolved at run start and recorded in meta.json. A placeholder fails loudly.
+    uncached_tokens_ref: Optional[Any] = None
     ramp: List[List[float]] = field(default_factory=list)   # knots [[t_s, rate], ...], piecewise linear
     ramp_is_mult: bool = False             # true: ramp rates are multiples of lambda_ref (resolve_ramp)
     closed_n: int = 0                      # closed: population kept constant (replace on completion)
@@ -151,6 +155,10 @@ class MetaCfg:
     # which arm of a paired E2 set this run is: burst | noburst | capped | "" (not part of a paired set). Recorded in
     # meta.json; the analysis cross-checks it against what the config structurally implies (burst / gate present).
     arm: str = ""
+    # set by the job script for MODE=burst from the committed pre-registration it validated (slurm/common.sh); recorded in
+    # meta.json so the analysis can check that the runs were launched under exactly the file that is being applied
+    prereg_sha256: str = ""
+    prereg_file: str = ""
 
 
 @dataclass
@@ -282,6 +290,17 @@ def resolve_lambda_ref(ref: Any, base_dir: Optional[Path] = None) -> float:
                                     f"set it with --set arrivals.lambda_ref=<path>/calibration.json:<key>)")
         return float(json.loads(p.read_text())[key])
     raise ValueError(f"cannot resolve lambda_ref {ref!r}")
+
+
+def resolve_uncached_tokens_ref(a: ArrivalsCfg, base_dir: Optional[Path] = None) -> Optional[float]:
+    """``arrivals.uncached_tokens_ref`` as a positive float (None if unset). A configured but unresolvable reference (e.g.
+    the placeholder in configs/agentload_e2_burst.yaml) raises: the run would be unjudgeable by the token-unit criterion."""
+    if a.uncached_tokens_ref is None:
+        return None
+    v = float(resolve_lambda_ref(a.uncached_tokens_ref, base_dir))
+    if not (v == v and v > 0):
+        raise ValueError(f"arrivals.uncached_tokens_ref resolved to {v!r}: need a positive tokens/s value")
+    return v
 
 
 def resolve_n_cap(g: GateCfg, base_dir: Optional[Path] = None) -> Optional[int]:

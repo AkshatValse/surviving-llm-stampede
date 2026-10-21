@@ -67,6 +67,7 @@ banner() {
   echo "ENGINE=$ENGINE MODE=$MODE POLICY=${POLICY:-} REFRESH=${REFRESH:-} LPM_INF=${LPM_INF:-} RADIX=${RADIX:-}"
   echo "SEEDS=\"$SEEDS\" MULTS=\"${MULTS:-}\" N_LIST=\"${N_LIST:-}\" ARMS=\"${ARMS:-}\" N_CAP=${N_CAP:-} CAP_FILE=${CAP_FILE:-}"
   echo "KV_TOKENS=${KV_TOKENS:-} CONTEXT_LEN=${CONTEXT_LEN:-} PORT=$PORT"
+  echo "PREREG_FILE=${PREREG_FILE:-} PREREG_ALLOW_UNCOMMITTED=${PREREG_ALLOW_UNCOMMITTED:-0}"
   echo "OUTPUT_FEEDBACK=$OUTPUT_FEEDBACK REQUEST_TOKEN_IDS=$REQUEST_TOKEN_IDS STRICT_FLUSH=$STRICT_FLUSH STRICT_FLAGS=${STRICT_FLAGS:-1}"
   echo "ENGINE_LABEL=$ENGINE_LABEL  CALIB_FILE=${CALIB_FILE:-}"
   echo "MODEL=${MODEL:-} SERVED_MODEL=$SERVED_MODEL HF_REVISION=${HF_REVISION:-unpinned} HF_HOME=${HF_HOME:-}"
@@ -223,8 +224,11 @@ FAILED_RUNS=0
 RUN_IDX=0
 
 # run_gen CONFIG NAME [extra agentload args...]   (GEN_EXTRA: optional extra '--set k=v' words; used by the local smoke test)
-# Every run gets its own content salt (RUN_IDX), so a flush that silently failed cannot make its prompts hit the
-# previous run's cache; arrival and spec streams (seed) are unchanged. The start-state verdict of the last
+# Every run IN A JOB gets its own content salt (RUN_IDX), so a flush that silently failed cannot make its prompts hit the
+# previous run's cache; arrival and spec streams (seed) are unchanged. RUN_IDX restarts at 1 in every job: with ONE arm per job
+# (how an 8700 s E2 arm fits a 4 h job) all E2 arms therefore have content_salt=1, i.e. identical token content, not only
+# identical lengths and timing; that is harmless (a fresh server per job) and tightens the pairing. The salts differ between
+# runs only where several runs share a job (Stage C, E0a, E0b). The start-state verdict of the last
 # reset_and_verify is recorded in the run's meta.json and then reset: a run is only "verified" right after a reset.
 run_gen() {
   local cfg="$1" name="$2"; shift 2
@@ -266,7 +270,9 @@ post_analysis() {
                  --warmup-s "$MISS_WARMUP_S" --out-root "$RESULTS_ROOT" --name agentload_analysis_miss_popcheck ${ANALYSIS_EXTRA:-} \
                  || log "pop-check analysis failed (raw results are intact)"
            fi ;;
-    closed) gen_python -m analysis.summarize closed --run-dirs $dirs --warmup-s "$CLOSED_WARMUP_S" \
+    closed) # an FCFS job names its own label as the primary cell, so n_cap / mu_max can never come from another cell or pool
+            local pl=""; case "$ENGINE_LABEL" in *fcfs*) pl="--primary-label $ENGINE_LABEL";; esac
+            gen_python -m analysis.summarize closed --run-dirs $dirs --warmup-s "$CLOSED_WARMUP_S" $pl \
                --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} || log "post-analysis failed (raw results are intact)" ;;
     cap)   gen_python -m analysis.summarize stable --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} \
                || log "post-analysis failed (raw results are intact)" ;;
@@ -275,7 +281,7 @@ post_analysis() {
                || log "legacy burst analysis failed (raw results are intact)"
            gen_python -m analysis.summarize burst2 --run-dirs $dirs --out-root "$RESULTS_ROOT" \
                --set "burst.trap_min_s=$TRAP_MIN_S" --set "burst.hit_eval_from_s=$HIT_EVAL_FROM_S" \
-               --set "trap_v2.eval_from_s=$HIT_EVAL_FROM_S" ${ANALYSIS_EXTRA:-} \
+               --set "trap_v2.eval_from_s=$HIT_EVAL_FROM_S" ${PREREG_FILE:+--prereg "$PREREG_FILE"} ${ANALYSIS_EXTRA:-} \
                || log "burst2 analysis failed (raw results are intact)" ;;
   esac
 }
@@ -374,12 +380,16 @@ e2_run() {   # e2_run ARM MULT SEED [extra agentload args...]: one run of one ar
   local arm="$1" m="$2" seed="$3"; shift 3
   run_gen configs/agentload_e2_burst.yaml "agentload_e2_burst" --seed "$seed" \
       --set "arrivals.rate_mult=$m" --set "arrivals.lambda_ref=\"$CALIB_FILE:lambda_miss_turns_based\"" \
+      --set "arrivals.uncached_tokens_ref=\"$CALIB_FILE:all_miss_uncached_tokens_per_s\"" \
+      --set "meta.prereg_sha256=\"$PREREG_SHA256\"" --set "meta.prereg_file=\"$PREREG_FILE\"" \
       --set "arrivals.analysis_t_burst_s=$T_BURST" --set "meta.arm=\"$arm\"" --set "run.duration_s=$BURST_RUN_S" "$@" \
       || { log "run failed (arm $arm mult $m seed $seed)"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
 }
 
 mode_burst() {  # E2: caching on, burst at t_burst; for each (mult, seed) the PAIRED ARMS in ARMS (same seed = same arrival and session streams)
-  require_set CALIB_FILE; require_set MULTS
+  # PREREG_FILE, CALIB_FILE, MULTS, the label, the cap and the hardware were validated against the committed pre-registration in
+  # validate_mode_inputs (before the engine started); PREREG_SHA256 is written into every run's meta.json by e2_run
+  require_set CALIB_FILE; require_set MULTS; require_set PREREG_FILE; require_set PREREG_SHA256
   check_calib_hardware
   local m seed arm
   for m in $MULTS; do
@@ -407,14 +417,17 @@ mode_closed() {   # Stage C: caching on, closed population n in N_LIST, one run 
   done
 }
 
-# Validate ARMS / N_CAP / CAP_FILE / N_LIST BEFORE the engine is launched (a bad value must not cost GPU time).
-# Sets GATE_N_CAP_YAML (the YAML text for --set gate.n_cap=...) when the capped arm is requested.
+# Validate ARMS / N_CAP / CAP_FILE / N_LIST / PREREG_FILE BEFORE the engine is launched (a bad value must not cost GPU time).
+# Sets GATE_N_CAP_YAML (the YAML text for --set gate.n_cap=...) when the capped arm is requested, RESOLVED_N_CAP (the integer),
+# and PREREG_SHA256 (MODE=burst).
 GATE_N_CAP_YAML=""
+RESOLVED_N_CAP=""
+PREREG_SHA256=""
 validate_mode_inputs() {
-  local a v
+  local a v out
   case "$MODE" in
     closed)
-      [ -n "${N_LIST:-}" ] || die "MODE=closed needs N_LIST (e.g. N_LIST=\"16 24 32\"; split the n grid over jobs so each fits the time limit)"
+      [ -n "${N_LIST:-}" ] || die "MODE=closed needs N_LIST (e.g. N_LIST=\"16 20 24 32\"; split the n grid over jobs so each fits the time limit)"
       for v in $N_LIST; do case "$v" in ''|*[!0-9]*|0) die "N_LIST entries must be positive integers, got '$v'";; esac; done ;;
     burst)
       for a in $ARMS; do case "$a" in burst|noburst|capped) ;; *) die "ARMS entries must be burst|noburst|capped, got '$a'";; esac; done
@@ -422,17 +435,42 @@ validate_mode_inputs() {
       case " $ARMS " in *" capped "*)
         if [ -n "${N_CAP:-}" ]; then
           case "$N_CAP" in ''|*[!0-9]*|0) die "N_CAP must be a positive integer, got '$N_CAP'";; esac
-          GATE_N_CAP_YAML="$N_CAP"
+          GATE_N_CAP_YAML="$N_CAP"; RESOLVED_N_CAP="$N_CAP"
         else
           require_set CAP_FILE
           [ -f "$CAP_FILE" ] || die "CAP_FILE not found: $CAP_FILE (the mu_curve.json written by 'summarize closed')"
-          v=$(gen_python -c 'import json,sys; v=json.load(open(sys.argv[1])).get("n_cap"); print(v if isinstance(v,int) and not isinstance(v,bool) and v>=1 else "")' "$CAP_FILE") \
-              || die "cannot read $CAP_FILE"
-          [ -n "$v" ] || die "$CAP_FILE has no integer n_cap >= 1 (Stage C incomplete, or no FCFS cell?)"
-          GATE_N_CAP_YAML="\"$CAP_FILE:n_cap\""
-          log "capped arm: gate.n_cap = $v (from $CAP_FILE)"
+          # the curve must be THIS job's cell (primary_label == ENGINE_LABEL) on THIS hardware: a native-pool capped arm must not
+          # silently take the 300k pool's cap (review finding 5)
+          local hw_flag=""; [ "${ALLOW_HW_MISMATCH:-0}" = "1" ] && hw_flag="--allow-hw-mismatch"
+          out=$(gen_python -m analysis.guards cap-file --file "$CAP_FILE" --label "$ENGINE_LABEL" --hardware "$HW" $hw_flag 2>&1) \
+              || { echo "$out"; die "CAP_FILE $CAP_FILE is not usable for ENGINE_LABEL=$ENGINE_LABEL on this hardware"; }
+          v=$(echo "$out" | sed -n 's/^N_CAP=//p')
+          [ -n "$v" ] || die "cannot read n_cap from $CAP_FILE: $out"
+          GATE_N_CAP_YAML="\"$CAP_FILE:n_cap\""; RESOLVED_N_CAP="$v"
+          log "capped arm: gate.n_cap = $v (from $CAP_FILE, primary_label == $ENGINE_LABEL)"
         fi ;;
-      esac ;;
+      esac
+      # The E2 kill test runs only under a committed, clean, valid pre-registration whose label / lambdas / cap / references /
+      # hardware / protocol are this job's (analysis.prereg check-job); its sha256 goes into every run's meta.json
+      require_set PREREG_FILE; require_set CALIB_FILE; require_set MULTS
+      [ -f "$PREREG_FILE" ] || die "PREREG_FILE not found: $PREREG_FILE (the filled, COMMITTED configs/agentload_prereg_<date>.yaml)"
+      [ -f "$CALIB_FILE" ] || die "CALIB_FILE not found: $CALIB_FILE"
+      local pc_args=(--label "$ENGINE_LABEL" --mults "$MULTS" --calib "$CALIB_FILE" --hardware "$HW" \
+                     --duration-s "$BURST_RUN_S" --t-burst-s "$T_BURST")
+      [ -n "$RESOLVED_N_CAP" ] && pc_args+=(--n-cap "$RESOLVED_N_CAP")
+      [ "${ALLOW_HW_MISMATCH:-0}" = "1" ] && pc_args+=(--allow-hw-mismatch)
+      if [ "${PREREG_ALLOW_UNCOMMITTED:-0}" = "1" ]; then
+        pc_args+=(--allow-uncommitted)
+        log "WARNING: PREREG_ALLOW_UNCOMMITTED=1 (local smoke tests only): the verdict of these runs cannot be decisive"
+      fi
+      # the same analysis overrides the post-analysis applies (eval_from_s = HIT_EVAL_FROM_S, ANALYSIS_EXTRA): the registered rule must
+      # equal the rule that will be applied, so the check uses them too
+      out=$(gen_python -m analysis.prereg check-job "$PREREG_FILE" "${pc_args[@]}" --set "trap_v2.eval_from_s=$HIT_EVAL_FROM_S" \
+                ${ANALYSIS_EXTRA:-} 2>&1) \
+          || { echo "$out"; die "PREREG_FILE $PREREG_FILE does not authorise this E2 job"; }
+      echo "$out"
+      PREREG_SHA256=$(echo "$out" | sed -n 's/^PREREG_SHA256=//p')
+      [ -n "$PREREG_SHA256" ] || die "check-job printed no PREREG_SHA256" ;;
   esac
   if [ "${KV_TOKENS:-}" = "native" ]; then
     case "$ENGINE_LABEL" in *native*) ;; *) die "KV_TOKENS=native requires ENGINE_LABEL to contain 'native' (the analysis groups cells by label; do not mix pools)";; esac

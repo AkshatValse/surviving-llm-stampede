@@ -22,13 +22,18 @@
 # Submit from the repo root, one job per (MODE, POLICY, REFRESH) cell, e.g.
 #   sbatch --export=ALL,MODE=smoke slurm/sglang_job.sbatch
 #   sbatch --export=ALL,MODE=miss,OUTPUT_FEEDBACK=server,SEEDS="0 1 2",ENGINE_LABEL=sglang-nocache  slurm/sglang_job.sbatch
-#   Stage C (closed-population mu(n), cache ON; the n grid is split over jobs so each fits 4 h; budget: 3 runs per job):
-#   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,POLICY=fcfs,N_LIST="16 24 32" slurm/sglang_job.sbatch
+#   Stage C (closed-population mu(n), cache ON; the n grid is split over jobs so each fits 4 h; budget: <= 4 runs per job;
+#   n = 20 is on the grid because the sharp peak of mu(n) sits near n = 20-24 in the simulator):
+#   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,POLICY=fcfs,N_LIST="16 20 24 32" slurm/sglang_job.sbatch
 #   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,POLICY=fcfs,N_LIST="48 96 300" slurm/sglang_job.sbatch
 #   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,POLICY=lpm,N_LIST="48 300" slurm/sglang_job.sbatch
-#   sbatch --export=ALL,MODE=cap,OUTPUT_FEEDBACK=server,POLICY=lpm,MULTS="1.0 1.5 2.0",CALIB_FILE=results/agentload_e0_miss_summary/<ts>/calibration.json,ENGINE_LABEL=sglang-lpm slurm/sglang_job.sbatch
+#   E0b (REQUIRED: bounds the pre-registered window from above) must run under the REGISTERED cell, i.e. POLICY=fcfs REFRESH=1
+#   (label sglang-fcfs-r1); an LPM bracket says nothing about the FCFS no-burst arm:
+#   sbatch --export=ALL,MODE=cap,OUTPUT_FEEDBACK=server,POLICY=fcfs,REFRESH=1,MULTS="1.0 1.5 2.0",CALIB_FILE=results/agentload_analysis_miss/<ts>/calibration.json slurm/sglang_job.sbatch
 #   E2, one ARM per job (an arm is one 8700 s run; ARMS defaults to all three, which the wall-time check refuses in a 4 h job):
-#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,POLICY=fcfs,REFRESH=1,MULTS="1.3",SEEDS="0",ARMS=burst,CALIB_FILE=...,ENGINE_LABEL=sglang-fcfs-r1 slurm/sglang_job.sbatch
+#   (MODE=burst REFUSES to start unless PREREG_FILE is a valid, COMMITTED, clean pre-registration whose label, MULTS, n_cap,
+#   reference rates (CALIB_FILE) and hardware are this job's; its sha256 is written into every run's meta.json)
+#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,POLICY=fcfs,REFRESH=1,MULTS="1.3",SEEDS="0",ARMS=burst,CALIB_FILE=...,PREREG_FILE=configs/agentload_prereg_<date>.yaml,ENGINE_LABEL=sglang-fcfs-r1 slurm/sglang_job.sbatch
 #   sbatch --export=ALL,MODE=burst,...,ARMS=noburst,... slurm/sglang_job.sbatch
 #   sbatch --export=ALL,MODE=burst,...,ARMS=capped,CAP_FILE=results/agentload_analysis_closed/<ts>/mu_curve.json,... slurm/sglang_job.sbatch
 # (the double-quoted lists above need `--export=ALL,MODE=...` quoting that suits your shell; or `export` the vars first.)
@@ -45,9 +50,13 @@
 #  ARMS        space-separated subset of "burst noburst capped" (burst; default all three, run in that order for each mult, seed).
 #              noburst = same plan without the burst sessions; capped = burst + client-side FIFO session cap.
 #  N_CAP / CAP_FILE  (capped arm) the session cap: an integer, or the Stage-C mu_curve.json whose n_cap (argmax mu(n) of the FCFS
-#              cell) is used; one of them is REQUIRED when ARMS contains capped, validated before the engine starts
+#              cell) is used; one of them is REQUIRED when ARMS contains capped, validated before the engine starts. A CAP_FILE is
+#              refused unless its primary_label equals ENGINE_LABEL and its hardware is this job's (summarise the 300k and the
+#              native pool separately: `summarize closed --primary-label LABEL`); with the PREREG_FILE the cap must equal the registered one
 #  CLOSED_RUN_S, CLOSED_WARMUP_S  (closed) run length 2700 s and the 900 s discarded by the post-analysis
 #  CALIB_FILE  path to calibration.json from `analysis.summarize miss` (cap/burst)
+#  PREREG_FILE (burst; REQUIRED) the filled pre-registration committed BEFORE the first E2 job (analysis.prereg fill; see the plan).
+#              PREREG_ALLOW_UNCOMMITTED=1 is for the local smoke test only (the runs' verdict can then never be decisive)
 #  ENGINE_LABEL  label stored in every run's meta (cell name), e.g. sglang-fcfs-r1
 #  KV_TOKENS   KV pool cap in tokens (default 300000 to match the simulator's M); KV_TOKENS=native drops the cap (the engine's own
 #              pool, ~1M tokens: REQUIRED native-pool lambda, see the plan) and appends -native to the default ENGINE_LABEL

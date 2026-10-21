@@ -5,6 +5,13 @@ research_question: >-
   post-burst window of the short protocol?
 
 assumptions_note: >-
+  CIRCULAR AS AN OPERATING CHARACTERISTIC (review of 2026-10-21, finding 1): departures are Poisson at EXACTLY lambda_miss by
+  assumption, so P(a) below is only the Poisson noise of a criterion that is assumed to be centred on lambda_miss. The
+  simulator's own traps are not centred there: their session completion rate is 1.17 / 1.34 / 1.52 x lambda_miss at lambda =
+  1.5 / 2 / 2.5 x (young sessions have short prompts), so the real power of the session-unit criterion (a) was 38% / 0% / 0%,
+  not 0.91-0.93. The operating characteristic is now measured on the simulator's traces:
+  results/agentload_trap_sim_traces (experiments/agentload_trap_sim_traces.py), in token units. This model is kept only as the
+  Poisson noise floor of the SESSIONS estimator.
   A counting-process MODEL, not an engine measurement: arrivals Poisson(lambda), departures Poisson(lambda_miss)
   (a pessimistic, high-variance assumption: real departures come from many parallel multi-turn sessions and may be less
   bursty or burstier), backlog = arrivals - departures on 10 s bins, OLS slope on the bin values, session completions

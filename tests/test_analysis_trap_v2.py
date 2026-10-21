@@ -12,10 +12,11 @@ from analysis.trap_v2 import (cell_verdicts, config_diff, diagnose, legacy_secon
                               trap_v2_run)
 from conftest import make_raw, run_gen
 from helpers_analysis import fake_run, params, req_df
-from helpers_trap import (LAM_MISS, MULT, T_B, T_END, scenario_collapse, scenario_draining, scenario_recovered,
+from helpers_trap import (K, LAM_MISS, MULT, PROMPT, T_B, T_END, scenario_collapse, scenario_draining, scenario_recovered,
                           scenario_trapped, synth_run, write_run_dir)
 
 LAM = LAM_MISS * MULT
+TOK_REF = LAM_MISS * K * PROMPT                      # the fixture's all-miss uncached prefill tokens/s
 
 
 def rec_of(arm, scen, seed=0, p=None, **kw):
@@ -27,8 +28,10 @@ def rec_of(arm, scen, seed=0, p=None, **kw):
 def test_trapped_run():
     r, _ = rec_of("burst", scenario_trapped())
     assert r["trapped"] and r["state"] == "trapped" and not r["draining"] and not r["recovered"]
-    assert r["crit_a"] and r["crit_b"] and r["crit_a_sessions"] and r["crit_a_turns"] and r["estimators_agree"]
-    assert r["rate_primary"] == pytest.approx(LAM_MISS, rel=0.10) and abs(r["rate_rel_dev"]) < 0.15
+    assert r["crit_a"] and r["crit_b"] and r["crit_a_sessions"] and r["crit_a_turns"] and r["crit_a_tokens"] and r["estimators_agree"]
+    assert r["rate_estimator"] == "uncached_tokens" and r["rate_primary"] == r["rate_uncached_tokens"]
+    assert r["rate_primary"] == pytest.approx(TOK_REF, rel=0.10) and abs(r["rate_rel_dev"]) < 0.15
+    assert r["rate_sessions"] == pytest.approx(LAM_MISS, rel=0.10) and r["uncached_tokens_ref"] == pytest.approx(TOK_REF)
     assert r["backlog_slope"] == pytest.approx(LAM - LAM_MISS, rel=0.25)              # grows at ~ lambda - lambda_miss
     assert r["slope_threshold"] == pytest.approx(0.5 * (LAM - LAM_MISS)) and r["backlog_slope"] > r["slope_threshold"]
     assert r["backlog_end"] > 200 and r["hit_end"] < 0.1 and r["lambda_above_miss"]
@@ -40,7 +43,10 @@ def test_draining_run_is_not_trapped():
     r, _ = rec_of("burst", scenario_draining())
     assert r["draining"] and r["state"] == "draining" and not r["trapped"] and not r["recovered"]
     assert r["backlog_slope"] == pytest.approx(-0.01, abs=0.004)                      # lambda 0.06 vs service 0.07
-    assert not r["crit_a"] and r["rate_primary"] == pytest.approx(0.07, rel=0.1)       # well above lambda_miss
+    # served sessions/s is well above lambda_miss (the SESSION unit rejects it); in token units this fixture's partial-hit service
+    # (hit 0.5) happens to sit near the all-miss rate, so (a) alone cannot tell it from a trap: (b) does -- slope < 0 here
+    assert not r["crit_a_sessions"] and r["rate_sessions"] == pytest.approx(0.07, rel=0.1)
+    assert r["crit_a_tokens"] and not r["crit_b"]
     assert r["backlog_end"] > 20 and r["backlog_slope"] < r["slope_threshold"]
     # the OLD hit-rate rule would call this run trapped (hit rate 0.5 is not < 0.2, so use the hit-bad variant of the slow drain)
     bad = dict(scenario_draining(), hit_fn=lambda t: 0.05)
@@ -56,7 +62,8 @@ def test_recovered_run():
     r, _ = rec_of("burst", scenario_recovered())
     assert r["recovered"] and r["good"] and r["state"] == "recovered" and not r["trapped"]
     assert r["hit_end"] > 0.8 and r["backlog_end"] < 20 and r["backlog_end_inst"] < 20
-    assert not r["crit_a"] and r["rate_primary"] == pytest.approx(LAM, rel=0.1)       # serves what arrives
+    assert not r["crit_a"] and r["rate_sessions"] == pytest.approx(LAM, rel=0.1)      # serves what arrives
+    assert r["rate_primary"] < 0.5 * TOK_REF                                          # and prefills far fewer tokens than all-miss
 
 
 def test_noburst_collapse_is_not_good():
@@ -71,10 +78,10 @@ def test_noburst_collapse_is_not_good():
 def test_degenerate_lambda_below_lambda_miss_is_never_trapped():
     # lambda = 0.9 * lambda_miss served exactly: the bare formula (a)&(b) would accept it (rate within 15% of lambda_miss,
     # slope ~ 0 > 0.5*(lambda-lambda_miss) < 0); the explicit lambda > lambda_miss condition rejects it
-    run = synth_run(arm="noburst", mu_fn=lambda t: 0.5, hit_fn=lambda t: 0.97, lam_override=0.9 * LAM_MISS)
+    # (an all-miss state served exactly at lambda: in the token unit the prefill rate is 0.9 x the all-miss rate, inside the band)
+    run = synth_run(arm="noburst", mu_fn=lambda t: 0.9 * LAM_MISS, hit_fn=lambda t: 0.05, lam_override=0.9 * LAM_MISS)
     r = trap_v2_run(run, params())
     assert r["crit_a"] and r["crit_b"] and not r["lambda_above_miss"] and not r["trapped"]
-    assert r["recovered"]
 
 
 def test_window_too_short_is_indeterminate_but_end_state_is_still_reported():
@@ -91,20 +98,95 @@ def test_aborted_run_with_a_long_enough_window_is_evaluated_and_flagged():
     assert r["trapped"] and r["aborted"] and r["abort_reason"] == "max_inflight>4000"
 
 
-def test_estimator_choice_decides_criterion_a_and_both_are_reported():
+def test_estimator_choice_decides_criterion_a_and_all_three_are_reported():
     run = synth_run(arm="burst", **scenario_trapped())
-    # remove every last-turn completion in the window: sessions-based rate = 0, turns-based unchanged
+    # remove every last-turn completion in the window: sessions-based rate = 0; turns-based and token rates unchanged
     r = run.requests
     in_win = (r["t_complete"] >= T_B + 4500) & (r["turn"] == r["n_turns"])
     run.requests = r[~in_win].copy()
-    a = trap_v2_run(run, params())
-    b = trap_v2_run(run, params("trap_v2.rate_estimator=turns_based"))
-    assert a["rate_sessions"] == 0.0 and a["rate_turns_based"] > 0.03
-    assert not a["crit_a_sessions"] and b["crit_a_turns"] and not a["estimators_agree"]
-    assert not a["trapped"] and b["trapped"]                          # the key decides the verdict
-    assert a["rate_primary"] == a["rate_sessions"] and b["rate_primary"] == b["rate_turns_based"]
-    with pytest.raises(ValueError):
+    tok = trap_v2_run(run, params())                                    # default: uncached_tokens
+    ses = trap_v2_run(run, params("trap_v2.rate_estimator=sessions"))
+    trn = trap_v2_run(run, params("trap_v2.rate_estimator=turns_based"))
+    assert tok["rate_sessions"] == 0.0 and tok["rate_turns_based"] > 0.03 and tok["rate_uncached_tokens"] > 0.85 * TOK_REF
+    assert not tok["crit_a_sessions"] and tok["crit_a_turns"] and tok["crit_a_tokens"] and not tok["estimators_agree"]
+    assert tok["trapped"] and trn["trapped"] and not ses["trapped"]                # the key decides the verdict
+    assert tok["rate_primary"] == tok["rate_uncached_tokens"] and ses["rate_primary"] == ses["rate_sessions"]
+    assert trn["rate_primary"] == trn["rate_turns_based"]
+    with pytest.raises(ValueError, match="rate_estimator"):
         trap_v2_run(run, params("trap_v2.rate_estimator=bogus"))
+    with pytest.raises(ValueError, match="recovered_backlog_metric"):
+        trap_v2_run(run, params("trap_v2.recovered_backlog_metric=bogus"))
+
+
+def young_session_trap(session_rate_mult=1.35):
+    """A TRULY trapped run whose SESSION completion rate runs above lambda_miss because the sessions in progress are young
+    (cheap early turns): over the evaluation window, tokens/s stays at the all-miss reference while turns complete
+    ``session_rate_mult`` x faster with proportionally smaller prompts. This is what the simulator's own traps look like
+    (sessions/s 1.17 / 1.34 / 1.52 x lambda_miss at lambda = 1.5 / 2 / 2.5 x; prefill tokens/s 1.03-1.07 x)."""
+    run = synth_run(arm="burst", **scenario_trapped())
+    r = run.requests
+    t0 = T_B + 4500.0
+    keep = r[r["t_complete"] < t0].copy()
+    n = int((T_END - t0) * K * LAM_MISS * session_rate_mult)                  # turns completed in the window
+    tc = t0 + (np.arange(n) + 0.5) * (T_END - t0) / n
+    tok = PROMPT / session_rate_mult                                         # smaller prompts: same tokens/s
+    win = pd.DataFrame({"req_id": 10**7 + np.arange(n), "sid": 10**7 + np.arange(n) // K, "turn": np.arange(n) % K + 1,
+                        "n_turns": K, "t_send": tc - 1.0, "t_complete": tc, "latency_s": 1.0, "status": "ok",
+                        "prompt_tokens": tok, "prompt_tokens_client": tok, "cached_tokens": 0.0})
+    run.requests = pd.concat([keep, win], ignore_index=True)
+    return run
+
+
+def test_young_session_trap_is_seen_by_token_units_but_missed_by_session_units():
+    """Review finding 1: in a real trap the session completion rate is above lambda_miss, the prefill-token rate is not."""
+    run = young_session_trap(1.35)
+    tok = trap_v2_run(run, params())
+    ses = trap_v2_run(run, params("trap_v2.rate_estimator=sessions"))
+    trn = trap_v2_run(run, params("trap_v2.rate_estimator=turns_based"))
+    assert tok["rate_rel_dev_sessions"] == pytest.approx(0.35, abs=0.03) and tok["rate_rel_dev_turns"] == pytest.approx(0.35, abs=0.03)
+    assert tok["rate_rel_dev_tokens"] == pytest.approx(0.0, abs=0.03)
+    assert tok["crit_a_tokens"] and not tok["crit_a_sessions"] and not tok["crit_a_turns"] and not tok["estimators_agree"]
+    assert tok["trapped"] and tok["state"] == "trapped"
+    assert not ses["trapped"] and not trn["trapped"]                                 # the old unit rejects a real trap
+    # a draining run that mostly hits is NOT mistaken for a trap by the token unit: it prefills far fewer tokens than all-miss
+    d = trap_v2_run(synth_run(arm="burst", **dict(scenario_draining(), hit_fn=lambda t: 0.95)), params())
+    assert not d["crit_a_tokens"] and d["state"] == "draining" and d["rate_rel_dev_tokens"] < -0.5
+
+
+def test_token_reference_is_required_and_cached_counts_are_needed():
+    run = synth_run(arm="burst", **scenario_trapped())
+    run.meta.pop("uncached_tokens_ref_resolved")
+    with pytest.raises(ValueError, match="uncached_tokens_ref"):
+        trap_v2_run(run, params())
+    assert trap_v2_run(run, params("trap_v2.rate_estimator=sessions"))["trapped"]      # session unit needs no token reference
+    nocached = synth_run(arm="burst", **scenario_trapped())
+    nocached.requests["cached_tokens"] = np.nan
+    r = trap_v2_run(nocached, params())
+    assert np.isnan(r["rate_uncached_tokens"]) and not r["crit_a_tokens"] and not r["trapped"]
+    assert "cached_tokens" in r["state_reason"]
+
+
+def test_recovered_uses_the_outstanding_backlog_not_sessions_asleep_in_tool_time():
+    """Review finding 7: sessions in tool-time sleep (or the n_cap admitted sessions of a saturated cap) are in the system but
+    not in the simulator's 'waiting queue + gate'; 30 sleepers must not stop a healthy run from counting as recovered."""
+    run = synth_run(arm="noburst", **scenario_recovered())
+    extra = pd.DataFrame({"sid": 10**6 + np.arange(30), "arrival_s": 8000.0, "n_turns": K, "t_end": T_END, "status": "cancelled",
+                          "t_admit": 8000.0, "gate_wait_s": 0.0, "gate_censored": 0})
+    run.sessions = pd.concat([run.sessions, extra], ignore_index=True)
+    out = trap_v2_run(run, params())
+    assert out["backlog_end"] >= 30 and out["outstanding_end"] < 5 and out["recovered"] and out["recovered_backlog_metric"] == "outstanding"
+    old = trap_v2_run(run, params("trap_v2.recovered_backlog_metric=sessions"))
+    assert not old["recovered"] and old["backlog_end"] == out["backlog_end"]
+    # the other direction: a queue of ENGINE-side requests does count (a trapped run is not recovered under either metric)
+    t = trap_v2_run(synth_run(arm="burst", **scenario_trapped()), params())
+    assert t["outstanding_end"] > 100 and not t["recovered"]
+
+
+def test_gate_queue_counts_as_outstanding():
+    run = synth_run(arm="capped", **scenario_trapped())
+    assert (run.sessions["gate_wait_s"] > 0).sum() > 100
+    r = trap_v2_run(run, params())
+    assert r["outstanding_end"] > 100 and r["outstanding_end_inst"] > 100 and not r["recovered"]
 
 
 # ------------------------------------------------------------------------------------------------ primitives
@@ -131,6 +213,9 @@ def test_completion_rates_and_hits_by_hand():
     assert r["n_turns_completed"] == 300 and r["n_sessions_completed"] == 20
     assert r["sessions_per_s"] == pytest.approx(0.1) and r["turns_per_s"] == pytest.approx(1.5)
     assert r["turns_based_per_s"] == pytest.approx(1.5 / r["effective_mean_turns"]) and 14.7 < r["effective_mean_turns"] < 14.8
+    # uncached prefill tokens/s: 20 sessions x (1000 + 14 x 100 uncached) tokens over 200 s; prompt tokens/s counts everything
+    assert r["cached_reported"] and r["uncached_tokens_per_s"] == pytest.approx(20 * 2400 / 200.0)
+    assert r["prompt_tokens_per_s"] == pytest.approx(20 * 15 * 1000 / 200.0)
     h = hit_stats(run, params(), 0.0, 200.0)
     assert h["hit_frac_turns"] == pytest.approx(280 / 300) and h["hit_frac_followup"] == 1.0
     assert h["cached_frac_tokens"] == pytest.approx(280 * 900 / 300000)
@@ -264,6 +349,28 @@ def test_config_diff_ignores_only_the_keys_that_may_differ_between_arms():
     assert config_diff(a, b) == ["a.x"]
     assert config_diff({"workload": {"content_salt": 1}}, {"workload": {"content_salt": 2}}) == []
     assert config_diff({"arrivals": {"analysis_t_burst_s": 1.0}}, {"arrivals": {"analysis_t_burst_s": 2.0}}) == ["arrivals.analysis_t_burst_s"]
+    # review finding 9: only the arm and the per-run start-state record may differ under `meta`; hardware, label, notes and the
+    # pre-registration binding may not (a blanket `meta.` allowance let arms on different GPU variants through)
+    ok = ({"meta": {"arm": "burst", "start_state_verified": True, "start_state_detail": "x"}},
+          {"meta": {"arm": "capped", "start_state_verified": False, "start_state_detail": "y"}})
+    assert config_diff(*ok) == []
+    for key in ("hardware", "engine_label", "notes", "prereg_sha256", "prereg_file"):
+        assert config_diff({"meta": {key: "a"}}, {"meta": {key: "b"}}) == [f"meta.{key}"], key
+    assert config_diff({"arrivals": {"uncached_tokens_ref": 1.0}}, {"arrivals": {"uncached_tokens_ref": 2.0}}) == ["arrivals.uncached_tokens_ref"]
+
+
+def test_arms_on_different_hardware_or_with_a_different_token_reference_are_not_valid_pairs():
+    p = params()
+    good = triple(0)
+    pairs = lambda runs: [(r, run) for r, run in zip(records(runs, p), runs)]
+    hw = synth_run(arm="noburst", seed=0, **scenario_recovered())
+    hw.meta["hardware"] = "other GPU"
+    probs = pairing_problems(pairs([good[0], hw, good[2]]))
+    assert any("different hardware" in x for x in probs)
+    tr = synth_run(arm="noburst", seed=0, **scenario_recovered())
+    tr.meta["uncached_tokens_ref_resolved"] *= 1.5
+    probs = pairing_problems(pairs([good[0], tr, good[2]]))
+    assert any("uncached-token reference" in x for x in probs)
 
 
 # ------------------------------------------------------------------------------------------------ CLI on synthetic run dirs
@@ -343,7 +450,7 @@ def test_legacy_burst_cli_counts_only_the_burst_arm(tmp_path):
 
 # ------------------------------------------------------------------------------------------------ mock server, three arms
 def mock_arm_raw(arm, seed):
-    arrivals = {"rate": None, "rate_mult": 1.25, "lambda_ref": 4.0, "analysis_t_burst_s": 1.5,
+    arrivals = {"rate": None, "rate_mult": 1.25, "lambda_ref": 4.0, "uncached_tokens_ref": 1.0e6, "analysis_t_burst_s": 1.5,
                 "burst": None if arm == "noburst" else {"n": 25, "t_s": 1.5, "width_s": 0.2}}
     return make_raw(arrivals=arrivals, workload={"tool_time_mean_s": 0.15, "mean_turns": 3, "max_turns": 5},
                     run={"duration_s": 5.0, "seed": seed}, meta={"arm": arm, "engine_label": "mock-fcfs"},
@@ -379,6 +486,7 @@ def test_burst2_end_to_end_on_the_mock_server(tmp_path):
     # an uncongested mock never traps; BURST and NOBURST end in the good state. The CAPPED arm may still be draining its gate
     # queue when this 5 s toy run ends (25 burst sessions behind 4 slots): a legitimate "not yet recovered", so not asserted
     assert not runs["trapped"].any()
+    assert (runs["uncached_tokens_ref"] == 1.0e6).all() and (runs["rate_uncached_tokens"] > 0).all()      # token unit end to end
     assert runs[runs["arm"] != "capped"]["recovered"].all()
     assert (runs[runs["arm"] == "capped"]["backlog_end"] >= runs[runs["arm"] == "burst"]["backlog_end"].min()).all()
     assert not cell["meets"] and diagnose(cell).startswith("FAIL: the burst arm is not trapped")

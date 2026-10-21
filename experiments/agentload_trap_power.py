@@ -1,5 +1,6 @@
-"""Operating characteristic of the throughput-based trap criterion under a counting-process model (see
-configs/agentload_trap_power.yaml for the assumptions). Writes results/agentload_trap_power/<ts>/ with the config copy,
+"""Poisson NOISE FLOOR of the session-unit trap criterion under a counting-process model (see configs/agentload_trap_power.yaml for
+the assumptions). NOT an operating characteristic: departures are assumed to run at exactly lambda_miss, which the simulator's own
+traps do not (review of 2026-10-21, finding 1); the measured one is experiments/agentload_trap_sim_traces.py. Writes results/agentload_trap_power/<ts>/ with the config copy,
 meta.json (git state at START), power.csv.
     /opt/anaconda3/bin/python experiments/agentload_trap_power.py
 """
