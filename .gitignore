@@ -1,0 +1,13 @@
+# Claude Code personal files
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Research outputs
+results/
+logs/
+figures/out/*.png
+
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
