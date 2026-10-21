@@ -1,41 +1,26 @@
 # STATE
 
-_Last updated: 2026-10-21 ~10:45 CDT (laptop going to sleep; the Nova job keeps running)_
+_Last updated: 2026-10-21 ~15:35 CDT_
 
 ## Phase
 - **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds.
-- **Now:** Nova Stage 0, the SGLang smoke test. Attempt 4 is submitted.
+- **Now:** Stage 0 passed. Stage C is next and is awaiting approval.
 
 ## RESUME HERE
-1. **Check the smoke job.** Job **17060165** was PENDING at 10:45.
-   ```bash
-   ssh nova 'sacct -j 17060165 -X -o JobID,State,ExitCode,Start,Elapsed,NodeList,Account%22'
-   ```
-   - Log: `/work/classtmp/avalse/swapp/repo/logs/pm-sglang-17060165.out`.
-   - Run dir: `/work/classtmp/avalse/swapp/repo/results/nova_job_logs/17060165-*/`. It holds `server.log`, `probe.txt`, `flag_check.txt` and `banner.txt`.
-   - Smoke results: `/work/classtmp/avalse/swapp/repo/results/agentload_s0_smoke/<ts>/` and `agentload_analysis_windows/<ts>/`.
-2. **If it COMPLETED:**
-   - `rsync` the run dir and results back to a NEW local timestamped dir under `results/nova/`. This is read-only on the Nova side. Class storage is wiped at semester end.
-   - Go through plan §4 items a–m. Three are already verified:
-     - (a) flags exist;
-     - (e) a 49152-token context is accepted, with a warning;
-     - (f) the KV cap of 300000 tokens is honored.
-   - Still open:
-     - where `cached_tokens` appears (`probe.txt`);
-     - whether output token ids come back (`PROBE_SUMMARY.output_ids_present`), which decides `OUTPUT_FEEDBACK`;
-     - metric names (`metrics_first.txt`);
-     - whether the canary flush works;
-     - startup time and the GPU name.
-   - Then fill in the unverified items in `notes/NOVA_PLAN_prefix_meta.md` (branch `harness/prefix-meta`) and propose Stage C.
-3. **If it FAILED:**
-   - Read `server.log`.
-   - If FlashInfer's JIT still fails, resubmit the same command with `ATTN_BACKEND=triton` added to `--export`. It needs no external compiler; record the deviation from SGLang's default.
-   - Each failed attempt has cost about 1–2 GPU-minutes.
+- **Stage 0 PASSED** (job 17060165). See `notes/LOG.md`, plan §"Stage 0 result" on `harness/prefix-meta`, and local results in `results/nova/s0_smoke_17060165_pulled_20261021-152347/`.
+- **Next is Stage C**, the real closed-population μ(n). It is **awaiting Akshat's OK**.
+- Sync the Nova clone to harness 89a3c7d or later before submitting.
 
-**Exact resubmit command.** Run it on Nova from `/work/classtmp/avalse/swapp/repo`. Check `env | grep ^SBATCH_` first; it must print nothing.
+Stage C commands. Run them on Nova from `/work/classtmp/avalse/swapp/repo` after `env | grep ^SBATCH_` prints nothing:
 ```bash
-W=/work/classtmp/avalse/swapp; sbatch --time=01:30:00 --export=ALL,MODE=smoke,ENV_GEN=$W/envs/swapp,ENV_SGLANG=$W/envs/sglang,HF_HOME=$W/hf,XDG_CACHE_HOME=$W/cache,CUDA_HOME_SHIM=$W/cuda13-home,HF_REVISION=a09a35458c702b33eeacc393d103063234e8bc28 slurm/sglang_job.sbatch
+W=/work/classtmp/avalse/swapp; COMMON="ENV_GEN=$W/envs/swapp,ENV_SGLANG=$W/envs/sglang,HF_HOME=$W/hf,XDG_CACHE_HOME=$W/cache,CUDA_HOME_SHIM=$W/cuda13-home,HF_REVISION=a09a35458c702b33eeacc393d103063234e8bc28,OUTPUT_FEEDBACK=server,MODE=closed"
+sbatch --export=ALL,$COMMON,POLICY=fcfs,N_LIST="16 20 24 32" slurm/sglang_job.sbatch
+sbatch --export=ALL,$COMMON,POLICY=fcfs,N_LIST="48 96 300" slurm/sglang_job.sbatch
+sbatch --export=ALL,$COMMON,POLICY=lpm,N_LIST="48 300" slurm/sglang_job.sbatch
 ```
+- Shape: 3 jobs, each 1×A100 with a 4 h limit. Plan arithmetic is about 8.5 GPU-h.
+- Each run is 900 s of warmup plus 1800 s measured.
+- [redacted: other course; see provenance/REDACTIONS.md]
 
 ## Nova setup (done)
 - **Project root:** `/work/classtmp/avalse/swapp`, class storage. It is deleted at semester end. Never touch the sibling `hpcml-*` dirs.
@@ -51,7 +36,7 @@ W=/work/classtmp/avalse/swapp; sbatch --time=01:30:00 --export=ALL,MODE=smoke,EN
 - **Jobs so far.** All used account `f2026.coms.6250.02`; see `notes/LOG.md`.
   - 17059856: setup, OK.
   - 17060003, 17060022, 17060085: smoke attempts 1–3. Each failed at startup on a harness or toolchain issue, and each was fixed.
-  - 17060165: smoke attempt 4.
+  - 17060165: smoke attempt 4. **PASSED.**
 
 ## Branches (local only; nothing pushed)
 - `main`: notes, CLAUDE.md, LOG, MORNING.
@@ -61,7 +46,7 @@ W=/work/classtmp/avalse/swapp; sbatch --time=01:30:00 --export=ALL,MODE=smoke,EN
 
 ## Open decisions (Akshat)
 - KV pool: 300k-token cap vs. native.
-- `OUTPUT_FEEDBACK`: decided from the Stage 0 probe.
+- ~~`OUTPUT_FEEDBACK`~~: set to **server** (Stage 0 verified that token ids are returned).
 - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
 - The Codex-folder read rule in `.claude/settings.local.json`.
 

@@ -257,3 +257,37 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
   - Verified on the login node: a test `.cu` that includes FlashInfer's CCCL and cub compiles for sm_80 (COMPILE_OK). An intermediate attempt that pinned only nvcc failed with `ptxas: Unsupported .version 9.4`. torch still imports.
   - The pins are now in `setup_nova.sbatch` (bbb6a12) so a rebuild reproduces them.
 - **Smoke attempt 4, job 17060165:** submitted.
+
+## 2026-10-21 — Stage 0 SGLang smoke: PASSED (job 17060165)
+**Setup:**
+- Engine: SGLang 0.5.22, Qwen2.5-7B-Instruct at revision a09a3545…, FCFS, 300k-token KV cap, `--context-length 49152`, FlashInfer backend.
+- Hardware: one A100 80GB PCIe on nova22-gpu-1, account `f2026.coms.6250.02`.
+- Harness bbb6a12. Closed population of 32 sessions for 1800 s, synthetic output feedback (smoke auto mode).
+- Pulled read-only to `results/nova/s0_smoke_17060165_pulled_20261021-152347/`.
+
+**Result:** COMPLETED 0:0 in 32:26. Healthy after 101 s, which includes first-time FlashInfer JIT and 61 s of CUDA-graph capture.
+
+| Plan §4 item | Status | Detail |
+|---|---|---|
+| (a) flags | verified | all present |
+| (b) cached tokens | verified | `usage.prompt_tokens_details`; repeated prompt 63/64 cached |
+| (c) output token ids | verified | `choices.0.token_ids` |
+| (d) metrics | verified | 90 names |
+| (e) context > 32k | verified | up to 40,350 tokens, no errors |
+| (f) KV cap | verified | exactly 300,000 |
+| (g) prompt-token agreement | verified | 0 mismatches over 3191 requests |
+| (h) flush | verified | canary 1023 → 0 cached tokens |
+| (j) hardware | verified | A100 80GB PCIe, driver 580.178.04 |
+| (l) request fields | verified | accepted |
+| (m) node classes | open | nova22-amp-7 excluded and untested |
+| run-to-run gap | open | not yet measured |
+
+- Run counts: 236 sessions started, 204 completed, 0 failed; 3191 requests OK, 0 errors. 0 retractions.
+- KV usage: mean 0.61, peak 0.99. Queue: mean 7.4, peak 23.
+- First 1000 s window: 0.69 of follow-up turns had more than 50% of tokens cached; token hit rate 0.57.
+
+**Interpretation:** the harness and engine path work end to end, and every precondition for Stage C is met. Decision: pin `OUTPUT_FEEDBACK=server` for all SGLang cells. With 32 closed sessions the engine is memory-pressured, with partial hits. That is consistent with the simulator's μ(n) peak near n≈20–22, but it is **not** a measurement of μ(n).
+
+**GPU cost of Stage 0 so far:** about 0.55 GPU-h for the passing job, plus about 4 GPU-min across the three failed attempts.
+
+**Next:** Stage C, the closed μ(n) on the real engine. Awaiting Akshat's OK.
