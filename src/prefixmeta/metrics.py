@@ -73,6 +73,9 @@ class Recorder:
         self._busy: List[float] = []
         self._pf_tokens: List[int] = []
         self._evictions: List[int] = []                 # evicted whole sessions per window (round 4)
+        self.dyn_on = False                              # round 5: allocation modes add the two columns below to the windows
+        self._preempts: List[int] = []                  # running requests preempted / retracted per window
+        self._recompute: List[int] = []                 # prefill tokens spent at re-admissions of such requests
         self._lat: List[List[float]] = []
         self._first_wait: List[List[float]] = []
 
@@ -87,6 +90,8 @@ class Recorder:
             self._busy.append(0.0)
             self._pf_tokens.append(0)
             self._evictions.append(0)
+            self._preempts.append(0)
+            self._recompute.append(0)
             self._lat.append([])
             self._first_wait.append([])
 
@@ -135,6 +140,14 @@ class Recorder:
         """``n`` sessions' idle KV were evicted at time ``t`` (called once per admission that needed memory)."""
         if n:
             self._evictions[self._win(t)] += n
+
+    def on_preempt(self, t: float) -> None:
+        """A running request was preempted (vLLM-like) or retracted (SGLang-like) at time ``t``."""
+        self._preempts[self._win(t)] += 1
+
+    def on_readmit(self, t: float, new_tokens: int) -> None:
+        """A preempted / retracted request was re-admitted; it needs ``new_tokens`` prefill tokens (recompute)."""
+        self._recompute[self._win(t)] += new_tokens
 
     def on_admit(self, t: float, hit: bool, first_turn: bool, wait_first: float) -> None:
         k = self._win(t)
@@ -206,6 +219,9 @@ class Recorder:
                 "evictions": self._evictions[k],
                 "evictions_per_s": self._evictions[k] / self.w,
             })
+            if self.dyn_on:
+                rows[-1]["preemptions"] = self._preempts[k]
+                rows[-1]["recompute_tokens"] = self._recompute[k]
         return rows
 
     def backlog_trace(self) -> List[Tuple[float, float, float]]:

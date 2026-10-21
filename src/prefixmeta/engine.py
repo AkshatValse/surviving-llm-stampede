@@ -91,6 +91,31 @@ Round-4 eviction rules (``Mechanisms.eviction``; default ``lru`` keeps the round
   request's own session has already left the idle table, and running requests' KV is not in it, so neither is evictable.
 * ``Engine(closed=True)`` is the closed-population mode used for the thrashing curve mu(n): ``n`` sessions at t = 0, a fresh
   turn-1 session injected (from the pre-generated pool) at the instant a session completes.
+
+Round-5 allocation modes (``EngineParams.alloc_mode``; ``full_reserve`` = everything above, the default, bit-identical to round 4)
+---------------------------------------------------------------------------------------------------------------------------
+Registered in configs/prefix_meta_r5_prereg.yaml (+ amendment 1). Simulator models of the allocation rules a scout reported for
+vLLM v0.32.0 (``ondemand_preempt``) and SGLang v0.5.22 (``ratio_reserve``); NOT the engines.
+
+* KV accounting in tokens (block size 1). ``held`` = KV owned by running requests: pos for a prefilling request, ctx = prompt +
+  generated for a decoding one (the sampled token counts; a chunk that completes the prompt is charged one extra token), so the idle
+  KV after a turn is E_t = P_t + d as in rounds 1-4. Idle KV is cached and counts as FREE: it is evicted (whole sessions, configured
+  rule) only when held + idle would exceed M. A request never reserves its decode tail at admission (ondemand) or reserves it scaled by
+  the ratio (ratio_reserve).
+* Turn = exogenous events -> completions -> RUNNING LOOP (allocate the coming iteration of the running requests; shortage ->
+  preempt / retract) -> WAITING LOOP (admission pass, skipped in a turn with a preemption / retraction, due again at the next iteration
+  boundary) -> one iteration or a batched pure-decode run (capped so that the decode tokens fit, and at 1 iteration while a pass is due).
+* ``ondemand_preempt`` (vLLM-like). Admission: used + prompt-and-generated tokens (+1 if the first chunk completes the prompt) +
+  watermark <= M, ``used`` = KV held incl. this turn's allocations. Shortage: the most recently admitted running requests (any phase)
+  are preempted until the survivors' (held + demand) fit; their KV stays cached as idle KV at the MRU end, they go to the FRONT of the
+  waiting queue and keep their generated tokens; re-admission hits min(surviving KV, num_tokens - 1).
+* ``ratio_reserve`` (SGLang-like). Admission (strict): held + commit + ratio * sum(remaining decode tokens) + prompt-and-generated +
+  remaining decode budget < M, commit = extend still to prefill + (extend + max_new) of this pass's admissions. Decode OOM (one token
+  per decode request does not fit): retract decode requests, fewest outputs first (ties longest prompt), keep one, evict 20 x remaining
+  idle tokens per victim, set ratio = min(1, (sum outputs + 20 n) / (d n + 1)); the prompt stays cached, outputs are freed, the victim
+  goes to the TAIL of the queue. The ratio decays by (init - min) / 600 per decode iteration without retraction, resets when idle.
+* Metrics: hit rate / admissions / waits are those of the FIRST admission of a turn; re-admissions are counted separately
+  (n_readmit, recompute_tokens). Only fcfs / lpm ordering, no TTL / PEEK protection.
 """
 from __future__ import annotations
 
@@ -111,6 +136,30 @@ from .workload import SessionSpecs, WorkloadParams
 
 INF = math.inf
 
+FULL_RESERVE = "full_reserve"
+ONDEMAND_PREEMPT = "ondemand_preempt"
+RATIO_RESERVE = "ratio_reserve"
+ALLOC_MODES = (FULL_RESERVE, ONDEMAND_PREEMPT, RATIO_RESERVE)
+
+
+def ondemand_admit_ok(held: float, total_tokens: int, watermark_tokens: int, M: float) -> bool:
+    """vLLM-like waiting-loop test: the whole sequence (prompt + generated so far; never max_tokens) plus the watermark must fit next
+    to the KV currently held by running requests (idle cached KV counts as free)."""
+    return held + total_tokens + watermark_tokens <= M
+
+
+def ratio_admit_ok(held: float, commit: float, offset: float, total_tokens: int, dec_budget: int, M: float, n_running: int) -> bool:
+    """SGLang-like PrefillAdder test, strict: held + commit + offset + (prompt + generated) + min(max_new - generated, clip) < M.
+    ``held`` includes the locked hit prefixes of earlier admissions of the pass; ``commit`` is the unscaled (extend + max_new) of earlier
+    admissions of the pass plus the extend still to be allocated for in-progress prefills; ``offset`` is ratio x remaining decode tokens
+    of the decode requests. Guard: if nothing is running, a request whose prompt + decode budget fits M alone is admitted."""
+    return held + commit + offset + total_tokens + dec_budget < M or (n_running == 0 and total_tokens + dec_budget <= M)
+
+
+def retraction_ratio(sum_generated: int, n_kept: int, max_new: int, retract_decode_steps: int) -> float:
+    """New ratio after a retraction: min(1, (sum len(output_ids) + steps * n) / (sum max_new + 1)) over the KEPT requests."""
+    return min(1.0, (sum_generated + retract_decode_steps * n_kept) / (max_new * n_kept + 1))
+
 
 @dataclass(frozen=True)
 class EngineParams:
@@ -129,19 +178,31 @@ class EngineParams:
     admission_limited_by_prefill_budget: bool
     batch_decode_iterations: bool
     free_kv_on_session_end: bool = True
+    # ---- round 5: allocation mode (default full_reserve = rounds 1-4, bit-identical) -------------------------------------
+    alloc_mode: str = "full_reserve"          # full_reserve | ondemand_preempt | ratio_reserve (see the module docstring)
+    watermark_frac: float = 0.0               # ondemand_preempt: vLLM watermark (fraction of M), only while something runs
+    sched_conservativeness: float = 1.0       # ratio_reserve (SGLang-like) constants, scout-reported, unverified
+    init_new_token_ratio: float = 0.7
+    min_new_token_ratio_factor: float = 0.14
+    new_token_ratio_decay_steps: int = 600
+    retract_decode_steps: int = 20
+    clip_max_new_tokens_estimation: int = 4096
+    retract_evict_headroom: bool = True       # ratio_reserve: evict retract_decode_steps x remaining idle tokens per victim
 
     @classmethod
     def from_dict(cls, d: dict) -> "EngineParams":
         p = cls(**d)
         if p.prefill_attn_ctx not in ("end", "mid"):
             raise ValueError("prefill_attn_ctx must be 'end' or 'mid'")
+        if p.alloc_mode not in ALLOC_MODES:
+            raise ValueError(f"alloc_mode must be one of {ALLOC_MODES}, got {p.alloc_mode!r}")
         return p
 
 
 class Request:
     """One turn of one session, from queue entry to last decode token."""
     __slots__ = ("rid", "sid", "turn", "qtime", "ready", "prompt", "end", "alive", "mark",
-                 "pos", "rem", "offs", "done_g", "hit")
+                 "pos", "rem", "offs", "done_g", "hit", "gen", "g_enter", "gone", "resumed")
 
     def __init__(self, rid: int, sid: int, turn: int, qtime: float, ready: float, prompt: int, end: int):
         self.rid = rid
@@ -158,6 +219,13 @@ class Request:
         self.offs = 0            # decode: ctx_i = offs + G
         self.done_g = 0          # decode: finishes when G >= done_g
         self.hit = False
+        # round 5 (allocation modes; inert in full_reserve): tokens generated so far (as of ``g_enter`` for a decoding request:
+        # gen_now = gen + G - g_enter), global iteration at which it entered decode, True once it left the running set by
+        # preemption / retraction (stale heap entries), True for a re-queued preempted / retracted request
+        self.gen = 0
+        self.g_enter = 0
+        self.gone = False
+        self.resumed = False
 
 
 class Engine:
@@ -288,7 +356,14 @@ class Engine:
         self.end_time = 0.0
         self.max_running = 0
         self.max_held_tokens = 0           # only tracked when debug
-        self.trace: Optional[list] = None  # set to [] to record ("A", sid, turn, hit, t) / ("D", sid, turn, t)
+        self.processed_prefill_tokens = 0  # prefill tokens processed by iterations (all modes)
+        self.trace: Optional[list] = None  # set to [] to record ("A", sid, turn, hit, t) / ("D", sid, turn, t); allocation modes also ("P", sid, turn, kv_kept, t) preemption / retraction and ("R", sid, turn, hit_tokens, new_tokens, t) re-admission
+
+        # round 5: allocation modes. Everything below is inert (never read) when alloc_mode == full_reserve.
+        self._alloc = params.alloc_mode
+        self._dyn = self._alloc != FULL_RESERVE
+        if self._dyn:
+            self._init_dyn()
 
     # ------------------------------------------------------------------ view for policies
     @property
@@ -680,7 +755,11 @@ class Engine:
             self.rec.set_gate(t, len(self._gate))
 
     def _finish_request(self, req: Request, t: float) -> None:
-        self.reserved -= req.end
+        if self._dyn:
+            self.held -= req.end                    # ctx at completion == end (see the KV accounting note)
+            del self._run_order[req.rid]
+        else:
+            self.reserved -= req.end
         self.n_turns_done += 1
         self.rec.on_turn_done(t, t - req.ready)
         sid = req.sid
@@ -834,25 +913,37 @@ class Engine:
         G = self.G
         while heap and heap[0][0] <= G:
             _, _, req = heapq.heappop(heap)
+            if req.gone:
+                continue                            # preempted / retracted while decoding (round 5); already removed from n_D
             self.n_D -= 1
             self.sum_off -= req.offs
+            if self._dyn:
+                self._sum_gc -= req.gen - req.g_enter
             self._pending_done.append(req)
 
-    def _iterate_with_prefill(self) -> None:
+    def _iterate_with_prefill(self, planned: Optional[List[Tuple[Request, int]]] = None) -> None:
+        """One iteration with prefill chunks. ``planned`` (round 5, allocation modes) is the chunk list that the memory model
+        has already allocated; ``None`` (full_reserve) hands the chunk budget out FIFO as in rounds 1-4."""
         p = self.p
-        budget = p.prefill_chunk_budget
         chunks: List[Tuple[Request, int]] = []
         ntok = 0
         attn = 0.0
         mid = p.prefill_attn_ctx == "mid"
-        for req in self.prefill:
-            if budget <= 0:
-                break
-            c = req.rem if req.rem < budget else budget
-            chunks.append((req, c))
-            budget -= c
-            ntok += c
-            attn += c * ((req.pos + 0.5 * c) if mid else (req.pos + c))
+        if planned is None:
+            budget = p.prefill_chunk_budget
+            for req in self.prefill:
+                if budget <= 0:
+                    break
+                c = req.rem if req.rem < budget else budget
+                chunks.append((req, c))
+                budget -= c
+                ntok += c
+                attn += c * ((req.pos + 0.5 * c) if mid else (req.pos + c))
+        else:
+            for req, c in planned:
+                chunks.append((req, c))
+                ntok += c
+                attn += c * ((req.pos + 0.5 * c) if mid else (req.pos + c))
         n_D = self.n_D
         sumctx = self.sum_off + n_D * self.G
         dec_tok = ntok + n_D
@@ -865,9 +956,12 @@ class Engine:
         self.busy_s += tau
         self.rec.add_busy(t0, self.now)
         self.rec.add_prefill_tokens(self.now, ntok)
+        self.processed_prefill_tokens += ntok
         self.G += 1
         self.n_iterations += 1
         self.n_steps += 1
+        if self._dyn and n_D:
+            self._decay_ratio(1)
         self._collect_done_decodes()      # decode members of this iteration (before new members join)
         d = self.wl.decode_tokens
         G = self.G
@@ -883,20 +977,30 @@ class Engine:
                 if req.rem > 0:
                     keep.append(req)
                     continue
-                # prefill done in this iteration: first token emitted now
-                if d <= 1:
+                # prefill done in this iteration: first token (number gen + 1) emitted now; gen == 0 in full_reserve
+                rem_dec = d - 1 - req.gen
+                if rem_dec <= 0:
                     self._pending_done.append(req)
                 else:
                     req.offs = (req.pos + 1) - G
-                    req.done_g = G + d - 1
+                    req.done_g = G + rem_dec
                     self.sum_off += req.offs
                     self.n_D += 1
+                    if self._dyn:
+                        req.gen += 1
+                        req.g_enter = G
+                        self._sum_gc += req.gen - req.g_enter
                     heapq.heappush(self._done_heap, (req.done_g, req.rid, req))
             self.prefill = keep
         self.dirty = True       # prefill budget / running slots changed
 
-    def _iterate_decode(self, t_cap: float) -> None:
+    def _iterate_decode(self, t_cap: float, n_cap: Optional[int] = None) -> None:
+        """A run of pure-decode iterations. ``n_cap`` (round 5): at most this many iterations (memory for the decode tokens)."""
         p = self.p
+        if self._dyn:
+            h = self._done_heap
+            while h and h[0][2].gone:                  # entries of preempted / retracted requests
+                heapq.heappop(h)
         n_D = self.n_D
         c0 = p.iter_fixed_s + max(p.iter_floor_s, p.per_token_s * n_D)
         a = p.decode_attn_s / p.attn_ctx_norm
@@ -920,6 +1024,8 @@ class Engine:
                 while n_ev * tau0 + 0.5 * b * n_ev * (n_ev - 1) < delta:
                     n_ev += 1
                 n = n_ev if n_ev < n_done else n_done
+        if n_cap is not None and n > n_cap:
+            n = n_cap
         S = n * tau0 + 0.5 * b * n * (n - 1)
         t0 = self.now
         self.now = t0 + S
@@ -928,10 +1034,15 @@ class Engine:
         self.G += n
         self.n_iterations += n
         self.n_steps += 1
+        if self._dyn:
+            self._after_decode_run(n, n_D)
         self._collect_done_decodes()
 
     # ------------------------------------------------------------------ main loop
     def run(self, horizon: float) -> None:
+        if self._dyn:
+            self._run_dyn(horizon)
+            return
         always_pass = self.policy.time_dependent
         mem_on = self.rec.mem_on
         while self.now < horizon and not self.stopped:
@@ -980,12 +1091,465 @@ class Engine:
         self.rec.set_queue(self.end_time, self.n_wait)
         self.rec.set_gate(self.end_time, len(self._gate))
 
+    # ------------------------------------------------------------------ round 5: dynamic allocation modes
+    # Everything from here to ``introspection`` is used only when ``alloc_mode != full_reserve``.
+    def _init_dyn(self) -> None:
+        p = self.p
+        if self.mech.any_protection:
+            raise ValueError(f"alloc_mode={self._alloc} does not support TTL / PEEK protection")
+        if self.policy.name not in ("fcfs", "lpm"):
+            raise ValueError(f"alloc_mode={self._alloc} supports the ordering policies fcfs and lpm only, got {self.policy.name!r}")
+        if self.wl.decode_tokens < 1:
+            raise ValueError("alloc modes need decode_tokens >= 1")
+        if self._alloc == RATIO_RESERVE and self.wl.decode_tokens > p.clip_max_new_tokens_estimation:
+            raise ValueError("ratio_reserve: decode_tokens above clip_max_new_tokens_estimation is not modelled")
+        if p.new_token_ratio_decay_steps <= 0 or not (0.0 < p.init_new_token_ratio * p.sched_conservativeness):
+            raise ValueError("bad new_token_ratio parameters")
+        self.held = 0                                   # KV tokens owned by running requests (see the module docstring)
+        self._run_order: "OrderedDict[int, Request]" = OrderedDict()   # rid -> running request, in ADMISSION order
+        self._sum_gc = 0                                # sum over decode requests of (gen - g_enter); sum gen_now = _sum_gc + n_D * G
+        self._step_chunks: List[Tuple[Request, int]] = []   # prefill chunks (already allocated) of the coming iteration
+        self._step_ntok = 0
+        self._chunk_left = 0
+        init = min(p.init_new_token_ratio * p.sched_conservativeness, 1.0)
+        self._ratio_init = init
+        self._ratio_min = init * p.min_new_token_ratio_factor
+        self._ratio_decay = (init - self._ratio_min) / p.new_token_ratio_decay_steps
+        self.new_token_ratio = init
+        self._retracted_turn = False
+        self._stall_guard = 0
+        # counters
+        self.n_preempt = 0                              # running requests thrown back to the waiting queue (preempted / retracted)
+        self.n_fallback_retract = 0                     # ratio_reserve: prefilling request retracted (not an SGLang path)
+        self.n_readmit = 0
+        self.n_readmit_with_kv = 0                      # re-admissions that found surviving KV
+        self.recompute_tokens = 0                       # prefill tokens spent at re-admissions
+        self.lost_prefill_tokens = 0                    # prefill tokens admitted but never processed (victim preempted mid-prefill)
+        self.admitted_prefill_tokens = 0                # sum of `new` over all admissions (first + re-admissions)
+        self.ratio_min_seen = init
+
+    def _make_room(self) -> None:
+        """After an allocation: evict idle KV (configured eviction rule) until held + idle <= M; track the peak."""
+        deficit = self.held + self.idle_sum - self.M
+        if deficit > 0:
+            n0 = self.n_evictions
+            self._evict(deficit)
+            self.rec.on_evict(self.now, self.n_evictions - n0)
+        used = self.held + self.idle_sum
+        if used > self.max_resident:
+            self.max_resident = used
+
+    def _decay_ratio(self, k: int) -> None:
+        """``k`` decode steps without retraction: ratio = max(ratio - k * decay, min_ratio) (ratio_reserve only)."""
+        if self._alloc != RATIO_RESERVE or self._retracted_turn:
+            return
+        r = self.new_token_ratio - k * self._ratio_decay
+        self.new_token_ratio = r if r > self._ratio_min else self._ratio_min
+        if self.new_token_ratio < self.ratio_min_seen:
+            self.ratio_min_seen = self.new_token_ratio
+
+    def _after_decode_run(self, n: int, n_D: int) -> None:
+        """Bookkeeping of a batched pure-decode run of ``n`` iterations with ``n_D`` decode requests: the first iteration's
+        tokens were allocated in the running loop, the remaining n - 1 are allocated now (the run was capped so they fit)."""
+        if n > 1:
+            self.held += (n - 1) * n_D
+            self._make_room()
+        self._decay_ratio(n)
+
+    # ---- leaving the running set
+    def _leave_running(self, v: Request) -> int:
+        """Remove ``v`` from the running structures and return the KV tokens it owns. Does not touch held / idle."""
+        if v.rem > 0:                                   # prefilling
+            self.prefill.remove(v)
+            kv = v.pos
+            self.lost_prefill_tokens += v.rem
+        else:                                           # decoding: ctx = offs + G, generated so far = gen + G - g_enter
+            G = self.G
+            kv = v.offs + G
+            self.n_D -= 1
+            self.sum_off -= v.offs
+            self._sum_gc -= v.gen - v.g_enter
+            v.gen += G - v.g_enter
+            v.g_enter = G
+        v.gone = True
+        self._run_order.pop(v.rid, None)
+        return kv
+
+    def _requeue(self, v: Request, kv_idle: int, front: bool) -> None:
+        """Put a preempted / retracted request back into the waiting queue (a NEW Request object: the old one is a dead slot of
+        the queue list). ``kv_idle`` tokens of its KV stay cached as idle KV of its session at the MRU end."""
+        sid = v.sid
+        if self.p.cache_enabled and kv_idle > 0:
+            if sid in self.idle:
+                raise AssertionError(f"session {sid} already has idle KV")
+            self.idle[sid] = kv_idle
+            self.idle_sum += kv_idle
+        new = Request(self._rid, sid, v.turn, v.qtime, v.ready, v.prompt, v.end)
+        self._rid += 1
+        new.gen = v.gen
+        new.resumed = True
+        q = self._q
+        if front:
+            if self._qh > 0:
+                self._qh -= 1
+                q[self._qh] = new
+            else:
+                q.insert(0, new)
+        else:
+            q.append(new)
+        self._waiting[sid] = new
+        self.n_wait += 1
+        prev_max = self.max_queue
+        if self.n_wait > self.max_queue:
+            self.max_queue = self.n_wait
+        self.rec.set_queue(self.now, self.n_wait)
+        self.dirty = True
+        self.n_preempt += 1
+        self.rec.on_preempt(self.now)
+        if self.trace is not None:
+            self.trace.append(("P", sid, v.turn, kv_idle, self.now))
+        if self.stop_q is not None or self.stop_backlog is not None:
+            self._check_stop(self.now, prev_max, len(self._gate))
+
+    # ---- chunk planning
+    def _plan_chunks(self) -> Tuple[List[Tuple[Request, int]], int, int]:
+        """FIFO hand-out of ``prefill_chunk_budget`` over the prefilling requests: (chunks, tokens, #chunks completing a prompt)."""
+        budget = self.p.prefill_chunk_budget
+        chunks: List[Tuple[Request, int]] = []
+        ntok = 0
+        comp = 0
+        for req in self.prefill:
+            if budget <= 0:
+                break
+            c = req.rem if req.rem < budget else budget
+            chunks.append((req, c))
+            budget -= c
+            ntok += c
+            if c == req.rem:
+                comp += 1
+        return chunks, ntok, comp
+
+    # ---- running loop
+    def _running_step_ondemand(self) -> bool:
+        """vLLM-like running loop. Allocates the coming iteration for the requests that are already running (decode: one token
+        each; prefill: the FIFO chunks, +1 token for a chunk that completes its prompt). If that does not fit, preempt the most
+        recently admitted running requests (prefilling or decoding), one at a time, until the survivors' (held + demand) fit.
+        Returns True iff something was preempted."""
+        M = self.M
+        chunks, ntok, comp = self._plan_chunks()
+        demand = ntok + comp + self.n_D
+        preempted = False
+        if self.held + demand > M:
+            preempted = True
+            total = self.held + demand
+            chunk_of = {r.rid: c for r, c in chunks}
+            G = self.G
+            while total > M:
+                if not self._run_order:
+                    raise AssertionError("memory too small for a single running request")
+                rid, v = self._run_order.popitem(last=True)          # newest admission
+                if v.rem > 0:
+                    c = chunk_of.get(rid, 0)
+                    need = c + (1 if (c > 0 and c == v.rem) else 0)
+                    h = v.pos
+                else:
+                    need = 1
+                    h = v.offs + G
+                total -= h + need
+                kv = self._leave_running(v)
+                assert kv == h
+                self.held -= kv
+                self._requeue(v, kv, front=True)
+            chunks = [(r, c) for (r, c) in chunks if not r.gone]
+            ntok = sum(c for _, c in chunks)
+            comp = sum(1 for r, c in chunks if c == r.rem)
+            demand = ntok + comp + self.n_D
+            assert self.held + demand == total, "preemption bookkeeping"
+        self.held += demand
+        self._make_room()
+        self._step_chunks = chunks
+        self._step_ntok = ntok
+        return preempted
+
+    def _pick_retract_victim(self) -> Request:
+        """SGLang retract_decode order: sort key (len(output_ids), -len(origin_input_ids)) descending, pop from the end =
+        fewest outputs first, ties longest prompt; remaining ties: newest request."""
+        G = self.G
+        best: Optional[Request] = None
+        bk = None
+        for (_, rid, r) in self._done_heap:
+            if r.gone:
+                continue
+            key = (r.gen + G - r.g_enter, -r.prompt, -rid)
+            if bk is None or key < bk:
+                best, bk = r, key
+        assert best is not None
+        return best
+
+    def _newest_prefilling(self) -> Optional[Request]:
+        for v in reversed(self._run_order.values()):
+            if v.rem > 0:
+                return v
+        return None
+
+    def _running_step_ratio(self) -> bool:
+        """SGLang-like decode-OOM check. One new token per decode request must fit (idle cache counts as evictable). If not,
+        retract decode requests (fewest outputs first) until it does, keeping at least one, and re-estimate the ratio.
+        Returns True iff something was retracted."""
+        M = self.M
+        p = self.p
+        retracted = False
+        if self.held + self.n_D > M:
+            retracted = True
+            R = p.retract_decode_steps
+            while self.held + self.n_D > M and self.n_D > 1:
+                v = self._pick_retract_victim()
+                kv = self._leave_running(v)
+                self.held -= kv
+                self._requeue(v, v.prompt, front=False)          # prompt stays cached; outputs are freed
+                if p.retract_evict_headroom and self.idle_sum > 0:
+                    need = min(R * self.n_D, self.idle_sum)
+                    if need > 0:
+                        n0 = self.n_evictions
+                        self._evict(need)
+                        self.rec.on_evict(self.now, self.n_evictions - n0)
+            while self.held + self.n_D > M:
+                v = self._newest_prefilling()
+                if v is None:
+                    raise AssertionError("memory too small for a single decoding request")
+                kv = self._leave_running(v)
+                self.held -= kv
+                self._requeue(v, kv, front=False)
+                self.n_fallback_retract += 1
+            n = self.n_D
+            d = self.wl.decode_tokens
+            sum_gen = self._sum_gc + n * self.G
+            self.new_token_ratio = retraction_ratio(sum_gen, n, d, R)
+            if self.new_token_ratio < self.ratio_min_seen:
+                self.ratio_min_seen = self.new_token_ratio
+        self._retracted_turn = retracted
+        self.held += self.n_D
+        self._make_room()
+        return retracted
+
+    def _plan_chunks_ratio(self) -> None:
+        """ratio_reserve: hand the chunk budget out FIFO but only up to the free memory (a stalled prefill waits)."""
+        free = self.M - self.held
+        if free != INF:
+            free = int(free)
+        budget = self.p.prefill_chunk_budget
+        chunks: List[Tuple[Request, int]] = []
+        ntok = 0
+        alloc = 0
+        for req in self.prefill:
+            if budget <= 0 or free <= 0:
+                break
+            c = req.rem if req.rem < budget else budget
+            if c > free:
+                c = free
+            need = c + (1 if c == req.rem else 0)
+            if need > free:
+                c -= 1                       # no room for the first sampled token: finish the prompt in the next iteration
+                need = c
+                if c <= 0:
+                    break
+            chunks.append((req, c))
+            budget -= c
+            free -= need
+            ntok += c
+            alloc += need
+        self.held += alloc
+        self._make_room()
+        self._step_chunks = chunks
+        self._step_ntok = ntok
+
+    # ---- waiting loop
+    def _admit_dyn(self, req: Request, now: float) -> int:
+        """Admit ``req`` (the memory test was passed). Moves its surviving KV from the idle table to held (the 'lock'), and
+        (ondemand_preempt) allocates its first chunk. Returns the prefill tokens it still needs."""
+        sid = req.sid
+        total = req.prompt + req.gen
+        kv = self.idle.pop(sid, None)
+        if kv is not None:
+            self.idle_sum -= kv
+            if not req.resumed and kv != req.prompt - self.wl.new_prompt_tokens:
+                raise AssertionError(f"hit prefix {kv} inconsistent with prompt {req.prompt}")
+            hit = kv if kv < total else total - 1             # min(kv, num_tokens - 1)
+        else:
+            hit = 0
+        if not req.resumed:
+            req.hit = kv is not None
+        new = total - hit
+        req.pos = hit
+        req.rem = new
+        self.held += hit
+        req.alive = False
+        del self._waiting[sid]
+        self.n_wait -= 1
+        self.rec.set_queue(now, self.n_wait)
+        self.prefill.append(req)
+        self._run_order[req.rid] = req
+        if self._alloc == ONDEMAND_PREEMPT:
+            c0 = new if new < self._chunk_left else self._chunk_left
+            if c0 > 0:
+                self.held += c0 + (1 if c0 == new else 0)
+                self._chunk_left -= c0
+                self._step_ntok += c0
+                self._step_chunks.append((req, c0))
+        self._make_room()
+        self.admitted_prefill_tokens += new
+        if req.resumed:
+            self.n_readmit += 1
+            if hit > 0:
+                self.n_readmit_with_kv += 1
+            self.recompute_tokens += new
+            self.rec.on_readmit(now, new)
+            if self.trace is not None:
+                self.trace.append(("R", sid, req.turn, hit, new, now))
+        else:
+            self.n_admitted += 1
+            if req.hit:
+                self.n_hits += 1
+            first = req.turn == 1
+            if self.trace is not None:
+                self.trace.append(("A", sid, req.turn, req.hit, now))
+            self.rec.on_admit(now, req.hit, first, (now - self._arrived_t[sid]) if first else 0.0)
+        return new
+
+    def _schedule_pass_dyn(self) -> None:
+        self.dirty = False
+        if self.n_wait == 0:
+            return
+        self.n_passes += 1
+        self.pass_id += 1
+        self._first_blocked = None
+        p = self.p
+        od = self._alloc == ONDEMAND_PREEMPT
+        n_run = self.n_D + len(self.prefill)
+        max_seqs = p.max_running_seqs
+        limited = p.admission_limited_by_prefill_budget
+        pending = 0
+        for r in self.prefill:
+            pending += r.rem
+        budget_left = p.prefill_chunk_budget - pending if limited else INF
+        M = self.M
+        skip = p.skip_ahead
+        d = self.wl.decode_tokens
+        if od:
+            wm = int(p.watermark_frac * M) if (p.watermark_frac > 0.0 and M != INF) else 0
+            self._chunk_left = p.prefill_chunk_budget - self._step_ntok
+        else:
+            # PrefillAdder: total_offset = ratio * remaining decode tokens of the running (decode) requests + the extend still
+            # to be allocated for in-progress prefills (registered amendment 1) + (extend + max_new) of this pass's admissions
+            n_D = self.n_D
+            sum_gen = self._sum_gc + n_D * self.G
+            offset = self.new_token_ratio * (n_D * d - sum_gen)
+            commit = pending
+        for req in self.policy.candidates(self, self.now):
+            if n_run >= max_seqs or (limited and budget_left <= 0):
+                break
+            total = req.prompt + req.gen
+            if od:
+                # a first chunk that completes the prompt is charged one more token (the sampled token; module docstring), so the
+                # test must cover it or the allocation right after the test could overflow M (registered amendment 2)
+                kv0 = self.idle.get(req.sid)
+                hit0 = 0 if kv0 is None else (kv0 if kv0 < total else total - 1)
+                new0 = total - hit0
+                c0 = new0 if new0 < self._chunk_left else self._chunk_left
+                extra = 1 if (c0 > 0 and c0 == new0) else 0
+                fits = ondemand_admit_ok(self.held, total + extra, wm if n_run > 0 else 0, M)
+            else:
+                dec = d - req.gen
+                fits = ratio_admit_ok(self.held, commit, offset, total, dec, M, n_run)
+            if not fits:
+                if self._first_blocked is None:
+                    self._first_blocked = req
+                if skip:
+                    continue
+                break
+            new = self._admit_dyn(req, self.now)
+            if not od:
+                commit += new + dec
+            n_run += 1
+            if limited:
+                budget_left -= new
+        if n_run > self.max_running:
+            self.max_running = n_run
+        self._compact_queue()
+
+    # ---- main loop (allocation modes)
+    def _run_dyn(self, horizon: float) -> None:
+        always_pass = self.policy.time_dependent
+        mem_on = self.rec.mem_on
+        od = self._alloc == ONDEMAND_PREEMPT
+        M = self.M
+        while self.now < horizon and not self.stopped:
+            self._process_exogenous(self.now)
+            if self.stopped:
+                break
+            self._process_done()
+            if self.debug:
+                self.check_invariants()
+            changed = self._running_step_ondemand() if od else self._running_step_ratio()
+            if (self.dirty or (always_pass and self.n_wait > 0)) and not changed and not self.stopped:
+                self._schedule_pass_dyn()
+            if not od:
+                self._plan_chunks_ratio()
+            if mem_on:
+                self.rec.set_mem(self.now, self.held, self.idle_sum, 0)
+            if self.stop_hit is not None:
+                self._check_hit_stop()
+                if self.stopped:
+                    break
+            if self.n_D == 0 and not self.prefill:
+                if self.n_wait > 0:
+                    raise RuntimeError("engine idle with waiting requests and no admissible request (deadlock)")
+                if self._alloc == RATIO_RESERVE:
+                    self.new_token_ratio = self._ratio_init          # scheduler fully idle: tracker.reset()
+                nxt = self._next_exogenous_time()
+                if nxt >= horizon:
+                    self.now = horizon
+                    break
+                self.now = nxt
+                continue
+            if self._step_chunks:
+                self._stall_guard = 0
+                self._iterate_with_prefill(self._step_chunks)
+            elif self.n_D > 0:
+                self._stall_guard = 0
+                nxt = self._next_exogenous_time()
+                if always_pass and self.n_wait > 0:
+                    nt = self.policy.next_time_event(self, self.now)
+                    if nt < nxt:
+                        nxt = nt
+                if self.dirty:
+                    n_cap = 1               # the admission pass was skipped (preemption / retraction): it is due at the next boundary
+                else:
+                    n_cap = None if M == INF else 1 + int((M - self.held) // self.n_D)
+                self._iterate_decode(nxt if nxt < horizon else horizon, n_cap)
+            else:
+                # prefilling requests only, none could be allocated (cannot happen with the registered admission test)
+                self._stall_guard += 1
+                if self._stall_guard > 1000:
+                    raise RuntimeError("prefill stall without progress")
+                v = self._newest_prefilling()
+                kv = self._leave_running(v)
+                self.held -= kv
+                self._requeue(v, kv, front=False)
+                self.n_fallback_retract += 1
+        if self.stopped and self.stop_reason == "hit":
+            self.end_time = self.now
+        else:
+            self.end_time = self.stop_time if (self.stopped and self.stop_time is not None) else horizon
+        self.rec.set_queue(self.end_time, self.n_wait)
+        self.rec.set_gate(self.end_time, len(self._gate))
+
     # ------------------------------------------------------------------ introspection
     def in_flight(self) -> int:
         return self.in_system + len(self._gate)
 
     def stats(self) -> Dict[str, float]:
-        return {
+        out = {
             "n_arrived": self.n_arrived,
             "n_sessions_done": self.n_sessions_done,
             "n_in_flight": self.in_flight(),
@@ -1023,9 +1587,27 @@ class Engine:
             "n_eager_unpins": self.n_eager_unpins,
             "n_soft_evictions": self.n_soft_evictions,
         }
+        if self._dyn:
+            out.update({
+                "alloc_mode": self._alloc,
+                "n_preempt": self.n_preempt,
+                "n_readmit": self.n_readmit,
+                "n_readmit_with_kv": self.n_readmit_with_kv,
+                "recompute_tokens": self.recompute_tokens,
+                "lost_prefill_tokens": self.lost_prefill_tokens,
+                "admitted_prefill_tokens": self.admitted_prefill_tokens,
+                "processed_prefill_tokens": self.processed_prefill_tokens,
+                "n_fallback_retract": self.n_fallback_retract,
+                "ratio_final": self.new_token_ratio if self._alloc == RATIO_RESERVE else float("nan"),
+                "ratio_min_seen": self.ratio_min_seen if self._alloc == RATIO_RESERVE else float("nan"),
+            })
+        return out
 
     def check_invariants(self) -> None:
         """Debug-only structural checks (O(running + idle))."""
+        if self._dyn:
+            self._check_invariants_dyn()
+            return
         M = self.M
         run_reqs = list(self.prefill) + [r for (_, _, r) in self._done_heap]
         assert self.reserved == sum(r.end for r in run_reqs) + sum(r.end for r in self._pending_done), "reserved mismatch"
@@ -1047,6 +1629,47 @@ class Engine:
             assert self.in_system <= self.session_cap, "session cap exceeded"
         assert self.entries_over_cap == 0, "a session entered the system while at/over the cap"
         self._check_protection()
+        self._check_locations()
+
+    def _check_invariants_dyn(self) -> None:
+        """Allocation modes: held is recomputed from the request states; memory, running set, waiting set, locations."""
+        M = self.M
+        G = self.G
+        live = [r for (_, _, r) in self._done_heap if not r.gone]
+        run = list(self.prefill) + live + list(self._pending_done)
+        held = (sum(r.pos for r in self.prefill) + sum(r.offs + G for r in live)
+                + sum(r.end for r in self._pending_done))
+        assert self.held == held, f"held mismatch: {self.held} != {held}"
+        assert self.idle_sum == sum(self.idle.values()), "idle_sum mismatch"
+        assert self.held + self.idle_sum <= M + 1e-9, f"memory exceeded: {self.held}+{self.idle_sum}>{M}"
+        assert self.max_resident <= M + 1e-9, "peak memory exceeded"
+        assert set(self._run_order) == {r.rid for r in run}, "running-order table out of sync"
+        assert len(run) <= self.p.max_running_seqs, "running cap exceeded"
+        assert self.n_D == len(live), "n_D mismatch"
+        assert self.sum_off == sum(r.offs for r in live), "sum_off mismatch"
+        assert self._sum_gc == sum(r.gen - r.g_enter for r in live), "generated-token sum mismatch"
+        d = self.wl.decode_tokens
+        for r in live:
+            gen_now = r.gen + G - r.g_enter
+            assert 1 <= gen_now <= d, "generated tokens out of range"
+            assert r.offs + G == r.prompt + gen_now, "decode context != prompt + generated"
+            assert r.done_g - G == d - gen_now, "remaining decode iterations inconsistent"
+        for r in self.prefill:
+            assert r.rem > 0 and not r.gone, "prefill request with nothing to prefill or marked gone"
+            assert r.pos + r.rem == r.prompt + r.gen, "prefill pos + rem != num_tokens"
+        assert self.n_wait == sum(1 for r in self._q[self._qh:] if r.alive), "n_wait mismatch"
+        assert self.n_wait == len(self._waiting), "waiting dict mismatch"
+        for r in self._waiting.values():
+            assert r.alive and not r.gone, "waiting request flags"
+        run_sids = {r.sid for r in run}
+        for sid in self.idle:
+            assert sid not in run_sids, "running session also idle-resident"
+        if self.session_cap is not None and self.aimd is None:
+            assert self.in_system <= self.session_cap, "session cap exceeded"
+        assert self.entries_over_cap == 0, "a session entered the system while at/over the cap"
+        assert self.n_arrived == self.n_sessions_done + self.in_flight(), "session conservation"
+        assert self.processed_prefill_tokens + self.lost_prefill_tokens + sum(r.rem for r in self.prefill) \
+            == self.admitted_prefill_tokens, "prefill-token conservation"
         self._check_locations()
 
     def _check_protection(self) -> None:
@@ -1092,7 +1715,8 @@ class Engine:
         for r in self.prefill:
             put(r.sid, "prefill")
         for (_, _, r) in self._done_heap:
-            put(r.sid, "decode")
+            if not r.gone:
+                put(r.sid, "decode")
         for r in self._pending_done:
             put(r.sid, "pending")
         for (_, _, sid) in self._tool_heap:
@@ -1106,5 +1730,10 @@ class Engine:
                 assert kv == self.wl.end_len(self._nt[sid]), "ended session KV length wrong"
                 continue
             assert loc.get(sid) in ("waiting", "tool"), f"idle KV of session {sid} located in {loc.get(sid)}"
+            wreq = self._waiting.get(sid)
+            if wreq is not None and wreq.resumed:
+                # preempted / retracted request: whatever survived of prompt + generated tokens (round 5)
+                assert 0 < kv <= wreq.prompt + wreq.gen, f"surviving KV of preempted session {sid} out of range"
+                continue
             assert kv == self.wl.prompt_len(self._turn[sid]) - delta, f"idle KV length wrong for session {sid}"
         assert self._ended <= self.idle.keys(), "ended set holds a non-idle session"

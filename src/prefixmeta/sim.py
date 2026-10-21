@@ -80,6 +80,7 @@ def build_engine(cfg: dict, rs: RunSpec, specs=None):
         specs = build_specs(wl, rs.plan, rs.seed)
     rec = Recorder(cfg["metrics"]["window_s"], cfg["metrics"]["fine_window_s"])
     rec.mem_on = bool(cfg["metrics"].get("track_memory", False))
+    rec.dyn_on = ep.alloc_mode != "full_reserve"
     eng = Engine(ep, wl, specs, policy, rec, session_cap=cap, closed=(rs.plan.kind == "closed"),
                  stop_queue_above=rs.stop_queue_above, debug=rs.debug, mech=mech,
                  stop_backlog_above=rs.stop_backlog_above, stop_low_hit=rs.stop_low_hit,
