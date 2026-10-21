@@ -144,3 +144,20 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
 - Caps at or below the curve's peak, roughly 20–28 sessions, restore stability regardless of eviction policy.
 - The fluid model gives qualitative structure and recovery thresholds. It does **not** predict burst sizes or noise-driven escape reliably.
 **Next:** Real-engine test with the referee's paired-arm design, measuring real μ(n) first. Add a simulator sensitivity run with on-demand allocation and preemption (no full reservation) before Nova, to see whether the cliff survives.
+
+## 2026-10-21 — Real-engine harness: referee-requested kill-test redesign (no runs)
+**Setup:** Branch `harness/prefix-meta`. Code is at f1f001e and recorded outputs at 2f22e08. Workflow: implement, adversarial review (11 findings), fix. 307 mock tests pass (`results/agentload_tests/20261021-070445` in that worktree). **Nothing was sent to Nova or any real engine.**
+**What changed:**
+- **Stage C:** closed-population μ(n) measured on the real engine before anything else.
+- **Paired arms:** BURST, NOBURST, and CAPPED (a client-side FIFO session gate at the measured argmax n), all with common random numbers.
+- **Pre-registration:** a template plus enforcement. A decisive verdict requires a committed prereg file bound by sha256.
+- **Trap criterion v2.**
+  - The reviewer found that the first version's session-rate test fired on 0% of the simulator's own traps at 2× and 2.5× λ_miss. Trapped systems complete young sessions faster than the closed λ_miss, which would have biased the test toward a false KILL.
+  - The criterion now compares uncached prefill tokens/s with E0a's all-miss rate. On the 84 simulated traps it fires 100% of the time.
+  - Weak spot: (a and b) is only 69% at 1.5×, which affects the `slope_frac` decision.
+- **Recovery threshold:** registered as λ_miss. μ(300) from a short synchronized start is biased by up to +70%, so it is now only a check.
+**GPU-h** (plan arithmetic, not measured):
+- The cheap stages before pre-registration total about **26.6**: S0 1.68, C 8.47, E0a 7.24, E0b 9.22.
+- The paired kill test is about 75.8.
+- The total plan is about 236.
+**Open:** The ±15% token band has only been validated on the simulator. `slope_frac` is still to be decided. Staggered starts for Stage C are not implemented.
