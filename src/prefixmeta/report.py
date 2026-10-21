@@ -182,9 +182,11 @@ def fig_e1_e2(e1d: Path, e2d: Path, out: Path, mults: Optional[Sequence[float]] 
         axes[1, j].axhline(20, color="k", lw=0.5, ls=":")
     axes[0, 0].set_ylabel("prefix hit rate (1000 s windows)")
     axes[1, 0].set_ylabel("waiting-queue length (window mean)")
-    axes[0, 0].legend(fontsize=6.5, loc="center right")
-    fig.suptitle("E1 / E2: hit rate and waiting queue vs time by policy (line = mean over seeds, band = min..max)", fontsize=10)
-    fig.tight_layout()
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", ncol=len(labels), fontsize=7, frameon=False)
+    fig.suptitle("E1 / E2: hit rate and waiting queue vs time by policy (line = mean over seeds, band = min..max; "
+                 "when trapped, FCFS, LPM-128 and AGING-LPM coincide and overlap)", fontsize=9)
+    fig.tight_layout(rect=[0, 0.06, 1, 0.95])
     fig.savefig(out, format="pdf")
     plt.close(fig)
 
@@ -209,14 +211,21 @@ def fig_e3(e3d: Path, lam_miss: float, lam_cap: float, out: Path) -> None:
                     ax.plot(g["x"] / lam_miss, g["y"], color=POLICY_COLORS[p], ls=ls, lw=1.3,
                             label=f"{POLICY_LABELS[p]} ({leg})")
             ax.axvline(lam_cap / lam_miss, color="k", lw=0.6, ls=":")
+            if col == "hit_rate":
+                ax.set_ylim(-0.03, 1.03)
             ax.set_xlabel(r"arrival rate $\lambda / \lambda_{miss}$ (window midpoint)")
             ax.set_ylabel(lab)
             pk = peak[v]
             ax.set_title(f"E3 ramp '{v}' (peak {pk:.2f}$\\times\\lambda_{{miss}}$; dotted = $\\lambda_{{cap}}$)", fontsize=9)
-        if i == 0:
-            axes[i, 1].legend(fontsize=5.5, ncol=2, loc="lower left")
-    fig.suptitle("E3: triangle ramp, mean over seeds; solid = up leg, dashed = down leg", fontsize=10)
-    fig.tight_layout()
+    from matplotlib.lines import Line2D
+    handles = [Line2D([0], [0], color=POLICY_COLORS[p], lw=1.6) for p in pols]
+    labels = [POLICY_LABELS[p] for p in pols]
+    handles += [Line2D([0], [0], color="k", ls="-", lw=1.2), Line2D([0], [0], color="k", ls="--", lw=1.2)]
+    labels += ["up leg", "down leg"]
+    fig.legend(handles, labels, loc="lower center", ncol=5, fontsize=7, frameon=False)
+    fig.suptitle("E3: triangle ramp, mean over seeds (non-escaping seeds included in the mean); identical lines overlap",
+                 fontsize=9)
+    fig.tight_layout(rect=[0, 0.08, 1, 0.96])
     fig.savefig(out, format="pdf")
     plt.close(fig)
 
