@@ -908,3 +908,13 @@ def test_window_columns_count_preemptions_and_recompute_tokens(cfg5, mode):
     full = simulate(cfg5, RunSpec(exp="t", policy="fcfs_lru", seed=17, horizon_s=2000.0, plan=plan,
                                   engine_overrides={"kv_memory_tokens": 70_000}), specs)
     assert "preemptions" not in full["windows"][0] and "n_preempt" not in full["summary"]
+
+
+def test_full_reserve_memory_never_exceeds_M_on_the_same_congested_scenarios(cfg5):
+    """The third mode of 'memory never exceeds M in every mode': full_reserve (reservations + idle) on the congested scenario that makes
+    the new modes preempt; it never preempts and reports no allocation-mode statistics."""
+    for M in (45_000, 70_000):
+        eng, _ = _congested(cfg5, "full_reserve", M, cls=Engine)
+        s = eng.stats()
+        assert s["max_resident_tokens"] <= M and s["n_turns_done"] > 100 and s["n_evictions"] > 0
+        assert "n_preempt" not in s and eng.reserved >= 0
