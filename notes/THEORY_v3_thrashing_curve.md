@@ -66,3 +66,27 @@ Suppose $\mu$ rises to a maximum $\mu^\*=\mu(n^\*)$ and then decreases to $\mu_\
   - PEEK (queued-prefix protection, empirical thrashing).
   - Ao et al. 2606.15555 (instability of greedy admission with KV growth and no prefix caching, plus an admission cap).
   - RR-Evict and "Randomization Boosts KV Caching" (eviction-order fixes).
+
+---
+## Corrections after math-check (2026-10-21, see `MATHCHECK_thrashing_curve.md`)
+
+**Safe to state:**
+- **Cap identity.** $\mu_{\rm cap}(n)=\mu(\min(n,N))$ holds exactly in distribution, and the capped system is stable for $\lambda<\mu(N)$. Data: lb_cap gives 2.21, equal to $\mu(28)$; trapped caps at 30, 36 and 49 run at 1.71, 1.15 and 1.04, against closed $\mu(N)$ of 1.69, 1.12 and 1.00.
+- **Statement A** (FCFS-type order, *any* eviction rule): the rate of hit turns is at most $M/(L_{\min}w_n)\to0$, so $\mu_\infty=\lambda_{\rm miss}$. Work-conservation is not needed for this bound.
+- **Fixed-point map, as a quasi-static approximation.** It gives the window and the recovery threshold from deep congestion.
+- **$E_{lb}$ identity**, via $H=\lambda G$ rather than PASTA, with the corrected pairing: during a tool call the session holds $E_t=L_t+\Delta+d$. This gives $N_{lb}\approx30.2$, not 28.4, and the 28/30 difference is exactly the width of the cliff. Add a fluctuation margin: the per-session SD is about 8k tokens.
+
+**Wrong or unsafe as stated:**
+- **"$\mu_\infty=\lambda_{\rm miss}$ for every work-conserving policy."** This is false for LPM. The replacement is **Statement B**, heuristic but numerically supported: $\mu_\infty^{\rm LPM}=\mu_{\rm cong}(h_\infty)$ with $h_\infty=P(Z<R_\infty)$, where $R$ is the congested idle-KV lifetime.
+  - Measured LPM hit probability by tool time: 0.61 for $Z<0.5$ s, 0.44 for 1–2 s, 0.02 for 5–10 s.
+  - With a bimodal tool time (0.3 s w.p. 0.76, else 20 s), LPM reaches $\mu(300)=1.44$ while FCFS reaches 1.05.
+  - **So ordering helps exactly the tool calls that are shorter than the congested KV lifetime.** Whether "ordering cannot help" holds depends on the agent's tool-time distribution.
+- **"Best cap $=N_{lb}$."** The fine-grid peak is $n^\*\approx20$–22 with $\mu^\*\approx4.0\lambda_{\rm miss}$, against $\mu(28)=2.21$.
+- **$b_c\approx n_2-n_1$** underestimates the critical burst. Burst sessions are fresh and have a smaller footprint, so the empirical critical burst is in (25, 50] against $\approx20$.
+- **Bistable vs. metastable.** Say "metastable": in the stochastic system the congested regime is transient, not a second stable state.
+- **The $\exp(kV)$ escape law** is a conjecture, not a theorem. However, a 1-D birth–death chain built from the measured $\mu(n)$ predicts the $k=1$ escape times within about 2× across two decades (2.0×–2.75× $\lambda_{\rm miss}$), and it reproduces $\lambda_{\rm cap}(1)=2.41$. **This is a usable quantitative result.** Re-run it from a clean tree before citing.
+- **Quasi-static validity.** Hit-rate autocorrelation time is 440–640 s near the cliff, against lifetimes of 117–374 s. The ODE is therefore unreliable for transients and bursts near the cliff, but fine for fixed points and deep-congestion recovery.
+
+**Session-effects note:** the structure is correct. The limit lies in $[(1-\alpha)(1-G),(1-G)+\alpha G]$, so it is not $\alpha$-free. The dependence-free bound is $\lim\text{FWER}\ge\max_k(1-G_k)-\alpha$.
+
+**References the checker gave from memory (UNVERIFIED, do not cite yet):** Brumelle 1971 ($H=\lambda G$), Heyman & Stidham 1980, Dupuis–Ellis–Weiss 1991.
