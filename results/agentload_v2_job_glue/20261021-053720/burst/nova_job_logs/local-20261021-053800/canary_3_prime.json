@@ -1,0 +1,38 @@
+{
+  "cache_expected": true,
+  "exit_code": 0,
+  "first": {
+    "cached_source": "usage.prompt_tokens_details",
+    "cached_tokens": 0,
+    "http": 200,
+    "prompt_tokens": 1024
+  },
+  "idle": {
+    "idle": true,
+    "kv_in_use": {
+      "metric": "vllm:kv_cache_usage_perc",
+      "value": 0.0
+    },
+    "n_categories_known": 3,
+    "running": {
+      "metric": "vllm:num_requests_running",
+      "value": 0.0
+    },
+    "waited_s": 0.0,
+    "waiting": {
+      "metric": "vllm:num_requests_waiting",
+      "value": 0.0
+    }
+  },
+  "ok": true,
+  "phase": "prime",
+  "reason": "canary resident (2nd request cached 1023 of 1024)",
+  "salt": 900003,
+  "second": {
+    "cached_source": "usage.prompt_tokens_details",
+    "cached_tokens": 1023,
+    "http": 200,
+    "prompt_tokens": 1024
+  },
+  "tokens": 1024
+}

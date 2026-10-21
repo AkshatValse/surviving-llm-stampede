@@ -1,0 +1,82 @@
+research_question: >-
+  E2 (real engine, paired arms): does a finite arrival burst at lambda in (1.2, 2) x lambda_miss trap FCFS prefix-cache
+  serving in the low-hit congested state (hit rate < 0.2 for several consecutive 1000 s windows after a clean
+  good-state start), and do LPM / LPM-without-128-fallback / vLLM FCFS / SGLang waiting-prefix refresh change that?
+
+assumptions_note: >-
+  Burst of 200 sessions within 60 s (the simulator's E2 burst; bursts of >=100 trapped every work-conserving
+  policy in the simulator, bursts of 25 recovered). Timing is the SHORT protocol (deviation D1 in
+  notes/NOVA_PLAN_prefix_meta.md): burst at t=1200 s, run ends 7500 s later (8700 s total) so one run fits a 4 h job;
+  the simulator waited 25000 s after the burst. Analysis must be run with burst.trap_min_s=3000 and
+  burst.hit_eval_from_s=4500 for this protocol (the job script passes these). lambda_ref MUST be set to the
+  calibration.json from E0a (placeholder fails loudly).
+  PAIRED ARMS (common random numbers: same seed => same Poisson arrivals and per-session specs; the content salt
+  differs per run by design): BURST = this config; NOBURST = arrivals.burst=null (same plan without the burst
+  sessions); CAPPED = BURST plus gate.n_cap (client-side FIFO session cap at argmax mu(n) from Stage C).
+  The kill test is judged by `analysis.summarize burst2` (throughput criterion, kill_verdict_v2.json); the hit-rate
+  rule of `summarize burst` is secondary.
+
+server:
+  base_url: http://127.0.0.1:8000
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
+  request_token_ids: false
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
+
+arrivals:
+  kind: constant
+  rate_mult: 1.6                         # overridden per run by the job script
+  lambda_ref: "<RESULTS_DIR>/calibration.json:lambda_miss_turns_based"   # placeholder: set via --set
+  burst: {n: 200, t_s: 1200, width_s: 60}     # the BURST and CAPPED arms; the NOBURST arm sets arrivals.burst=null
+  analysis_t_burst_s: 1200                    # t_b the post-burst window is anchored to, recorded in EVERY arm (must equal burst.t_s)
+
+gate:
+  n_cap: null                            # CAPPED arm only: int, or "<dir>/mu_curve.json:n_cap" (Stage-C argmax mu(n)); the job script
+                                         # sets it from N_CAP / CAP_FILE. Client-side FIFO gate between session arrival and first request.
+
+run:
+  duration_s: 8700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+canary:                                  # start-state check around every cache flush (python -m agentload canary; also uses
+                                         # this file's server/metrics sections). Metric names are CANDIDATES (unverified).
+  tokens: 1024
+  resident_min_frac: 0.5                 # prime: 2nd identical canary request must report cached_tokens >= 0.5 * tokens
+  max_cached_after_flush: 15             # check: after the flush the canary may hit < 1 vLLM block (16 tokens)
+  idle_wait_s: 120
+  idle_poll_s: 2
+  kv_in_use_max: 0.02
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"                  # e.g. sglang-fcfs-r1 (policy, waiting-prefix-refresh flag)
+  arm: ""                                # burst | noburst | capped (set by the job script; paired arms share seed, rate and plan)
+  notes: "E2 burst"
+
+output:
+  root: results
+  name: agentload_e2_burst

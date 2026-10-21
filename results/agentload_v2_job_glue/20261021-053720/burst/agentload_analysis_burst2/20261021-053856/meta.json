@@ -1,0 +1,115 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst2",
+    "--run-dirs",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053807",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053823",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053839",
+    "--out-root",
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst",
+    "--set",
+    "burst.trap_min_s=3",
+    "--set",
+    "burst.hit_eval_from_s=4",
+    "--set",
+    "trap_v2.eval_from_s=4",
+    "--set",
+    "windows.window_s=3",
+    "--set",
+    "windows.fine_window_s=1",
+    "--set",
+    "burst.tail_window_s=6",
+    "--set",
+    "trap_v2.min_eval_s=2",
+    "--set",
+    "trap_v2.slope_dt_s=1",
+    "--set",
+    "trap_v2.end_window_s=3",
+    "--set",
+    "trap_v2.trace_bin_s=1"
+  ],
+  "git": {
+    "commit": "ea7b758ef1d5ef0b46302ca366ad4fc47d09bd01",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    0,
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T05:38:56",
+  "end_time": "2026-10-21T05:38:56",
+  "wall_s": 0.049051,
+  "slurm_env": {},
+  "inputs": [
+    {
+      "run_dir": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053807",
+      "label": "mock-fcfs",
+      "seed": 0,
+      "run_git": {
+        "commit": "ea7b758ef1d5ef0b46302ca366ad4fc47d09bd01",
+        "dirty": false,
+        "branch": "harness/prefix-meta",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-21T05:38:07",
+      "hardware": "Apple M3 Max CPU (simulation)",
+      "slurm_env": {}
+    },
+    {
+      "run_dir": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053823",
+      "label": "mock-fcfs",
+      "seed": 0,
+      "run_git": {
+        "commit": "ea7b758ef1d5ef0b46302ca366ad4fc47d09bd01",
+        "dirty": false,
+        "branch": "harness/prefix-meta",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-21T05:38:23",
+      "hardware": "Apple M3 Max CPU (simulation)",
+      "slurm_env": {}
+    },
+    {
+      "run_dir": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053839",
+      "label": "mock-fcfs",
+      "seed": 0,
+      "run_git": {
+        "commit": "ea7b758ef1d5ef0b46302ca366ad4fc47d09bd01",
+        "dirty": false,
+        "branch": "harness/prefix-meta",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-21T05:38:39",
+      "hardware": "Apple M3 Max CPU (simulation)",
+      "slurm_env": {}
+    }
+  ],
+  "n_runs": 3,
+  "kill_verdict_v2": {
+    "pre_registered": false,
+    "kill_test_pass_rule_only": false,
+    "kill_test_pass_decisive": null,
+    "fcfs_cells_meeting_rule": [],
+    "pairing_problems": {}
+  },
+  "guard_problems": []
+}
