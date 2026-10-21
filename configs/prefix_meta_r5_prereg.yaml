@@ -344,3 +344,59 @@ preregistration:
     7300-7310, not registered; shortened horizons). Full runs are made later from a clean git tree, at most 3 worker processes, under
     results/prefix_meta_r5_calib|curve|burst|cap/<ts>/ and the report under results/prefix_meta_r5/<ts>/. Quick-mode outputs are
     provenance only and never enter a prediction.
+
+  # ======================================================================================================
+  # AMENDMENT 1 (2026-10-21). APPEND-ONLY: no line above this one was edited (a test checks that the first 29121 bytes of this file
+  # still hash to the registered text of commit e24e3cd). Written during stage-1 implementation, BEFORE any registered-size or
+  # quick-mode experiment command (calib / curve / burst / cap) was run in any mode. It changes no predicted quantity, no
+  # registered_design value and no decision reading; it corrects three engine rules that the registered prose got wrong or left open
+  # and records fidelity gaps found while testing.
+  # ======================================================================================================
+  amendment_1:
+    date: 2026-10-21
+    state_at_writing: >-
+      HEAD = e24e3cd plus uncommitted stage-1 code. No result directory of any round-5 command exists; no registered seed (3000-3002,
+      3100-3104, 3200-3202, 3300-3304) has been run in any mode. Looks at the new modes before this amendment, all for testing the code and
+      all on unregistered seeds: (i) closed-population FCFS-LRU runs with the debug-invariant checker, n in {28, 100, 300}, 2000-3000 s,
+      quick-mode seed 7300, in both new modes (the per-run counters were printed: sessions done, preemptions / retractions, re-admissions
+      that found surviving KV, recompute tokens, max_running); (ii) the unit-test workloads (workload seeds 5, 7, 11, 21-25, 31) and a
+      randomized engine-vs-reference fuzz (fuzz seeds 0-3, trace equality and counters only). The numbers seen are limited to those counters.
+    A1_ratio_commit_includes_inprogress_prefills:
+      registered_text: "commit = sum over earlier admissions of the same pass of (extend_i + d - gen_i) (unscaled)"
+      amended: >-
+        commit starts, at the beginning of every pass, at the extend still to be allocated for the requests that are already prefilling
+        (sum of their remaining prefill tokens) and then grows by (extend_i + d - gen_i) per admission of the pass.
+      why: >-
+        SGLang holds at most one chunked request and adds its current chunk to the round's offset (add_chunked_req); this engine can
+        hold several partially prefilled requests, and without the term the admission test can over-commit the memory that their
+        future chunks need, which can stall all prefills with nothing decoding. With the term a stall of that kind cannot occur
+        (sum of the prompts of the prefilling set stays below M); the registered fallback (retract the newest prefilling request)
+        therefore never fires and n_fallback_retract is reported as a check (expected 0).
+    A2_ondemand_test_charges_the_sampled_token_of_a_completing_first_chunk:
+      registered_text: "admit iff used + total + watermark_tokens <= M, with total = prompt + gen"
+      amended: >-
+        admit iff used + total + e + watermark_tokens <= M, where e = 1 if the request's first chunk (min(new tokens, prefill budget
+        left in the step)) completes its prompt, else 0; this is the sampled-token slot that the KV accounting charges together with a
+        completing chunk. Without it the allocation made right after the test can exceed M by one token when memory is exactly full
+        (found by a randomized test). A difference of one token per admission at the boundary.
+    A3_pass_after_a_preemption_is_due_at_the_next_iteration_boundary:
+      registered_text: "WAITING LOOP (admission pass; skipped in any turn in which a preemption / retraction happened)"
+      clarification: >-
+        The skipped pass is due at the very next iteration boundary (as in vLLM, where the waiting loop runs at every step). The first
+        implementation let a batched pure-decode run continue over many iterations in the turn that follows a preemption / retraction
+        without that pass; an independent iteration-by-iteration reference simulator exposed the difference (the engine admitted a waiting
+        request ~0.09 s later than the reference after a retraction), and a batched run is now capped at one iteration while a pass is
+        pending. No registered number was produced with the first version.
+    fidelity_gaps_recorded_not_changed:
+      whole_session_eviction_loses_victims: >-
+        With whole-session, all-or-nothing eviction the KV of a preempted request survives only if the other idle KV (older in the LRU
+        order) covers the memory the survivors need in the same step; when memory is full the first token of growth evicts the victim
+        entirely, so most preemptions cost a full recompute (seed 7300, 3000 s, M = 300000: 4 of 26 re-admissions at n = 100 and 3 of 73 at
+        n = 300 found surviving KV in the vLLM-like mode, 0 of 6 and 0 of 13 in the SGLang-like mode). Real vLLM frees blocks tail-first into an LRU free queue and a victim keeps its longest surviving prefix,
+        so the recompute cost of a preemption is overstated here. This biases the ondemand_preempt mode towards MORE waste and is
+        stated before any registered run; a tail-first partial eviction variant is not part of this registration.
+      over_admission_thrash_without_the_prefill_budget_gate: >-
+        With admission_limited_by_prefill_budget = false (NOT the registered setting) the vLLM-like mode shows preemption thrash
+        (thousands of preemptions and recompute of the order of the whole prefill volume at M = 45000-150000, tight workload). The
+        registered runs use the default gate (true); this is recorded so that the registered runs are not over-read as a statement about
+        the ungated configuration.
