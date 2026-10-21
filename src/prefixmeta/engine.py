@@ -94,7 +94,7 @@ Round-4 eviction rules (``Mechanisms.eviction``; default ``lru`` keeps the round
 
 Round-5 allocation modes (``EngineParams.alloc_mode``; ``full_reserve`` = everything above, the default, bit-identical to round 4)
 ---------------------------------------------------------------------------------------------------------------------------
-Registered in configs/prefix_meta_r5_prereg.yaml (+ amendment 1). Simulator models of the allocation rules a scout reported for
+Registered in configs/prefix_meta_r5_prereg.yaml (+ amendments 1 and 2). Simulator models of the allocation rules a scout reported for
 vLLM v0.32.0 (``ondemand_preempt``) and SGLang v0.5.22 (``ratio_reserve``); NOT the engines.
 
 * KV accounting in tokens (block size 1). ``held`` = KV owned by running requests: pos for a prefilling request, ctx = prompt +
@@ -115,7 +115,17 @@ vLLM v0.32.0 (``ondemand_preempt``) and SGLang v0.5.22 (``ratio_reserve``); NOT 
   idle tokens per victim, set ratio = min(1, (sum outputs + 20 n) / (d n + 1)); the prompt stays cached, outputs are freed, the victim
   goes to the TAIL of the queue. The ratio decays by (init - min) / 600 per decode iteration without retraction, resets when idle.
 * Metrics: hit rate / admissions / waits are those of the FIRST admission of a turn; re-admissions are counted separately
-  (n_readmit, recompute_tokens). Only fcfs / lpm ordering, no TTL / PEEK protection.
+  (n_readmit, recompute_tokens). Only fcfs / lpm / lpm_fallback ordering, no TTL / PEEK protection.
+* Amendment 2 (stage 3, before any registered run):
+  - ``victim_kv_eviction`` ("tail", the registered rule; "whole" = the stage-1 rule kept as a sensitivity). The cached KV of a preempted /
+    retracted request is evicted tail-first and only as far as the memory deficit requires; every other idle session is still evicted
+    whole. In stage 1 the victim was evicted whole like any idle session, which destroyed it in almost every case (review finding F2).
+    A victim's entry keeps the LRU position it was given at the preemption (MRU end): older idle sessions are evicted first. This favours
+    retention (SGLang would place a retracted prompt by its older last-access time), so "tail" and "whole" bracket the real systems.
+  - ``ondemand_admission`` ("full_isl" registered | "first_chunk" sensitivity, review finding F4).
+  - thrash counters: ``max_preempt_per_turn``, ``n_turns_preempted``, ``n_turns_preempted_ge3``; window columns ``recompute_processed``
+    (prefill tokens processed for re-admitted requests), ``lost_prefill`` (admitted prefill tokens discarded unprocessed) and
+    ``preempt_max_turn`` (review finding F3). ``recompute_tokens`` stays the re-admission DEMAND (tokens a re-admission asks for).
 """
 from __future__ import annotations
 
@@ -188,6 +198,13 @@ class EngineParams:
     retract_decode_steps: int = 20
     clip_max_new_tokens_estimation: int = 4096
     retract_evict_headroom: bool = True       # ratio_reserve: evict retract_decode_steps x remaining idle tokens per victim
+    # ---- round 5, amendment 2 (both inert in full_reserve) ---------------------------------------------------------------------
+    victim_kv_eviction: str = "tail"          # "tail": a preempted / retracted request's cached KV is evicted tail-first, token by token,
+    #                                           only as far as the memory deficit requires (vLLM frees a victim's blocks tail-first into
+    #                                           an LRU free queue; SGLang evicts radix leaves). "whole": the stage-1 rule (the victim's
+    #                                           session is evicted all-or-nothing like every idle session; rounds 1-4 / stage-1 behaviour)
+    ondemand_admission: str = "full_isl"      # ondemand_preempt waiting-loop test: "full_isl" (registered; scout: scheduler_reserve_full_isl=True,
+    #                                           the whole sequence must fit) | "first_chunk" (sensitivity: hit + first chunk must fit)
 
     @classmethod
     def from_dict(cls, d: dict) -> "EngineParams":
@@ -196,13 +213,17 @@ class EngineParams:
             raise ValueError("prefill_attn_ctx must be 'end' or 'mid'")
         if p.alloc_mode not in ALLOC_MODES:
             raise ValueError(f"alloc_mode must be one of {ALLOC_MODES}, got {p.alloc_mode!r}")
+        if p.victim_kv_eviction not in ("tail", "whole"):
+            raise ValueError(f"victim_kv_eviction must be 'tail' or 'whole', got {p.victim_kv_eviction!r}")
+        if p.ondemand_admission not in ("full_isl", "first_chunk"):
+            raise ValueError(f"ondemand_admission must be 'full_isl' or 'first_chunk', got {p.ondemand_admission!r}")
         return p
 
 
 class Request:
     """One turn of one session, from queue entry to last decode token."""
     __slots__ = ("rid", "sid", "turn", "qtime", "ready", "prompt", "end", "alive", "mark",
-                 "pos", "rem", "offs", "done_g", "hit", "gen", "g_enter", "gone", "resumed")
+                 "pos", "rem", "offs", "done_g", "hit", "gen", "g_enter", "gone", "resumed", "npre")
 
     def __init__(self, rid: int, sid: int, turn: int, qtime: float, ready: float, prompt: int, end: int):
         self.rid = rid
@@ -226,6 +247,7 @@ class Request:
         self.g_enter = 0
         self.gone = False
         self.resumed = False
+        self.npre = 0            # how many times this turn has been preempted / retracted so far (carried over to the re-queued request)
 
 
 class Engine:
@@ -957,6 +979,14 @@ class Engine:
         self.rec.add_busy(t0, self.now)
         self.rec.add_prefill_tokens(self.now, ntok)
         self.processed_prefill_tokens += ntok
+        if self._dyn:
+            rp = 0
+            for req, c in chunks:
+                if req.resumed:
+                    rp += c
+            if rp:
+                self.recompute_processed_tokens += rp
+                self.rec.add_recompute_processed(self.now, rp)
         self.G += 1
         self.n_iterations += 1
         self.n_steps += 1
@@ -1097,8 +1127,14 @@ class Engine:
         p = self.p
         if self.mech.any_protection:
             raise ValueError(f"alloc_mode={self._alloc} does not support TTL / PEEK protection")
-        if self.policy.name not in ("fcfs", "lpm"):
-            raise ValueError(f"alloc_mode={self._alloc} supports the ordering policies fcfs and lpm only, got {self.policy.name!r}")
+        if self.policy.name not in ("fcfs", "lpm", "lpm_fallback"):
+            raise ValueError(f"alloc_mode={self._alloc} supports the ordering policies fcfs, lpm and lpm_fallback only, "
+                             f"got {self.policy.name!r}")
+        self._victim_tail = p.victim_kv_eviction == "tail"
+        if self._victim_tail and self._evict_mode != "lru":
+            raise ValueError("victim_kv_eviction='tail' is implemented for LRU eviction only; pass victim_kv_eviction='whole' for "
+                             f"eviction={self._evict_mode!r}")
+        self._first_chunk_adm = p.ondemand_admission == "first_chunk"
         if self.wl.decode_tokens < 1:
             raise ValueError("alloc modes need decode_tokens >= 1")
         if self._alloc == RATIO_RESERVE and self.wl.decode_tokens > p.clip_max_new_tokens_estimation:
@@ -1125,6 +1161,11 @@ class Engine:
         self.n_readmit_with_kv = 0                      # re-admissions that found surviving KV
         self.recompute_tokens = 0                       # prefill tokens spent at re-admissions
         self.lost_prefill_tokens = 0                    # prefill tokens admitted but never processed (victim preempted mid-prefill)
+        self.recompute_processed_tokens = 0             # prefill tokens PROCESSED for re-admitted requests (recompute work actually done)
+        self.max_preempt_per_turn = 0                   # most preemptions / retractions suffered by one turn (thrash detector)
+        self.n_turns_preempted = 0                      # turns preempted at least once
+        self.n_turns_preempted_ge3 = 0                  # turns preempted at least three times
+        self.n_partial_evictions = 0                    # tail-first partial evictions of a preempted request's cached KV
         self.admitted_prefill_tokens = 0                # sum of `new` over all admissions (first + re-admissions)
         self.ratio_min_seen = init
 
@@ -1133,11 +1174,47 @@ class Engine:
         deficit = self.held + self.idle_sum - self.M
         if deficit > 0:
             n0 = self.n_evictions
-            self._evict(deficit)
+            self._evict_dyn(deficit)
             self.rec.on_evict(self.now, self.n_evictions - n0)
         used = self.held + self.idle_sum
         if used > self.max_resident:
             self.max_resident = used
+
+    def _evict_dyn(self, need: int) -> None:
+        """Allocation modes: free ``need`` tokens of idle KV. ``victim_kv_eviction='whole'``: the configured whole-session rule."""
+        if self._victim_tail:
+            self._evict_tail(need)
+        else:
+            self._evict(need)
+
+    def _evict_tail(self, need: int) -> None:
+        """LRU eviction of ``need`` tokens in which the entry of a PREEMPTED / RETRACTED request (its session has a live re-queued
+        request with ``resumed``) is evicted tail-first, token by token, only as far as the deficit requires (amendment 2). Every other
+        idle session is evicted whole (rounds 1-4 simplification). LRU order is unchanged: a victim's entry sits where it was put (MRU
+        end at the time of the preemption), so older idle sessions go first and a victim is trimmed only when they do not cover ``need``."""
+        idle = self.idle
+        waiting = self._waiting
+        need = int(math.ceil(need))                       # integer tokens (M is stored as a float)
+        while need > 0:
+            if not idle:
+                raise AssertionError("eviction short of memory: nothing left to evict")
+            sid2 = next(iter(idle))
+            kv2 = idle[sid2]
+            if kv2 > need:
+                w = waiting.get(sid2)
+                if w is not None and w.resumed:
+                    idle[sid2] = kv2 - need                # keep the head of the sequence, drop its last ``need`` tokens
+                    self.idle_sum -= need
+                    self.evicted_tokens += need            # token-additive; ``n_evictions`` counts only entries removed entirely
+                    self.n_partial_evictions += 1
+                    return
+            del idle[sid2]
+            if self._ended:
+                self._ended.discard(sid2)
+            self.idle_sum -= kv2
+            self.n_evictions += 1
+            self.evicted_tokens += kv2
+            need -= kv2
 
     def _decay_ratio(self, k: int) -> None:
         """``k`` decode steps without retraction: ratio = max(ratio - k * decay, min_ratio) (ratio_reserve only)."""
@@ -1163,6 +1240,7 @@ class Engine:
             self.prefill.remove(v)
             kv = v.pos
             self.lost_prefill_tokens += v.rem
+            self.rec.on_lost(self.now, v.rem)
         else:                                           # decoding: ctx = offs + G, generated so far = gen + G - g_enter
             G = self.G
             kv = v.offs + G
@@ -1188,6 +1266,13 @@ class Engine:
         self._rid += 1
         new.gen = v.gen
         new.resumed = True
+        new.npre = v.npre + 1
+        if new.npre == 1:
+            self.n_turns_preempted += 1
+        elif new.npre == 3:
+            self.n_turns_preempted_ge3 += 1
+        if new.npre > self.max_preempt_per_turn:
+            self.max_preempt_per_turn = new.npre
         q = self._q
         if front:
             if self._qh > 0:
@@ -1205,7 +1290,7 @@ class Engine:
         self.rec.set_queue(self.now, self.n_wait)
         self.dirty = True
         self.n_preempt += 1
-        self.rec.on_preempt(self.now)
+        self.rec.on_preempt(self.now, new.npre)
         if self.trace is not None:
             self.trace.append(("P", sid, v.turn, kv_idle, self.now))
         if self.stop_q is not None or self.stop_backlog is not None:
@@ -1311,7 +1396,7 @@ class Engine:
                     need = min(R * self.n_D, self.idle_sum)
                     if need > 0:
                         n0 = self.n_evictions
-                        self._evict(need)
+                        self._evict_dyn(need)
                         self.rec.on_evict(self.now, self.n_evictions - n0)
             while self.held + self.n_D > M:
                 v = self._newest_prefilling()
@@ -1440,7 +1525,7 @@ class Engine:
             self._chunk_left = p.prefill_chunk_budget - self._step_ntok
         else:
             # PrefillAdder: total_offset = ratio * remaining decode tokens of the running (decode) requests + the extend still
-            # to be allocated for in-progress prefills (registered amendment 1) + (extend + max_new) of this pass's admissions
+            # to be allocated for in-progress prefills (amendment 1, item A1) + (extend + max_new) of this pass's admissions
             n_D = self.n_D
             sum_gen = self._sum_gc + n_D * self.G
             offset = self.new_token_ratio * (n_D * d - sum_gen)
@@ -1451,13 +1536,16 @@ class Engine:
             total = req.prompt + req.gen
             if od:
                 # a first chunk that completes the prompt is charged one more token (the sampled token; module docstring), so the
-                # test must cover it or the allocation right after the test could overflow M (registered amendment 2)
+                # test must cover it or the allocation right after the test could overflow M (amendment 1, item A2)
                 kv0 = self.idle.get(req.sid)
                 hit0 = 0 if kv0 is None else (kv0 if kv0 < total else total - 1)
                 new0 = total - hit0
                 c0 = new0 if new0 < self._chunk_left else self._chunk_left
                 extra = 1 if (c0 > 0 and c0 == new0) else 0
-                fits = ondemand_admit_ok(self.held, total + extra, wm if n_run > 0 else 0, M)
+                # registered: the whole sequence must fit (scout: scheduler_reserve_full_isl=True); sensitivity ``first_chunk``: the cached
+                # prefix plus the first chunk must fit (what an engine without the full-ISL check would do)
+                fits = ondemand_admit_ok(self.held, (hit0 + c0 + extra) if self._first_chunk_adm else (total + extra),
+                                         wm if n_run > 0 else 0, M)
             else:
                 dec = d - req.gen
                 fits = ratio_admit_ok(self.held, commit, offset, total, dec, M, n_run)
@@ -1595,6 +1683,11 @@ class Engine:
                 "n_readmit_with_kv": self.n_readmit_with_kv,
                 "recompute_tokens": self.recompute_tokens,
                 "lost_prefill_tokens": self.lost_prefill_tokens,
+                "recompute_processed_tokens": self.recompute_processed_tokens,
+                "max_preempt_per_turn": self.max_preempt_per_turn,
+                "n_turns_preempted": self.n_turns_preempted,
+                "n_turns_preempted_ge3": self.n_turns_preempted_ge3,
+                "n_partial_evictions": self.n_partial_evictions,
                 "admitted_prefill_tokens": self.admitted_prefill_tokens,
                 "processed_prefill_tokens": self.processed_prefill_tokens,
                 "n_fallback_retract": self.n_fallback_retract,

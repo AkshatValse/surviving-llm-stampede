@@ -4,13 +4,15 @@ research_question: >-
   new_token_ratio reservation with retraction?
 
 assumptions_note: >-
-  Round 5 of the prefix-cache metastability pilot. Engine, workload and metric constants are inherited from `base_config`
+  Round 5 of the prefix-cache metastability pilot (stage 3: amendment 2 of the pre-registration). Engine, workload and metric constants are inherited from `base_config`
   (ALL are assumptions, none a measurement). The two new allocation modes are simulator models of the allocation / preemption
   rules a scout reported for vLLM v0.32.0 (ondemand_preempt) and SGLang v0.5.22 (ratio_reserve); the scout read the source
   through a summarising fetcher, so every rule and constant below is extractor-reported and unverified (see the `unconfirmed`
   block of the pre-registration). Predictions S1-S4, the registered grid / seeds / horizons and the exact decision readings are in
-  `preregistration_file`, committed (e24e3cd) before any round-5 code or run (its amendment 1, 7ab10f4, before any round-5 experiment command); a test checks that the `calibration`, `curve`, `burst`
-  and `cap` sections below equal the registered design. `*.quick` blocks are smoke-test sizes with their own seeds (7300-7310); they
+  `preregistration_file`, committed (e24e3cd) before any round-5 code or run (its amendment 1, 7ab10f4, before any round-5 experiment command;
+  its amendment 2 before any registered-size run); a test checks that the `calibration`, `curve`, `burst`
+  and `cap` sections below equal the registered design (amendment 2 adds the two engine switches under `modes.engine_overrides`, the `thrash`
+  block and the `variants` block). `*.quick` blocks are smoke-test sizes with their own seeds (7300-7310); they
   are never used for a prediction.
 
 base_config: configs/prefix_meta.yaml
@@ -23,6 +25,7 @@ metrics:
 policies:
   fcfs_lru: {kind: fcfs, eviction: lru}
   lpm_lru:  {kind: lpm,  eviction: lru}
+  lpm128_lru: {kind: lpm_fallback, threshold: 128, eviction: lru}      # variant `lpm128` only (SGLang's WAITING_QUEUE_PREFIX_MATCH_MAX fallback)
 
 labels:
   fcfs_lru: "FCFS-LRU"
@@ -37,9 +40,14 @@ modes:
   reference: full_reserve
   engine_overrides:
     full_reserve:     {alloc_mode: full_reserve}
-    ondemand_preempt: {alloc_mode: ondemand_preempt, watermark_frac: 0.0}              # watermark: scout-reported vLLM default
+    ondemand_preempt:                                                                    # scout-reported vLLM defaults
+      alloc_mode: ondemand_preempt
+      watermark_frac: 0.0
+      victim_kv_eviction: tail          # amendment 2 (stage-1 rule: whole); a preempted request's KV is trimmed tail-first by the deficit
+      ondemand_admission: full_isl      # scout: scheduler_reserve_full_isl=True (unverified); sensitivity: first_chunk
     ratio_reserve:                                                                       # scout-reported SGLang defaults
       alloc_mode: ratio_reserve
+      victim_kv_eviction: tail
       sched_conservativeness: 1.0
       init_new_token_ratio: 0.7
       min_new_token_ratio_factor: 0.14
@@ -112,5 +120,37 @@ cap:
     horizon_s: 6000.0
     nstar_override: {ondemand_preempt: 24, ratio_reserve: 24}
 
+# ---------------------------------------------------------------- preemption-thrash label (amendment 2, review finding F3)
+# Reported next to each verdict; it never changes one. A cell (curve cell: measurement window; burst / cap run: last tail_window_s) is
+# flagged iff preemptions per admitted turn > preemptions_per_turn_above OR the most preemptions of one turn in the window set > max_per_turn_above.
+thrash:
+  preemptions_per_turn_above: 0.05
+  max_per_turn_above: 10
+
+# ---------------------------------------------------------------- evaluation parameters (decision readings of the pre-registration; amendment 2 makes them machine-readable)
+evaluation:
+  round1_lambda_miss_full_reserve: 0.047418947
+  unimodal: {se_mult: 2.0, rel_tol_registered: 0.02, rel_tol_lenient: 0.10, abs_tol_strict: 1.0e-12}
+  S1: {c1_mult: 1.3, c2_mult: 2.0, kill_frac: 0.8}
+  S2: {min_not_recovered_burst: 3, max_not_recovered_nobust: 1}
+  S3: {min_recovered_capped: 2, max_recovered_nocap: 0, max_nstar_exclusive: 100}
+  S4: {min_gap_over_lambda: 0.05}
+
+# ---------------------------------------------------------------- sensitivity variants (amendment 2); `--variant NAME`, results in results/prefix_meta_r5_<cmd>_<NAME>/
+# Never headline; the evaluator reports them as labelled sensitivity rows. `set` = dotted overrides, `modes` restricts the registered modes,
+# the reference mode is dropped unless include_reference, `commands` restricts the CLI commands.
+variants:
+  stage1_whole_victim:
+    note: "the stage-1 rule: a preempted / retracted request's session is evicted whole like any idle session (review finding F2 shows it destroys the victim almost always); brackets the real systems from below"
+    set: ["modes.engine_overrides.ondemand_preempt.victim_kv_eviction=whole", "modes.engine_overrides.ratio_reserve.victim_kv_eviction=whole"]
+  ondemand_first_chunk:
+    note: "vLLM-like admission that needs only the cached prefix + the first chunk to fit (an engine WITHOUT the full-ISL check; review finding F4)"
+    modes: [ondemand_preempt]
+    set: ["modes.engine_overrides.ondemand_preempt.ondemand_admission=first_chunk"]
+  lpm128:
+    note: "LPM that falls back to FCFS when more than 128 requests wait (SGLang; review finding F5), closed n = 300 only"
+    commands: [curve]
+    set: ["curve.policies=[lpm128_lru]", "curve.n_grid=[300]"]
+
 report:
-  note: "stage 2 (evaluator + figures) is not part of the stage-1 implementation"
+  note: "evaluator + report: src/prefixmeta/r5_eval.py, src/prefixmeta/report_r5.py (command `report` of experiments/prefix_meta_r5_run.py)"

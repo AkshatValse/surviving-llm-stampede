@@ -155,18 +155,21 @@ def test_vllm_pop_from_the_end_equals_longest_fitting_prefix():
 
 
 # ============================================================================ (2) hand-built scenarios
-def test_ondemand_admits_what_full_reserve_refuses_then_preempts_the_newest(cfg5):
+@pytest.mark.parametrize("rule", ["whole", "tail"])
+def test_ondemand_admits_what_full_reserve_refuses_then_preempts_the_newest(cfg5, rule):
     """M = 2002, two single-turn sessions (prompt 1000, d = 10) at t = 0. FULL_RESERVE needs 1010 + 1010 > M, so the second waits for
     the first to finish. ONDEMAND needs only the prompt: held 1001 (first prompt + sampled token) + 1000 <= 2002, both are admitted at
-    t = 0 and fill M exactly; the next decode step needs 2 more tokens, so the NEWEST request (session 1) is preempted, its 1001 tokens
-    go to the idle pool where the 1 token that the survivor needs evicts them whole (whole-session eviction), and after the survivor
-    has finished it is re-admitted as a full miss that recomputes prompt + the token it had already generated."""
+    t = 0 and fill M exactly; the next decode step needs 2 more tokens, so the NEWEST request (session 1) is preempted and its 1001 tokens
+    go to the idle pool. The survivor needs 1 more token per decode step (9 steps). Stage-1 rule ``whole``: the first token of growth
+    evicts the victim's session entirely, so it is re-admitted as a full miss that recomputes prompt + the token it had already
+    generated. Amendment-2 rule ``tail``: each step trims one token off the victim's tail, so 1001 - 9 = 992 tokens survive and the
+    re-admission recomputes only the 9 missing ones."""
     sp = specs_of([(0.0, 1, 0.0), (0.0, 1, 0.0)])
     full = mk(cfg5, sp, wo=SMALL_WL, eo={"kv_memory_tokens": 2002, "alloc_mode": "full_reserve"})
     full.run(50.0)
     a = trace_of(full, "A")
     assert a[0][4] == 0.0 and a[1][4] > 0.0                       # second admission only after the first one finished
-    od = mk(cfg5, sp, wo=SMALL_WL, eo={"kv_memory_tokens": 2002, "alloc_mode": "ondemand_preempt"})
+    od = mk(cfg5, sp, wo=SMALL_WL, eo={"kv_memory_tokens": 2002, "alloc_mode": "ondemand_preempt", "victim_kv_eviction": rule})
     od.run(50.0)
     tr = od.trace
     assert [x for x in tr if x[0] == "A"] == [("A", 0, 1, False, 0.0), ("A", 1, 1, False, 0.0)]
@@ -174,16 +177,21 @@ def test_ondemand_admits_what_full_reserve_refuses_then_preempts_the_newest(cfg5
     assert len(p) == 1 and p[0][:4] == ("P", 1, 1, 1001)                       # the newest, holding 1001 tokens
     d0 = [x for x in tr if x[0] == "D" and x[1] == 0][0]
     r = [x for x in tr if x[0] == "R"]
-    assert len(r) == 1 and r[0][:5] == ("R", 1, 1, 0, 1001)                    # no surviving KV: prompt 1000 + 1 generated token
+    hit, new = (0, 1001) if rule == "whole" else (992, 9)
+    assert len(r) == 1 and r[0][:5] == ("R", 1, 1, hit, new)
     assert r[0][5] == pytest.approx(d0[3], abs=1e-12)                          # re-admitted the moment the survivor finished
     s = od.stats()
-    assert s["n_preempt"] == 1 and s["n_readmit"] == 1 and s["n_readmit_with_kv"] == 0
-    assert s["recompute_tokens"] == 1001 and s["lost_prefill_tokens"] == 0
-    assert s["admitted_prefill_tokens"] == s["processed_prefill_tokens"] == 1000 + 1000 + 1001
+    assert s["n_preempt"] == 1 and s["n_readmit"] == 1 and s["n_readmit_with_kv"] == (0 if rule == "whole" else 1)
+    assert s["recompute_tokens"] == new and s["lost_prefill_tokens"] == 0 and s["recompute_processed_tokens"] == new
+    assert s["admitted_prefill_tokens"] == s["processed_prefill_tokens"] == 1000 + 1000 + new
     assert s["n_turns_done"] == 2 and od.held == 0 and od.idle_sum == 0
     assert s["n_admitted"] == 2 and s["n_hits"] == 0                            # re-admissions are not in the hit statistics
+    assert s["max_preempt_per_turn"] == 1 and s["n_turns_preempted"] == 1 and s["n_turns_preempted_ge3"] == 0
+    # evicted tokens are additive (batching-independent): the whole victim vs the 9 tokens the survivor grew by
+    assert s["evicted_tokens"] == (1001 if rule == "whole" else 9) and s["n_evictions"] == (1 if rule == "whole" else 0)
+    assert (s["n_partial_evictions"] == 0) == (rule == "whole")
     # boundary of the admission test: the second prompt needs 1000 tokens + 1 sampled token next to the first request's 1001
-    tight = mk(cfg5, sp, wo=SMALL_WL, eo={"kv_memory_tokens": 2001, "alloc_mode": "ondemand_preempt"})
+    tight = mk(cfg5, sp, wo=SMALL_WL, eo={"kv_memory_tokens": 2001, "alloc_mode": "ondemand_preempt", "victim_kv_eviction": rule})
     tight.run(50.0)
     a2 = trace_of(tight, "A")
     assert a2[0][4] == 0.0 and a2[1][4] > 0.0 and tight.stats()["n_preempt"] == 0
@@ -388,7 +396,8 @@ def _summary_without_run_specific(s: dict) -> dict:
     return {k: v for k, v in s.items() if k not in skip and not k.startswith("wall")
             and k not in ("n_preempt", "n_readmit", "n_readmit_with_kv", "recompute_tokens", "lost_prefill_tokens",
                           "admitted_prefill_tokens", "processed_prefill_tokens", "n_fallback_retract", "ratio_final",
-                          "ratio_min_seen")}
+                          "ratio_min_seen", "recompute_processed_tokens", "max_preempt_per_turn", "n_turns_preempted",
+                          "n_turns_preempted_ge3", "n_partial_evictions")}
 
 
 @pytest.mark.parametrize("mode", DYN)
@@ -405,7 +414,8 @@ def test_alloc_mode_with_infinite_memory_equals_full_reserve_with_infinite_memor
         eng.trace = []
         eng.run(1500.0)
         wins = rec.finalize(eng.end_time)
-        outs[m] = (_summary_without_run_specific(eng.stats()), [{k: v for k, v in w.items() if k not in ("preemptions", "recompute_tokens", "reserved_mean")}
+        outs[m] = (_summary_without_run_specific(eng.stats()), [{k: v for k, v in w.items() if k not in ("preemptions", "recompute_tokens", "reserved_mean", "recompute_processed",
+                                                                                 "lost_prefill", "preempt_max_turn")}
                                                                  for w in wins], rec.queue_trace(), [x for x in eng.trace if x[0] in "AD"])
     a, b = outs["full_reserve"], outs[mode]
     dump = lambda o: json.dumps(o, sort_keys=True, default=float)                           # noqa: E731  (NaN-safe comparison)
@@ -522,11 +532,13 @@ def test_results_are_deterministic_and_the_closed_mode_keeps_n_sessions(cfg5, mo
 # ============================================================================ (5) naive reference simulator
 def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: float, *, M: float, mode: str, cache: bool = True,
                         limited: bool = True, chunk_budget: Optional[int] = None, max_seqs: Optional[int] = None,
-                        watermark: float = 0.0):
+                        watermark: float = 0.0, tail: bool = True, first_chunk: bool = False):
     """Deliberately naive iteration-by-iteration re-implementation of both allocation modes from the prose of the pre-registration:
     plain lists, everything recomputed from per-request records on every turn, the LITERAL vLLM running loop, the SGLang sort key,
     no global counters / batching / lazy queues. A pass runs when the state changed (arrival, tool return, completion, prefill iteration,
-    preemption), never in a turn with a preemption / retraction. Returns the trace in the Engine.trace format (A, D, P, R)."""
+    preemption), never in a turn with a preemption / retraction. ``tail`` = amendment 2 (the entry of a preempted request is trimmed
+    tail-first by the deficit; every other idle session is evicted whole), ``first_chunk`` = the first-chunk admission sensitivity.
+    Returns the trace in the Engine.trace format (A, D, P, R)."""
     e, w = cfg["engine"], cfg["workload"]
     CB = chunk_budget if chunk_budget is not None else e["prefill_chunk_budget"]
     MS = max_seqs if max_seqs is not None else e["max_running_seqs"]
@@ -564,9 +576,23 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
     def idle_sum():
         return sum(k for _, k in idle)
 
-    def evict_to_fit(used):
-        while used + idle_sum() > M:
+    def is_victim(sid):
+        return any(r["sid"] == sid and r["resumed"] for r in waiting)
+
+    def evict_tokens(need):
+        """Free ``need`` idle tokens, LRU first; a preempted request's entry is trimmed from its tail (``tail``), others are evicted whole."""
+        while need > 0:
+            sid, kv = idle[0]
+            if tail and kv > need and is_victim(sid):
+                idle[0][1] = kv - need
+                return
             idle.pop(0)
+            need -= kv
+
+    def evict_to_fit(used):
+        over = used + idle_sum() - M
+        if over > 0:
+            evict_tokens(over)
 
     def order(now):
         if kind == "fcfs":
@@ -681,8 +707,7 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
                     running.remove(v)
                     requeue(v, v["r"]["prompt"], front=False)
                     need = min(R * len(dec), idle_sum()) if headroom else 0
-                    while need > 0:
-                        need -= idle.pop(0)[1]
+                    evict_tokens(need)
                 while held_now() + len(dec) > M:
                     pfs = [x for x in running if x["kind"] == "pf"]
                     v = pfs[-1]
@@ -718,7 +743,8 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
                         kv_ = next((k for s, k in idle if s == r["sid"]), None)
                         new_ = total - (0 if kv_ is None else min(kv_, total - 1))
                         c_ = min(new_, chunk_left)
-                        fits = used + total + (1 if (c_ > 0 and c_ == new_) else 0) + wm <= M
+                        hit_ = total - new_
+                        fits = used + ((hit_ + c_) if first_chunk else total) + (1 if (c_ > 0 and c_ == new_) else 0) + wm <= M
                     else:
                         dec_b = D - r["gen"]
                         fits = (used + commit + offset + total + dec_b < M) or (n_run == 0 and total + dec_b <= M)
@@ -823,7 +849,8 @@ def _ref_vs_engine(cfg5, mode, kind, M, seed, eo=None, rate=0.5, cold=20, burst=
     cfg_ref = deep_update(cfg5, {"engine": {k: eo[k] for k in ratio_keys if k in eo}})
     ref = reference_dyn_trace(cfg_ref, specs, kind, horizon, M=M, mode=mode, cache=cache, limited=eo.get("admission_limited_by_prefill_budget", True),
                               chunk_budget=eo.get("prefill_chunk_budget"), max_seqs=eo.get("max_running_seqs"),
-                              watermark=eo.get("watermark_frac", 0.0))
+                              watermark=eo.get("watermark_frac", 0.0), tail=eo.get("victim_kv_eviction", "tail") == "tail",
+                              first_chunk=eo.get("ondemand_admission", "full_isl") == "first_chunk")
     return eng.trace, ref, eng
 
 
@@ -883,8 +910,8 @@ def test_new_modes_work_with_the_round4_eviction_rules(cfg5, mode, ev):
         wl = WorkloadParams.from_dict(c2["workload"])
         plan = ArrivalPlan(kind="constant", horizon_s=500.0, rate=0.5, initial_cold=20, burst_n=40, burst_t0=100.0, burst_width_s=10.0)
         specs = build_specs(wl, plan, 13)
-        rs = RunSpec(exp="t", policy="ev", seed=13, horizon_s=900.0, plan=plan, engine_overrides={"kv_memory_tokens": 70_000, "alloc_mode": mode},
-                     debug=True)
+        rs = RunSpec(exp="t", policy="ev", seed=13, horizon_s=900.0, plan=plan,
+                     engine_overrides={"kv_memory_tokens": 70_000, "alloc_mode": mode, "victim_kv_eviction": "whole"}, debug=True)
         res = simulate(c2, rs, specs)
         outs.append(res["summary"])
     s = outs[0]

@@ -75,7 +75,10 @@ class Recorder:
         self._evictions: List[int] = []                 # evicted whole sessions per window (round 4)
         self.dyn_on = False                              # round 5: allocation modes add the two columns below to the windows
         self._preempts: List[int] = []                  # running requests preempted / retracted per window
-        self._recompute: List[int] = []                 # prefill tokens spent at re-admissions of such requests
+        self._recompute: List[int] = []                 # prefill tokens demanded at re-admissions of such requests
+        self._recompute_done: List[int] = []            # prefill tokens PROCESSED for re-admitted requests (amendment 2)
+        self._lost: List[int] = []                      # admitted prefill tokens discarded unprocessed (victim preempted mid-prefill)
+        self._pre_max: List[int] = []                   # most preemptions suffered by one turn, over the events of the window
         self._lat: List[List[float]] = []
         self._first_wait: List[List[float]] = []
 
@@ -92,6 +95,9 @@ class Recorder:
             self._evictions.append(0)
             self._preempts.append(0)
             self._recompute.append(0)
+            self._recompute_done.append(0)
+            self._lost.append(0)
+            self._pre_max.append(0)
             self._lat.append([])
             self._first_wait.append([])
 
@@ -141,9 +147,22 @@ class Recorder:
         if n:
             self._evictions[self._win(t)] += n
 
-    def on_preempt(self, t: float) -> None:
-        """A running request was preempted (vLLM-like) or retracted (SGLang-like) at time ``t``."""
-        self._preempts[self._win(t)] += 1
+    def on_preempt(self, t: float, times: int = 1) -> None:
+        """A running request was preempted (vLLM-like) or retracted (SGLang-like) at time ``t``; it is the ``times``-th preemption of
+        its turn (the window records the maximum over its events)."""
+        k = self._win(t)
+        self._preempts[k] += 1
+        if times > self._pre_max[k]:
+            self._pre_max[k] = times
+
+    def on_lost(self, t: float, n: int) -> None:
+        """``n`` admitted prefill tokens of a request preempted mid-prefill were discarded unprocessed at time ``t``."""
+        if n:
+            self._lost[self._win(t)] += n
+
+    def add_recompute_processed(self, t: float, n: int) -> None:
+        """``n`` prefill tokens of re-admitted (previously preempted / retracted) requests were processed by an iteration ending at ``t``."""
+        self._recompute_done[self._win(t)] += n
 
     def on_readmit(self, t: float, new_tokens: int) -> None:
         """A preempted / retracted request was re-admitted; it needs ``new_tokens`` prefill tokens (recompute)."""
@@ -222,6 +241,9 @@ class Recorder:
             if self.dyn_on:
                 rows[-1]["preemptions"] = self._preempts[k]
                 rows[-1]["recompute_tokens"] = self._recompute[k]
+                rows[-1]["recompute_processed"] = self._recompute_done[k]
+                rows[-1]["lost_prefill"] = self._lost[k]
+                rows[-1]["preempt_max_turn"] = self._pre_max[k]
         return rows
 
     def backlog_trace(self) -> List[Tuple[float, float, float]]:

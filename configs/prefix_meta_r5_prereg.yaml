@@ -400,3 +400,187 @@ preregistration:
         (thousands of preemptions and recompute of the order of the whole prefill volume at M = 45000-150000, tight workload). The
         registered runs use the default gate (true); this is recorded so that the registered runs are not over-read as a statement about
         the ungated configuration.
+
+  # ======================================================================================================
+  # AMENDMENT 2 (2026-10-21). APPEND-ONLY: no line above this one was edited (a test checks that the first 34813 bytes of this file still
+  # hash to the text of commit 33899e1, which contains amendment 1; the first 29121 bytes still hash to the registered text of e24e3cd).
+  # Written during stage 3 in response to the round-5 adversarial review of HEAD 33899e1 (findings F1-F9), and COMMITTED BEFORE ANY
+  # REGISTERED-SIZE RUN of any command in any mode or variant. It changes no prediction S1-S4, no registered grid / seed / horizon and no
+  # decision threshold; it (i) replaces one engine rule that the review showed to be a biased reading (B1), (ii) adds reporting, a
+  # preemption-thrash label and sensitivity variants, (iii) makes the evaluation parameters machine-readable and (iv) corrects registered
+  # text that is wrong or incomplete. Where a rule was ambiguous the registered reading is again the one NOT favourable to the predictions.
+  # ======================================================================================================
+  amendment_2:
+    date: 2026-10-21
+    state_at_writing: >-
+      HEAD = 33899e1 plus uncommitted stage-3 code (engine switches, runner guards / variants, evaluator, report, tests). No registered seed
+      (3000-3002, 3100-3104, 3200-3202, 3300-3304) has been run by anyone in any mode; no calib / curve / burst / cap command has been run at
+      registered size or from a clean tree in stage 3. The committed quick-smoke outputs of stage 1 (seeds 7300-7303) are provenance only.
+    looks_disclosure:
+      stage1_before_amendment_1: >-
+        (restated, review finding F7) the stage-1 debug looks printed 'sessions done' at n in {28, 100, 300} in both new modes (quick seed 7300,
+        2000-3000 s) BEFORE amendment 1; 'sessions done' is the S1 outcome variable, so the three rule corrections of amendment 1 (A1-A3) were
+        made after outcome-bearing counters had been seen on an unregistered seed. They were correctness fixes found by tests, but the report
+        states this order.
+      review_numbers_known_to_the_amendment_author: >-
+        The review text (unregistered seeds 7300 and 7600-7657, scratch code outside the repo) reported to the implementer: the quick-smoke curve
+        values at n = 8 / 24 / 100 (mu within about 2 % of FULL_RESERVE, e.g. 0.0510 / 0.05125 / 0.05125 at n = 100), 'S1/S4 PASS and KILL=False
+        are close to certain by construction', registered-setting preemption rates (<= 0.012 per turn, at most 4-5 preemptions of one turn at
+        n = 300), re-admissions that found surviving KV under the stage-1 rule (1/10, 1/30, 2/34, 2/81 for ondemand FCFS at n = 28 / 60 / 100 /
+        300 and 5/91 for LPM n = 300; 0 in all RATIO cells), an ungated stress run (10,818 preemptions, 3.3 per turn, 80 % of admitted prefill
+        discarded) and a chunk-only admission probe (preemptions up 10-20x, sessions done within 3.4 %). The amendment author therefore expects
+        S1 PASS and KILL_FALSE in both modes before any registered run; this expectation is recorded here, not used to choose any value.
+      stage3_looks: >-
+        (a) the 470-test suite on HEAD (470 passed) and the updated suite; (b) a timing probe (seed 7700, FCFS n = 28 / 300, all three modes,
+        35000 s; only wall seconds printed); (c) printed counters of the unit-test workloads (workload seeds 5, 7, 11, 13, 17, 21-25, 31; congested
+        scenarios, M = 45000 / 70000) used to design the amendment-2 tests, in particular re-admissions with surviving KV under the 'whole' and
+        'tail' rules (ondemand 24 -> 93 of ~7000 at M = 45000 ungated, 29 -> 75 at M = 70000; ratio 0 -> 0). No registered seed was involved.
+    review: >-
+      Round-5 adversarial review of branch pilot/prefix-meta at HEAD 33899e1 (V1-V6 verified, F1-F9 findings). V1: FULL_RESERVE is bit-identical
+      to round 4; V2: the pre-registration is genuine and append-only; V5/V6: event-driven passes equal a pass at every iteration, invariants
+      hold, n_fallback_retract = 0. The dispositions below are the implementer's, each with its reason.
+    dispositions:
+      F1_design_not_a_severe_test_of_artifact:
+        disposition: ACCEPTED (text correction + scoping); the recommended decode-length sweep is REJECTED for this round.
+        correction: >-
+          The sentence of known_at_writing.foreseeability_of_the_null 'at most d = 100 tokens per running request, i.e. <= ~28 x 100 = 2800 tokens
+          ~ 0.9 % of M' undercounts the excess of FULL_RESERVE over the KV actually held: FULL_RESERVE also reserves the not yet prefilled
+          remainder of in-progress prefills (E_t is reserved at admission), which the admission gate bounds by prefill_chunk_budget = 8192
+          tokens. The excess is therefore <= 8192 + d x N_run tokens (about 11 000 tokens, 3.7 % of M, at N_run = 28). This is an arithmetic
+          bound on the registered configuration, not a measurement; the review's single unregistered smoke gave about 6.3k (2.1 % of M) at n = 100.
+          The registered cells measure the mean KV held in the new modes and the mean KV reserved in FULL_RESERVE at every n (information row
+          INFO-reservation-excess; different trajectories, indicative only).
+        scoping: >-
+          Every ANSWER row and the report state that the result concerns THIS workload (d = 100 decode tokens per turn, E_lb ~ 10.7k) and that a
+          'persists' / 'not an artifact' answer is evidence about a ~1-4 % reservation excess only; nothing is claimed for long-decode workloads.
+        rejected_sweep: >-
+          A sweep over d (e.g. 100 / 1000 / 4000) is a new independent variable of the research design, not a repair of this one: lambda_miss,
+          N_lb, n* and the registered grid {8..300} are all tied to d = 100 (at d = 4000 contexts reach M within a session and N_lb falls to a
+          handful), so it needs its own calibration, grid and predictions, and the choice of d values belongs to the lead. Flagged as the open
+          item for a round 6.
+      F2_victim_kv_destroyed:
+        disposition: ACCEPTED; engine rule B1 (below) replaces the stage-1 rule; the stage-1 rule is kept as sensitivity variant stage1_whole_victim.
+        why: >-
+          Confirmed in code and in the review's counts: with whole-session eviction a preempted / retracted request's cached KV is evicted in the
+          same step in almost every case (ratio_reserve: the idle pool is empty at a decode OOM and the 20 x n headroom is far below a whole
+          session, so the victim's prompt was ALWAYS evicted, 0 re-admissions with KV in every cell). The stage-1 sentence in
+          engine_semantics.ratio_reserve.implemented_as.retract_fate ('a documented simplification that favours retention') and the sentence
+          in amendment 1 (fidelity_gaps_recorded_not_changed) that the bias concerns 'the ondemand_preempt mode' only are corrected here: under
+          the stage-1 rule BOTH new modes lose the victim's KV almost always, which biases towards 'collapse persists' (more recompute at high n).
+        direction_of_remaining_bias: >-
+          The amended rule keeps the victim's entry at the MRU end of the idle LRU (as at stage 1), whereas SGLang would place a retracted prompt
+          by its older last-access time; so the amended rule favours retention and the stage-1 rule favours loss. The two rules bracket the real
+          systems; the registered headline is the amended rule (the reading not favourable to 'collapse persists'), the stage-1 rule is the
+          labelled sensitivity.
+      F3_no_thrash_detector:
+        disposition: ACCEPTED (counters, columns, label, rename); thresholds 0.05 and 10 are the review's suggestion, registered below.
+        details: >-
+          Engine counters max_preempt_per_turn, n_turns_preempted, n_turns_preempted_ge3, recompute_processed_tokens; window columns
+          recompute_processed, lost_prefill and preempt_max_turn; tail-window (last 5000 s) preemption statistics and the label for every burst
+          and cap run. recompute_frac is now processed recompute work / processed prefill work (<= 1); the stage-1 quantity (re-admission DEMAND /
+          processed prefill, which reached 3.98 and 6.38 in the review's stress runs) is kept as readmit_demand_frac; lost_prefill_frac =
+          discarded / (processed + discarded). The label never changes a verdict; it is printed next to every verdict row.
+      F4_full_isl_flag_unverified:
+        disposition: CANNOT BE VERIFIED here (no network, no source access; the flag is the scout's extractor-reported claim); ACCEPTED as a sensitivity.
+        details: >-
+          Variant ondemand_first_chunk (engine switch ondemand_admission = first_chunk): the vLLM-like waiting-loop test needs only the cached
+          prefix plus the first chunk to fit. Full pipeline (calib, curve, burst, cap) for ondemand_preempt only. The registered rule stays
+          full_isl. Figure 3 states that the preemption rate rests on this unverified flag.
+      F5_scope_of_S4_and_lpm_fallback:
+        disposition: ACCEPTED (wording + informational variant); the registered S4 is unchanged.
+        wording: >-
+          S4 tests 'allocation rule + an IDEALISED LPM that never falls back'; vLLM has no LPM policy and SGLang falls back to FCFS above 128
+          waiting requests. At closed n = 300 the queue is about 258 in both modes (review), so a faithful SGLang scheduler would run FCFS there and
+          d_m would be about 0. Variant lpm128 (policy lpm128_lru, closed n = 300, 3 seeds, both modes) measures it; row S4-lpm128 (information).
+      F6_provenance_hazard:
+        disposition: >-
+          ACCEPTED. Non-quick runs refuse --set overrides and a dirty tree; burst / cap / report refuse an input dir that is not a finished,
+          non-quick, clean-tree, same-commit, same-variant result with exactly the registered seeds (quick and registered never mix).
+      F7_disclosure_precision:
+        disposition: ACCEPTED; see looks_disclosure.stage1_before_amendment_1 and the report.
+      F8_minor:
+        disposition: >-
+          Comment (engine.py) fixed to 'amendment 1, item A2'. REJECTED for the RATIO commit details: '+ page_size per admission',
+          'per_req_overhead' and reserving a prefilling request's d before it decodes (SGLang adds max_new on the last chunk).
+        reason: >-
+          With block size 1 the page term is 1 token per admission; per_req_overhead has no value in the scout's report; the prefilling-d term is
+          <= d = 100 tokens per in-progress prefill (at most a few such requests). All together well below 0.2 % of M, all inferred from an
+          extractor summary, and changing the registered A1 commit rule for details that cannot be checked would be tuning, not repair.
+      F9_reference_simulator_shares_the_authors_reading:
+        disposition: >-
+          ACKNOWLEDGED. The naive reference simulator is extended to the amendment-2 switches (tail / whole victim rule, first-chunk
+          admission) and still agrees with the engine trace for trace, but it is written from the same prose by the same author: it checks the
+          code against the reading, not the reading against vLLM / SGLang. The tail rule is additionally pinned by hand-worked scenarios
+          (1001 held tokens minus the 9 tokens the survivor grows by = 992 surviving). No fidelity claim beyond 'simulator of the scout-reported rules'.
+
+    engine_rule_changes:
+      B1_victim_kv_eviction_tail_first:
+        registered_text_replaced: >-
+          engine_semantics.common_to_both_new_modes.cache_hit_unit and ondemand_preempt.implemented_as.victim_fate / ratio_reserve.implemented_as
+          .retract_fate: 'idle KV ... is evicted (whole sessions ...)' as applied to a preempted / retracted request's own KV.
+        amended: >-
+          The cached KV of a preempted / retracted request (ondemand: pos or ctx tokens; ratio: the prompt) is evicted tail-first, token by token,
+          and only as far as the memory deficit requires; every other idle session is still evicted whole in LRU order. The victim's entry keeps
+          the position it was given at the preemption (MRU end; victims popped first are older). So older idle sessions go first and a victim is
+          trimmed only when they do not cover the deficit. Re-admission hits min(surviving tokens, num_tokens - 1) as before. Engine switch
+          victim_kv_eviction in {tail (registered), whole (stage-1 rule, variant stage1_whole_victim)}; tail needs LRU eviction (the engine
+          raises otherwise; the registered policies are LRU). ratio_reserve: the 20 x remaining headroom now trims min(20 n, deficit chain) tokens
+          of the victim's prompt instead of the whole session.
+      B2_engine_switch_ondemand_admission:
+        amended: "ondemand_admission in {full_isl (registered), first_chunk (variant ondemand_first_chunk)}; no change to the registered rule."
+      B3_lpm_fallback_allowed:
+        amended: "the new modes accept the ordering policy lpm_fallback (threshold 128) so that variant lpm128 can run; the registered policies fcfs_lru and lpm_lru are unchanged."
+    engine_overrides_added:                    # merged into registered_design.modes.engine_overrides (a test checks the config against registered + added)
+      ondemand_preempt: {victim_kv_eviction: tail, ondemand_admission: full_isl}
+      ratio_reserve: {victim_kv_eviction: tail}
+
+    reporting_and_labels:
+      thrash_label:
+        rule: >-
+          A cell is flagged iff preemptions per admitted turn > preemptions_per_turn_above OR the most preemptions suffered by one turn in the
+          window set > max_per_turn_above. Window set: the measurement window [5000, 35000) of a curve cell (per seed; a cell counts as flagged if
+          any of its 3 seeds is), the last 5000 s of a burst / cap run. Reported in numbers['thrash'] and in the notes of S1-S4 / ANSWER rows
+          (cells S1: n* and 300, FCFS-LRU; S2: both burst sizes; S3: both arms; S4: n = 300 both policies). It never changes a verdict.
+        thresholds: {preemptions_per_turn_above: 0.05, max_per_turn_above: 10}
+        provenance_of_thresholds: >-
+          The review's suggestion ('tail preemptions/turn > 0.05 or max per turn > 10'). The review also reported registered-setting rates of
+          <= 0.012 per turn and at most 4-5 preemptions of one turn at n = 300 on unregistered seeds, i.e. the thresholds sit above the calm
+          regime and below the stress runs; they were not tuned to any registered-seed result.
+      burst_cap_outputs: "runs.csv of burst / cap carries tail_preemptions_per_turn, tail_preempt_max_turn, tail_recompute_frac, tail_lost_prefill_frac, tail_thrash."
+      curve_outputs: "curve_runs.csv carries preemptions_per_turn, preempt_max_turn, recompute_frac, readmit_demand_frac, lost_prefill_frac, thrash."
+      figure_names: >-
+        fig1_mu_curves_three_modes.pdf, fig2_burst_outcomes.pdf, fig3_preemption_rate_vs_n.pdf (names as registered). Figure 3 plots preemptions per
+        admitted turn, discarded prefill fraction and the most preemptions of one turn against n.
+
+    evaluation_parameters:                     # machine-readable copy of the decision readings (config `evaluation:` must equal it)
+      round1_lambda_miss_full_reserve: 0.047418947
+      unimodal: {se_mult: 2.0, rel_tol_registered: 0.02, rel_tol_lenient: 0.10, abs_tol_strict: 1.0e-12}
+      S1: {c1_mult: 1.3, c2_mult: 2.0, kill_frac: 0.8}
+      S2: {min_not_recovered_burst: 3, max_not_recovered_nobust: 1}
+      S3: {min_recovered_capped: 2, max_recovered_nocap: 0, max_nstar_exclusive: 100}
+      S4: {min_gap_over_lambda: 0.05}
+    evaluation_clarifications:
+      S1_C2_at_a_grid_edge: >-
+        'A mode in which the argmax is at the first or last grid point cannot satisfy C2' is implemented literally: C2 = (max mu_bar >= 2 mu_bar(300))
+        AND the argmax is an interior grid point; the numeric value of the first conjunct is reported as C2_numeric.
+      S1_per_seed_unimodality: >-
+        On a single seed's curve there is no SE; the unimodal tolerance is rel_tol_registered x lambda_m (the SE term is zero).
+      verdict_vocabulary: >-
+        S1-S4 and their clauses: PASS / FAIL / NOT_EVALUABLE. S1-KILL: KILL_TRUE / KILL_FALSE. ANSWER: persists / artifact / mixed (the registered
+        template: persists iff S1 PASS and KILL_FALSE; artifact iff KILL_TRUE; otherwise mixed). prediction_eval.csv lists the headline (registered)
+        readings first, then clauses, the sensitivities of the registration, the sensitivity-variant rows (id suffix @variant, reading
+        sensitivity), then information rows. A test whose registered cells are not all present is NOT_EVALUABLE.
+      recovered: "unchanged (last 5000 s: hit rate > 0.8 AND mean backlog (queue + gate) < 20); S2-hit-only drops the backlog clause."
+      S3_cap_check: "the evaluator recomputes n* from the curve dir it is given and marks S3 NOT_EVALUABLE if the cap used by the cap runs differs."
+
+    sensitivity_variants:                      # never headline; each variant has its own calib / curve / burst / cap directories (config `variants:`)
+      stage1_whole_victim: {pipeline: [calib, curve, burst, cap], modes: [ondemand_preempt, ratio_reserve], note: "stage-1 victim rule (finding F2)"}
+      ondemand_first_chunk: {pipeline: [calib, curve, burst, cap], modes: [ondemand_preempt], note: "first-chunk admission (finding F4)"}
+      lpm128: {pipeline: [curve], modes: [ondemand_preempt, ratio_reserve], note: "LPM with SGLang's fallback, n = 300 only (finding F5); informational row S4-lpm128"}
+
+    run_plan_stage3: >-
+      1. Commit this amendment with the code and tests. 2. From a clean tree at that commit, at most 3 workers: calib -> curve -> burst -> cap
+      (registered), then the variants' pipelines, each into a NEW results/prefix_meta_r5_<cmd>[_<variant>]/<timestamp>/ directory. 3. The
+      report (prediction_eval.csv, three figures, tables) into results/prefix_meta_r5/<timestamp>/. 4. Small summaries, meta and configs are
+      force-added and committed. A run that raises aborts the experiment. No parameter above or in the config is changed after the first
+      registered run; anything else is a further amendment committed before the affected re-run, and the first-run results are still reported.

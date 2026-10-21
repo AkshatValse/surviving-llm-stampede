@@ -5,6 +5,8 @@
     /opt/anaconda3/bin/python experiments/prefix_meta_r5_run.py curve [--quick]
     /opt/anaconda3/bin/python experiments/prefix_meta_r5_run.py burst --calib-dir D [--quick]
     /opt/anaconda3/bin/python experiments/prefix_meta_r5_run.py cap   --calib-dir D --curve-dir D [--quick]
+    /opt/anaconda3/bin/python experiments/prefix_meta_r5_run.py report --calib-dir D --curve-dir D --burst-dir D --cap-dir D [--sens-dir V:CMD=D ...]
+    ... any command with --variant NAME (sensitivity variants of the config `variants` block)
 
 Config: configs/prefix_meta_r5.yaml (merged over configs/prefix_meta.yaml). Predictions S1-S4, the registered grid / seeds / horizons
 and the exact decision readings are in configs/prefix_meta_r5_prereg.yaml (committed before any round-5 code).

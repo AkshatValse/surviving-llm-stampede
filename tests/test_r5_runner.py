@@ -25,6 +25,8 @@ CONFIG = REPO / "configs" / "prefix_meta_r5.yaml"
 PREREG = REPO / "configs" / "prefix_meta_r5_prereg.yaml"
 REGISTERED_BYTES = 29121
 REGISTERED_SHA256 = "10f50df6c83f1d0235c2c3e0ba7ed9b6cc0f9e97be591d35671ba2451b738b16"      # prereg text of commit e24e3cd
+AMENDMENT1_BYTES = 34813
+AMENDMENT1_SHA256 = "e0f82f52c75e9947848bf4ceb06ebf3e6ecd0e82eee97b63d5fc41d5a5065840"       # prereg text of commit 33899e1 (registered + amendment 1)
 QUESTION = ("Is prefix-cache metastability in agent serving an artifact of reserving each running request's full end-of-turn KV at "
             "admission, or does it persist under vLLM-like on-demand allocation with recompute preemption and SGLang-like "
             "new_token_ratio reservation with retraction?")
@@ -68,7 +70,9 @@ def test_amendment_is_append_only():
     raw = PREREG.read_bytes()
     assert len(raw) > REGISTERED_BYTES
     assert hashlib.sha256(raw[:REGISTERED_BYTES]).hexdigest() == REGISTERED_SHA256
-    assert "amendment_1" in yaml.safe_load(raw)["preregistration"]
+    assert len(raw) > AMENDMENT1_BYTES and hashlib.sha256(raw[:AMENDMENT1_BYTES]).hexdigest() == AMENDMENT1_SHA256
+    pre = yaml.safe_load(raw)["preregistration"]
+    assert "amendment_1" in pre and "amendment_2" in pre
 
 
 def test_config_equals_the_registered_design(cfg, design):
@@ -87,7 +91,9 @@ def test_config_equals_the_registered_design(cfg, design):
     for key in ("policy", "lam_mult", "cold_sessions", "arms", "seeds", "horizon_s", "recovered_hit_above", "recovered_backlog_below"):
         assert cd[key] == rp[key], key
     assert cfg["modes"]["registered"] == design["modes"]["registered"] and cfg["modes"]["reference"] == design["modes"]["reference"]
-    assert cfg["modes"]["engine_overrides"] == design["modes"]["engine_overrides"]
+    added = yaml.safe_load(PREREG.read_text())["preregistration"]["amendment_2"]["engine_overrides_added"]
+    expect = {m: {**o, **added.get(m, {})} for m, o in design["modes"]["engine_overrides"].items()}
+    assert cfg["modes"]["engine_overrides"] == expect                  # registered overrides + the two amendment-2 switches (nothing else)
     assert cfg["metrics"]["window_s"] == design["window_s"] == 1000.0
     for name, (kind, ev) in design["policies"].items():
         assert cfg["policies"][name]["kind"] == kind and cfg["policies"][name]["eviction"] == ev
@@ -96,6 +102,17 @@ def test_config_equals_the_registered_design(cfg, design):
     wl = WorkloadParams.from_dict(cfg["workload"])
     from prefixmeta.workload import length_biased_session_cap
     assert length_biased_session_cap(cfg["engine"]["kv_memory_tokens"], wl) == design["N_lb"] == 28
+
+
+def test_evaluation_thrash_and_variants_blocks_equal_amendment_2(cfg):
+    a2 = yaml.safe_load(PREREG.read_text())["preregistration"]["amendment_2"]
+    assert cfg["evaluation"] == a2["evaluation_parameters"]
+    assert cfg["thrash"] == a2["reporting_and_labels"]["thrash_label"]["thresholds"]
+    assert set(cfg["variants"]) == set(a2["sensitivity_variants"])
+    for name, v in a2["sensitivity_variants"].items():
+        assert set(v["pipeline"]) == ({"calib", "curve", "burst", "cap"} if name != "lpm128" else {"curve"})
+        assert (cfg["variants"][name].get("modes") or ["ondemand_preempt", "ratio_reserve"]) == v["modes"]
+        assert cfg["variants"][name].get("commands", v["pipeline"]) == v["pipeline"] or name != "lpm128"
 
 
 def test_seeds_are_fresh_and_quick_seeds_are_unregistered(cfg, design):
