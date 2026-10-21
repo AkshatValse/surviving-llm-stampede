@@ -47,6 +47,7 @@ engine:
   prefill_attn_s: 3.5e-9
   # ctx_i in the prefill-attention term: "end" = KV length after the chunk (prefix + new_i),
   # "mid" = prefix + new_i / 2 (exact causal average). Spec text is ambiguous; "end" is the literal reading.
+  # "end" overcharges misses (lambda_miss ~9% lower than with "mid"); the "mid" variant is run as an E0 sensitivity.
   prefill_attn_ctx: end
   prefill_chunk_budget: 8192      # prefill tokens per iteration (chunked prefill)
   max_running_seqs: 256
@@ -61,6 +62,11 @@ engine:
   admission_limited_by_prefill_budget: true
   # Advance runs of pure-decode iterations in closed form (exact; see engine.py). false = one iteration at a time.
   batch_decode_iterations: true
+  # What happens to a session's KV after its LAST turn. true: freed at once (an oracle: a real engine cannot know
+  # the session ended). false: it stays as most-recently-used evictable idle KV (engine-like; crowds out live
+  # sessions, raises the escape rate). Spec allows either ("evictable (or freed)"); default true keeps the E0
+  # calibration comparable; the false variant is run as an E0 sensitivity (--set engine.free_kv_on_session_end=false).
+  free_kv_on_session_end: true
 
 # ---------------------------------------------------------------- workload
 workload:
@@ -80,9 +86,12 @@ policies:
   lpm128:   {kind: lpm_fallback, threshold: 128}
   aging10:  {kind: aging_lpm, w_max_s: 10.0}
   aging30:  {kind: aging_lpm, w_max_s: 30.0}
-  # session_cap: auto => floor(M / context at the mid-turn of an average session); or an integer.
-  fcfs_cap: {kind: fcfs, session_cap: auto}
-policy_order: [fcfs, lpm, lpm128, aging10, aging30, fcfs_cap]
+  # session_cap: auto => spec-literal floor(M / context at the mid-turn of an average session) (=45 here);
+  # auto_lb => floor(M / turn-weighted mean context) (=28 here): sessions present in the system are length-biased
+  # (a T-turn session is present ~T times as long), so their mean context is E[sum_t E_t]/E[T], not E_mid.
+  fcfs_cap:    {kind: fcfs, session_cap: auto}
+  fcfs_cap_lb: {kind: fcfs, session_cap: auto_lb}
+policy_order: [fcfs, lpm, lpm128, aging10, aging30, fcfs_cap, fcfs_cap_lb]
 
 # ---------------------------------------------------------------- metrics
 metrics:
@@ -152,12 +161,27 @@ e1:
   robust_policies: [fcfs, lpm]             # lognormal CV 1.5 tool-time variant
   robust_seeds: [0]
   robust_cv: 1.5
+  # SUPPLEMENTARY (not in the spec's decision rule): the spec's cold start (300) and burst (200) exceed the
+  # LPM-128 threshold (128) on the first pass, so LPM-128 == FCFS there by construction. These sweeps measure the
+  # basin of attraction (largest cold start recovered) per policy, and LPM-128 vs LPM below/above the threshold.
+  cold_sweep:
+    cold_sessions: [25, 50, 75, 100, 125, 150, 200]
+    lam_mults: [1.25, 1.5, 2.0]
+    policies: all
+    seeds: [0, 1, 2, 3, 4]
+  # SUPPLEMENTARY: FCFS-CAP cap sweep at the spec cold-start size (spec N*=45; length-biased N*=28).
+  cap_sweep:
+    caps: [10, 15, 20, 24, 28, 32, 35, 40, 45]
+    lam_mults: [1.25, 1.5, 2.0]
+    seeds: [0, 1, 2]
   quick:
     lam_mults: [2.0]
     policies: [fcfs, lpm, lpm128]
     seeds: [0]
     horizon_s: 3000.0
     robust_policies: [fcfs]
+    cold_sweep: {cold_sessions: [25], lam_mults: [2.0], policies: [fcfs, lpm], seeds: [0]}
+    cap_sweep: {caps: [20], lam_mults: [2.0], seeds: [0]}
 
 # ---------------------------------------------------------------- E2 burst
 e2:
@@ -173,9 +197,15 @@ e2:
   trap_min_s: 10000.0
   recovered_hit_above: 0.8
   recovered_queue_below: 20.0
+  # SUPPLEMENTARY: perturbation-size sweep (burst sizes around the LPM-128 threshold of 128; 200 is the spec size).
+  burst_sweep:
+    burst_sessions: [25, 50, 100, 125, 150]
+    policies: all
+    seeds: [0, 1, 2, 3, 4]
   quick:
     policies: [fcfs, lpm128]
     seeds: [0]
+    burst_sweep: {burst_sessions: [25], policies: [fcfs, lpm], seeds: [0]}
     warmup_s: 1000.0
     after_s: 3000.0
     hit_eval_from_s: 1000.0
@@ -183,14 +213,26 @@ e2:
 # ---------------------------------------------------------------- E3 ramp
 e3:
   lo_mult_of_lambda_miss: 0.5
-  hi_mult_of_lambda_cap: 0.9
+  hi_mult_of_lambda_cap: 0.9      # spec peak (used only when `ramps` is absent)
   leg_s: 30000.0
   policies: all
   seeds: [0, 1, 2]
   grid_points: 40
+  # `spec` is the spec's ramp (peak 0.9 lambda_cap). The review found the good state does not escape within a run
+  # below ~lambda_cap, so the spec ramp cannot show hysteresis; `above_cap` (peak 1.3 lambda_cap) is SUPPLEMENTARY.
+  ramps:
+    - {name: spec,      hi_mult_of_lambda_cap: 0.9, seeds: [0, 1, 2]}
+    - {name: above_cap, hi_mult_of_lambda_cap: 1.3, seeds: [0, 1, 2, 3, 4, 5]}
+  # per-run escape lambda on the up leg and re-entry lambda on the down leg (from the 100 s queue trace)
+  escape_queue_above: 128
+  reentry_queue_below: 20
+  reentry_bins: 5
   quick:
     leg_s: 3000.0
     policies: [fcfs, lpm]
+    ramps:
+      - {name: spec,      hi_mult_of_lambda_cap: 0.9, seeds: [0]}
+      - {name: above_cap, hi_mult_of_lambda_cap: 1.3, seeds: [0]}
     seeds: [0]
 
 # ---------------------------------------------------------------- E4 escape under LPM-128
@@ -200,6 +242,10 @@ e4:
   seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
   horizon_s: 50000.0
   escape_queue_above: 128
+  # good-state queue statistic that does not saturate at the stop threshold: the good state ends at the last 100 s
+  # bin before escape whose mean queue is below this level (the raw pre-stop max is always exactly 128).
+  good_state_onset_queue_below: 20
+  escaped_by_s: [10000, 25000, 50000]
   quick:
     lam_mults: [2.0]
     seeds: [0, 1]

@@ -16,7 +16,8 @@ from prefixmeta.metrics import AreaTrace, Recorder, longest_run_below, tail_stat
 from prefixmeta.policies import AgingLpm, Fcfs, Lpm, LpmFallback, make_policy
 from prefixmeta.sim import RunSpec, build_engine, deep_update, load_config, simulate
 from prefixmeta.workload import (ArrivalPlan, SessionSpecs, WorkloadParams, build_specs, default_session_cap,
-                                 tool_times, triangle_rate, turn_counts)
+                                 length_biased_mean_context, length_biased_session_cap, tool_times, triangle_rate,
+                                 turn_counts)
 
 CFG_PATH = Path(__file__).resolve().parent.parent / "configs" / "prefix_meta.yaml"
 ALL_POLICIES = ["fcfs", "lpm", "lpm128", "aging10", "aging30", "fcfs_cap"]
@@ -68,6 +69,28 @@ def test_context_lengths(cfg):
     assert wl.end_len(2) - wl.end_len(1) == 650               # growth per turn
     assert default_session_cap(300_000, wl) == math.floor(300_000 / wl.end_len(8)) == 45
     assert default_session_cap(float("inf"), wl) is None
+
+
+def test_length_biased_cap_matches_explicit_sum_and_is_28(cfg):
+    wl = WorkloadParams.from_dict(cfg["workload"])
+    p = 1.0 / wl.mean_turns
+    # independent computation: E[sum_{t<=T} E_t] / E[T] from the pmf of the capped geometric
+    pmf = {k: p * (1 - p) ** (k - 1) for k in range(1, wl.max_turns)}
+    pmf[wl.max_turns] = (1 - p) ** (wl.max_turns - 1)
+    assert sum(pmf.values()) == pytest.approx(1.0)
+    num = sum(pr * sum(wl.end_len(t) for t in range(1, k + 1)) for k, pr in pmf.items())
+    den = sum(pr * k for k, pr in pmf.items())
+    assert length_biased_mean_context(wl) == pytest.approx(num / den, rel=1e-12)
+    assert length_biased_mean_context(wl) > wl.end_len(8)          # length bias raises the typical context
+    assert length_biased_session_cap(300_000, wl) == 28 < default_session_cap(300_000, wl) == 45
+    assert length_biased_session_cap(float("inf"), wl) is None
+
+
+def test_session_cap_auto_lb_resolves_to_28(cfg):
+    eng, _, cap = build_engine(cfg, const_spec("fcfs_cap_lb", 0.1, 100.0))
+    assert cap == 28 and eng.session_cap == 28
+    assert build_engine(cfg, const_spec("fcfs_cap", 0.1, 100.0))[2] == 45
+    assert build_engine(cfg, const_spec("fcfs_cap", 0.1, 100.0, session_cap_override=17))[2] == 17
 
 
 def test_specs_deterministic_and_crn(cfg):
@@ -191,6 +214,69 @@ def test_batched_equals_unbatched(cfg, pol, lam, H):
     pd.testing.assert_frame_equal(da, db, rtol=1e-8, atol=1e-10)
 
 
+@pytest.mark.parametrize("pol", ["aging10", "aging30"])
+@pytest.mark.parametrize("lam_mult,cold,M", [(2.0, 75, 300_000), (2.75, 0, 300_000), (2.0, 40, 90_000)])
+def test_aging_batched_equals_unbatched(cfg, pol, lam_mult, cold, M):
+    """Batched decode runs are cut at aging-threshold crossings, so AGING-LPM is exact too."""
+    lam_miss = 0.0474
+    plan = ArrivalPlan(kind="constant", horizon_s=5000.0, rate=lam_mult * lam_miss, initial_cold=cold)
+    res = []
+    for batch in (True, False):
+        rs = RunSpec(exp="t", policy=pol, seed=4, horizon_s=5000.0, plan=plan,
+                     engine_overrides={"batch_decode_iterations": batch, "kv_memory_tokens": M})
+        res.append(simulate(cfg, rs))
+    a, b = res
+    for k in ["n_arrived", "n_sessions_done", "n_turns_done", "n_admitted", "n_hits", "n_evictions", "n_iterations",
+              "final_queue", "max_queue"]:
+        assert a["summary"][k] == b["summary"][k], k
+    assert a["summary"]["n_steps"] < b["summary"]["n_steps"]
+    pd.testing.assert_frame_equal(pd.DataFrame(a["windows"]), pd.DataFrame(b["windows"]), rtol=1e-8, atol=1e-10)
+
+
+def test_aging_crossing_during_batched_decode_matches_unbatched(cfg):
+    """Hand-built state: one turn-60 request decoding (99 iterations left), memory almost full, a resident hit H that
+    does not fit blocks the head, and an older small miss S that ages (W_max=4 s) mid-run. Unbatched, S is admitted
+    at the first iteration boundary after it ages (and evicts H's KV, so H is later a MISS). The batched engine must
+    reproduce that exactly (earlier code only re-checked at the end of the decode run)."""
+    import heapq
+
+    def build(batch):
+        n = 3
+        specs = SessionSpecs(arrival=np.full(n, np.inf), n_turns=np.full(n, 60, dtype=np.int64),
+                             tool_off=np.zeros(n, dtype=np.int64), tool_flat=np.full(200, 1e6))
+        c2 = deep_update(cfg, {"policies": {"ag4": {"kind": "aging_lpm", "w_max_s": 4.0}}})
+        rs = RunSpec(exp="t", policy="ag4", seed=0, horizon_s=20.0, plan=ArrivalPlan(kind="none", horizon_s=20.0),
+                     engine_overrides={"kv_memory_tokens": 52_000, "batch_decode_iterations": batch})
+        eng, rec, _ = build_engine(c2, rs, specs)
+        wl = eng.wl
+        eng.now = 3.0
+        A = Request(eng._rid, 0, 60, 0.0, 0.0, wl.prompt_len(60), wl.end_len(60))
+        eng._rid += 1
+        A.pos = A.prompt
+        A.offs = (A.pos + 1) - eng.G
+        A.done_g = eng.G + 99
+        eng.reserved += A.end
+        eng.n_D = 1
+        eng.sum_off += A.offs
+        heapq.heappush(eng._done_heap, (A.done_g, A.rid, A))
+        eng._turn[0] = 60
+        eng.in_system = 3
+        eng._turn[1] = 1
+        eng._arrived_t[1] = 0.0
+        eng._enqueue_turn(1, 0.0, 0.0)
+        eng._turn[2] = 16
+        eng._arrived_t[2] = 0.0
+        eng._enqueue_turn(2, 2.0, 2.0)
+        eng.idle[2] = wl.end_len(15)
+        eng.idle_sum = wl.end_len(15)
+        eng.trace = []
+        eng.run(20.0)
+        return [x for x in eng.trace if x[0] == "A"][:2]
+    unb, bat = build(False), build(True)
+    assert [x[1:4] for x in unb] == [(1, 1, False), (2, 16, False)]        # S first, then H as a miss
+    _assert_traces_equal(bat, unb)
+
+
 def test_first_pass_admission_respects_prefill_budget(cfg):
     n = 50
     specs = SessionSpecs(arrival=np.zeros(n), n_turns=np.ones(n, dtype=np.int64),
@@ -217,6 +303,27 @@ def test_memory_never_exceeds_M(cfg, pol):
     assert s["max_running"] <= cfg["engine"]["max_running_seqs"]
 
 
+def test_free_kv_on_session_end_flag(cfg):
+    """False keeps the dead session's KV as idle evictable cache (no oracle); True frees it at once."""
+    kw = dict(seed=2, arrivals_until=2_000.0)
+    done = {}
+    for flag in (True, False):
+        eo = {"kv_memory_tokens": float("inf"), "free_kv_on_session_end": flag}
+        eng, rec, _ = build_engine(cfg, const_spec("fcfs", 0.05, 8_000.0, engine_overrides=eo, debug=True, **kw))
+        eng.run(8_000.0)
+        assert eng.in_flight() == 0 and eng.n_sessions_done > 20
+        done[flag] = (len(eng.idle), eng.idle_sum, eng.n_sessions_done)
+    assert done[True][0] == 0 and done[True][1] == 0
+    assert done[False][0] == done[False][2]                  # every finished session left its KV behind
+    # under memory pressure dead KV is evicted LRU like any other idle KV and memory is still respected
+    res = simulate(cfg, const_spec("lpm", 0.3, 1500.0, seed=1, debug=True,
+                                   engine_overrides={"kv_memory_tokens": 80_000, "free_kv_on_session_end": False}))
+    assert res["summary"]["max_resident_tokens"] <= 80_000 and res["summary"]["n_evictions"] > 0
+    # dead KV crowds out live sessions: fewer follow-up hits than with the oracle at the same load/seed
+    base = simulate(cfg, const_spec("lpm", 0.3, 1500.0, seed=1, engine_overrides={"kv_memory_tokens": 80_000}))
+    assert res["summary"]["n_hits"] <= base["summary"]["n_hits"]
+
+
 def test_running_cap_respected(cfg):
     rs = const_spec("fcfs", 0.3, 800.0, engine_overrides={"max_running_seqs": 4}, debug=True)
     res = simulate(cfg, rs)
@@ -240,6 +347,22 @@ def test_infinite_memory_all_followups_hit_and_policies_agree(cfg):
     assert len(set(out.values())) == 1, out
 
 
+def test_infinite_memory_per_window_throughput_identical_across_policies(cfg):
+    """During the arrival period (not just after the drain) every policy completes the same turns per window and
+    has the same median latency, within a few percent, at a load where the waiting queue is sometimes nonempty."""
+    frames = {}
+    for pol in ["fcfs", "lpm", "lpm128", "aging10"]:
+        res = simulate(cfg, const_spec(pol, 0.4, 8_000.0, seed=2, engine_overrides={"kv_memory_tokens": float("inf")},
+                                       debug=False))
+        assert res["summary"]["max_queue"] >= 2                      # ordering can matter at this load
+        frames[pol] = pd.DataFrame(res["windows"])
+    ref = frames["fcfs"]
+    for pol, f in frames.items():
+        assert np.allclose(f["turns_per_s"], ref["turns_per_s"], rtol=0.06, atol=0.0), pol
+        assert np.allclose(f["lat_p50_s"], ref["lat_p50_s"], rtol=0.15, atol=0.05), pol
+        assert np.allclose(f["hit_rate_followup"].dropna(), 1.0), pol
+
+
 def test_cache_disabled_gives_zero_hits_for_all_policies(cfg):
     for pol in ALL_POLICIES:
         res = simulate(cfg, const_spec(pol, 0.05, 3000.0, seed=4, engine_overrides={"cache_enabled": False}, debug=True))
@@ -257,6 +380,57 @@ def test_conservation(cfg, pol, lam):
     assert s["n_admitted"] >= s["n_turns_done"]
     ws = sum(w["sessions_per_s"] for w in res["windows"]) * cfg["metrics"]["window_s"]
     assert ws <= s["n_sessions_done"] + 1e-6
+
+
+def _debug_engine_midrun(cfg, t_stop: float = 500.0, **eo):
+    """A congested mid-run state with waiting, prefilling/decoding, tool-call and idle sessions all present."""
+    plan = ArrivalPlan(kind="constant", horizon_s=t_stop, rate=0.2, initial_cold=30)
+    rs = RunSpec(exp="t", policy="lpm", seed=3, horizon_s=t_stop, plan=plan,
+                 engine_overrides={"kv_memory_tokens": 150_000, **eo}, debug=True)
+    eng, rec, _ = build_engine(cfg, rs)
+    eng.run(t_stop)
+    eng.check_invariants()
+    return eng
+
+
+def test_invariant_checker_detects_lost_duplicated_and_leaked_state(cfg):
+    """The location check must fail on mutants that the counting-only conservation test cannot see."""
+    import heapq
+    eng = _debug_engine_midrun(cfg)
+    assert eng._tool_heap and eng.idle and eng._waiting and eng._done_heap  # the interesting state exists
+    # (1) a session silently vanishes from the tool heap (tool-return event lost)
+    eng = _debug_engine_midrun(cfg)
+    eng._tool_heap.pop()
+    heapq.heapify(eng._tool_heap)
+    with pytest.raises(AssertionError):
+        eng.check_invariants()
+    # (2) a session is both waiting and in a tool call
+    eng = _debug_engine_midrun(cfg)
+    assert eng._waiting
+    sid = next(iter(eng._waiting))
+    heapq.heappush(eng._tool_heap, (1e9, 10**9, sid))
+    with pytest.raises(AssertionError):
+        eng.check_invariants()
+    # (3) KV leak: idle KV for a session that is decoding
+    eng = _debug_engine_midrun(cfg)
+    assert eng._done_heap
+    r = eng._done_heap[0][2]
+    eng.idle[r.sid] = 1000
+    eng.idle_sum += 1000
+    with pytest.raises(AssertionError):
+        eng.check_invariants()
+    # (4) idle KV of the wrong length
+    eng = _debug_engine_midrun(cfg)
+    k = next(iter(eng.idle))
+    eng.idle[k] += 1
+    eng.idle_sum += 1
+    with pytest.raises(AssertionError):
+        eng.check_invariants()
+    # (5) a gate session also in the system
+    eng = _debug_engine_midrun(cfg)
+    eng._gate.append(next(iter(eng._waiting)))
+    with pytest.raises(AssertionError):
+        eng.check_invariants()
 
 
 def test_conservation_closed_and_cap_and_burst(cfg):
@@ -371,22 +545,51 @@ def test_lpm_fallback_switches_on_queue_length(cfg):
     assert _order(eng, 4.0) == [2, 0, 1]
 
 
+def _aging_setup(eng):
+    _queue(eng, 0, 3, 1.0)     # miss, old
+    _queue(eng, 1, 3, 2.0)     # hit, old
+    _queue(eng, 2, 4, 20.0)    # miss, new (queued BEFORE the new hit, so FCFS != AGING-LPM)
+    _queue(eng, 3, 2, 21.0)    # hit, new
+    eng.idle[1] = 3000
+    eng.idle[3] = 2650
+    eng.idle_sum = 5650
+
+
 def test_aging_puts_old_requests_first_fcfs_then_lpm(cfg):
-    def setup(eng):
-        _queue(eng, 0, 3, 1.0)     # miss, old
-        _queue(eng, 1, 3, 2.0)     # hit, old
-        _queue(eng, 2, 4, 20.0)    # hit, new
-        _queue(eng, 3, 2, 21.0)    # miss, new
-        eng.idle[1] = 3000
-        eng.idle[2] = 4000
-        eng.idle_sum = 7000
-    eng = _engine_with_waiting(cfg, "aging10", setup)
-    # now=25: waits are 24, 23, 5, 4 -> first two aged (FCFS: 0 then 1), then LPM among the rest (2 hit, 3 miss)
-    assert _order(eng, 25.0) == [0, 1, 2, 3]
-    # now=11.5: nothing aged except sid0 (wait 10.5 > 10): 0, then LPM: hits 1 (3000)... sid2 queued at 20 > now
-    eng2 = _engine_with_waiting(cfg, "aging10", setup)
+    eng = _engine_with_waiting(cfg, "aging10", _aging_setup)
+    # now=25: waits are 24, 23, 5, 4 -> first two aged (FCFS: 0 then 1), then LPM among the rest: hit 3 BEFORE miss 2
+    assert _order(eng, 25.0) == [0, 1, 3, 2]
+    fcfs_order = _order(_engine_with_waiting(cfg, "fcfs", _aging_setup), 25.0)
+    lpm_order = _order(_engine_with_waiting(cfg, "lpm", _aging_setup), 25.0)
+    assert fcfs_order == [0, 1, 2, 3] and lpm_order == [1, 3, 0, 2]
+    assert _order(eng, 25.0) not in (fcfs_order, lpm_order)   # distinguishable from both plain FCFS and plain LPM
+    # now=11.5: only sid0 aged (wait 10.5 > 10), then LPM over the rest; sids 2 and 3 are queued after `now`
+    eng2 = _engine_with_waiting(cfg, "aging10", _aging_setup)
     assert _order(eng2, 11.5)[0] == 0
     assert len(set(_order(eng2, 25.0))) == 4              # no duplicates
+
+
+def test_aging_order_is_a_snapshot_taken_before_aged_admissions(cfg):
+    """Same semantics as Lpm / the reference simulator: the LPM part of the order is fixed at the start of the pass,
+    so an eviction caused by an aged admission does not re-rank the rest."""
+    eng = _engine_with_waiting(cfg, "aging10", _aging_setup)
+    eng.pass_id += 1
+    gen = eng.policy.candidates(eng, 25.0)
+    first = next(gen)
+    assert first.sid == 0
+    eng.idle.pop(3)                                       # sid 3's KV evicted after the first (aged) candidate
+    eng.idle_sum -= 2650
+    assert [r.sid for r in gen] == [1, 3, 2]              # still ranked as a hit (it is admitted as a miss later)
+
+
+def test_policy_next_time_event(cfg):
+    eng = _engine_with_waiting(cfg, "aging10", _aging_setup)
+    assert eng.policy.next_time_event(eng, 11.5) == pytest.approx(12.0)      # sid1 (qtime 2) ages next
+    assert eng.policy.next_time_event(eng, 25.0) == pytest.approx(30.0)      # sid2 (qtime 20) ages next
+    assert eng.policy.next_time_event(eng, 45.0) == float("inf")             # everything already aged
+    for name in ("fcfs", "lpm", "lpm128"):
+        e = _engine_with_waiting(cfg, name, _aging_setup)
+        assert e.policy.next_time_event(e, 11.5) == float("inf") and not e.policy.time_dependent
 
 
 def test_skip_ahead_flag(cfg):
@@ -452,6 +655,109 @@ def test_decision_rule_logic(cfg):
     assert dec3["verdict"] == "REFRAME"
 
 
+def _e1_rows(spec):
+    """spec: {(policy, mult): n_recovered_of_3}"""
+    rows = []
+    for (pol, mult), k in spec.items():
+        for sd in range(3):
+            rec = sd < k
+            rows.append({"variant": "base", "policy": pol, "lam_mult": mult, "seed": sd, "recovered": rec,
+                         "recovered_incl_gate": rec, "tail_hit_rate": 0.9 if rec else 0.0, "tail_queue_mean": 1.0,
+                         "tail_gate_mean": 0.0, "tail_busy_frac": 1.0, "tail_sessions_per_s": 0.1})
+    return pd.DataFrame(rows)
+
+
+def _e2_rows(n_trapped_l128, n_back_lpm):
+    return pd.DataFrame([{"variant": "base", "policy": "lpm128", "seed": s, "trapped": s < n_trapped_l128,
+                          "hit_returned": False} for s in range(5)] +
+                        [{"variant": "base", "policy": "lpm", "seed": s, "trapped": False, "hit_returned": s < n_back_lpm}
+                         for s in range(5)])
+
+
+def test_decision_kill_uses_spec_e2_trap_criterion_not_any_e1_nonrecovery(cfg):
+    """Reviewer case: all policies recover at 1.25x, none at 2.0x (LPM fails there too, so the fallback is not the
+    cause), LPM-128 never trapped in E2, R=2.44. Old code counted the E1 non-recovery at 2.0x as 'trapped' and returned
+    REFRAME; the spec's trap definition (E2: hit<0.2 for >=10 ks) says LPM-128 was never trapped => KILL."""
+    spec = {(p, 1.25): 3 for p in ("lpm", "fcfs", "lpm128", "aging30")}
+    spec.update({(p, 2.0): 0 for p in ("lpm", "fcfs", "lpm128", "aging30")})
+    dec = runner.evaluate_decision(cfg, {"R": 2.44}, _e1_rows(spec), _e2_rows(0, 0))
+    assert dec["verdict"] == "KILL", dec
+    assert dec["kill_conditions"]["lpm128_never_trapped"] is True
+    ev = dec["lpm128_trap_evidence"]
+    assert ev["e2_spec_criterion_n_trapped"] == 0 and ev["e1_attributable_lam_mults"] == []
+    assert ev["e1_lpm128_any_nonrecovery_not_used"] is True                # reported for transparency only
+
+
+def test_decision_e1_failure_counts_as_trap_only_where_lpm_recovers(cfg):
+    # LPM recovers 3/3 at 1.5x but LPM-128 does not -> attributable E1 trap even though E2 never trapped it
+    spec = {("lpm", 1.5): 3, ("fcfs", 1.5): 0, ("lpm128", 1.5): 0, ("aging30", 1.5): 3}
+    dec = runner.evaluate_decision(cfg, {"R": 2.44}, _e1_rows(spec), _e2_rows(0, 5))
+    assert dec["lpm128_trap_evidence"]["e1_attributable_lam_mults"] == [1.5]
+    assert dec["kill_conditions"]["lpm128_never_trapped"] is False
+    assert dec["verdict"] != "KILL"
+    # E2 trapped in 4/5 and everything else as in the GO case -> GO still reachable
+    dec2 = runner.evaluate_decision(cfg, {"R": 2.44}, _e1_rows(spec), _e2_rows(4, 4))
+    assert dec2["verdict"] == "GO", dec2
+
+
+def test_decision_reframe_when_lpm_fails_but_lpm128_trapped_in_e2(cfg):
+    spec = {(p, 1.5): 0 for p in ("lpm", "fcfs", "lpm128", "aging30")}
+    dec = runner.evaluate_decision(cfg, {"R": 2.44}, _e1_rows(spec), _e2_rows(5, 0))
+    assert dec["verdict"] == "REFRAME", dec
+
+
+def test_ramp_transitions_and_good_state_stats():
+    bins = 100.0
+    # queue-mean trace: calm (2) for 1000 s, spike up above 128 at bin 12, back below 20 from bin 30 on
+    m = [2.0] * 12 + [200.0] * 18 + [3.0] * 20
+    tr = [(i * bins, v, v + 1) for i, v in enumerate(m)]
+    lam_at = lambda t: t / 1000.0                                                  # noqa: E731
+    r = runner.ramp_transitions(tr, lam_at, 128, 20, 5, bins, leg_s=2000.0)
+    assert r["escaped"] and r["escape_time_s"] == pytest.approx(1250.0) and r["escape_leg"] == "up"
+    assert r["escape_lambda"] == pytest.approx(1.25)
+    assert r["reentered"] and r["reentry_time_s"] == pytest.approx(3000.0) and r["reentry_lambda"] == pytest.approx(3.0)
+    calm = runner.ramp_transitions([(i * bins, 1.0, 2.0) for i in range(40)], lam_at, 128, 20, 5, bins, 2000.0)
+    assert not calm["escaped"] and np.isnan(calm["escape_lambda"]) and not calm["reentered"]
+    # a down-leg escape is labelled as such and a never-returning queue has no re-entry
+    r2 = runner.ramp_transitions([(i * bins, 500.0 if i > 30 else 1.0, 501.0) for i in range(60)], lam_at, 128, 20, 5, bins, 2000.0)
+    assert r2["escape_leg"] == "down" and not r2["reentered"]
+    # good-state statistics: onset = end of last calm bin before the escape; the raw max (128) is not reported
+    tr2 = [(i * bins, v, v + 5.0) for i, v in enumerate([3.0, 6.0, 10.0, 5.0, 40.0, 90.0, 120.0])]
+    g = runner.good_state_stats(tr2, stop_time=700.0, onset_below=20.0, bin_s=bins)
+    assert g["good_state_end_s"] == pytest.approx(400.0) and g["runaway_duration_s"] == pytest.approx(300.0)
+    assert g["good_state_queue_max"] == pytest.approx(15.0) and g["good_state_queue_mean100_max"] == pytest.approx(10.0)
+    g2 = runner.good_state_stats(tr2[:4], stop_time=None, onset_below=20.0, bin_s=bins)
+    assert g2["good_state_end_s"] == pytest.approx(400.0) and np.isnan(g2["runaway_duration_s"])
+
+
+def test_wilson_ci_overrides_and_tables():
+    lo, hi = runner.wilson_ci(0, 20)
+    assert lo == 0.0 and 0.1 < hi < 0.2
+    lo, hi = runner.wilson_ci(10, 20)
+    assert lo < 0.5 < hi and lo == pytest.approx(0.299, abs=0.01)
+    assert all(np.isnan(x) for x in runner.wilson_ci(0, 0))
+    cfg2 = runner.apply_overrides({"engine": {"a": 1, "b": 2}}, ["engine.a=3", "new.x.y=[1, 2]"])
+    assert cfg2 == {"engine": {"a": 3, "b": 2}, "new": {"x": {"y": [1, 2]}}}
+    with pytest.raises(ValueError):
+        runner.apply_overrides({}, ["novalue"])
+    # basin table: contiguous from the smallest cold size
+    rows = []
+    for cold, ok in [(25, True), (50, True), (100, False), (200, True)]:
+        for sd in range(2):
+            rows.append({"variant": "base" if cold == 200 else f"cold={cold}", "policy": "lpm", "lam_mult": 2.0,
+                         "cold_sessions": cold, "recovered": ok, "tail_hit_rate": 0.9, "tail_queue_mean": 1.0})
+    bt = runner.basin_table(pd.DataFrame(rows))
+    assert bt["basin_size"].unique().tolist() == [50]                           # 200 recovered but 100 did not
+    # identity check
+    base = {"n_admitted": 10, "n_hits": 3, "n_evictions": 2, "evicted_tokens": 5, "final_queue": 1, "n_turns_done": 4}
+    runs = pd.DataFrame([{"policy": "fcfs", "variant": "base", "lam_mult": 2.0, "seed": 0, **base},
+                         {"policy": "lpm128", "variant": "base", "lam_mult": 2.0, "seed": 0, **base},
+                         {"policy": "fcfs", "variant": "base", "lam_mult": 2.0, "seed": 1, **base},
+                         {"policy": "lpm128", "variant": "base", "lam_mult": 2.0, "seed": 1, **{**base, "n_hits": 4}}])
+    ident = runner.identity_vs_fcfs(runs)
+    assert ident.sort_values("seed")["identical"].tolist() == [True, False]
+
+
 def test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites(cfg, tmp_path):
     repo = CFG_PATH.resolve().parent.parent
     root = str(tmp_path / "res")
@@ -496,11 +802,31 @@ def test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites(cfg,
     dd = runner.cmd_decision(cfg, args, repo, calib)
     dec = json.loads((dd / "decision.json").read_text())
     assert dec["verdict"] in ("GO", "KILL", "REFRAME") or dec["verdict"].startswith("NEITHER")
+    assert {"e2_spec_criterion_n_trapped", "e1_attributable_lam_mults"} <= set(dec["lpm128_trap_evidence"])
+    # supplementary outputs
+    assert (outs["e1"] / "e1_basin_table.csv").exists() and (outs["e1"] / "e1_lpm128_vs_fcfs_identity.csv").exists()
+    assert {"cold=25", "cap=20", "base"} <= set(pd.read_csv(outs["e1"] / "runs.csv")["variant"])
+    assert (outs["e3"] / "e3_transitions.csv").exists()
+    assert {"spec", "above_cap"} <= set(pd.read_csv(outs["e3"] / "e3_hysteresis.csv")["variant"])
+    assert "good_state_queue_max" in pd.read_csv(outs["e4"] / "runs.csv").columns
+    # the consolidated report
+    rargs = runner.build_parser().parse_args(["report"] + base + ["--calib", str(calib_path)] +
+                                             [x for k, v in outs.items() if k in ("e1", "e2", "e3", "e4")
+                                              for x in (f"--{k}-dir", str(v))])
+    from prefixmeta.report import cmd_report
+    rd = cmd_report(cfg, rargs, repo, calib)
+    for f in ["summary.csv", "decision.json", "meta.json", "config.yaml", "fig_e1_e2_hit_queue_vs_time.pdf",
+              "fig_e3_throughput_hit_vs_lambda.pdf"]:
+        assert (rd / f).exists() and (rd / f).stat().st_size > 0, f
+    assert (rd / "fig_e3_throughput_hit_vs_lambda.pdf").read_bytes()[:4] == b"%PDF"
+    sm = pd.read_csv(rd / "summary.csv")
+    assert list(sm.columns) == ["experiment", "variant", "policy", "lam_mult", "setting", "metric", "value"]
+    assert {"e1", "e2", "e3", "e4", "decision"} <= set(sm["experiment"])
 
 
 # ----------------------------------------------------------------------------- independent reference simulator
 def reference_trace(cfg: dict, specs: SessionSpecs, policy: dict, horizon: float, *, M: float, limited: bool = True,
-                    skip_ahead: bool = False, cap: int | None = None, cache: bool = True):
+                    skip_ahead: bool = False, cap: int | None = None, cache: bool = True, free_on_end: bool = True):
     """Deliberately naive iteration-by-iteration re-implementation (plain lists, full re-sorting on every pass,
     pass at EVERY iteration boundary, per-sequence ctx arrays, no global counters / batching / lazy queues).
     Returns the admission/completion trace in the same format as Engine.trace."""
@@ -598,6 +924,8 @@ def reference_trace(cfg: dict, specs: SessionSpecs, policy: dict, horizon: float
             seq_ctr += 1
             tool_ev.append((now + z, seq_ctr, sid))
         else:
+            if cache and not free_on_end:
+                idle.append((sid, r["end"]))
             in_sys -= 1
             if gate:
                 j = gate.pop(0)
@@ -689,6 +1017,9 @@ def _assert_traces_equal(a, b):
     ("lpm", {"kind": "lpm"}, {"admission_limited_by_prefill_budget": False}, None),
     ("fcfs", {"kind": "fcfs"}, {}, 12),
     ("aging", {"kind": "aging_lpm", "w_max_s": 4.0}, {"batch_decode_iterations": False}, None),
+    ("aging", {"kind": "aging_lpm", "w_max_s": 4.0}, {"batch_decode_iterations": True}, None),
+    ("lpm", {"kind": "lpm"}, {"free_kv_on_session_end": False}, None),
+    ("fcfs", {"kind": "fcfs"}, {"free_kv_on_session_end": False}, None),
     ("fcfs", {"kind": "fcfs"}, {"cache_enabled": False}, None),
 ])
 @pytest.mark.parametrize("scenario", [(70_000, 0.5, 15, 20), (150_000, 0.3, 10, 40)])
@@ -704,11 +1035,31 @@ def test_engine_matches_naive_reference_simulator(cfg, pol, polspec, eo, cap, sc
     tr_e, _ = _engine_trace(c2, specs, pol, H, engine_overrides={**eo, "kv_memory_tokens": M})
     ref = reference_trace(c2, specs, c2["policies"][pol], H, M=M,
                           limited=eo.get("admission_limited_by_prefill_budget", True),
-                          skip_ahead=eo.get("skip_ahead", False), cap=cap, cache=eo.get("cache_enabled", True))
+                          skip_ahead=eo.get("skip_ahead", False), cap=cap, cache=eo.get("cache_enabled", True),
+                          free_on_end=eo.get("free_kv_on_session_end", True))
     assert sum(1 for x in tr_e if x[0] == "D") > 50
     _assert_traces_equal(tr_e, ref)
     if eo.get("cache_enabled", True):
         assert any(x[0] == "A" and x[3] for x in tr_e) and any(x[0] == "A" and not x[3] and x[2] > 1 for x in tr_e)
+
+
+@pytest.mark.parametrize("batch", [False, True])
+@pytest.mark.parametrize("w_max", [1.0, 4.0])
+@pytest.mark.parametrize("seed", [21, 22, 23, 24, 25, 26])
+def test_aging_matches_reference_over_seeds(cfg, seed, w_max, batch):
+    """The review found 3/80 trace mismatches (aged admissions re-ranking the LPM part within a pass) under the old
+    lazy AgingLpm; across seeds / thresholds / scenarios the engine now equals the naive reference."""
+    pol = {"kind": "aging_lpm", "w_max_s": w_max}
+    c2 = deep_update(cfg, {"policies": {"ag": pol}})
+    wl = WorkloadParams.from_dict(c2["workload"])
+    for (M, rate, cold, burst) in [(70_000, 0.5, 15, 20), (150_000, 0.3, 10, 40)]:
+        plan = ArrivalPlan(kind="constant", horizon_s=500.0, rate=rate, initial_cold=cold, burst_n=burst, burst_t0=100.0,
+                           burst_width_s=10.0)
+        specs = build_specs(wl, plan, seed)
+        tr_e, _ = _engine_trace(c2, specs, "ag", 900.0,
+                                engine_overrides={"kv_memory_tokens": M, "batch_decode_iterations": batch})
+        ref = reference_trace(c2, specs, pol, 900.0, M=M)
+        _assert_traces_equal(tr_e, ref)
 
 
 def test_process_pool_results_identical_to_serial(cfg):

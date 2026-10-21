@@ -40,7 +40,23 @@ sum(ctx) = off_sum + n_decode * G is maintained in O(1). n iterations take
 S_n = n*tau_0 + b*n*(n-1)/2 (b = decode_attn/norm * n_decode); the run is cut at the first iteration
 boundary at/after the next exogenous event (arrival / tool return / horizon) or at the next decode
 completion, whichever comes first, so the result equals iteration-by-iteration simulation (tested).
-Aging thresholds are only acted on at these boundaries (batched or not, passes occur at event/boundaries).
+For time-dependent policies (AGING-LPM) the run is additionally cut at the next aging-threshold crossing
+(``Policy.next_time_event``), so a request that ages mid-run is considered at the first iteration boundary
+after it crosses, exactly as in iteration-by-iteration simulation (tested against the unbatched engine and the
+naive reference simulator).
+
+Documented simplifications / fidelity gaps (see the stage-3 review; none changes the qualitative result)
+-------------------------------------------------------------------------------------------------------
+* Whole-session, all-or-nothing eviction (spec-mandated); a radix cache evicts leaf-by-leaf. A reviewer variant
+  with partial eviction gave escape counts within binomial noise.
+* Eviction runs per admission inside a pass: an earlier admission can evict the KV of a later candidate of the
+  same pass, which is then admitted as a miss (SGLang locks chosen prefixes first). ~0.4% of admissions in a
+  trapped run; a reviewer "lock at add" variant gave identical hazard counts.
+* No LRU refresh when LPM matches a waiting prefix (SGLang touches matched prefixes). A reviewer variant had no
+  effect: the KV of a session is evicted during its tool call, before its next turn is even queued.
+* ``free_kv_on_session_end`` (default True): KV of a finished session is freed at once (an oracle; a real engine
+  cannot know the session ended). False keeps it as most-recently-used evictable idle KV, which crowds out live
+  sessions and raises the escape rate.
 """
 from __future__ import annotations
 
@@ -73,6 +89,7 @@ class EngineParams:
     skip_ahead: bool
     admission_limited_by_prefill_budget: bool
     batch_decode_iterations: bool
+    free_kv_on_session_end: bool = True
 
     @classmethod
     def from_dict(cls, d: dict) -> "EngineParams":
@@ -143,6 +160,7 @@ class Engine:
         # memory
         self.idle: "OrderedDict[int, int]" = OrderedDict()   # sid -> resident KV tokens (LRU first)
         self.idle_sum = 0
+        self._ended: set = set()           # sids whose KV stays idle after their last turn (free_kv_on_session_end=False)
         self.reserved = 0
         self.max_resident = 0              # max of reserved + idle_sum (must stay <= M)
 
@@ -287,6 +305,10 @@ class Engine:
             self._tool_seq += 1
             heapq.heappush(self._tool_heap, (t + z, self._tool_seq, sid))
         else:
+            if self.p.cache_enabled and not self.p.free_kv_on_session_end:
+                self.idle[sid] = req.end            # dead KV: stays evictable at the MRU end (no oracle)
+                self.idle_sum += req.end
+                self._ended.add(sid)
             self.n_sessions_done += 1
             self.in_system -= 1
             self.rec.on_session_done(t)
@@ -327,6 +349,8 @@ class Engine:
         idle = self.idle
         while need > 0:
             sid2, kv2 = idle.popitem(last=False)
+            if self._ended:
+                self._ended.discard(sid2)
             self.idle_sum -= kv2
             self.n_evictions += 1
             self.evicted_tokens += kv2
@@ -522,6 +546,10 @@ class Engine:
                 self._iterate_with_prefill()
             else:
                 nxt = self._next_exogenous_time()
+                if always_pass and self.n_wait > 0:        # never batch across an aging-threshold crossing
+                    nt = self.policy.next_time_event(self, self.now)
+                    if nt < nxt:
+                        nxt = nt
                 self._iterate_decode(nxt if nxt < horizon else horizon)
         self.end_time = self.stop_time if (self.stopped and self.stop_time is not None) else horizon
         self.rec.set_queue(self.end_time, self.n_wait)
@@ -579,3 +607,36 @@ class Engine:
             assert sid not in run_sids, "running session also idle-resident"
         if self.session_cap is not None:
             assert self.in_system <= self.session_cap, "session cap exceeded"
+        self._check_locations()
+
+    def _check_locations(self) -> None:
+        """Every in-system session is in exactly one place (waiting queue, prefill, decode, awaiting finish, or
+        tool call); gate sessions are not in the system; idle KV belongs only to waiting / tool-call sessions
+        (or ended sessions when ``free_kv_on_session_end=False``) and has the length the next turn expects."""
+        loc: Dict[int, str] = {}
+
+        def put(sid: int, where: str) -> None:
+            assert sid not in loc, f"session {sid} is in both {loc[sid]} and {where}"
+            loc[sid] = where
+
+        for sid in self._waiting:
+            put(sid, "waiting")
+        for r in self.prefill:
+            put(r.sid, "prefill")
+        for (_, _, r) in self._done_heap:
+            put(r.sid, "decode")
+        for r in self._pending_done:
+            put(r.sid, "pending")
+        for (_, _, sid) in self._tool_heap:
+            put(sid, "tool")
+        assert len(loc) == self.in_system, f"{len(loc)} located sessions != in_system {self.in_system}"
+        assert not (set(self._gate) & loc.keys()), "gate session also in the system"
+        delta = self.wl.new_prompt_tokens
+        for sid, kv in self.idle.items():
+            if sid in self._ended:
+                assert sid not in loc, "ended session still located in the system"
+                assert kv == self.wl.end_len(self._nt[sid]), "ended session KV length wrong"
+                continue
+            assert loc.get(sid) in ("waiting", "tool"), f"idle KV of session {sid} located in {loc.get(sid)}"
+            assert kv == self.wl.prompt_len(self._turn[sid]) - delta, f"idle KV length wrong for session {sid}"
+        assert self._ended <= self.idle.keys(), "ended set holds a non-idle session"

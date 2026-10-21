@@ -186,9 +186,31 @@ def build_specs(wl: WorkloadParams, plan: ArrivalPlan, seed: int) -> SessionSpec
 
 
 def default_session_cap(memory_tokens: float, wl: WorkloadParams) -> Optional[int]:
-    """N* = floor(M / mean context at mid-session); mid-session turn = ceil(mean_turns / 2),
+    """Spec-literal N* = floor(M / mean context at mid-session); mid-session turn = ceil(mean_turns / 2),
     context = end-of-turn context E_mid. None if memory is unbounded."""
     if not np.isfinite(memory_tokens):
         return None
     mid_turn = int(np.ceil(wl.mean_turns / 2.0))
     return int(np.floor(memory_tokens / wl.end_len(mid_turn)))
+
+
+def length_biased_mean_context(wl: WorkloadParams) -> float:
+    """Turn-weighted mean end-of-turn context of the sessions *present in the system*.
+
+    Sessions in the system are length-biased (a session with T turns is present ~T times as long), so the
+    time-average context per session is  E[sum_{t<=T} E_t] / E[T] = sum_t P(T >= t) E_t / sum_t P(T >= t)
+    with T ~ min(Geometric(1/mean_turns), max_turns). (Treats each turn as equally long; the turn's actual
+    duration also depends on hit/miss, which this deliberately ignores.)"""
+    p = 1.0 / wl.mean_turns
+    t = np.arange(1, wl.max_turns + 1)
+    surv = (1.0 - p) ** (t - 1)                     # P(T >= t)
+    ctx = wl.initial_context_tokens + (t - 1) * (wl.new_prompt_tokens + wl.decode_tokens) + wl.decode_tokens
+    return float(np.sum(surv * ctx) / np.sum(surv))
+
+
+def length_biased_session_cap(memory_tokens: float, wl: WorkloadParams) -> Optional[int]:
+    """N*_lb = floor(M / length_biased_mean_context): the cap at which the *expected* resident working set
+    (cap sessions x turn-weighted mean context) fits in M. None if memory is unbounded."""
+    if not np.isfinite(memory_tokens):
+        return None
+    return int(np.floor(memory_tokens / length_biased_mean_context(wl)))

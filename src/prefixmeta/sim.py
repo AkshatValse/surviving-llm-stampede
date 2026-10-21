@@ -12,7 +12,8 @@ import yaml
 from .engine import Engine, EngineParams
 from .metrics import Recorder, tail_stats, trend_rise
 from .policies import make_policy
-from .workload import ArrivalPlan, WorkloadParams, build_specs, default_session_cap, triangle_rate
+from .workload import (ArrivalPlan, WorkloadParams, build_specs, default_session_cap, length_biased_session_cap,
+                       triangle_rate)
 
 
 def load_config(path: str) -> dict:
@@ -52,8 +53,10 @@ def resolve_policy(cfg: dict, name: str, ep: EngineParams, wl: WorkloadParams,
     spec = cfg["policies"][name]
     policy = make_policy(spec)
     cap = spec.get("session_cap")
-    if cap == "auto":
+    if cap == "auto":                 # spec-literal: floor(M / mid-session context)
         cap = default_session_cap(ep.kv_memory_tokens, wl)
+    elif cap == "auto_lb":            # length-bias-corrected: floor(M / turn-weighted mean context)
+        cap = length_biased_session_cap(ep.kv_memory_tokens, wl)
     if cap_override is not None:
         cap = cap_override
     return policy, (int(cap) if cap is not None else None)

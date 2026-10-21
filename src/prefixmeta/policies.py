@@ -21,6 +21,7 @@ Policies only use this narrow view of the engine::
 """
 from __future__ import annotations
 
+import math
 from typing import Iterator, Optional
 
 
@@ -31,6 +32,11 @@ class Policy:
 
     def candidates(self, view, now: float) -> Iterator:
         raise NotImplementedError
+
+    def next_time_event(self, view, now: float) -> float:
+        """Earliest future wall-clock time at which this policy's order changes with no other event (only for
+        ``time_dependent`` policies). The engine never batches a pure-decode run across it. Default: never."""
+        return math.inf
 
 
 def _fifo_unmarked(view) -> Iterator:
@@ -76,7 +82,12 @@ class LpmFallback(Policy):
 
 
 class AgingLpm(Policy):
-    """Requests that have waited longer than ``w_max_s`` go first in FCFS order; the rest by LPM."""
+    """Requests that have waited longer than ``w_max_s`` go first in FCFS order; the rest by LPM.
+
+    Semantics (same as Lpm and the naive reference simulator in the tests): the whole order is fixed ONCE
+    per pass, from the state at the start of the pass. In particular the LPM part uses the residency
+    snapshot taken *before* any aged request is admitted, so evictions caused by aged admissions in the same
+    pass do not re-rank the rest (a candidate whose KV was evicted meanwhile is simply admitted as a miss)."""
     name = "aging_lpm"
     time_dependent = True
 
@@ -86,15 +97,25 @@ class AgingLpm(Policy):
     def candidates(self, view, now: float) -> Iterator:
         pid = view.pass_id
         cutoff = now - self.w_max_s
+        aged = []
         for r in view.fifo_iter():          # FIFO is qtime-sorted, so aged requests form a prefix
             if r.qtime >= cutoff:
                 break
             r.mark = pid
-            yield r
-        # the rest (not aged) by LPM; aged requests are already marked and are skipped
-        yield from view.resident_waiting(skip_marked=True)
-        for r in _fifo_unmarked(view):
-            yield r
+            aged.append(r)
+        # snapshot of the rest by LPM, taken before anything is admitted (aged requests are marked, so skipped)
+        hits = view.resident_waiting(skip_marked=True)
+        yield from aged
+        yield from hits
+        yield from _fifo_unmarked(view)
+
+    def next_time_event(self, view, now: float) -> float:
+        """qtime + w_max of the oldest not-yet-aged waiting request (the next to cross the threshold)."""
+        cutoff = now - self.w_max_s
+        for r in view.fifo_iter():
+            if r.qtime >= cutoff:
+                return r.qtime + self.w_max_s
+        return math.inf
 
 
 def make_policy(spec: dict) -> Policy:

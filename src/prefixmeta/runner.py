@@ -28,7 +28,8 @@ import yaml
 
 from .metrics import longest_run_below, tail_stats, trend_rise
 from .sim import RunSpec, deep_update, load_config, simulate
-from .workload import ArrivalPlan, WorkloadParams, default_session_cap, triangle_rate
+from .workload import (ArrivalPlan, WorkloadParams, default_session_cap, length_biased_mean_context,
+                       length_biased_session_cap, triangle_rate)
 
 HARDWARE = "Apple M3 Max CPU (simulation)"
 ID_KEYS = ["exp", "policy", "seed", "variant", "lam", "lam_mult"]
@@ -62,6 +63,42 @@ class Runner:
         if self._ex is None:
             return [_work(a) for a in args]
         return list(self._ex.map(_work, args, chunksize=1))
+
+
+def wilson_ci(k: int, n: int, z: float = 1.96) -> Tuple[float, float]:
+    """Wilson score interval for a binomial proportion k/n (95% for z=1.96). (nan, nan) if n == 0."""
+    if n <= 0:
+        return (float("nan"), float("nan"))
+    ph = k / n
+    den = 1.0 + z * z / n
+    c = (ph + z * z / (2 * n)) / den
+    h = z * math.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n)) / den
+    return (max(0.0, c - h), min(1.0, c + h))
+
+
+def apply_overrides(cfg: dict, sets: Optional[Sequence[str]]) -> dict:
+    """Apply dotted ``key.sub=value`` overrides (value parsed as YAML) to a copy of ``cfg``."""
+    out = deep_update(cfg, {})
+    for item in sets or []:
+        key, _, val = item.partition("=")
+        if not key or not _:
+            raise ValueError(f"bad --set {item!r}; expected dotted.key=value")
+        node = out
+        parts = key.split(".")
+        for k in parts[:-1]:
+            node = node.setdefault(k, {})
+        node[parts[-1]] = yaml.safe_load(val)
+    return out
+
+
+def common_extra(args: argparse.Namespace) -> Dict[str, Any]:
+    return {"quick": bool(args.quick), "workers": args.workers, "overrides": list(getattr(args, "set", None) or []),
+            "tag": getattr(args, "tag", None)}
+
+
+def out_name(base: str, args: argparse.Namespace) -> str:
+    tag = getattr(args, "tag", None)
+    return base + (f"_{tag}" if tag else "") + ("_quick" if args.quick else "")
 
 
 def now_stamp() -> str:
@@ -270,7 +307,7 @@ def cmd_e0(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     e0 = exp_cfg(cfg, "e0", args.quick)
     wl = WorkloadParams.from_dict(cfg["workload"])
     W = cfg["metrics"]["window_s"]
-    out = new_result_dir(args.out_root, "prefix_meta_e0" + ("_quick" if args.quick else ""))
+    out = new_result_dir(args.out_root, out_name("prefix_meta_e0", args))
     all_specs: List[RunSpec] = []
     all_results: List[Dict[str, Any]] = []
     with Runner(cfg, args.workers) as R:
@@ -346,8 +383,10 @@ def cmd_e0(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
                     rr = [r["summary"] for sp, r in zip(specs, res)
                           if sp.policy == p and sp.meta["lam_mult"] == m]
                     esc = [x["stop_time"] for x in rr if x["stopped_early"]]
+                    lo_ci, hi_ci = wilson_ci(len(esc), len(rr))
                     hazard_rows.append({"policy": p, "lam_mult": m, "lam": m * lam_miss, "n_runs": len(rr),
                                         "n_escaped": len(esc), "frac_escaped": len(esc) / len(rr),
+                                        "frac_escaped_ci95_lo": lo_ci, "frac_escaped_ci95_hi": hi_ci,
                                         "escape_time_median_s": float(np.median(esc)) if esc else float("nan"),
                                         "escape_time_min_s": float(np.min(esc)) if esc else float("nan"),
                                         "horizon_s": hz["horizon_s"], "escape_queue_above": hz["escape_queue_above"]})
@@ -364,8 +403,15 @@ def cmd_e0(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
             miss_rows.append({"population": pop, "seed": seed, **m})
     pd.DataFrame(miss_rows).to_csv(out / "miss_runs.csv", index=False)
     N_star = default_session_cap(cfg["engine"]["kv_memory_tokens"], wl)
+    N_star_lb = length_biased_session_cap(cfg["engine"]["kv_memory_tokens"], wl)
     summary = {
         "quick": bool(args.quick),
+        "overrides": list(getattr(args, "set", None) or []),
+        "lambda_cap_interpretation": (
+            "lambda_cap is a finite-horizon (cap_horizon_s) STABILITY / lifetime boundary for pure LPM from an empty "
+            "start, not a mean-field memory-time capacity: below it the good state uses well under M and an escape is a "
+            "fluctuation event (see cap_hazard: P(escape by H) vs lambda with Wilson CIs); it depends on seeds, horizon, "
+            "chunk size and free_kv_on_session_end."),
         "lambda_miss": lam_miss,
         "lambda_miss_per_seed": per_seed,
         "lambda_miss_se": lam_miss_se,
@@ -381,6 +427,8 @@ def cmd_e0(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
         "cap_search_frac_stable_by_lambda": _frac_stable(search_rows),
         "cap_hazard": hazard_rows,
         "session_cap_N_star": N_star,
+        "session_cap_N_star_length_biased": N_star_lb,
+        "length_biased_mean_context_tokens": length_biased_mean_context(wl),
         "mean_turns_effective": wl.effective_mean_turns(),
         "timing": timing_summary(runs),
         "config_e0": e0,
@@ -389,9 +437,9 @@ def cmd_e0(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     save_configs(out, args.config, {**cfg, "e0_effective": e0})
     write_meta(out, experiment="e0", argv=sys.argv, seeds=sorted(set(int(s) for s in runs["seed"])),
                t_start=t_start, t_end=t_end, repo_dir=repo_dir,
-               extra={"quick": bool(args.quick), "workers": args.workers, "n_runs": int(len(runs)),
+               extra={**common_extra(args), "n_runs": int(len(runs)),
                       "timing": summary["timing"], "lambda_miss": lam_miss, "lambda_cap": lam_cap,
-                      "R": summary["R"], "N_star": N_star})
+                      "R": summary["R"], "N_star": N_star, "N_star_length_biased": N_star_lb})
     print(json.dumps(sanitize({k: v for k, v in summary.items() if k != "config_e0"}), indent=2))
     print("result dir:", out)
     return out
@@ -404,15 +452,13 @@ def tail_len(cfg: dict, horizon: float) -> float:
 
 def add_recovery_columns(runs: pd.DataFrame, wins: pd.DataFrame, cfg: dict, horizon: float,
                          q_below: float, hit_above: float) -> pd.DataFrame:
-    """recovered: mean waiting queue over the tail < q_below and tail hit rate > hit_above.
-    recovered_incl_gate additionally counts the outer-gate backlog (FCFS-CAP) as queue."""
+    """recovered: mean waiting queue over the tail < q_below and tail hit rate > hit_above (spec criterion).
+    recovered_incl_gate additionally counts the outer-gate backlog (FCFS-CAP) as queue (stricter, honest for caps)."""
     tail = tail_len(cfg, horizon)
-    gate_tail = []
-    for rid in runs["run_id"]:
-        w = wins[(wins["run_id"] == rid) & (wins["t_start"] >= horizon - tail - 1e-9)]
-        gate_tail.append(float(w["gate_mean"].mean()) if len(w) else float("nan"))
+    sel = wins[wins["t_start"] >= horizon - tail - 1e-9]
+    gate = sel.groupby("run_id")["gate_mean"].mean()
     runs = runs.copy()
-    runs["tail_gate_mean"] = gate_tail
+    runs["tail_gate_mean"] = runs["run_id"].map(gate)
     runs["recovered"] = (runs["tail_hit_rate"] > hit_above) & (runs["tail_queue_mean"] < q_below)
     runs["recovered_incl_gate"] = runs["recovered"] & ((runs["tail_queue_mean"] + runs["tail_gate_mean"]) < q_below)
     return runs
@@ -437,7 +483,115 @@ def largest_recovered(table: pd.DataFrame, col: str = "n_recovered") -> pd.DataF
     return pd.DataFrame(rows)
 
 
+def basin_table(runs: pd.DataFrame) -> pd.DataFrame:
+    """E1 cold-size sweep: recovery counts per (policy, lam_mult, cold_sessions); includes the base variant
+    (spec cold size) so the sweep is contiguous. ``basin_size`` = the largest cold size C such that every swept
+    size <= C recovered on all seeds (0 if even the smallest did not)."""
+    r = runs[runs["variant"].isin(["base"]) | runs["variant"].astype(str).str.startswith("cold=")]
+    if r.empty:
+        return pd.DataFrame()
+    g = r.groupby(["policy", "lam_mult", "cold_sessions"], sort=False).agg(
+        n_runs=("recovered", "size"), n_recovered=("recovered", "sum"),
+        tail_hit_mean=("tail_hit_rate", "mean"), tail_queue_mean=("tail_queue_mean", "mean")).reset_index()
+    g["all_recovered"] = g["n_recovered"] == g["n_runs"]
+    sizes = []
+    for (pol, lm), gg in g.groupby(["policy", "lam_mult"], sort=False):
+        gg = gg.sort_values("cold_sessions")
+        best = 0
+        for c, ok in zip(gg["cold_sessions"], gg["all_recovered"]):
+            if not ok:
+                break
+            best = int(c)
+        sizes.append({"policy": pol, "lam_mult": lm, "basin_size": best})
+    return g.merge(pd.DataFrame(sizes), on=["policy", "lam_mult"])
+
+
+def identity_vs_fcfs(runs: pd.DataFrame, other: str = "lpm128",
+                     by: Sequence[str] = ("variant", "lam_mult", "seed")) -> pd.DataFrame:
+    """For paired runs (same ``by`` key), is ``other`` bit-identical to FCFS (same admissions, hits, evictions,
+    final queue)? LPM-128 == FCFS is expected whenever the queue exceeds the threshold from the first pass on
+    (definitional, not a measured 'inheritance')."""
+    keys = ["n_admitted", "n_hits", "n_evictions", "evicted_tokens", "final_queue", "n_turns_done"]
+    by = list(by)
+    f = runs[runs["policy"] == "fcfs"].set_index(by)[keys]
+    o = runs[runs["policy"] == other].set_index(by)[keys]
+    j = f.join(o, lsuffix="_fcfs", rsuffix=f"_{other}", how="inner")
+    j["identical"] = np.all([j[f"{k}_fcfs"] == j[f"{k}_{other}"] for k in keys], axis=0)
+    return j.reset_index()
+
+
 # ======================================================================= E1 recovery
+def _meta(lam: float, mult: float, **kw: Any) -> Dict[str, Any]:
+    return {"lam": lam, "lam_mult": mult, **kw}
+
+
+def build_e1_specs(cfg: dict, e1: dict, lam_miss: float, lam_cap: float, name: str, ablation: bool
+                   ) -> Tuple[List[RunSpec], List[float]]:
+    H = e1["horizon_s"]
+    pols = policy_list(cfg, e1["policies"])
+    cold = e1["cold_sessions"]
+    specs: List[RunSpec] = []
+    skipped: set = set()
+
+    def usable(m: float) -> bool:
+        if m * lam_miss >= lam_cap:
+            skipped.add(m)
+            return False
+        return True
+
+    def plan_of(m: float, cold_n: int) -> ArrivalPlan:
+        return ArrivalPlan(kind="constant", horizon_s=H, rate=m * lam_miss, initial_cold=cold_n)
+
+    if ablation:
+        m = e1["lam_mult"]
+        if usable(m):
+            for skip in (False, True):
+                for pol in pols:
+                    for sd in e1["seeds"]:
+                        specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan_of(m, cold), horizon_s=H,
+                                             variant=f"skip_ahead={int(skip)}", engine_overrides={"skip_ahead": skip},
+                                             meta=_meta(m * lam_miss, m, cold_sessions=cold)))
+        return specs, sorted(skipped)
+
+    # --- spec experiment: fixed cold start, all policies
+    for m in e1["lam_mults"]:
+        if not usable(m):
+            continue
+        for pol in pols:
+            for sd in e1["seeds"]:
+                specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan_of(m, cold), horizon_s=H, variant="base",
+                                     meta=_meta(m * lam_miss, m, cold_sessions=cold)))
+        for pol in policy_list(cfg, e1["robust_policies"]):      # lognormal tool-time robustness
+            for sd in e1["robust_seeds"]:
+                specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan_of(m, cold), horizon_s=H,
+                                     variant="lognormal",
+                                     workload_overrides={"tool_time_dist": "lognormal", "tool_time_cv": e1["robust_cv"]},
+                                     meta=_meta(m * lam_miss, m, cold_sessions=cold)))
+    # --- supplementary: cold-start-size sweep (basin of attraction per policy)
+    cs = e1.get("cold_sweep")
+    if cs:
+        for m in cs["lam_mults"]:
+            if not usable(m):
+                continue
+            for c in cs["cold_sessions"]:
+                for pol in policy_list(cfg, cs["policies"]):
+                    for sd in cs["seeds"]:
+                        specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan_of(m, c), horizon_s=H,
+                                             variant=f"cold={c}", meta=_meta(m * lam_miss, m, cold_sessions=c)))
+    # --- supplementary: FCFS-CAP cap sweep at the spec cold-start size
+    cp = e1.get("cap_sweep")
+    if cp:
+        for m in cp["lam_mults"]:
+            if not usable(m):
+                continue
+            for cap in cp["caps"]:
+                for sd in cp["seeds"]:
+                    specs.append(RunSpec(exp=name, policy="fcfs_cap", seed=sd, plan=plan_of(m, cold), horizon_s=H,
+                                         variant=f"cap={cap}", session_cap_override=int(cap),
+                                         meta=_meta(m * lam_miss, m, cold_sessions=cold)))
+    return specs, sorted(skipped)
+
+
 def cmd_e1(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str, Any],
            ablation: bool = False) -> Path:
     t_start = time.time()
@@ -445,37 +599,8 @@ def cmd_e1(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str,
     e1 = exp_cfg(cfg, name, args.quick)
     lam_miss, lam_cap = calib["lambda_miss"], calib["lambda_cap"]
     H = e1["horizon_s"]
-    pols = policy_list(cfg, e1["policies"])
-    mults = e1["lam_mults"] if not ablation else [e1["lam_mult"]]
-    cold = e1["cold_sessions"]
-    specs: List[RunSpec] = []
-    skipped = []
-    for m in mults:
-        lam = m * lam_miss
-        if lam >= lam_cap:
-            skipped.append(m)
-            continue
-        plan = ArrivalPlan(kind="constant", horizon_s=H, rate=lam, initial_cold=cold)
-        if ablation:
-            for skip in (False, True):
-                for pol in pols:
-                    for sd in e1["seeds"]:
-                        specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan, horizon_s=H,
-                                             variant=f"skip_ahead={int(skip)}",
-                                             engine_overrides={"skip_ahead": skip},
-                                             meta={"lam": lam, "lam_mult": m}))
-        else:
-            for pol in pols:
-                for sd in e1["seeds"]:
-                    specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan, horizon_s=H, variant="base",
-                                         meta={"lam": lam, "lam_mult": m}))
-            for pol in policy_list(cfg, e1["robust_policies"]):      # lognormal tool-time robustness
-                for sd in e1["robust_seeds"]:
-                    specs.append(RunSpec(exp=name, policy=pol, seed=sd, plan=plan, horizon_s=H, variant="lognormal",
-                                         workload_overrides={"tool_time_dist": "lognormal",
-                                                             "tool_time_cv": e1["robust_cv"]},
-                                         meta={"lam": lam, "lam_mult": m}))
-    out = new_result_dir(args.out_root, f"prefix_meta_{name}" + ("_quick" if args.quick else ""))
+    specs, skipped = build_e1_specs(cfg, e1, lam_miss, lam_cap, name, ablation)
+    out = new_result_dir(args.out_root, out_name(f"prefix_meta_{name}", args))
     with Runner(cfg, args.workers) as R:
         results = R.run(specs)
     t_end = time.time()
@@ -488,24 +613,53 @@ def cmd_e1(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str,
     table.to_csv(out / f"{name}_recovery_table.csv", index=False)
     largest = largest_recovered(table)
     largest.to_csv(out / f"{name}_largest_recovered_lambda.csv", index=False)
+    if not ablation:
+        bt = basin_table(runs)
+        if len(bt):
+            bt.to_csv(out / "e1_basin_table.csv", index=False)
+        ident = identity_vs_fcfs(runs[runs["variant"].isin(["base"]) | runs["variant"].astype(str).str.startswith("cold=")])
+        ident.to_csv(out / "e1_lpm128_vs_fcfs_identity.csv", index=False)
     save_configs(out, args.config, {**cfg, f"{name}_effective": e1, "calibration": _calib_public(calib)})
     write_meta(out, experiment=name, argv=sys.argv, seeds=sorted(set(int(s) for s in runs["seed"])),
                t_start=t_start, t_end=t_end, repo_dir=repo_dir,
-               extra={"quick": bool(args.quick), "workers": args.workers, "n_runs": int(len(runs)),
+               extra={**common_extra(args), "n_runs": int(len(runs)),
                       "timing": timing_summary(runs), "calibration": _calib_public(calib),
-                      "lam_mults_skipped_because_ge_lambda_cap": skipped, "N_star": calib.get("session_cap_N_star")})
-    print(table.to_string())
-    print(largest.to_string())
+                      "lam_mults_skipped_because_ge_lambda_cap": skipped, "N_star": calib.get("session_cap_N_star"),
+                      "N_star_length_biased": calib.get("session_cap_N_star_length_biased")})
+    with pd.option_context("display.width", 250, "display.max_rows", 500):
+        print(table[table["variant"].isin(["base", "lognormal"])].to_string())
+        print(largest.to_string())
     print("timing:", timing_summary(runs))
     print("result dir:", out)
     return out
 
 
 def _calib_public(calib: Dict[str, Any]) -> Dict[str, Any]:
-    return {k: calib.get(k) for k in ("lambda_miss", "lambda_cap", "R", "session_cap_N_star", "_path")}
+    return {k: calib.get(k) for k in ("lambda_miss", "lambda_cap", "R", "session_cap_N_star",
+                                      "session_cap_N_star_length_biased", "_path")}
 
 
 # ======================================================================= E2 burst
+def e2_columns(runs: pd.DataFrame, wins: pd.DataFrame, e2: dict, W: float, tb: float) -> pd.DataFrame:
+    """Per-run burst metrics: hit rate over the eval window, trap (hit < trap_hit_below for >= trap_min_s of
+    consecutive 1000 s windows after the burst), recoveries."""
+    ev_from, ev_to = tb + e2["hit_eval_from_s"], tb + e2["after_s"]
+    by_run = {rid: g.sort_values("t_start") for rid, g in wins.groupby("run_id")}
+    cols = []
+    for rid in runs["run_id"]:
+        w = by_run[rid]
+        ts = tail_stats(w.to_dict("records"), ev_from, ev_to)
+        post = w[w["t_start"] >= tb]
+        run_win = longest_run_below(post["hit_rate"].tolist(), e2["trap_hit_below"])
+        cols.append({"run_id": rid, "hit_eval": ts["hit_rate"], "queue_eval_mean": ts["queue_mean"],
+                     "trap_run_s": run_win * W, "trapped": bool(run_win * W >= e2["trap_min_s"]),
+                     "hit_returned": bool(ts["hit_rate"] > e2["recovered_hit_above"])})
+    out = runs.merge(pd.DataFrame(cols), on="run_id")
+    out["queue_returned"] = out["tail_queue_mean"] < e2["recovered_queue_below"]
+    out["recovered_e2"] = out["hit_returned"] & out["queue_returned"]
+    return out
+
+
 def cmd_e2(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str, Any]) -> Path:
     t_start = time.time()
     e2 = exp_cfg(cfg, "e2", args.quick)
@@ -514,45 +668,46 @@ def cmd_e2(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str,
     tb = e2["warmup_s"]
     H = tb + e2["after_s"]
     pols = policy_list(cfg, e2["policies"])
-    plan = ArrivalPlan(kind="constant", horizon_s=H, rate=lam, burst_n=e2["burst_sessions"], burst_t0=tb,
-                       burst_width_s=e2["burst_width_s"])
-    specs = [RunSpec(exp="e2", policy=p, seed=sd, plan=plan, horizon_s=H,
-                     meta={"lam": lam, "lam_mult": e2["lam_mult"], "t_burst": tb})
+
+    def plan_of(n: int) -> ArrivalPlan:
+        return ArrivalPlan(kind="constant", horizon_s=H, rate=lam, burst_n=n, burst_t0=tb,
+                           burst_width_s=e2["burst_width_s"])
+
+    specs = [RunSpec(exp="e2", policy=p, seed=sd, plan=plan_of(e2["burst_sessions"]), horizon_s=H, variant="base",
+                     meta=_meta(lam, e2["lam_mult"], t_burst=tb, burst_sessions=e2["burst_sessions"]))
              for p in pols for sd in e2["seeds"]]
-    out = new_result_dir(args.out_root, "prefix_meta_e2" + ("_quick" if args.quick else ""))
+    bs = e2.get("burst_sweep")                     # supplementary: perturbation-size sweep
+    if bs:
+        for n in bs["burst_sessions"]:
+            for p in policy_list(cfg, bs["policies"]):
+                for sd in bs["seeds"]:
+                    specs.append(RunSpec(exp="e2", policy=p, seed=sd, plan=plan_of(n), horizon_s=H,
+                                         variant=f"burst={n}",
+                                         meta=_meta(lam, e2["lam_mult"], t_burst=tb, burst_sessions=n)))
+    out = new_result_dir(args.out_root, out_name("prefix_meta_e2", args))
     with Runner(cfg, args.workers) as R:
         results = R.run(specs)
     t_end = time.time()
     runs, wins, qts = collect_frames(results, specs)
     W = cfg["metrics"]["window_s"]
-    ev_from, ev_to = tb + e2["hit_eval_from_s"], tb + e2["after_s"]
-    extra_cols = []
-    for rid in runs["run_id"]:
-        w = wins[wins["run_id"] == rid].sort_values("t_start")
-        ts = tail_stats(w.to_dict("records"), ev_from, ev_to)
-        post = w[w["t_start"] >= tb]
-        run_win = longest_run_below(post["hit_rate"].tolist(), e2["trap_hit_below"])
-        extra_cols.append({"run_id": rid, "hit_eval": ts["hit_rate"], "queue_eval_mean": ts["queue_mean"],
-                           "trap_run_s": run_win * W,
-                           "trapped": bool(run_win * W >= e2["trap_min_s"]),
-                           "hit_returned": bool(ts["hit_rate"] > e2["recovered_hit_above"])})
-    runs = runs.merge(pd.DataFrame(extra_cols), on="run_id")
-    runs["queue_returned"] = runs["tail_queue_mean"] < e2["recovered_queue_below"]
-    runs["recovered_e2"] = runs["hit_returned"] & runs["queue_returned"]
+    runs = e2_columns(runs, wins, e2, W, tb)
     save_frames(out, runs, wins, qts)
-    tab = runs.groupby("policy", sort=False).agg(
+    tab = runs.groupby(["variant", "burst_sessions", "policy"], sort=False).agg(
         n_runs=("seed", "size"), n_trapped=("trapped", "sum"), n_hit_returned=("hit_returned", "sum"),
         n_queue_returned=("queue_returned", "sum"), n_recovered=("recovered_e2", "sum"),
         hit_eval_mean=("hit_eval", "mean"), hit_eval_min=("hit_eval", "min"), hit_eval_max=("hit_eval", "max"),
         tail_queue_mean=("tail_queue_mean", "mean")).reset_index()
     tab.to_csv(out / "e2_summary.csv", index=False)
+    ident = identity_vs_fcfs(runs, by=("variant", "burst_sessions", "seed"))
+    ident.to_csv(out / "e2_lpm128_vs_fcfs_identity.csv", index=False)
     save_configs(out, args.config, {**cfg, "e2_effective": e2, "calibration": _calib_public(calib)})
     write_meta(out, experiment="e2", argv=sys.argv, seeds=sorted(set(int(s) for s in runs["seed"])),
                t_start=t_start, t_end=t_end, repo_dir=repo_dir,
-               extra={"quick": bool(args.quick), "workers": args.workers, "n_runs": int(len(runs)),
+               extra={**common_extra(args), "n_runs": int(len(runs)),
                       "timing": timing_summary(runs), "calibration": _calib_public(calib),
-                      "lam": lam, "lam_ge_lambda_cap": bool(lam >= lam_cap), "eval_window": [ev_from, ev_to]})
-    print(tab.to_string())
+                      "lam": lam, "lam_ge_lambda_cap": bool(lam >= lam_cap), "eval_window": [tb + e2["hit_eval_from_s"], H]})
+    with pd.option_context("display.width", 250, "display.max_rows", 500):
+        print(tab.to_string())
     print("timing:", timing_summary(runs))
     print("result dir:", out)
     return out
@@ -569,67 +724,151 @@ def hysteresis_area(up: np.ndarray, dn: np.ndarray, lam_up: np.ndarray, lam_dn: 
     return float(np.trapz(np.abs(f_up - f_dn), grid) / (hi - lo))
 
 
+def ramp_transitions(qtrace: Sequence[Tuple[float, float, float]], lam_at: Any, escape_above: float,
+                     reenter_below: float, reenter_bins: int, bin_s: float, leg_s: float) -> Dict[str, Any]:
+    """Escape / re-entry lambdas of one ramp run from its fine (100 s) queue trace.
+
+    escape   : first bin whose mean queue exceeds ``escape_above`` -> lambda at the bin midpoint, and which leg.
+    re-entry : after the escape, the first bin that starts a run of ``reenter_bins`` consecutive bins with mean
+               queue below ``reenter_below`` -> lambda at that bin's start; NaN if the run never returns.
+    ``lam_at(t)`` maps a time to the instantaneous arrival rate."""
+    nan = float("nan")
+    t = np.array([x[0] for x in qtrace])
+    m = np.array([x[1] for x in qtrace])
+    out: Dict[str, Any] = {"escaped": False, "escape_time_s": nan, "escape_lambda": nan, "escape_leg": "",
+                           "reentered": False, "reentry_time_s": nan, "reentry_lambda": nan}
+    idx = np.nonzero(m > escape_above)[0]
+    if len(idx) == 0:
+        return out
+    i0 = int(idx[0])
+    te = float(t[i0] + 0.5 * bin_s)
+    out.update(escaped=True, escape_time_s=te, escape_lambda=float(lam_at(te)), escape_leg="up" if te <= leg_s else "down")
+    below = m < reenter_below
+    for i in range(i0 + 1, len(m) - reenter_bins + 1):
+        if below[i:i + reenter_bins].all():
+            out.update(reentered=True, reentry_time_s=float(t[i]), reentry_lambda=float(lam_at(float(t[i]))))
+            break
+    return out
+
+
+def e3_ramps(e3: dict) -> List[Dict[str, Any]]:
+    ramps = e3.get("ramps")
+    if ramps:
+        return [{"seeds": e3["seeds"], **r} for r in ramps]
+    return [{"name": "spec", "hi_mult_of_lambda_cap": e3["hi_mult_of_lambda_cap"], "seeds": e3["seeds"]}]
+
+
 def cmd_e3(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str, Any]) -> Path:
     t_start = time.time()
     e3 = exp_cfg(cfg, "e3", args.quick)
     lam_miss, lam_cap = calib["lambda_miss"], calib["lambda_cap"]
     lo = e3["lo_mult_of_lambda_miss"] * lam_miss
-    hi = e3["hi_mult_of_lambda_cap"] * lam_cap
     leg = e3["leg_s"]
     H = 2 * leg
     pols = policy_list(cfg, e3["policies"])
-    plan = ArrivalPlan(kind="triangle", horizon_s=H, rate_lo=lo, rate_hi=hi, ramp_s=leg)
-    specs = [RunSpec(exp="e3", policy=p, seed=sd, plan=plan, horizon_s=H,
-                     meta={"lam": float("nan"), "lam_mult": float("nan")})
-             for p in pols for sd in e3["seeds"]]
-    out = new_result_dir(args.out_root, "prefix_meta_e3" + ("_quick" if args.quick else ""))
+    specs = []
+    for ramp in e3_ramps(e3):
+        hi = ramp["hi_mult_of_lambda_cap"] * lam_cap
+        plan = ArrivalPlan(kind="triangle", horizon_s=H, rate_lo=lo, rate_hi=hi, ramp_s=leg)
+        for p in pols:
+            for sd in ramp["seeds"]:
+                specs.append(RunSpec(exp="e3", policy=p, seed=sd, plan=plan, horizon_s=H, variant=ramp["name"],
+                                     meta={"lam": float("nan"), "lam_mult": float("nan"), "lam_lo": lo, "lam_hi": hi,
+                                           "hi_mult_of_lambda_cap": ramp["hi_mult_of_lambda_cap"],
+                                           "hi_mult_of_lambda_miss": hi / lam_miss}))
+    out = new_result_dir(args.out_root, out_name("prefix_meta_e3", args))
     with Runner(cfg, args.workers) as R:
         results = R.run(specs)
     t_end = time.time()
-    W = cfg["metrics"]["window_s"]
-    for res in results:           # annotate windows with the instantaneous lambda at the window midpoint
+    fine = cfg["metrics"]["fine_window_s"]
+    trans_rows = []
+    for res, rs in zip(results, specs):      # annotate windows with the instantaneous lambda at the window midpoint
+        hi = rs.meta["lam_hi"]
         extra = {}
         for w in res["windows"]:
             mid = 0.5 * (w["t_start"] + w["t_end"])
             extra[w["window"]] = {"lam_window": float(triangle_rate(np.array([mid]), lo, hi, leg)[0]),
                                   "leg": "up" if mid <= leg else "down"}
         res["window_extra"] = extra
+        lam_at = (lambda tt, hi=hi: float(triangle_rate(np.array([tt]), lo, hi, leg)[0]))
+        tr = ramp_transitions(res["qtrace"], lam_at, e3["escape_queue_above"], e3["reentry_queue_below"],
+                              int(e3["reentry_bins"]), fine, leg)
+        trans_rows.append({"variant": rs.variant, "policy": rs.policy, "seed": rs.seed, **tr})
     runs, wins, qts = collect_frames(results, specs)
     save_frames(out, runs, wins, qts)
+    trans = pd.DataFrame(trans_rows)
+    trans.to_csv(out / "e3_transitions.csv", index=False)
     rows = []
-    for pol in pols:
+    for variant, policy in [(r["name"], p) for r in e3_ramps(e3) for p in pols]:
+        hi = float(runs[runs["variant"] == variant]["lam_hi"].iloc[0])
         per_seed = []
-        for sd in e3["seeds"]:
-            w = wins[(wins["policy"] == pol) & (wins["seed"] == sd)]
+        for sd in sorted(runs[(runs["variant"] == variant) & (runs["policy"] == policy)]["seed"]):
+            w = wins[(wins["variant"] == variant) & (wins["policy"] == policy) & (wins["seed"] == sd)]
             u, d = w[w["leg"] == "up"].dropna(subset=["hit_rate"]), w[w["leg"] == "down"].dropna(subset=["hit_rate"])
             if len(u) < 2 or len(d) < 2:
                 continue
             per_seed.append(hysteresis_area(u["hit_rate"].to_numpy(), d["hit_rate"].to_numpy(),
                                             u["lam_window"].to_numpy(), d["lam_window"].to_numpy(),
                                             lo, hi, int(e3["grid_points"])))
-        wp = wins[wins["policy"] == pol]
-        rows.append({"policy": pol, "n_seeds": len(per_seed),
+        wp = wins[(wins["variant"] == variant) & (wins["policy"] == policy)]
+        tp = trans[(trans["variant"] == variant) & (trans["policy"] == policy)]
+        rows.append({"variant": variant, "policy": policy, "hi_mult_of_lambda_miss": hi / lam_miss, "n_seeds": len(per_seed),
                      "hysteresis_area_mean": float(np.mean(per_seed)) if per_seed else float("nan"),
                      "hysteresis_area_per_seed": json.dumps([round(x, 4) for x in per_seed]),
+                     "n_escaped": int(tp["escaped"].sum()), "n_reentered": int(tp["reentered"].sum()),
+                     "escape_lambda_mult_mean": float(tp["escape_lambda"].mean() / lam_miss) if tp["escaped"].any() else float("nan"),
+                     "reentry_lambda_mult_mean": float(tp["reentry_lambda"].mean() / lam_miss) if tp["reentered"].any() else float("nan"),
                      "hit_up_mean": float(wp[wp["leg"] == "up"]["hit_rate"].mean()),
                      "hit_down_mean": float(wp[wp["leg"] == "down"]["hit_rate"].mean()),
                      "turns_per_s_up_mean": float(wp[wp["leg"] == "up"]["turns_per_s"].mean()),
-                     "turns_per_s_down_mean": float(wp[wp["leg"] == "down"]["turns_per_s"].mean())})
+                     "turns_per_s_down_mean": float(wp[wp["leg"] == "down"]["turns_per_s"].mean()),
+                     "max_queue_mean": float(runs[(runs["variant"] == variant) & (runs["policy"] == policy)]["max_queue"].mean())})
     tab = pd.DataFrame(rows)
     tab.to_csv(out / "e3_hysteresis.csv", index=False)
     save_configs(out, args.config, {**cfg, "e3_effective": e3, "calibration": _calib_public(calib)})
     write_meta(out, experiment="e3", argv=sys.argv, seeds=sorted(set(int(s) for s in runs["seed"])),
                t_start=t_start, t_end=t_end, repo_dir=repo_dir,
-               extra={"quick": bool(args.quick), "workers": args.workers, "n_runs": int(len(runs)),
-                      "timing": timing_summary(runs), "calibration": _calib_public(calib),
-                      "lam_lo": lo, "lam_hi": hi})
-    print(tab.to_string())
+               extra={**common_extra(args), "n_runs": int(len(runs)),
+                      "timing": timing_summary(runs), "calibration": _calib_public(calib), "lam_lo": lo,
+                      "ramps": [{"name": r["name"], "hi_mult_of_lambda_cap": r["hi_mult_of_lambda_cap"],
+                                 "lam_hi": r["hi_mult_of_lambda_cap"] * lam_cap} for r in e3_ramps(e3)]})
+    with pd.option_context("display.width", 250):
+        print(tab.drop(columns=["hysteresis_area_per_seed"]).to_string())
     print("timing:", timing_summary(runs))
     print("result dir:", out)
     return out
 
 
 # ======================================================================= E4 escape
+def good_state_stats(qtrace: Sequence[Tuple[float, float, float]], stop_time: Optional[float], onset_below: float,
+                     bin_s: float) -> Dict[str, float]:
+    """Good-state queue statistics that do NOT saturate at the stop threshold.
+
+    The engine stops at the first enqueue that takes the queue above the escape threshold, so the raw
+    pre-stop maximum is always exactly that threshold. Instead: the good state is everything before the
+    *runaway onset*, the last 100 s bin before escape whose mean queue is below ``onset_below``. For runs that
+    never escape the whole run is the good state. Returns the max instantaneous queue and the max 100 s mean
+    over the good state, the onset time and the runaway duration (escape - onset)."""
+    nan = float("nan")
+    t = np.array([x[0] for x in qtrace])
+    m = np.array([x[1] for x in qtrace])
+    x = np.array([x[2] for x in qtrace])
+    if len(t) == 0:
+        return {"good_state_end_s": nan, "good_state_queue_max": nan, "good_state_queue_mean100_max": nan,
+                "runaway_duration_s": nan}
+    if stop_time is None or stop_time != stop_time:
+        return {"good_state_end_s": float(t[-1] + bin_s), "good_state_queue_max": float(x.max()),
+                "good_state_queue_mean100_max": float(m.max()), "runaway_duration_s": nan}
+    ok = np.nonzero((m < onset_below) & (t + bin_s <= stop_time + 1e-9))[0]
+    if len(ok) == 0:
+        return {"good_state_end_s": 0.0, "good_state_queue_max": nan, "good_state_queue_mean100_max": nan,
+                "runaway_duration_s": float(stop_time)}
+    i = int(ok[-1])
+    end = float(t[i] + bin_s)
+    return {"good_state_end_s": end, "good_state_queue_max": float(x[:i + 1].max()),
+            "good_state_queue_mean100_max": float(m[:i + 1].max()), "runaway_duration_s": float(stop_time - end)}
+
+
 def cmd_e4(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str, Any]) -> Path:
     t_start = time.time()
     e4 = exp_cfg(cfg, "e4", args.quick)
@@ -647,28 +886,42 @@ def cmd_e4(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str,
                                      plan=ArrivalPlan(kind="constant", horizon_s=H, rate=lam),
                                      stop_queue_above=int(e4["escape_queue_above"]),
                                      meta={"lam": lam, "lam_mult": m}))
-    out = new_result_dir(args.out_root, "prefix_meta_e4" + ("_quick" if args.quick else ""))
+    out = new_result_dir(args.out_root, out_name("prefix_meta_e4", args))
     with Runner(cfg, args.workers) as R:
         results = R.run(specs)
     t_end = time.time()
     runs, wins, qts = collect_frames(results, specs)
     runs["escaped"] = runs["stopped_early"].astype(bool)
     runs["escape_time_s"] = np.where(runs["escaped"], runs["stop_time"], np.nan)
+    gs = [good_state_stats(res["qtrace"], res["summary"]["stop_time"] if res["summary"]["stopped_early"] else None,
+                           e4["good_state_onset_queue_below"], cfg["metrics"]["fine_window_s"]) for res in results]
+    runs = pd.concat([runs, pd.DataFrame(gs)], axis=1)
     save_frames(out, runs, wins, qts)
     g = runs.groupby(["policy", "lam_mult"], sort=False)
     tab = g.agg(n_runs=("seed", "size"), n_escaped=("escaped", "sum"),
                 escape_time_median=("escape_time_s", "median"), escape_time_min=("escape_time_s", "min"),
-                max_queue_good_state_max=("max_queue_pre_stop", "max"),
-                max_queue_good_state_mean=("max_queue_pre_stop", "mean"),
+                good_state_queue_max_max=("good_state_queue_max", "max"),
+                good_state_queue_max_median=("good_state_queue_max", "median"),
+                good_state_queue_mean100_max=("good_state_queue_mean100_max", "max"),
+                runaway_duration_median_s=("runaway_duration_s", "median"),
                 hit_rate_all_mean=("hit_rate_all", "mean")).reset_index()
+    for horizon_frac in e4.get("escaped_by_s", []):
+        tab[f"n_escaped_by_{int(horizon_frac)}s"] = [
+            int(((runs["policy"] == r.policy) & np.isclose(runs["lam_mult"], r.lam_mult) & (runs["escape_time_s"] <= horizon_frac)).sum())
+            for r in tab.itertuples()]
+    ci = [wilson_ci(int(r.n_escaped), int(r.n_runs)) for r in tab.itertuples()]
+    tab["frac_escaped"] = tab["n_escaped"] / tab["n_runs"]
+    tab["frac_escaped_ci95_lo"] = [c[0] for c in ci]
+    tab["frac_escaped_ci95_hi"] = [c[1] for c in ci]
     tab.to_csv(out / "e4_summary.csv", index=False)
     save_configs(out, args.config, {**cfg, "e4_effective": e4, "calibration": _calib_public(calib)})
     write_meta(out, experiment="e4", argv=sys.argv, seeds=sorted(set(int(s) for s in runs["seed"])),
                t_start=t_start, t_end=t_end, repo_dir=repo_dir,
-               extra={"quick": bool(args.quick), "workers": args.workers, "n_runs": int(len(runs)),
+               extra={**common_extra(args), "n_runs": int(len(runs)),
                       "timing": timing_summary(runs), "calibration": _calib_public(calib),
                       "lam_mults_at_or_above_lambda_cap_but_run_anyway": above_cap})
-    print(tab.to_string())
+    with pd.option_context("display.width", 250):
+        print(tab.to_string())
     print("timing:", timing_summary(runs))
     print("result dir:", out)
     return out
@@ -676,10 +929,19 @@ def cmd_e4(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dict[str,
 
 # ======================================================================= decision rule
 def evaluate_decision(cfg: dict, e0: Dict[str, Any], e1_runs: pd.DataFrame, e2_runs: pd.DataFrame) -> Dict[str, Any]:
-    """Apply the spec's GO / REFRAME / KILL rule to E0 + E1 + E2 outputs. Pure function of its inputs."""
+    """Apply the spec's GO / REFRAME / KILL rule to E0 + E1 + E2 outputs (spec-sized perturbations only: variant
+    'base'). Pure function of its inputs.
+
+    "LPM-128 never trapped" (KILL clause) is evaluated as: trapped in E2 by the spec's own trap criterion
+    (hit < 0.2 for >= 10k s) in at least one seed, OR trapped in E1 *attributably*: at some lambda where pure LPM
+    recovered on every seed, LPM-128 did not (so the failure is caused by the FCFS fallback, not by congestion
+    that LPM also cannot escape). The two counts are reported separately; the old criterion 'any E1 LPM-128
+    non-recovery' is also reported (``e1_lpm128_any_nonrecovery``) but not used, because it counts lambdas where
+    LPM fails too and runs that merely miss the hit > 0.8 cut."""
     d = cfg["decision"]
     R = float(e0["R"])
     e1b = e1_runs[e1_runs["variant"] == "base"]
+    e2b = e2_runs[e2_runs["variant"] == "base"] if "variant" in e2_runs.columns else e2_runs
     table = recovery_table(e1b)
     largest = largest_recovered(table).set_index("policy")["largest_lam_mult_all_seeds_recovered"].to_dict()
 
@@ -688,16 +950,19 @@ def evaluate_decision(cfg: dict, e0: Dict[str, Any], e1_runs: pd.DataFrame, e2_r
         return (int(r["n_recovered"].iloc[0]), int(r["n_runs"].iloc[0])) if len(r) else (-1, 0)
 
     ok_mults = []
+    attributable = []
     for m in sorted(table["lam_mult"].unique()):
+        lpm, nl = n_rec("lpm", m)
+        l128, n128 = n_rec("lpm128", m)
+        if nl > 0 and lpm == nl and n128 > 0 and l128 < n128:
+            attributable.append(float(m))
         if m < d["lam_mult_min"] - 1e-9:
             continue
-        lpm, nl = n_rec("lpm", m)
         fc, _ = n_rec("fcfs", m)
-        l128, _ = n_rec("lpm128", m)
         if nl > 0 and lpm >= d["lpm_recover_min"] and fc <= d["fcfs_recover_max"] and 0 <= l128 <= d["lpm128_recover_max"]:
             ok_mults.append(float(m))
-    e2l128 = e2_runs[e2_runs["policy"] == "lpm128"]
-    e2lpm = e2_runs[e2_runs["policy"] == "lpm"]
+    e2l128 = e2b[e2b["policy"] == "lpm128"]
+    e2lpm = e2b[e2b["policy"] == "lpm"]
     n_trapped = int(e2l128["trapped"].sum())
     n_lpm_back = int(e2lpm["hit_returned"].sum())
     lpm_big, ag30 = largest.get("lpm", float("nan")), largest.get("aging30", float("nan"))
@@ -713,15 +978,19 @@ def evaluate_decision(cfg: dict, e0: Dict[str, Any], e1_runs: pd.DataFrame, e2_r
         "aging30_keeps_70pct_of_lpm_lambda": {"pass": ag_ok, "lpm_largest_lam_mult": lpm_big,
                                               "aging30_largest_lam_mult": ag30},
     }
-    lpm128_ever_trapped = bool((e1b[e1b["policy"] == "lpm128"]["recovered"] == False).any()) or n_trapped > 0  # noqa: E712
+    e1_any_nonrec = bool((e1b[e1b["policy"] == "lpm128"]["recovered"] == False).any())  # noqa: E712
+    lpm128_ever_trapped = (n_trapped > 0) or (len(attributable) > 0)
     lpm_recovers_somewhere = bool(any(n_rec("lpm", m)[0] >= d["lpm_recover_min"] for m in table["lam_mult"].unique()
                                       if m >= d["lam_mult_min"] - 1e-9))
     go = all(v["pass"] for v in items.values())
     kill = (R < d["kill_R_below"]) or (not lpm128_ever_trapped)
     reframe = (R >= d["go_R_min"]) and (not lpm_recovers_somewhere)
     verdict = "GO" if go else ("KILL" if kill else ("REFRAME" if reframe else "NEITHER (some GO items fail; not KILL/REFRAME)"))
-    return {"verdict": verdict, "items": items, "kill_conditions": {"R_below_1.5": R < d["kill_R_below"],
-            "lpm128_never_trapped": not lpm128_ever_trapped},
+    return {"verdict": verdict, "items": items,
+            "kill_conditions": {"R_below_1.5": R < d["kill_R_below"], "lpm128_never_trapped": not lpm128_ever_trapped},
+            "lpm128_trap_evidence": {"e2_spec_criterion_n_trapped": n_trapped, "e2_n_runs": int(len(e2l128)),
+                                     "e1_attributable_lam_mults": attributable,
+                                     "e1_lpm128_any_nonrecovery_not_used": e1_any_nonrec},
             "reframe_condition": {"R_ge_2_and_LPM_never_recovers_3of3_at_lam_ge_1.5": reframe}}
 
 
@@ -740,12 +1009,12 @@ def cmd_decision(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dic
     e1 = pd.read_csv(d1 / "runs.csv")
     e2 = pd.read_csv(d2 / "runs.csv")
     dec = evaluate_decision(cfg, calib, e1, e2)
-    out = new_result_dir(args.out_root, "prefix_meta_decision")
+    out = new_result_dir(args.out_root, out_name("prefix_meta_decision", args))
     dec["inputs"] = {"e0": calib.get("_path"), "e1": str(d1), "e2": str(d2)}
     (out / "decision.json").write_text(json.dumps(sanitize(dec), indent=2))
     save_configs(out, args.config, cfg)
     write_meta(out, experiment="decision", argv=sys.argv, seeds=[], t_start=t_start, t_end=time.time(),
-               repo_dir=repo_dir, extra={"inputs": dec["inputs"]})
+               repo_dir=repo_dir, extra={**common_extra(args), "inputs": dec["inputs"]})
     print(json.dumps(sanitize(dec), indent=2))
     return out
 
@@ -753,7 +1022,7 @@ def cmd_decision(cfg: dict, args: argparse.Namespace, repo_dir: Path, calib: Dic
 # ======================================================================= CLI
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Prefix-cache metastability pilot (simulation)")
-    ap.add_argument("cmd", choices=["e0", "e1", "e2", "e3", "e4", "ablation", "decision"])
+    ap.add_argument("cmd", choices=["e0", "e1", "e2", "e3", "e4", "ablation", "decision", "report"])
     ap.add_argument("--config", default="configs/prefix_meta.yaml")
     ap.add_argument("--quick", action="store_true", help="smoke-test sizes (shorter horizons, fewer seeds)")
     ap.add_argument("--workers", type=int, default=3, help="processes (hard-capped by config parallel.max_workers)")
@@ -761,12 +1030,19 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--calib", default=None, help="E0 result dir or e0_summary.json (default: newest non-quick E0)")
     ap.add_argument("--e1-dir", default=None)
     ap.add_argument("--e2-dir", default=None)
+    ap.add_argument("--e3-dir", default=None)
+    ap.add_argument("--e4-dir", default=None)
+    ap.add_argument("--ablation-dir", default=None)
+    ap.add_argument("--sens-dir", action="append", default=[], help="E0 sensitivity result dirs (report only)")
+    ap.add_argument("--set", action="append", default=[], metavar="KEY=VAL",
+                    help="dotted config override, e.g. engine.prefill_attn_ctx=mid (recorded in config_effective/meta)")
+    ap.add_argument("--tag", default=None, help="suffix for the result dir name, e.g. e0_mid (keeps variants apart)")
     return ap
 
 
 def main(argv: Optional[List[str]] = None, repo_dir: Optional[Path] = None) -> int:
     args = build_parser().parse_args(argv)
-    cfg = load_config(args.config)
+    cfg = apply_overrides(load_config(args.config), args.set)
     repo_dir = repo_dir or Path(args.config).resolve().parent.parent
     if args.cmd == "e0":
         cmd_e0(cfg, args, repo_dir)
@@ -784,4 +1060,7 @@ def main(argv: Optional[List[str]] = None, repo_dir: Optional[Path] = None) -> i
         cmd_e4(cfg, args, repo_dir, calib)
     elif args.cmd == "decision":
         cmd_decision(cfg, args, repo_dir, calib)
+    elif args.cmd == "report":
+        from .report import cmd_report
+        cmd_report(cfg, args, repo_dir, calib)
     return 0
