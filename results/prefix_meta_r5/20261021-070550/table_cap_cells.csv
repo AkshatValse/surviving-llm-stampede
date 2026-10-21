@@ -1,0 +1,5 @@
+alloc_mode,arm,cap,n_runs,n_recovered,tail_hit_mean,tail_backlog_mean,tail_gate_mean,tail_sessions_per_s,n_preempt_mean,tail_preemptions_per_turn_mean,tail_preempt_max_turn_max,n_tail_thrash,max_preempt_per_turn_run_max
+ondemand_preempt,capped_at_nstar,20,3,3,0.9334115930949781,0.022656680773932,0.0077110300024563665,0.09293333333333331,0.0,0.0,0.0,0,0
+ondemand_preempt,no_cap,-1,3,0,0.0,4629.734404209231,0.0,0.06186666666666663,1162.3333333333333,0.0076579020559269665,1.0,0,4
+ratio_reserve,capped_at_nstar,20,3,3,0.9338877283192196,0.016835151062785467,0.0014925804893233666,0.09399999999999999,0.3333333333333333,0.0,0.0,0,1
+ratio_reserve,no_cap,-1,3,0,0.0,4667.574904413251,0.0,0.0634,335.6666666666667,0.0020045778069781,1.0,0,1

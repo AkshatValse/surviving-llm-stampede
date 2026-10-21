@@ -1,0 +1,74 @@
+{
+  "experiment": "r5_calib",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_r5_run.py",
+    "calib",
+    "--workers",
+    "3"
+  ],
+  "git": {
+    "commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    3300,
+    3301,
+    3302,
+    3303,
+    3304
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T07:03:08",
+  "end_time": "2026-10-21T07:03:12",
+  "wall_s": 4.413894891738892,
+  "quick": false,
+  "workers": 3,
+  "overrides": [],
+  "tag": null,
+  "n_runs": 15,
+  "timing": {
+    "total_sim_s": 1500000.0,
+    "total_run_wall_s": 9.85805983300088,
+    "wall_s_per_10k_sim_s": 0.06572039888667254,
+    "max_run_wall_s": 0.7492567920126021
+  },
+  "lambda_miss": {
+    "ondemand_preempt": 0.04718526315789474,
+    "ratio_reserve": 0.047315789473684214,
+    "full_reserve": 0.04746736842105263
+  },
+  "common_random_numbers": "same seed -> same workload for every mode",
+  "variant": null,
+  "alloc_mode_overrides": {
+    "full_reserve": {
+      "alloc_mode": "full_reserve"
+    },
+    "ondemand_preempt": {
+      "alloc_mode": "ondemand_preempt",
+      "watermark_frac": 0.0,
+      "victim_kv_eviction": "tail",
+      "ondemand_admission": "full_isl"
+    },
+    "ratio_reserve": {
+      "alloc_mode": "ratio_reserve",
+      "victim_kv_eviction": "tail",
+      "sched_conservativeness": 1.0,
+      "init_new_token_ratio": 0.7,
+      "min_new_token_ratio_factor": 0.14,
+      "new_token_ratio_decay_steps": 600,
+      "retract_decode_steps": 20,
+      "clip_max_new_tokens_estimation": 4096
+    }
+  }
+}
