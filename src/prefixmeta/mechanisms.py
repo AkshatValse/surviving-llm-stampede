@@ -23,6 +23,10 @@ An *ordering* policy (``policies.py``) decides the order in which waiting reques
     A static integer, ``lb`` (= N_lb = floor(M / E_lb), E_lb the length-biased mean context), ``{lb_mult: x}``
     (= floor(x N_lb)) or an AIMD controller (``{aimd: {...}}``) that is stepped every ``interval_s`` seconds.
 
+``eviction``  (round 4). Which idle session's KV is evicted when an admission needs memory: ``lru`` (rounds 1-3, default),
+    ``random`` (uniform among the evictable idle sessions, dedicated seeded generator) or ``mru_idle`` (the session that
+    became idle most recently). See ``eviction.py``. Independent of the other mechanisms.
+
 Nothing here reads simulation outcomes: N_lb is a function of (M, workload) only.
 """
 from __future__ import annotations
@@ -31,6 +35,7 @@ import math
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Tuple
 
+from .eviction import EVICTION_MODES
 from .workload import WorkloadParams, length_biased_session_cap
 
 
@@ -94,6 +99,7 @@ class Mechanisms:
     ttl_s: Optional[float] = None
     aimd: Optional[AimdParams] = None
     ttl_unpin: str = "idle"                   # one of TTL_UNPIN_MODES (only meaningful with ttl_s)
+    eviction: str = "lru"                     # round 4: "lru" | "random" | "mru_idle" (see eviction.py); "lru" = rounds 1-3
 
     @property
     def any_protection(self) -> bool:
@@ -149,4 +155,7 @@ def make_mechanisms(spec: Dict[str, Any], aimd: Optional[AimdParams]) -> Mechani
         raise ValueError(f"ttl_unpin must be one of {TTL_UNPIN_MODES}, got {unpin!r}")
     if unpin != "idle" and ttl is None:
         raise ValueError("ttl_unpin requires ttl_pin_s")
-    return Mechanisms(protect_queued=pq, ttl_s=ttl, aimd=aimd, ttl_unpin=unpin)
+    ev = spec.get("eviction", "lru")
+    if ev not in EVICTION_MODES:
+        raise ValueError(f"eviction must be one of {EVICTION_MODES}, got {ev!r}")
+    return Mechanisms(protect_queued=pq, ttl_s=ttl, aimd=aimd, ttl_unpin=unpin, eviction=ev)

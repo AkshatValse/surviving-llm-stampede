@@ -72,6 +72,7 @@ class Recorder:
         self._sessions_done: List[int] = []
         self._busy: List[float] = []
         self._pf_tokens: List[int] = []
+        self._evictions: List[int] = []                 # evicted whole sessions per window (round 4)
         self._lat: List[List[float]] = []
         self._first_wait: List[List[float]] = []
 
@@ -85,6 +86,7 @@ class Recorder:
             self._sessions_done.append(0)
             self._busy.append(0.0)
             self._pf_tokens.append(0)
+            self._evictions.append(0)
             self._lat.append([])
             self._first_wait.append([])
 
@@ -128,6 +130,11 @@ class Recorder:
 
     def add_prefill_tokens(self, t: float, n: int) -> None:
         self._pf_tokens[self._win(t)] += n
+
+    def on_evict(self, t: float, n: int) -> None:
+        """``n`` sessions' idle KV were evicted at time ``t`` (called once per admission that needed memory)."""
+        if n:
+            self._evictions[self._win(t)] += n
 
     def on_admit(self, t: float, hit: bool, first_turn: bool, wait_first: float) -> None:
         k = self._win(t)
@@ -196,6 +203,8 @@ class Recorder:
                 "busy_frac": self._busy[k] / self.w,
                 "prefill_tok_per_s": self._pf_tokens[k] / self.w,
                 "hits": hit,
+                "evictions": self._evictions[k],
+                "evictions_per_s": self._evictions[k] / self.w,
             })
         return rows
 

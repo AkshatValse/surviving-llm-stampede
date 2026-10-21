@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import yaml
 
 from .engine import Engine, EngineParams
+from .eviction import eviction_rng
 from .mechanisms import AimdParams, make_mechanisms, resolve_session_cap
 from .metrics import Recorder, tail_stats, trend_rise
 from .policies import make_policy
@@ -81,7 +82,8 @@ def build_engine(cfg: dict, rs: RunSpec, specs=None):
     rec.mem_on = bool(cfg["metrics"].get("track_memory", False))
     eng = Engine(ep, wl, specs, policy, rec, session_cap=cap, closed=(rs.plan.kind == "closed"),
                  stop_queue_above=rs.stop_queue_above, debug=rs.debug, mech=mech,
-                 stop_backlog_above=rs.stop_backlog_above, stop_low_hit=rs.stop_low_hit)
+                 stop_backlog_above=rs.stop_backlog_above, stop_low_hit=rs.stop_low_hit,
+                 evict_rng=eviction_rng(rs.seed) if mech.eviction == "random" else None)
     return eng, rec, cap
 
 
@@ -105,6 +107,7 @@ def simulate(cfg: dict, rs: RunSpec, specs=None) -> Dict[str, Any]:
         "exp": rs.exp, "policy": rs.policy, "seed": rs.seed, "variant": rs.variant,
         "horizon_s": rs.horizon_s, "sim_end_s": eng.end_time,
         "session_cap": cap if cap is not None else -1,
+        "eviction": eng.mech.eviction,
         "wall_s": wall,
         "wall_s_per_10k_sim_s": wall / eng.end_time * 1e4 if eng.end_time > 0 else float("nan"),
         "tail_s": tail_s,

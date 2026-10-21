@@ -81,6 +81,16 @@ Round-2 mechanisms (``mechanisms.py``; all off by default, which reproduces the 
 * ``free_kv_on_session_end`` (default True): KV of a finished session is freed at once (an oracle; a real engine
   cannot know the session ended). False keeps it as most-recently-used evictable idle KV, which crowds out live
   sessions and raises the escape rate.
+
+Round-4 eviction rules (``Mechanisms.eviction``; default ``lru`` keeps the rounds 1-3 code path unchanged)
+---------------------------------------------------------------------------------------------------------
+* ``mru_idle``: evict the idle session whose turn finished most recently (the idle table is ordered by that time).
+* ``random``: evict idle sessions uniformly at random without replacement, one draw per victim until the memory need is
+  covered; the draws come from a generator dedicated to eviction (``eviction.eviction_rng(seed)``), never from the workload
+  streams. Both go through ``eviction.select_victims`` and respect hard (never) / soft (last) protection; the admitted
+  request's own session has already left the idle table, and running requests' KV is not in it, so neither is evictable.
+* ``Engine(closed=True)`` is the closed-population mode used for the thrashing curve mu(n): ``n`` sessions at t = 0, a fresh
+  turn-1 session injected (from the pre-generated pool) at the instant a session completes.
 """
 from __future__ import annotations
 
@@ -91,6 +101,9 @@ from collections import OrderedDict, deque
 from dataclasses import dataclass
 from typing import Deque, Dict, Iterator, List, Optional, Set, Tuple
 
+import numpy as np
+
+from .eviction import select_victims
 from .mechanisms import Mechanisms, aimd_step
 from .metrics import Recorder
 from .policies import Policy
@@ -152,7 +165,8 @@ class Engine:
                  rec: Recorder, *, session_cap: Optional[int] = None, closed: bool = False,
                  stop_queue_above: Optional[int] = None, debug: bool = False,
                  mech: Optional[Mechanisms] = None, stop_backlog_above: Optional[int] = None,
-                 stop_low_hit: Optional[Tuple[float, int]] = None):
+                 stop_low_hit: Optional[Tuple[float, int]] = None,
+                 evict_rng: Optional[np.random.Generator] = None):
         self.p = params
         self.wl = wl
         self.policy = policy
@@ -171,6 +185,11 @@ class Engine:
         self._ttl = self.mech.ttl_s
         self._unpin = self.mech.ttl_unpin               # "idle" | "eager" | "eager_fit" (see mechanisms.py)
         self.aimd = self.mech.aimd
+        self._evict_mode = self.mech.eviction            # "lru" (rounds 1-3 code path) | "random" | "mru_idle" (eviction.py)
+        self._evict_rng = evict_rng
+        if self._evict_mode == "random" and evict_rng is None:
+            raise ValueError("eviction='random' needs evict_rng (a generator dedicated to eviction; eviction.eviction_rng)")
+        self.last_victims: List[int] = []                # victims of the latest non-LRU eviction, in selection order
         self.M = float(params.kv_memory_tokens)
         max_end = wl.end_len(wl.max_turns)
         if self.M < max_end:
@@ -440,7 +459,11 @@ class Engine:
 
     def _evict(self, need: int) -> None:
         """Free at least ``need`` tokens of idle KV: unprotected LRU-first, then soft-protected LRU-first. Hard
-        protection is never evicted (feasibility was checked by the caller)."""
+        protection is never evicted (feasibility was checked by the caller). Rounds 1-3 behaviour (``lru``) is the code
+        below; ``random`` / ``mru_idle`` (round 4) go through ``_evict_variant``."""
+        if self._evict_mode != "lru":
+            self._evict_variant(need)
+            return
         idle = self.idle
         if not self._hard and not self._soft:
             while need > 0:
@@ -473,6 +496,25 @@ class Engine:
         if got < need:
             raise AssertionError("eviction short of memory: hard-protected KV blocks an admission that was "
                                  "declared feasible")
+        for sid2 in victims:
+            kv2 = idle.pop(sid2)
+            self._drop_prot(sid2)
+            if self._ended:
+                self._ended.discard(sid2)
+            self.idle_sum -= kv2
+            self.n_evictions += 1
+            self.evicted_tokens += kv2
+
+    def _evict_variant(self, need: int) -> None:
+        """Round-4 eviction rules (``random`` / ``mru_idle``): victims from ``eviction.select_victims`` among the idle KV
+        that is not hard-protected (soft-protected KV only after all unprotected KV), whole sessions."""
+        idle = self.idle
+        victims, got, n_soft = select_victims(self._evict_mode, idle, need, self._hard, self._soft, self._evict_rng)
+        if got < need:
+            raise AssertionError("eviction short of memory: hard-protected KV blocks an admission that was "
+                                 "declared feasible")
+        self.n_soft_evictions += n_soft
+        self.last_victims = victims
         for sid2 in victims:
             kv2 = idle.pop(sid2)
             self._drop_prot(sid2)
@@ -707,7 +749,9 @@ class Engine:
             new = req.prompt
         need = self.reserved + req.end + self.idle_sum - self.M
         if need > 0:
+            n_ev0 = self.n_evictions
             self._evict(need)
+            self.rec.on_evict(now, self.n_evictions - n_ev0)
         self.reserved += req.end
         used = self.reserved + self.idle_sum
         if used > self.max_resident:
