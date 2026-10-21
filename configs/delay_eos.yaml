@@ -1,0 +1,68 @@
+research_question: >-
+  Under a one-step gradient delay, does Adam's preconditioned sharpness self-stabilize at eta*S_P ~ 1
+  (and at ~2.7 with update-extrapolation error feedback at beta1=0.9), and does that cap co-occur with the
+  loss penalty of delay -- or is the delay penalty not a stability effect in the minibatch regime?
+
+experiment: delay_eos
+hardware: "Apple M3 Max CPU (simulation)"
+
+data:
+  dataset: sklearn_digits          # bundled, no download
+  n: 1000                          # first n rows
+  standardize: true
+model:
+  d_hidden: 64                     # 64-64-10 tanh MLP, MSE to one-hot, float64
+steps: 6000
+seeds: [0, 1, 2]
+etas: [0.003, 0.01, 0.03]          # Adam lr; Muon-like uses the same grid on the polar-update scale
+batches: [1000, 64]                # 1000 == full batch (n); runs are ordered full batch first
+probe_batch: 256                   # fixed curvature-probe subset when batch < n
+delay_tau: 1                       # gradient delay for modes delay / ef
+
+optimizers:
+  adam:
+    beta1: [0.9, 0.99]
+    beta2: 0.95
+    eps: 1.0e-8
+    modes: [sync, delay, ef]       # ef = update extrapolation x_{t+1} = x_t - 2u_{t-1} + u_{t-2}
+  muon:
+    momentum: 0.95
+    bias_beta1: 0.9                # biases use Adam
+    bias_beta2: 0.95
+    bias_eps: 1.0e-8
+    rank_rtol: 1.0e-8              # singular values below rtol*s_max are dropped in the polar factor
+    modes: [sync, delay]           # no EF variant defined for the polar update
+
+curvature:
+  every: 100                       # measure after steps 100, 200, ..., 6000
+  power_iters: 30
+  fd_rel: 1.0e-4                   # FD perturbation norm = fd_rel * ||theta||
+
+metrics:
+  final_loss_window: 500           # final loss = mean full-data loss over the last 500 steps
+  curvature_window: 1000           # eta*S_P summary = median of measurements in the last 1000 steps
+  divergence_loss: 1000.0          # run flagged diverged (and stopped) if full-data loss is non-finite or exceeds this
+
+output:
+  root: results/delay_eos
+  loss_log_every: 10
+
+parallel:
+  processes: 3
+
+# Pre-registered decision rule (evaluated by experiments/delay_eos_analyze.py)
+predictions:
+  a:
+    batch: 1000
+    beta1_main: 0.9
+    beta1_extra: 0.99
+    delay_band: [0.75, 1.25]
+    ef_band: [2.0, 3.4]
+    min_seed_frac: 0.6666666666666666  # >= 2/3 of seeds in band (2 of 3)
+    min_etas: 2                    # at >= 2 eta values
+    sync_reach: 10.0               # if sync eta*S_P never exceeds this: inconclusive, not kill
+  b:
+    batch: 64
+    sync_sp_max: 1.5               # sync eta*S_P at best-loss eta <= this ...
+    penalty_min: 0.10              # ... while delay costs >= 10% loss => penalty is not a stability effect
+    go_sync_sp_min: 2.0            # GO needs sync eta*S_P >= 2 with delayed in the (a) delay band
