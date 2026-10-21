@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-7.4.4, pluggy-1.0.0
+rootdir: /Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.2.0
+collected 116 items
+
+tests/test_agentload_config.py ............                              [ 10%]
+tests/test_agentload_e2e.py .................                            [ 25%]
+tests/test_agentload_mock.py .....                                       [ 29%]
+tests/test_agentload_parse.py ......                                     [ 34%]
+tests/test_agentload_workload.py ...........                             [ 43%]
+tests/test_analysis_hysteresis.py ...................                    [ 60%]
+tests/test_analysis_pipeline.py .....                                    [ 64%]
+tests/test_analysis_windows.py ..........                                [ 73%]
+tests/test_plan_budget.py ....                                           [ 76%]
+tests/test_slurm_scripts.py ...........................                  [100%]
+
+- generated xml file: /Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_tests/20261021-021100/junit.xml -
+======================= 116 passed in 185.45s (0:03:05) ========================

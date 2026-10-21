@@ -1,0 +1,74 @@
+{
+  "experiment": "agentload_mock_demo",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "agentload",
+    "run",
+    "--config",
+    "configs/agentload_mock.yaml",
+    "--name",
+    "agentload_mock_demo"
+  ],
+  "git": {
+    "commit": "c37374d0c9e4a8001505c6ce50f6be390aaf9c1a",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T02:10:39",
+  "end_time": "2026-10-21T02:10:51",
+  "wall_s": 12.251768,
+  "slurm_env": {},
+  "config_effective_file": "config_effective.yaml",
+  "n_sessions_planned": 44,
+  "resolved_rate_sessions_per_s": 2.0,
+  "ramp_knots": [],
+  "engine_label": "mock",
+  "notes": "",
+  "expected_turns_per_session": 3.8732945919036865,
+  "duration_s_configured": 12,
+  "time_convention": "seconds since run start (event-loop monotonic clock)",
+  "server_models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "mock",
+        "object": "model"
+      }
+    ]
+  },
+  "outcome": {
+    "abort_reason": null,
+    "t_abort_s": null,
+    "t_end_s": 12.001113999984227,
+    "t_end_incl_cancel_s": 12.001386957999784,
+    "sessions_planned": 44,
+    "sessions_started": 44,
+    "sessions_completed": 44,
+    "sessions_failed": 0,
+    "sessions_cancelled": 0,
+    "requests_total": 168,
+    "requests_ok": 168,
+    "requests_error": 0,
+    "requests_cancelled": 0,
+    "max_inflight_seen": 3,
+    "metrics_scrapes": 12,
+    "metrics_scrape_failures": 0
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "interval": [
+    1.2,
+    2.0
+  ],
+  "fraction_min": 0.6666666666666666,
+  "min_runs_per_cell": 3,
+  "cells": {},
+  "n_fcfs_cells_with_data": 0,
+  "mechanism_transfers_any_fcfs_cell_strict": false,
+  "mechanism_transfers_any_fcfs_cell_loose": false,
+  "kill_strict": null,
+  "kill_loose": null
+}

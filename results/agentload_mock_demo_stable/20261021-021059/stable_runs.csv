@@ -1,0 +1,2 @@
+label,seed,rate_mult,stable,final_queue,trend_rise,aborted,queue_source,run_dir
+mock,0,,True,0.0,0.0,False,engine_waiting,results/agentload_mock_demo/20261021-021039

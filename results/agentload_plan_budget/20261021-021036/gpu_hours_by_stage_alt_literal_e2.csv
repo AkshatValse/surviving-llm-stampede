@@ -1,0 +1,13 @@
+stage,protocol,run_s,n_runs,runs_per_job,jobs,job_wall_h_full,fits,gpu_h,note
+S0_smoke_sglang,s0_smoke,1800.0,1,1,1,0.8,True,0.8,first GPU job; refines startup_h / gap_s
+S0_smoke_vllm,s0_smoke,1800.0,1,1,1,0.8,True,0.8,same for vLLM
+E0a_miss_sglang,e0_miss,2700.0,4,4,1,3.4499999999999997,True,3.4499999999999997,3 seeds @ pop 32 + 1 @ pop 64
+E0a_miss_vllm,e0_miss,2700.0,4,4,1,3.4499999999999997,True,3.4499999999999997,"same, vLLM --no-enable-prefix-caching"
+E0b_cap_sglang_lpm,e0_cap,3000.0,9,3,3,2.9,True,8.7,"6 bracket points + 3 refinement points, 1 seed"
+E2a_kill_sglang_fcfs,e2_literal,28000.0,9,1,9,8.07777777777778,True,72.70000000000002,"lambda {1.3,1.6,1.9} x lambda_miss, 3 seeds, refresh on (shipped default)"
+E2b_sglang_fcfs_r0,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,"refresh off; lambda {1.6,2.0}, 3 seeds"
+E2b_sglang_fcfs_r1_2x,e2_literal,28000.0,3,1,3,8.07777777777778,True,24.233333333333338,refresh on at lambda 2.0 (1.6 is in E2a)
+E2b_sglang_lpm_r1,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,"stock LPM (fallback at 128), refresh on"
+E2b_sglang_lpm_r0,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,"stock LPM, refresh off"
+E2b_sglang_lpm_inf,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,LPM with WAITING_QUEUE_PREFIX_MATCH_MAX patched huge (patch NOT applied here)
+E2b_vllm_fcfs,e2_literal,28000.0,6,1,6,8.07777777777778,True,48.466666666666676,"vLLM FCFS, prefix caching on"

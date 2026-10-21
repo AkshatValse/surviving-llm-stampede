@@ -1,0 +1,53 @@
+{
+  "experiment": "agentload_e2_burst_planstats",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "agentload",
+    "plan",
+    "--config",
+    "configs/agentload_e2_burst.yaml",
+    "--set",
+    "arrivals.lambda_ref=0.047418947368421054",
+    "--set",
+    "arrivals.rate_mult=1.6",
+    "--write"
+  ],
+  "git": {
+    "commit": "c37374d0c9e4a8001505c6ce50f6be390aaf9c1a",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T02:10:37",
+  "end_time": "2026-10-21T02:10:37",
+  "wall_s": 0.001848,
+  "slurm_env": {},
+  "plan_stats": {
+    "kind": "constant",
+    "seed": 0,
+    "resolved_rate": 0.07587031578947369,
+    "n_sessions": 914,
+    "n_burst_sessions": 200,
+    "n_turns_total": 13533,
+    "mean_turns_per_session": 14.806345733041576,
+    "expected_turns_per_session": 14.761055049953429,
+    "all_miss_prompt_tokens_total": 141076650,
+    "max_prompt_tokens": 40350
+  }
+}
