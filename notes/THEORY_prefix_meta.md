@@ -55,3 +55,39 @@ Status: my sketch, 2026-10-21 overnight. **Not math-checked.** Statements marked
   2. Ordering, not admission control, recovers the larger region (when $\lambda_{\rm hit}\le\lambda_{\rm mem}$).
   3. Threshold fallbacks in shipped engines inherit the trap, measured on a real engine.
   4. Escape-time asymptotics, as a rare-event problem.
+
+---
+## Revision 2026-10-21 ~02:00, after the REFRAME pilot. Claims 2 and 3 above are superseded.
+
+**What the pilot showed.**
+- In the congested state, running requests reserve about 288k of the 300k tokens. Idle KV for sessions in tool calls gets evicted to admit misses. *This diagnostic is not yet stored in a results directory.*
+- LPM therefore cannot help: by the time a session returns from its tool, its KV is already gone.
+- The decisive variable is **admission**, not ordering.
+
+**Claim 1′ (work-conserving admission).** Call an admission rule work-conserving if it admits a waiting request whenever memory can be freed by evicting idle KV.
+- Suppose $\lambda>\lambda_{\rm miss}$ and the queue holds misses whose total reservations exceed $M$.
+- Then each admission evicts idle KV, and every returning session is cold.
+- So the congested state is absorbing, whatever the ordering or eviction rule. This holds once running reservations saturate $M$.
+- The good state exists when $\lambda\,\mathbb E[\text{lifetime}]\,E_{lb}[L]<M$ and $\lambda<\lambda_{\rm hit}$. In that regime no eviction of in-tool KV is needed.
+- Round 3 tests this as H1/P1/P2.
+
+**Claim 2′ (working-set bound).** Define the length-biased (time-weighted) resident context
+$$E_{lb}[L]=\frac{\mathbb E\big[\sum_t L_t(s_t+Z_t)\big]}{\mathbb E\big[\sum_t(s_t+Z_t)\big]} .$$
+It exceeds the "mid-session" context because long sessions stay longer and hold more KV. This is why $N^\*=45$ failed and $28\approx M/E_{lb}$ worked.
+- A session cap $N\le M/E_{lb}[L]$ keeps the expected resident KV at or below $M$. Follow-up turns then hit, and the stable region becomes $\lambda<\min(\lambda_{\rm hit},N/\mathbb E[\text{lifetime}])$.
+- **Open:** the $E_{lb}$ bound holds in expectation, not pathwise. Fluctuations of resident KV around $N\cdot E_{lb}$ need a safety margin. A CLT-style margin $M/(E_{lb}+z\,\mathrm{sd}/\sqrt N)$ could explain why caps of 24 and below are robust.
+
+**Claim 3′ (the cliff is LRU on cyclic access; conjecture).**
+- Agent sessions re-reference their KV once per tool cycle. Across $N$ sessions with similar tool times, the access pattern is roughly cyclic.
+- Classical caching result: LRU on a cyclic reference string whose working set $W$ exceeds the cache $C$ gives **zero hits**. MRU and random eviction degrade gracefully, with hit rates on the order of $C/W$.
+- So above $N_{lb}$, LRU collapses hit rate abruptly, which is the cliff at 28→32. LRU is the default in both SGLang (`radix_eviction_policy="lru"`) and vLLM (free-queue LRU).
+- **Prediction (round 4, not yet run):**
+  - Replacing LRU with MRU-of-idle or random eviction turns the cap cliff into gradual degradation.
+  - It might also enlarge the basin of the good state for work-conserving engines, since bursts could be survivable.
+  - It cannot remove the absorbing congested state of Claim 1′, because once running reservations saturate $M$ no idle KV survives.
+- Related prior work: "When Fancy Eviction Fails" (arXiv 2609.28870) finds LRU hard to beat on production traces. Those traces are presumably not overloaded or cyclic. **Check its regime.**
+
+**Escape-time angle (Akshat's rare-event background).**
+- Below the burst threshold, collapse needs a rare excursion of the queue or of resident KV.
+- The mean time to collapse should grow roughly exponentially in the system size $k$. Round 3 tests this as H3.
+- The natural estimator is multilevel splitting on queue length or resident-KV level, giving a large-deviations rate for the escape.
