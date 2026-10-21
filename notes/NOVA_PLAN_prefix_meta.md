@@ -260,3 +260,38 @@ PYTHONPATH=src:. python experiments/agentload_trap_power.py        # Poisson noi
 ```
 
 Recorded at commit f1f001e on a clean tree: tests in `results/agentload_tests/20261021-070445` (**307 passed, 0 failed, 0 skipped**, 654 s; `junit.xml`, `pytest_stdout.txt`, `meta.json`). The previous revision had 274 (recorded at 367f8ac, `results/agentload_tests/20261021-052646`). Changes in this revision: `test_prereg.py` rewritten (9 → 24 test items: fill by formula incl. the E0b-bounded window, capped-drain limit, one-pool-per-curve, `check-job`, every verdict-changing setting registered, and the regression test for the probe of the review: a prereg of 1.2 × only plus runs labelled `vllm-fcfs` at 1.5 × is NOT decisive), `test_analysis_trap_v2.py` (25 → 30: young-session trap seen in token units and missed in session units, token reference required, outstanding vs sessions backlog, gate queue, hardware / token-reference pairing, meta keys that may not differ), `test_trap_sim_traces.py` (6: the simulator-trace analysis on synthetic windows, plus the recorded simulator numbers, skipped if the main checkout's files are absent), `test_slurm_scripts.py` (burst refuses to start without a valid prereg; cap file of another pool or hardware refused; MULTS / label / reference / protocol must equal the registration), `test_plan_budget.py` (trailing gap and overhead), and additions to the guards, closed and pipeline tests. The mock numbers say nothing about SGLang or vLLM, and the synthetic trap fixtures serve at exactly λ_miss by construction: they check the verdict LOGIC, and the realism check of the criterion is the simulator-trace analysis (`results/agentload_trap_sim_traces/20261021-070449`, deterministic analysis of recorded simulator output, no new simulation). Budget outputs: `results/agentload_plan_budget/20261021-070448`.
+
+## Stage 0 result: SGLang smoke, job 17060165 (2026-10-21, COMPLETED 0:0, 32 min, nova22-gpu-1)
+Local copy: `results/nova/s0_smoke_17060165_pulled_20261021-152347/` on main. The engine runs at harness commit bbb6a12.
+Three earlier attempts failed at startup, each on a harness or toolchain issue, and each was fixed (`notes/LOG.md` on main).
+- **(a) flags:** all present. The flag-check bug (SIGPIPE under pipefail) was fixed in 636da1b.
+- **(b) cached_tokens:** returned at `usage.prompt_tokens_details`. In the probe, a repeated 64-token prompt came back with 63 tokens cached.
+- **(c)/(k) token ids:** `return_token_ids` gives HTTP 200, and ids appear at `choices.0.token_ids`. **Decision: pin `OUTPUT_FEEDBACK=server` for every SGLang cell.** The smoke run itself used synthetic feedback (auto mode).
+- **(d) metrics:** HTTP 200, 90 names.
+  - Waiting: `sglang:num_queue_reqs`.
+  - Running: `sglang:num_running_reqs`.
+  - KV: `sglang:token_usage`, `sglang:num_used_tokens`, `sglang:kv_evictable_tokens`.
+  - Hit: `sglang:cache_hit_rate`, `sglang:cached_tokens_total`.
+  - Retraction: `sglang:num_retracted_reqs`.
+  - Ratio: `sglang:new_token_ratio`.
+- **(e) context:** `--context-length 49152` is accepted, with a warning that it exceeds the derived 32768. Prompts up to 40,350 tokens were served, 36 of them above 32,768, with no errors.
+- **(f) KV cap:** `max_total_num_tokens` = 300,000. K and V are 8.01 GB each.
+- **(g) prompt tokens:** 0 client/server mismatches over 3191 requests.
+- **(h) flush and canary:** the flush returns HTTP 200. The primed canary had 1023/1024 tokens cached before the flush and 0 after. The idle gauges above exist.
+- **(i) startup:**
+  - Healthy after 101 s, including first-time FlashInfer JIT and 61 s of CUDA-graph capture.
+  - Peak host RSS was about 20 GB.
+  - `startup_available_gpu_memory_gb` 45.5, weights 14.3 GB.
+  - The gap between runs is not yet measured, since this job had a single run.
+- **(j) hardware:** NVIDIA A100 80GB PCIe, 81920 MiB, driver 580.178.04, CUDA 13.0. Earlier attempts landed on nova22-gpu-1 and nova22-gpu-3, both the same model.
+- **(l) extra_body:** `repetition_penalty` and `top_p` were accepted (0 request errors).
+- **(m) node classes:** nova22-amp-7 stays excluded and untested.
+- **Toolchain** (needed for FlashInfer's default backend):
+  - CUDA_HOME shim (`slurm/make_cuda_shim.sh`).
+  - Compiler-side CUDA wheels pinned to the runtime's 13.0 (`slurm/setup_nova.sbatch`).
+  - JIT cache under `XDG_CACHE_HOME`.
+- **Smoke run** (closed population 32, 1800 s, synthetic feedback):
+  - Sessions: 236 started, 204 completed, 0 failed.
+  - Engine: KV `token_usage` mean 0.61, max 0.99. Queue mean 7.4, max 23. 0 retractions.
+  - First 1000 s window: follow-up turns >50% cached 0.689, token hit rate 0.567.
+  - This is a smoke check, not a measurement. It is consistent with the simulator placing n=32 just past the μ(n) peak, under memory pressure.

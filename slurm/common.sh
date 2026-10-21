@@ -199,7 +199,7 @@ reset_and_verify() {
   out=$(canary_cli check --prime-json "$JOB_DIR/canary_${CANARY_N}_prime.json" 2>&1) || rc_check=$?
   echo "$out" >> "$JOB_DIR/canary.log"; echo "$out" | grep CANARY_RESULT | cut -c1-400
   if [ "$CACHE_EXPECTED" = "1" ]; then flush_cache || true; fi      # drop the canary entry the check itself created
-  START_DETAIL="canary $CANARY_N: prime rc=$rc_prime check rc=$rc_check (0 ok, 1 failed, 3 unverifiable); see canary_${CANARY_N}_*.json"
+  START_DETAIL="canary $CANARY_N: prime rc=$rc_prime check rc=$rc_check (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_${CANARY_N}_*.json"
   if [ "$rc_prime" -eq 0 ] && [ "$rc_check" -eq 0 ]; then
     START_VERIFIED=true
   else
