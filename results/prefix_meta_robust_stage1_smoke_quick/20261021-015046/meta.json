@@ -1,0 +1,49 @@
+{
+  "experiment": "robust",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_mech_run.py",
+    "robust",
+    "--quick",
+    "--workers",
+    "3",
+    "--tag",
+    "stage1_smoke"
+  ],
+  "git": {
+    "commit": "90cd25c59ccb97b02af07f286f59d4614cb12812",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T01:50:46",
+  "end_time": "2026-10-21T01:50:48",
+  "wall_s": 2.188027858734131,
+  "quick": true,
+  "workers": 3,
+  "overrides": [],
+  "tag": "stage1_smoke",
+  "n_variants": 2,
+  "n_variants_holding": 0,
+  "variants_needed": 5,
+  "n_burst_runs": 2,
+  "n_search_and_calib_runs": 22,
+  "timing": {
+    "total_sim_s": 8000.0,
+    "total_run_wall_s": 0.07056520797777921,
+    "wall_s_per_10k_sim_s": 0.088206509972224,
+    "max_run_wall_s": 0.03531395795289427
+  }
+}

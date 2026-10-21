@@ -1,0 +1,161 @@
+research_question: >-
+  In the prefix-cache serving simulator (src/prefixmeta), is the metastable congested state caused by
+  work-conserving admission (rather than queue ordering), and does bounding the resident KV working set
+  (static session cap at the length-biased working set, TTL pin that blocks admission, adaptive AIMD cap)
+  restore global stability at a small throughput price? How does the escape time from the good state scale with
+  system size, and is the bistable window robust across agent-workload variants?
+
+# ======================================================================================================
+# PRE-REGISTRATION, round 2 (mechanisms / phase diagram / escape scaling / robustness).
+# Written and committed BEFORE any round-2 simulator code was written or run (stage 1 had not started).
+# The hypotheses H1-H4 and predictions P1-P8 below are copied verbatim from the lead researcher's task text.
+# Everything under `operationalization` is the implementer's choice, fixed here before any run; it adds
+# definitions only and does not change the research design.
+# ======================================================================================================
+preregistration:
+  date: 2026-10-21
+  baseline_commit_at_writing: 8e71275     # HEAD of branch pilot/prefix-meta when this file was written
+  baseline_results: results/prefix_meta*/   # round-1 results (E0 lambda_miss=0.047419, lambda_cap(LPM)=0.115584, R=2.4375)
+
+  hypotheses:
+    H1: |-
+      (work-conserving admission is the cause): For lambda in (lambda_miss, lambda_cap), every WORK-CONSERVING admission rule — regardless of queue ORDER (FCFS, LPM, aging) and of protecting QUEUED prefixes (PEEK-like) — has an absorbing congested all-miss state reachable by a finite burst; from congestion it recovers only if lambda < ~lambda_miss (hysteresis).
+    H2: |-
+      (bounding the KV working set restores global stability): NON-work-conserving mechanisms that bound the resident KV working set — a static session cap at the length-biased working set N_lb = floor(M / E_lb[context]) or a Continuum-style TTL pin of in-tool KV that blocks admission — recover from congestion and bursts for lambda up to a large fraction of lambda_cap; an adaptive AIMD cap (CONCUR-like) also does, but static caps above N_lb fail sharply (cliff).
+    H3: |-
+      (escape time): from an empty start with Poisson arrivals (no burst), the mean time to collapse grows rapidly (approximately exponentially) with system size k (M, chunk budget, max-running and GPU speed scaled by k, arrival rate by k), for fixed lambda/lambda_miss.
+    H4: |-
+      (robustness): the bistable window R = lambda_cap/lambda_miss > 1.5 and burst-trapping persist across agent workload variants (initial context 2k/8k/16k, tool time Exp / lognormal CV1.5 / bimodal 0.3 s & 20 s, turns mean 5/15/30, decode 100/400).
+
+  predictions:
+    P1: |-
+      FCFS from 300 cold: recovers (3/3) at lambda <= 0.9 lambda_miss and fails (0/3) at lambda >= 1.1 lambda_miss.
+    P2: |-
+      PEEK-like queued-prefix protection: recovers 0/3 at 1.5x and 2x from cold 300 and is trapped by burst 200 in >= 4/5 seeds at 2x.
+    P3: |-
+      TTL-pin with tau >= 2x mean tool time: recovers >= 2/3 at 1.5x and 2x, and is trapped in <= 1/5 burst seeds at 2x.
+    P4: |-
+      LB-CAP(N_lb computed from workload, not tuned): recovers >= 2/3 at 1.5x and 2x, trapped <= 1/5 at 2x; CAP at 1.3 x N_lb fails (0/3 at 2x).
+    P5: |-
+      AIMD-CAP: recovers >= 2/3 at 1.5x and 2x.
+    P6: |-
+      every non-work-conserving policy that recovers has a from-empty stable limit (its own lambda_cap) >= 0.8 x LPM's lambda_cap (i.e., the price of stability is small).
+    P7: |-
+      escape time: at lambda = 2.25 x lambda_miss, mean time to collapse at k=0.25 < at k=0.5 < at k=1, with log(mean time) increasing roughly linearly in k.
+    P8: |-
+      R > 1.5 and burst trap of FCFS in >= 4/5 seeds hold for >= 5 of the workload variants.
+
+  # --------------------------------------------------------------------------------------------------
+  # Implementer's operationalization (fixed before running). Where the verbatim text is ambiguous, the
+  # choice below is the one that is NOT favourable to the hypotheses when there is a choice.
+  # --------------------------------------------------------------------------------------------------
+  operationalization:
+    multiples: >-
+      "Nx" always means N * lambda_miss, with lambda_miss measured by the E0 closed-population procedure
+      (the base value is read from results/prefix_meta_e0/20261021-005706/e0_summary.json; per-variant and per-size
+      values are measured by the same procedure).
+    recovery_cold_start: >-
+      A cold-start run (300 sessions at t=0 plus Poisson arrivals, horizon 30000 s) "recovers" iff over the last
+      5000 s the hit rate (hits/admissions) is > 0.8 AND the mean backlog (waiting queue + gate queue of a session
+      cap) is < 20. For policies without a gate this equals the round-1 `recovered`; for capped policies it is the
+      stricter round-1 `recovered_incl_gate`. The queue-only criterion is also reported.
+    burst: >-
+      Poisson arrivals at the stated multiple from t=0, a burst of 200 sessions spread uniformly over 60 s starting
+      at t=5000 s, horizon 30000 s. "Trapped" is the round-1 E2 criterion: hit rate < 0.2 in >= 10 consecutive
+      1000-s windows starting at the burst (>= 10000 s). "Burst-recovered" additionally requires hit rate over
+      [t_b + 10000, t_b + 25000] > 0.8 and tail backlog < 20. Seeds 0-4 (5 seeds). A run that is neither trapped
+      nor burst-recovered is reported as "partial".
+    N_lb: >-
+      N_lb = floor(M / E_lb) with E_lb = E[sum_{t<=T} E_t] / E[T], the turn-weighted (length-biased) mean
+      end-of-turn context over the session lifetime, computed analytically from the workload config
+      (workload.length_biased_mean_context) and cross-checked by Monte Carlo in the tests. It is a function of
+      (M, workload) only and is never tuned on simulation outcomes. CAP(1.3 N_lb) = floor(1.3 * N_lb).
+    ttl_pin: >-
+      tau in {5, 10, 20} s (mean tool time 5 s); "tau >= 2x mean tool time" in P3 selects tau in {10, 20}.
+      Pins block admission (FCFS head-of-line waits), are freed at expiry unless the program's next request is
+      already queued (then the pin persists until it is admitted, as in Continuum), and are broken in
+      latest-program-arrival order only when the engine would otherwise deadlock (nothing running, no expiry pending).
+    aimd_cap: >-
+      AIMD-CAP = the fallback rule given in the task: every 10 s, if the window hit rate < 0.7 then
+      cap = max(4, floor(0.7 cap)) else cap += 1; start at N_lb. The CONCUR Eq. (1) rule is implemented separately
+      (CONCUR-cap) and reported as an extra row; P5 is evaluated on AIMD-CAP only.
+    peek: >-
+      PEEK-like = FCFS order + KV of sessions with a queued request cannot be evicted while queued (primary,
+      mode "pin", with the deadlock breaker). The ranking-only variant of the PEEK paper ("rank": queued KV is evicted
+      last, never pinned) is reported as an extra row; P2 is evaluated on the primary "pin" variant.
+    stable_limit_P6: >-
+      From-empty stable limit by the E0 procedure (bracket over {1,1.5,2,2.5,3,4,6,8,12,16} x lambda_miss then
+      bisection to 2 %, horizon 20000 s, seeds 0-4, stable iff ALL seeds stable; stable = not early-stopped, final
+      backlog < 50 and fitted backlog rise over the last 5000 s <= 10, where backlog = waiting queue + gate queue).
+      LPM's limit is re-measured in the same run with the same code. "Recovers" in P6 means: recovers >= 2/3 at both
+      1.5x and 2x in the mech cold-300 runs. The ratio is limit(policy) / limit(LPM).
+    escape: >-
+      A run is collapsed at the first of (a) waiting queue > 4 * M_k / E_lb sessions (exact event time), (b) hit
+      rate < 0.2 in 3 consecutive 1000-s windows (time = start of the first of the three windows). Size-k system:
+      M_k = k M, chunk budget = round(k * 8192), max_running = round(k * 256), per-token costs
+      (per_token_s, decode_attn_s, prefill_attn_s) divided by k, iter_fixed_s / iter_floor_s unchanged,
+      arrival rate = mult * lambda_miss(k) with lambda_miss(k) measured by the closed-population procedure at
+      population round(60 k) on the size-k engine. Seeds 1000-1019 (20 seeds), horizon 200000 s, runs that do not
+      collapse are right-censored at the horizon. Mean time to collapse is reported three ways: Kaplan-Meier
+      restricted mean up to the horizon (a lower bound if S(horizon) > 0), the exponential-MLE mean
+      (events / exposure) with an exact Poisson CI, and the Kaplan-Meier median when S drops below 0.5.
+      P7 "roughly linear" means: both slopes [log m(0.5) - log m(0.25)]/0.25 and [log m(1) - log m(0.5)]/0.5 are
+      positive and within a factor 2 of each other. If fewer than 3 runs collapse at a size, that size's mean is
+      declared censored and P7 is reported as "not evaluable" rather than pass/fail unless the order is already
+      violated.
+    robustness: >-
+      8 workload variants (one-at-a-time around the base): base; initial context 8k, 16k; tool time lognormal
+      (CV 1.5), bimodal (0.3 s or 20 s, P(20 s) = p_hi = (5 - 0.3) / (20 - 0.3) = 0.2386 so the mean stays 5 s); turns mean 5,
+      30 (max_turns stays 60); decode 400. Each variant: its own lambda_miss, its own LPM and FCFS from-empty stable
+      limits (E0 procedure), R_LPM = limit(LPM)/lambda_miss; plus burst 200 at 1.6 * lambda_miss(variant) for FCFS,
+      5 seeds, E2 trap criterion. A variant "holds" iff R_LPM > 1.5 AND FCFS is trapped in >= 4/5 seeds AND
+      1.6 * lambda_miss < LPM limit (otherwise the burst is not a within-window test and the variant does not hold).
+      P8 passes iff >= 5 of the 8 variants hold (the base variant is counted).
+    non_blind_note: >-
+      The lead already saw round-1 results. In particular P1/P2's FCFS and work-conserving failures, and the fact
+      that a cap of 28 (= N_lb for the base workload) recovered in round 1, were observed before these
+      predictions were written, so P1, P2 and the LB-CAP part of P4 are confirmations of earlier observations on a new
+      code path, not blind predictions. P3 (TTL-pin), P5 (AIMD), P6, P7 and P8 involve mechanisms or settings that
+      had not been run.
+    no_tuning: >-
+      No parameter of any policy is tuned after the first full run. If a policy is changed after seeing results the
+      first-run results are still reported alongside.
+
+  # --------------------------------------------------------------------------------------------------
+  # AMENDMENT 1 (2026-10-21, written after the stage-1 implementation reached a running simulator and BEFORE any
+  # round-2 experiment was run; it resolves ambiguities between the task text and the literature-scout mechanism
+  # specs by implementing both readings and fixing which one decides each prediction). The text above is unchanged.
+  # --------------------------------------------------------------------------------------------------
+  amendment_1:
+    date: 2026-10-21
+    reason: >-
+      The task says policies are "modifiers on top of FCFS ordering unless the mechanism specifies otherwise", while the
+      scout spec of Continuum includes a scheduling priority (pinned before unpinned, then program arrival order).
+      PEEK is a ranking in the paper but "cannot be evicted while queued" in the task. AIMD-CAP is given as a fallback
+      rule in the task and as CONCUR Eq. (1) (with unstated interval / W0) by the scout. Both readings are
+      implemented; the primary one is fixed here.
+    ttl_pin_primary: >-
+      The primary TTL-pin family is ttl5 / ttl10 / ttl20 = pins + Continuum scheduling priority (waiting requests whose
+      KV is pinned first, then all others, both in program (session) arrival order). The pins-with-plain-FCFS family
+      ttlf5 / ttlf10 / ttlf20 (this is what the operationalization text above calls "FCFS head-of-line waits") and the
+      order alone without pins (progfcfs, work-conserving) are reported as ablations, so a recovery cannot be
+      misattributed to the pin when the ordering is responsible. P3 is evaluated on ttl10 and ttl20 together (both must
+      satisfy it) and, as a separate row, on ttlf10 and ttlf20. The headline P3 verdict is the primary family's.
+    peek_primary: >-
+      P2 is evaluated on "peek" (hard protection, with the deadlock breaker). "peek_rank" (ranking only) and "peek_lpm"
+      (hard protection under LPM order) are extra rows.
+    p6_policy_set: >-
+      "Non-work-conserving policy" in P6 = {peek, ttl5, ttl10, ttl20, ttlf5, ttlf10, ttlf20, lb_cap, cap_1p3, aimd_cap,
+      concur_cap}; a member "recovers" iff it recovers in >= 2/3 cold-300 runs at BOTH 1.5x and 2x. FCFS, LPM, peek_rank
+      and progfcfs are work-conserving and excluded. If no member recovers P6 is reported as vacuous.
+    p7_estimator: >-
+      The exponential-MLE mean decides P7 (it estimates the mean under right-censoring if the hazard is roughly
+      constant, an assumption that is reported, not tested); the Kaplan-Meier restricted mean is a lower bound and is
+      reported as a second verdict.
+    extras_not_part_of_any_prediction: >-
+      peek_rank, peek_lpm, concur_cap, progfcfs, the ttlf family, and the static-cap sweep (floor(m N_lb) for
+      m in {0.5, 0.75, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75}) supporting H2's "cliff" statement.
+    breaker_and_tie_rules: >-
+      Deadlock breaker (engine idle, request waiting, memory blocked by hard-protected KV, no pin expiry pending):
+      protection released latest-program-arrival first. Tie at a pin's expiry time: a tool return wins, so the pin
+      persists. Both are modelling choices, unit-tested against an independent naive reference simulator.
