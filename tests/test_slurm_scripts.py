@@ -194,7 +194,7 @@ import socket
 import threading
 import time
 
-BILLING = [SLURM / "sglang_job.sbatch", SLURM / "vllm_job.sbatch", SLURM / "download_model.sbatch"]
+BILLING = [SLURM / "sglang_job.sbatch", SLURM / "vllm_job.sbatch", SLURM / "download_model.sbatch", SLURM / "setup_nova.sbatch"]
 
 
 def bash_fn(code, env=None, timeout=60):
