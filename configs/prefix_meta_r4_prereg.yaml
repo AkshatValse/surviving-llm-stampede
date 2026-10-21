@@ -508,3 +508,36 @@ preregistration:
       F8_minor_fluid: "fixed: fluid_predictor_fix."
       F9_minor_burst: "fixed: b = 0 cells and the monotone envelope. Horizon effect: disclosed with its direction, not corrected (no row can correct it)."
       F10_minor_evaluator: "fixed: evaluator_hygiene."
+
+  # ======================================================================================================
+  # AMENDMENT 2 (2026-10-21). APPEND-ONLY. Written AFTER the four full-size runs of commit 01252cd and after a first report was read.
+  # It changes no registered quantity, grid, seed, horizon, reading or verdict rule; it records one report-code bug fix and one
+  # POST-HOC, UNREGISTERED information row, both made after results were seen.
+  # ======================================================================================================
+  amendment_2:
+    date: 2026-10-21
+    state_at_writing: >-
+      Full-size inputs (clean tree, commit 01252cd, status done): E-curve results/prefix_meta_r4_curve/20261021-050856 (396 runs),
+      E-burst results/prefix_meta_r4_burst/20261021-050959 (90 runs), burst_info results/prefix_meta_r4_burst_info/20261021-051020
+      (230 runs), E-cap results/prefix_meta_r4_cap/20261021-051113 (45 runs). A first report, results/prefix_meta_r4/20261021-051142,
+      was produced from them and read; it is superseded (it is not deleted: results are never overwritten) by a re-run of the report
+      on the same inputs after the changes below. No experiment is re-run, no seed or horizon changes.
+    report_bug_fix: >-
+      The first report's table_curve.csv column `mu_over_lambda_miss` divided mu by the k = 1 lambda_miss for every k, which is wrong for
+      k != 1 (it must use lambda_miss(k), the normalisation of Figure 4). Fixed (column `lambda_miss_k` added). No verdict, Figure 1-4 or
+      R6 number used that column; R6 already used lambda_miss(k).
+    posthoc_information_row:
+      id: R3-posthoc-b0-excluded
+      status: >-
+        INFORMATION ONLY. POST-HOC and NOT registered: added because the first report's burst_info table showed that FCFS-LRU seed 2103
+        is not recovered at b = 0 (no burst) at 2 lambda_miss, so that seed counts toward 'not recovered in >= 3/5 seeds' at every
+        registered burst size. It never decides anything and does not replace the headline R3 or the R3 verdict rule.
+      definition: >-
+        Seeds not recovered at b = 0 in the burst_info FCFS-LRU cell at lam_mult 2.0 are 'baseline-trapped'. The registered FCFS-LRU
+        burst counts are recomputed over the remaining n_rem seeds; b_emp_excl = smallest registered size whose not-recovered count
+        among the remaining seeds is >= ceil(0.6 n_rem) (3/5 = 60% of the seeds); the ratio b_c / b_emp_excl (b_c as in the headline
+        R3) is reported, and, for every seed, the smallest registered size from which it is not recovered at every larger size.
+    r3_robustness_note: >-
+      The R3-robustness row's note is extended: with 3 seeds the bootstrap interval of b_c is narrow (resampling 3 values), and the
+      stage-2 review measured a larger sampling SD (0.67) over disjoint 3-seed sets on non-registered seeds (not re-verified here), so a
+      ROBUST label is optimistic.
