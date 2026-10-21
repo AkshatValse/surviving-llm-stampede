@@ -13,6 +13,16 @@ together with the body, so ``t_headers`` is close to ``t_complete`` and is NOT a
 Safety (a real engine under overload queues without bound): the run aborts, cancelling all in-flight
 requests (which are logged with ``status=cancelled``), when more than ``run.max_inflight`` requests are
 outstanding or ``run.max_errors`` requests failed. The abort reason and time are written to ``meta.json``.
+SIGTERM / SIGINT abort the same way (reason ``signal_SIGTERM`` ...), so a job killed at its wall limit still
+writes ``sessions.csv`` and a finished ``meta.json``.
+
+Failed requests keep ``status=error`` and carry ``error_kind``: ``http`` (non-200), ``transport`` (connection
+reset / server disconnected / payload error), ``timeout``, ``parse``, ``no_output`` or ``other``; counts per kind
+are in ``meta.json`` (``outcome.errors_by_kind``). Connections are not reused by default
+(``server.force_close_connections``): reuse races the server's keep-alive timeout.
+
+Time zero. ``meta.json`` records ``t0_unix`` (wall clock, ``time.time()``) taken at the instant the monotonic run
+clock starts, so ``wall time = t0_unix + t_s`` aligns these logs with server.log, gpu_util.csv and SLURM logs.
 """
 from __future__ import annotations
 
@@ -20,9 +30,11 @@ import asyncio
 import csv
 import hashlib
 import json
+import signal
 import time
+from collections import Counter
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
@@ -40,7 +52,7 @@ from .workload import (ContentGen, Context, SessionPlan, build_open_plan, contex
 REQ_FIELDS = ["req_id", "sid", "origin", "turn", "n_turns", "t_planned", "t_send", "t_headers", "t_complete",
               "latency_s", "sched_delay_s", "status", "http_status", "error", "prompt_tokens_client",
               "prompt_tokens", "completion_tokens", "cached_tokens", "cached_source", "output_ids_source",
-              "prompt_hash", "raw_usage_json"]
+              "prompt_hash", "raw_usage_json", "error_kind"]
 SESSION_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "t_first_send", "t_end", "turns_completed",
                   "status"]
 PLAN_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "tool_time_total_s"]
@@ -51,15 +63,39 @@ def prompt_hash(ctx: Context) -> str:
     return hashlib.blake2b(b, digest_size=6).hexdigest()
 
 
-def _raise_nofile() -> None:
+def _raise_nofile() -> Dict[str, Any]:
+    """Raise the soft RLIMIT_NOFILE towards min(hard, 65536) and return what happened (recorded in meta.json;
+    -1 means unlimited). Never raises: the caller decides whether the resulting soft limit is enough."""
+    info: Dict[str, Any] = {"soft_before": None, "soft_after": None, "hard": None, "error": None}
     try:
         import resource
+
+        def enc(v: int) -> int:
+            return -1 if v == resource.RLIM_INFINITY else int(v)
+
         soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        info.update(soft_before=enc(soft), hard=enc(hard))
         want = 65536 if hard == resource.RLIM_INFINITY else min(hard, 65536)
-        if soft < want:
-            resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
-    except Exception:  # pragma: no cover  (non-Unix or restricted)
-        pass
+        if soft != resource.RLIM_INFINITY and soft < want:
+            try:
+                resource.setrlimit(resource.RLIMIT_NOFILE, (want, hard))
+            except (ValueError, OSError) as e:
+                info["error"] = f"{type(e).__name__}: {e}"
+        info["soft_after"] = enc(resource.getrlimit(resource.RLIMIT_NOFILE)[0])
+    except Exception as e:  # pragma: no cover  (non-Unix or restricted)
+        info["error"] = f"{type(e).__name__}: {e}"
+    return info
+
+
+def classify_error(e: BaseException) -> str:
+    """Error kind of a failed request's exception (see module docstring)."""
+    if isinstance(e, asyncio.TimeoutError):
+        return "timeout"
+    if isinstance(e, (aiohttp.ClientConnectionError, aiohttp.ClientPayloadError)):
+        return "transport"
+    if isinstance(e, ValueError):               # json.JSONDecodeError
+        return "parse"
+    return "other"
 
 
 class CsvLog:
@@ -113,9 +149,14 @@ class LoadGenerator:
         self.inflight = 0
         self.n_req = 0
         self.n_ok = self.n_err = self.n_cancel = 0
+        self.err_kinds: Counter = Counter()
+        self.src_counts: Counter = Counter()          # output_ids_source of ok requests
+        self.n_prompt_mismatch = 0                    # tokens mode: server prompt_tokens != tokens sent
+        self.n_prompt_missing = 0                     # tokens mode: response had no prompt_tokens
         self.max_inflight_seen = 0
         self.abort_reason: Optional[str] = None
         self.t_abort: Optional[float] = None
+        self._signals: List[signal.Signals] = []
         self._stop: asyncio.Event = None  # type: ignore[assignment]   # created in run() inside the loop
         self._closing = False
         self._next_closed_idx = 0
@@ -145,8 +186,26 @@ class LoadGenerator:
     def _abort(self, reason: str) -> None:
         if self.abort_reason is None:
             self.abort_reason = reason
-            self.t_abort = self.now()
+            self.t_abort = self.now() if self._t0 else None      # None: aborted before the run clock started
         self._stop.set()
+
+    def _install_signals(self) -> None:
+        assert self._loop is not None
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            try:
+                self._loop.add_signal_handler(sig, self._abort, f"signal_{sig.name}")
+                self._signals.append(sig)
+            except (NotImplementedError, RuntimeError, ValueError):   # non-main thread / non-Unix
+                pass
+
+    def _remove_signals(self) -> None:
+        for sig in self._signals:
+            try:
+                assert self._loop is not None
+                self._loop.remove_signal_handler(sig)
+            except Exception:  # pragma: no cover
+                pass
+        self._signals = []
 
     # ------------------------------------------------------------ one request
     async def _send(self, sp: SessionPlan, turn: int, ctx: Context, t_planned: float
@@ -186,11 +245,13 @@ class LoadGenerator:
                     nxt = self._next_output(sp, turn, data)
                     if nxt is None:
                         row["status"] = "error"
+                        row["error_kind"] = "no_output"
                         row["error"] = "no usable model output (missing text / token ids)"
                     else:
                         out, row["output_ids_source"] = nxt
                 else:
                     row["status"] = "error"
+                    row["error_kind"] = "http"
                     row["error"] = raw[:300].decode("utf-8", "replace")
         except asyncio.CancelledError:
             row["status"] = "cancelled"
@@ -198,6 +259,7 @@ class LoadGenerator:
             raise
         except Exception as e:
             row["status"] = "error"
+            row["error_kind"] = classify_error(e)
             row["error"] = f"{type(e).__name__}: {e}"[:300]
         finally:
             self.inflight -= 1
@@ -208,10 +270,17 @@ class LoadGenerator:
             row["status"] = st
             if st == "ok":
                 self.n_ok += 1
+                self.src_counts[str(row.get("output_ids_source", ""))] += 1
+                if wl.prompt_mode == "tokens":          # plan check (g): the server counted what we sent
+                    if row.get("prompt_tokens") is None:
+                        self.n_prompt_missing += 1
+                    elif row["prompt_tokens"] != row["prompt_tokens_client"]:
+                        self.n_prompt_mismatch += 1
             elif st == "cancelled":
                 self.n_cancel += 1
             else:
                 self.n_err += 1
+                self.err_kinds[str(row.get("error_kind", "other"))] += 1
                 if self.n_err >= self.cfg.run.max_errors:
                     self._abort(f"max_errors>={self.cfg.run.max_errors}")
             self.req_log.write(row)
@@ -293,6 +362,8 @@ class LoadGenerator:
         deadline = time.monotonic() + self.cfg.run.preflight_wait_s
         last = ""
         while True:
+            if self._stop.is_set():
+                raise RuntimeError(f"aborted during preflight ({self.abort_reason})")
             try:
                 assert self.http is not None
                 async with self.http.get(srv.base_url.rstrip("/") + srv.health_path,
@@ -313,17 +384,22 @@ class LoadGenerator:
                     info = await r.json()
         except Exception as e:
             info = {"error": f"{type(e).__name__}: {e}"}
+        ids = [m.get("id") for m in (info.get("data") or []) if isinstance(m, dict)]
+        if ids and srv.model not in ids:       # e.g. a foreign server on the derived port: refuse to drive it
+            raise RuntimeError(f"server at {srv.base_url} serves {ids}, not the configured model {srv.model!r}")
+        info["model_check"] = ("ok" if ids else "unverified (no model list returned)")
         return info
 
     async def run(self, argv: List[str], git: Dict[str, Any], t_start: datetime, plan: List[SessionPlan]
                   ) -> Outcome:
         cfg = self.cfg
-        _raise_nofile()
+        nofile = _raise_nofile()
         self._loop = asyncio.get_running_loop()
         self.req_log = CsvLog(self.out_dir / "requests.csv", REQ_FIELDS)
         self.events: List[str] = []
         self._stop = asyncio.Event()
-        connector = aiohttp.TCPConnector(limit=0, force_close=False)
+        self._install_signals()
+        connector = aiohttp.TCPConnector(limit=0, force_close=cfg.server.force_close_connections)
         self.http = aiohttp.ClientSession(connector=connector, timeout=aiohttp.ClientTimeout(total=None))
         poller: Optional[MetricsPoller] = None
         poll_task: Optional[asyncio.Task] = None
@@ -336,7 +412,11 @@ class LoadGenerator:
             "engine_label": cfg.meta.engine_label, "notes": cfg.meta.notes,
             "expected_turns_per_session": effective_mean_turns(cfg.workload),
             "duration_s_configured": cfg.run.duration_s,
-            "time_convention": "seconds since run start (event-loop monotonic clock)"}
+            "time_convention": "seconds since run start (event-loop monotonic clock); wall time = t0_unix + t_s",
+            "rlimit_nofile": nofile, "force_close_connections": cfg.server.force_close_connections,
+            "output_feedback_configured": cfg.workload.output_feedback, "prompt_mode": cfg.workload.prompt_mode,
+            "request_token_ids": cfg.server.request_token_ids, "content_salt": cfg.workload.content_salt,
+            "start_state_verified": cfg.meta.start_state_verified, "start_state_detail": cfg.meta.start_state_detail}
 
         def meta(status: str, ended: bool = False) -> None:
             write_meta(self.out_dir, build_meta(experiment=cfg.output.name, argv=argv, seeds=[self.seed],
@@ -346,9 +426,17 @@ class LoadGenerator:
 
         meta("starting")                      # a record exists even if the preflight fails
         try:
+            need_fds = cfg.run.max_inflight + 256
+            soft = nofile.get("soft_after")
+            if soft is not None and soft != -1 and soft < need_fds:
+                raise RuntimeError(f"RLIMIT_NOFILE soft limit {soft} < run.max_inflight + 256 = {need_fds} "
+                                   f"(hard {nofile.get('hard')}): in-flight sockets would fail as connector errors")
             meta_extra["server_models"] = await self._preflight()
-            meta("running")
             self._t0 = self._loop.time()
+            meta_extra["t0_unix"] = time.time()             # wall-clock anchor of t_s = 0 (see module docstring)
+            meta_extra["t0_utc"] = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+            meta_extra["t0_monotonic_s"] = self._t0
+            meta("running")
             if cfg.metrics.enabled:
                 poller = MetricsPoller(self.http, cfg.server.base_url.rstrip("/") + cfg.server.metrics_path,
                                        cfg.metrics, self.out_dir, self.now, self._client_gauges)
@@ -384,6 +472,7 @@ class LoadGenerator:
             await asyncio.gather(*[t for t in (poll_task, flush_task) if t], return_exceptions=True)
             if poller:
                 poller.close()
+            self._remove_signals()
             await self.http.close()
             self._finalize_files()
         counts = {"sessions_planned": len(plan), "sessions_started": len(self.states),
@@ -393,9 +482,17 @@ class LoadGenerator:
                   "requests_total": self.n_req, "requests_ok": self.n_ok, "requests_error": self.n_err,
                   "requests_cancelled": self.n_cancel, "max_inflight_seen": self.max_inflight_seen,
                   "metrics_scrapes": poller.n_scrapes if poller else 0,
-                  "metrics_scrape_failures": poller.n_failures if poller else 0}
+                  "metrics_scrape_failures": poller.n_failures if poller else 0,
+                  "metrics_skipped_ticks": poller.n_skipped_ticks if poller else 0}
+        if poller and poller.first_scrape_unix is not None:
+            meta_extra["first_metrics_scrape_unix"] = poller.first_scrape_unix
+            meta_extra["first_metrics_scrape_t_s"] = poller.first_scrape_t_s
         meta_extra["outcome"] = {"abort_reason": self.abort_reason, "t_abort_s": self.t_abort, "t_end_s": t_end,
-                                 "t_end_incl_cancel_s": t_end_all, **counts}
+                                 "t_end_incl_cancel_s": t_end_all, **counts,
+                                 "errors_by_kind": dict(self.err_kinds),
+                                 "output_ids_source_counts": dict(self.src_counts),
+                                 "prompt_tokens_mismatch": self.n_prompt_mismatch,
+                                 "prompt_tokens_missing_in_response": self.n_prompt_missing}
         meta("finished", ended=True)
         return Outcome(out_dir=self.out_dir, abort_reason=self.abort_reason, t_end_s=t_end, counts=counts)
 

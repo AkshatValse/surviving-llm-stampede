@@ -15,7 +15,10 @@ server:
   base_url: http://127.0.0.1:8000
   model: Qwen/Qwen2.5-7B-Instruct
   request_timeout_s: 7200
-  extra_body: {ignore_eos: true}
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
   request_token_ids: false
 
 workload:
@@ -29,7 +32,8 @@ workload:
   tool_time_dist: exp
   token_id_low: 1000
   token_id_high: 100000
-  output_feedback: auto
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
 
 arrivals:
   kind: constant
@@ -47,6 +51,15 @@ run:
 metrics:
   enabled: true
   interval_s: 5.0
+
+canary:                                  # start-state check around every cache flush (python -m agentload canary; also uses
+                                         # this file's server/metrics sections). Metric names are CANDIDATES (unverified).
+  tokens: 1024
+  resident_min_frac: 0.5                 # prime: 2nd identical canary request must report cached_tokens >= 0.5 * tokens
+  max_cached_after_flush: 15             # check: after the flush the canary may hit < 1 vLLM block (16 tokens)
+  idle_wait_s: 120
+  idle_poll_s: 2
+  kv_in_use_max: 0.02
 
 meta:
   hardware: "NVIDIA A100 80GB (set by the job script)"

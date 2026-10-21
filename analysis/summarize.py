@@ -5,6 +5,10 @@ the analysis params (config.yaml), meta.json (git state at start, inputs, versio
   python -m analysis.summarize burst     --run-dirs RUN [RUN ...]          # trap / recovery / hysteresis + kill rule
   python -m analysis.summarize miss      --run-dirs RUN [...] --warmup-s N  # lambda_miss from closed-population runs
   python -m analysis.summarize stable    --run-dirs RUN [...]               # stable-from-empty verdict per run
+
+Every invocation also runs the consistency guards of ``analysis.guards`` (unverified from-empty start, mixed hardware or
+output-id source, prompt-token mismatches, transport errors): problems go to ``guards.json``, meta.json and stderr;
+``--strict-guards`` makes any error-severity problem a non-zero exit (after the outputs are written).
 """
 from __future__ import annotations
 
@@ -21,6 +25,7 @@ import yaml
 
 from agentload.runmeta import build_meta, default_hardware, git_info, json_default, new_result_dir, write_meta
 
+from .guards import check_runs, summarize_problems
 from .hysteresis import (burst_verdict, kill_table, kill_verdict, lambda_cap_bracket, lambda_miss_closed,
                          stable_verdict)
 from .load import Run, load_run
@@ -90,6 +95,7 @@ def cmd_burst(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List
     tab = kill_table(df, p.kill["trapped_fraction_min"], p.kill["min_runs_per_cell"])
     tab.to_csv(out / "burst_cells.csv", index=False)
     kv = kill_verdict(tab, p, args.fcfs_substr)
+    kv["guards"] = summarize_problems(args.guard_problems)       # a verdict next to unresolved guard errors is suspect
     (out / "kill_verdict.json").write_text(json.dumps(_sanitize(kv), indent=2, default=json_default))
     return {"n_runs": len(runs), "kill_verdict": _sanitize(kv)}
 
@@ -99,7 +105,11 @@ def cmd_miss(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: List[
     df = pd.DataFrame(rows)
     df.to_csv(out / "lambda_miss_runs.csv", index=False)
     n = len(df)
+    hw = sorted({str(r.hardware) for r in runs})
     calib = {
+        "hardware": hw[0] if len(hw) == 1 else None, "hardware_all": hw,
+        "hostnames": sorted({str(r.meta.get("hostname")) for r in runs}),
+        "output_ids_sources": sorted({k for r in runs for k in r.output_ids_sources}),
         "lambda_miss": float(df["lambda_miss_sessions"].mean()),
         "lambda_miss_turns_based": float(df["lambda_miss_turns_based"].mean()),
         "lambda_miss_se": float(df["lambda_miss_sessions"].std(ddof=1) / np.sqrt(n)) if n > 1 else None,
@@ -123,6 +133,7 @@ def cmd_stable(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
     g.columns = ["label", "rate_mult", "n_stable", "n_runs"]
     g.to_csv(out / "stable_by_rate.csv", index=False)
     br = lambda_cap_bracket(g[g["rate_mult"].notna()])
+    br = {**_sanitize(br), "guards": summarize_problems(args.guard_problems)} if isinstance(br, dict) else br
     (out / "lambda_cap_bracket.json").write_text(json.dumps(_sanitize(br), indent=2))
     return {"n_runs": len(runs), "lambda_cap_bracket_in_lambda_miss_units": _sanitize(br)}
 
@@ -137,6 +148,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--name", default=None)
     ap.add_argument("--warmup-s", type=float, default=0.0, help="(miss) discard this many seconds at the start")
     ap.add_argument("--fcfs-substr", default="fcfs", help="(burst) labels containing this are the FCFS cells")
+    ap.add_argument("--strict-guards", action="store_true",
+                    help="exit 3 if any guard problem has severity 'error' (outputs are still written)")
     args = ap.parse_args(argv)
     p = load_params(args.params, args.set)
     repo = Path(args.params).resolve().parent.parent
@@ -146,14 +159,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     name = args.name or f'{p.raw["output"]["name"]}_{args.cmd}'
     out = new_result_dir(root, name)
     runs = _runs(args.run_dirs)
+    problems = check_runs(runs, require_verified_start=args.cmd in ("burst", "stable"))
+    args.guard_problems = problems
+    (out / "guards.json").write_text(json.dumps({"summary": summarize_problems(problems), "problems": problems}, indent=2))
+    for pr in problems:
+        print(f"GUARD [{pr['severity']}] {pr['code']}: {pr['message']} ({pr['run_dir']})", file=sys.stderr)
     fn = {"windows": cmd_windows, "burst": cmd_burst, "miss": cmd_miss, "stable": cmd_stable}[args.cmd]
     extra = fn(args, p, out, runs)
+    extra["guard_problems"] = problems
     _finish(out, args.params, p, [sys.executable, "-m", "analysis.summarize", *(argv if argv is not None else sys.argv[1:])],
             git, t0, runs, extra)
-    print(json.dumps({"out_dir": str(out), **{k: v for k, v in extra.items() if k != "kill_verdict"}}, indent=2,
-                     default=json_default))
+    print(json.dumps({"out_dir": str(out), **{k: v for k, v in extra.items() if k not in ("kill_verdict", "guard_problems")},
+                      "guards": summarize_problems(problems)}, indent=2, default=json_default))
     if "kill_verdict" in extra:
         print(json.dumps(extra["kill_verdict"], indent=2))
+    if args.strict_guards and any(pr["severity"] == "error" for pr in problems):
+        print("strict guards: error-severity problems present", file=sys.stderr)
+        return 3
     return 0
 
 

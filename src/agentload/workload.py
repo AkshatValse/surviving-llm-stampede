@@ -164,7 +164,7 @@ def _words_text(rng: np.random.Generator, n_words: int) -> str:
 
 
 class ContentGen:
-    """Deterministic synthetic text/tokens per (seed, origin, idx, turn)."""
+    """Deterministic synthetic text/tokens per (seed, origin, idx, turn[, content_salt])."""
 
     def __init__(self, seed: int, wl: WorkloadCfg):
         self.seed = int(seed)
@@ -174,7 +174,10 @@ class ContentGen:
         return max(1, int(round(tokens * self.wl.text_words_per_token)))
 
     def _fresh(self, stream: int, origin: str, idx: int, turn: int, n_tokens: int) -> Context:
-        rng = make_rng(self.seed, stream, ORIGIN_CODE[origin], idx, turn)
+        key = (stream, ORIGIN_CODE[origin], idx, turn)
+        if self.wl.content_salt:                       # salt 0 keeps the unsalted streams (legacy / common content)
+            key += (int(self.wl.content_salt),)
+        rng = make_rng(self.seed, *key)
         if self.wl.prompt_mode == "tokens":
             return rng.integers(self.wl.token_id_low, self.wl.token_id_high, size=n_tokens, dtype=np.int32)
         return _words_text(rng, self._n(n_tokens))

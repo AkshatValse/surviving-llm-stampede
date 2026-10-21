@@ -15,7 +15,10 @@ server:
   model: Qwen/Qwen2.5-7B-Instruct
   completions_path: /v1/completions
   request_timeout_s: 7200
-  extra_body: {ignore_eos: true}
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
   request_token_ids: false              # set true only if the probe shows the engine returns token ids
 
 workload:
@@ -29,7 +32,8 @@ workload:
   tool_time_dist: exp
   token_id_low: 1000
   token_id_high: 100000                 # Qwen2.5 vocab ~151.6k real tokens; stay inside it
-  output_feedback: auto
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
 
 arrivals:
   kind: closed

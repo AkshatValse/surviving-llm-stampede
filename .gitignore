@@ -4,7 +4,8 @@ CLAUDE.local.md
 
 # Research outputs
 results/
-logs/
+logs/*
+!logs/.gitkeep
 figures/out/*.png
 
 .DS_Store

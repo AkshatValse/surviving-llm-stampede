@@ -186,6 +186,7 @@ def window_table(run: Run, p: AnalysisParams, window_s: Optional[float] = None) 
         err = allreq[(allreq["status"] == "error") & (allreq["t_complete"] >= a) & (allreq["t_complete"] < b)]
         can = allreq[(allreq["status"] == "cancelled") & (allreq["t_complete"] >= a) & (allreq["t_complete"] < b)]
         row["n_errors"], row["n_cancelled"] = len(err), len(can)
+        row["n_errors_transport"] = int((err["error_kind"] == "transport").sum()) if "error_kind" in err.columns else 0
         rows.append(row)
     df = pd.DataFrame(rows)
     if len(df):

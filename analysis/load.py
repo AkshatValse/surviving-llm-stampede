@@ -39,6 +39,26 @@ class Run:
         return float(b["t_s"]) if b else None
 
     @property
+    def hardware(self) -> Optional[str]:
+        return self.meta.get("hardware")
+
+    @property
+    def start_state_verified(self) -> Optional[bool]:
+        v = self.meta.get("start_state_verified")
+        return None if v is None else bool(v)
+
+    @property
+    def output_ids_sources(self) -> Dict[str, int]:
+        """ok requests per output_ids_source (from meta.outcome; recomputed from requests.csv for older runs)."""
+        c = (self.meta.get("outcome") or {}).get("output_ids_source_counts")
+        if c is not None:
+            return {str(k): int(v) for k, v in c.items()}
+        if "output_ids_source" in self.requests.columns and "status" in self.requests.columns:
+            ok = self.requests[self.requests["status"] == "ok"]["output_ids_source"].dropna()
+            return {str(k): int(v) for k, v in ok.value_counts().items()}
+        return {}
+
+    @property
     def rate_mult(self) -> Optional[float]:
         v = (self.cfg.get("arrivals") or {}).get("rate_mult")
         return float(v) if v is not None else None

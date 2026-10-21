@@ -2,11 +2,14 @@
 # SGLang v0.5.22 launcher (DRAFT, never run). Sourced by slurm/sglang_job.sbatch.
 #
 # EVERY engine flag below is from memory of the SGLang CLI and is UNVERIFIED for v0.5.22; check_engine_flags greps
-# `--help` for each and the job aborts (STRICT_FLAGS=1, default) if one is missing, before any GPU time is spent
-# on a wrong command line. Names to verify: --schedule-policy --max-running-requests --chunked-prefill-size
-# --max-total-tokens --context-length --enable-metrics --enable-cache-report --disable-radix-cache.
+# `--help` for each (exact token match) and the job aborts (STRICT_FLAGS=1, default) if one is missing, before any GPU
+# time is spent on a wrong command line. Names to verify: --schedule-policy --max-running-requests
+# --chunked-prefill-size --max-total-tokens --context-length --enable-metrics --enable-cache-report --disable-radix-cache.
 # Env vars (from notes/lit/engine-sources-prefix-cache.md): SGLANG_ENABLE_WAITING_PREFIX_REFRESH (EnvBool, default true).
-# SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN is from memory (needed to exceed the model's 32768 default); verify.
+# SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN is from memory (needed to exceed the model's 32768 default). Env var NAMES
+# are checked against the installed package source (a misspelt name is silently ignored by the engine).
+# Optional flags (used only if present in --help): --sampling-defaults (from memory: model|openai; we want 'openai' so
+# the model's generation_config.json does not inject a repetition penalty), --revision (HF_REVISION pin).
 
 ENGINE=sglang
 HEALTH_PATH=/health
@@ -14,6 +17,7 @@ FLUSH_PATH=/flush_cache      # POST; SGLang refuses while requests are running, 
 FLUSH_METHOD=POST
 
 : "${MODEL:=Qwen/Qwen2.5-7B-Instruct}"
+SERVED_MODEL="$MODEL"        # the id /v1/models must list (checked after startup)
 : "${POLICY:=fcfs}"          # fcfs | lpm
 : "${REFRESH:=1}"            # SGLANG_ENABLE_WAITING_PREFIX_REFRESH: 1 (shipped default) | 0
 : "${LPM_INF:=0}"            # 1: use the PATCHED sglang env (WAITING_QUEUE_PREFIX_MATCH_MAX effectively infinite)
@@ -24,29 +28,42 @@ FLUSH_METHOD=POST
 : "${ENV_GEN:=/work/<group-dir>/avalse/swapp/envs/swapp}"              # PLACEHOLDER; needs aiohttp numpy pandas pyyaml
 : "${HF_HOME:=/work/<group-dir>/avalse/hf}"                            # PLACEHOLDER
 export HF_HOME HF_HUB_OFFLINE=1
+# no telemetry from either engine or the HF client (the two engines must not differ in background network/CPU work)
+export DO_NOT_TRACK=1 VLLM_NO_USAGE_STATS=1 HF_HUB_DISABLE_TELEMETRY=1
 
 # RADIX=0 for MODE=miss (prefix caching off in the engine), 1 otherwise
 case "${MODE:-}" in miss) RADIX=0 ;; *) RADIX=1 ;; esac
 
 engine_env_prefix() { if [ "$LPM_INF" = "1" ]; then echo "$ENV_SGLANG_PATCHED"; else echo "$ENV_SGLANG"; fi; }
+engine_env_dir() { engine_env_prefix; }
+engine_required_vars() { echo "ENV_SGLANG HF_HOME"; if [ "$LPM_INF" = "1" ]; then echo "ENV_SGLANG_PATCHED"; fi; }
 
+# Prints one line per check; returns 1 if STRICT_FLAGS=1 (default) and a required flag / env var is missing.
 check_engine_flags() {
-  require_set ENV_SGLANG; require_set HF_HOME
-  [ "$LPM_INF" = "1" ] && require_set ENV_SGLANG_PATCHED
-  local help miss=0 f
-  help=$("$(engine_env_prefix)/bin/python" -m sglang.launch_server --help 2>&1) || { echo "could not run sglang --help"; help=""; }
-  for f in --schedule-policy --max-running-requests --chunked-prefill-size --max-total-tokens --context-length \
-           --enable-metrics --enable-cache-report --disable-radix-cache --model-path --port; do
-    if echo "$help" | grep -q -- "$f"; then echo "flag ok:      $f"; else echo "flag MISSING: $f"; miss=1; fi
+  local help pkgdir rc=0 py f
+  py="$(engine_env_prefix)/bin/python"
+  help=$("$py" -m sglang.launch_server --help 2>&1) || { echo "could not run sglang --help"; help=""; }
+  printf '%s\n' "$help" > "$JOB_DIR/engine_help.txt"
+  check_flags "$help" --schedule-policy --max-running-requests --chunked-prefill-size --max-total-tokens \
+      --context-length --enable-metrics --enable-cache-report --disable-radix-cache --model-path --port || rc=1
+  if [ -n "${HF_REVISION:-}" ]; then check_flags "$help" --revision || rc=1; fi
+  for f in --sampling-defaults; do
+    if help_has_flag "$help" "$f"; then echo "optional flag ok:      $f"; else echo "optional flag missing: $f (model generation_config defaults may apply; request-level pins in the configs still hold)"; fi
   done
-  "$(engine_env_prefix)/bin/python" -c "import sglang; print('sglang version:', sglang.__version__)" 2>&1 || true
-  if [ "$miss" = "1" ] && [ "${STRICT_FLAGS:-1}" = "1" ]; then die "required SGLang flag(s) missing; fix slurm/engine_sglang.sh"; fi
+  "$py" -c "import sglang; print('sglang version:', sglang.__version__)" 2>&1 || true
+  pkgdir=$("$py" -c "import sglang, os; print(os.path.dirname(sglang.__file__))" 2>/dev/null) || pkgdir=""
+  check_envvars "$pkgdir" SGLANG_ENABLE_WAITING_PREFIX_REFRESH SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN || rc=1
+  if [ "$rc" = "1" ] && [ "${STRICT_FLAGS:-1}" = "1" ]; then echo "STRICT_FLAGS=1: required SGLang flag(s)/env var(s) missing; fix slurm/engine_sglang.sh"; return 1; fi
+  return 0
 }
 
 launch_engine() {
-  local extra=""
+  local extra="" help
+  help=$(cat "$JOB_DIR/engine_help.txt" 2>/dev/null || true)
   [ "$RADIX" = "0" ] && extra="--disable-radix-cache"
-  log "launching SGLang: policy=$POLICY refresh=$REFRESH radix=$RADIX lpm_inf=$LPM_INF kv_tokens=$KV_TOKENS"
+  if help_has_flag "$help" --sampling-defaults; then extra="$extra --sampling-defaults openai"; fi
+  if [ -n "${HF_REVISION:-}" ]; then extra="$extra --revision $HF_REVISION"; fi
+  log "launching SGLang: policy=$POLICY refresh=$REFRESH radix=$RADIX lpm_inf=$LPM_INF kv_tokens=$KV_TOKENS extra='$extra'"
   SGLANG_ENABLE_WAITING_PREFIX_REFRESH="$REFRESH" SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN=1 \
   "$(engine_env_prefix)/bin/python" -m sglang.launch_server \
       --model-path "$MODEL" --host 127.0.0.1 --port "$PORT" \

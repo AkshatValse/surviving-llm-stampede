@@ -11,9 +11,14 @@ NOT a model of any real engine's performance; it only has the *structure* needed
 * Latency: FIFO ``slots`` parallel slots; service time = fixed + per_uncached_prompt_token * uncached
   + per_completion_token * max_tokens (``asyncio.sleep``). Running requests' KV is not counted against capacity.
 * Reports ``cached_tokens`` in the format selected by ``cached_style`` (usage | choice_meta | none) and
-  Prometheus metrics named like vLLM (``vllm:*``) or SGLang (``sglang:*``) according to ``metrics_style``.
+  Prometheus metrics named like vLLM (``vllm:*``) or SGLang (``sglang:*``) according to ``metrics_style``. The
+  KV-usage gauge counts only the prompts of RUNNING requests (like the real engines' "in use" gauges), not the
+  cache contents, so it reads ~0 on an idle engine.
 * ``GET /stats`` returns ground-truth counters (used by tests), ``POST /flush_cache`` empties the cache,
   ``GET /health``, ``GET /v1/models``.
+* Fault injection for harness tests: ``flush_is_noop`` (the flush endpoint answers 200 but leaves the cache intact,
+  as a refused reset can), ``token_ids_mode`` (how ``return_token_ids`` is treated), ``keepalive_timeout_s`` (server-side HTTP keep-alive, to provoke reused-connection
+  races), ``fail_every_n``.
 
 Binds to 127.0.0.1 only.
 """
@@ -41,6 +46,9 @@ class MockConfig:
     cached_style: str = "usage"          # usage | choice_meta | none
     metrics_style: str = "vllm"          # vllm | sglang
     fail_every_n: int = 0                # return HTTP 500 for every n-th request (0 = never)
+    flush_is_noop: bool = False          # POST /flush_cache answers 200 without emptying the cache
+    token_ids_mode: str = "return"       # return_token_ids: return (honour) | ignore (accept, no ids) | reject (HTTP 400)
+    keepalive_timeout_s: float = 75.0    # aiohttp's default; set small to provoke keep-alive races
     model_name: str = "mock"
     host: str = "127.0.0.1"
     port: int = 0
@@ -72,6 +80,7 @@ class MockEngine:
         self.slots = asyncio.Semaphore(cfg.slots)
         self.waiting = 0
         self.running = 0
+        self.running_tokens = 0          # prompt tokens of running requests (the "KV in use" gauge)
         self.n_requests = 0
         self.stats: Dict[str, float] = {"requests": 0, "prompt_tokens": 0, "cached_tokens": 0, "completed": 0,
                                         "evictions": 0, "max_waiting": 0, "errors_injected": 0,
@@ -125,7 +134,7 @@ class MockEngine:
                 "# TYPE vllm:num_requests_running gauge\n"
                 f"vllm:num_requests_running{lab} {self.running}.0\n"
                 f"vllm:num_requests_waiting{lab} {self.waiting}.0\n"
-                f"vllm:kv_cache_usage_perc{lab} {self.used / max(c.kv_capacity_tokens, 1):.6f}\n"
+                f"vllm:kv_cache_usage_perc{lab} {self.running_tokens / max(c.kv_capacity_tokens, 1):.6f}\n"
                 f"vllm:prefix_cache_queries_total{lab} {int(s['prompt_tokens'])}.0\n"
                 f"vllm:prefix_cache_hits_total{lab} {int(s['cached_tokens'])}.0\n"
                 f'vllm:e2e_request_latency_seconds_bucket{{le="1.0",model_name="{c.model_name}"}} 3.0\n'
@@ -137,7 +146,7 @@ class MockEngine:
             "# TYPE sglang:num_running_reqs gauge\n"
             f"sglang:num_running_reqs{lab} {self.running}.0\n"
             f"sglang:num_queue_reqs{lab} {self.waiting}.0\n"
-            f"sglang:token_usage{lab} {self.used / max(c.kv_capacity_tokens, 1):.6f}\n"
+            f"sglang:token_usage{lab} {self.running_tokens / max(c.kv_capacity_tokens, 1):.6f}\n"
             f"sglang:cache_hit_rate{lab} {hit:.6f}\n")
 
 
@@ -162,7 +171,8 @@ def _make_app(cfg: MockConfig) -> web.Application:
         return web.json_response({**eng.stats, "cache_entries": len(eng.cache), "cache_used_tokens": eng.used})
 
     async def flush(_: web.Request) -> web.Response:
-        eng.flush()
+        if not cfg.flush_is_noop:
+            eng.flush()
         return web.json_response({"flushed": True})
 
     async def completions(request: web.Request) -> web.Response:
@@ -171,6 +181,8 @@ def _make_app(cfg: MockConfig) -> web.Application:
         if cfg.fail_every_n and eng.n_requests % cfg.fail_every_n == 0:
             eng.stats["errors_injected"] += 1
             return web.json_response({"error": "injected failure"}, status=500)
+        if body.get("return_token_ids") and cfg.token_ids_mode == "reject":
+            return web.json_response({"error": "unknown field return_token_ids"}, status=400)
         units = to_units(body["prompt"])
         is_text = isinstance(body["prompt"], str)
         n_out = int(body.get("max_tokens", 16))
@@ -184,6 +196,7 @@ def _make_app(cfg: MockConfig) -> web.Application:
             raise
         eng.waiting -= 1
         eng.running += 1
+        eng.running_tokens += len(units)
         try:
             cached = eng.lookup(units)                          # admission-time lookup
             service = cfg.fixed_s + cfg.per_uncached_token_s * (len(units) - cached) + cfg.per_completion_token_s * n_out
@@ -203,9 +216,10 @@ def _make_app(cfg: MockConfig) -> web.Application:
                 eng.seen.append(units)
         finally:
             eng.running -= 1
+            eng.running_tokens -= len(units)
             eng.slots.release()
         choice: Dict[str, Any] = {"index": 0, "text": out_text, "finish_reason": "length"}
-        if body.get("return_token_ids") and not is_text:
+        if body.get("return_token_ids") and not is_text and cfg.token_ids_mode == "return":
             choice["token_ids"] = [int(u) for u in out_units]
         usage: Dict[str, Any] = {"prompt_tokens": int(len(units)), "completion_tokens": n_out,
                                  "total_tokens": int(len(units)) + n_out}
@@ -238,7 +252,7 @@ class MockServer:
     async def __aenter__(self) -> "MockServer":
         app = _make_app(self.cfg)
         self.engine = app[ENGINE_KEY]
-        self.runner = web.AppRunner(app, access_log=None)
+        self.runner = web.AppRunner(app, access_log=None, keepalive_timeout=self.cfg.keepalive_timeout_s)
         await self.runner.setup()
         site = web.TCPSite(self.runner, self.cfg.host, self.cfg.port)
         await site.start()

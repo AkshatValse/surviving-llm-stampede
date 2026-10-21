@@ -24,6 +24,10 @@ class ServerCfg:
     health_path: str = "/health"
     models_path: str = "/v1/models"
     request_timeout_s: float = 7200.0
+    # One TCP connection per request (no keep-alive reuse). Idle pooled connections race with the server's own
+    # keep-alive timeout (uvicorn defaults to ~5 s, about the tool time); a reused connection that the server just
+    # closed fails with ServerDisconnectedError and would silently kill a whole session. Localhost connects are cheap.
+    force_close_connections: bool = True
     # merged into every request body; SGLang and vLLM both accept ``ignore_eos``
     extra_body: Dict[str, Any] = field(default_factory=lambda: {"ignore_eos": True})
     # adds ``return_token_ids: true`` to the body (vLLM); harmless to leave on only if the engine accepts it
@@ -51,7 +55,17 @@ class WorkloadCfg:
     # tokens mode: where the next prompt's "previous model output" comes from.
     #   auto: server-returned ids if the response has them, else synthetic ids (logged per request)
     #   server: server ids only (a missing id list is an error);  synthetic: always synthetic ids
+    #   REAL-ENGINE RUNS MUST PIN server|synthetic (slurm/common.sh requires OUTPUT_FEEDBACK for non-smoke modes and
+    #   the analysis flags runs whose output_ids_source is mixed or differs across compared runs); auto is for the
+    #   Stage-0 smoke run and the mock only.
     output_feedback: str = "auto"
+    # text mode is not token-stable on a real engine (decoded text is re-tokenized, BPE merges can cross chunk
+    # boundaries) and counts words, not tokens: it is accepted only for mock engines unless this flag is set.
+    allow_text_mode: bool = False
+    # per-run salt mixed into the CONTENT streams only (arrival and spec streams stay common across runs). The job
+    # scripts give every run in a job a different salt, so a flush that silently failed cannot make the next run's
+    # prompts hit the previous run's cache. 0 = the unsalted legacy streams.
+    content_salt: int = 0
 
 
 @dataclass
@@ -93,10 +107,34 @@ class MetricsCfg:
 
 
 @dataclass
+class CanaryCfg:
+    """Start-state check around a cache flush (``python -m agentload canary``; driven by slurm/common.sh).
+    prime: wait until the engine is idle, send a fixed canary prompt twice; the 2nd must report cached_tokens >=
+    resident_min_frac * tokens (the cache works and holds the canary). After the flush, check: idle again and the
+    same canary must report cached_tokens <= max_cached_after_flush (one vLLM block is 16 tokens). The metric names
+    are CANDIDATES from memory (first present wins) and are not verified for v0.5.22 / v0.32.0: a category with no
+    metric present is reported as unknown, not as passed."""
+    tokens: int = 1024
+    resident_min_frac: float = 0.5
+    max_cached_after_flush: int = 15
+    idle_wait_s: float = 120.0
+    idle_poll_s: float = 2.0
+    kv_in_use_max: float = 0.02
+    waiting_metrics: List[str] = field(default_factory=lambda: ["vllm:num_requests_waiting", "sglang:num_queue_reqs",
+                                                                "sglang:num_waiting_reqs"])
+    running_metrics: List[str] = field(default_factory=lambda: ["vllm:num_requests_running", "sglang:num_running_reqs"])
+    kv_in_use_metrics: List[str] = field(default_factory=lambda: ["vllm:kv_cache_usage_perc",
+                                                                  "vllm:gpu_cache_usage_perc", "sglang:token_usage"])
+
+
+@dataclass
 class MetaCfg:
     hardware: str = "Apple M3 Max CPU (simulation)"
     engine_label: str = "mock"
     notes: str = ""
+    # set by the job script from the post-flush canary check (slurm/common.sh); recorded verbatim in meta.json
+    start_state_verified: Optional[bool] = None
+    start_state_detail: str = ""
 
 
 @dataclass
@@ -113,12 +151,13 @@ class Config:
     arrivals: ArrivalsCfg = field(default_factory=ArrivalsCfg)
     run: RunCfg = field(default_factory=RunCfg)
     metrics: MetricsCfg = field(default_factory=MetricsCfg)
+    canary: CanaryCfg = field(default_factory=CanaryCfg)
     meta: MetaCfg = field(default_factory=MetaCfg)
     output: OutputCfg = field(default_factory=OutputCfg)
 
 
 _NESTED = {"server": ServerCfg, "workload": WorkloadCfg, "arrivals": ArrivalsCfg, "run": RunCfg,
-           "metrics": MetricsCfg, "meta": MetaCfg, "output": OutputCfg}
+           "metrics": MetricsCfg, "canary": CanaryCfg, "meta": MetaCfg, "output": OutputCfg}
 
 
 def _build(cls: Any, d: Dict[str, Any], where: str) -> Any:
@@ -158,6 +197,11 @@ def validate(cfg: Config) -> None:
         raise ValueError("mean_turns and max_turns must be >= 1")
     if w.token_id_high <= w.token_id_low:
         raise ValueError("token_id_high must exceed token_id_low")
+    if w.prompt_mode == "text" and not w.allow_text_mode and not cfg.meta.engine_label.lower().startswith("mock"):
+        raise ValueError("workload.prompt_mode=text is only allowed for mock engines (meta.engine_label starting with "
+                         "'mock') unless workload.allow_text_mode=true: text mode is not token-stable on real engines")
+    if not isinstance(w.content_salt, int) or isinstance(w.content_salt, bool) or w.content_salt < 0:
+        raise ValueError("workload.content_salt must be a non-negative integer")
     if a.kind not in ("constant", "ramp", "closed"):
         raise ValueError(f"arrivals.kind must be constant|ramp|closed, got {a.kind!r}")
     if a.kind == "closed" and a.closed_n < 1:

@@ -29,6 +29,9 @@ class MetricsPoller:
         self.client_gauges = client_gauges
         self.n_scrapes = 0
         self.n_failures = 0
+        self.n_skipped_ticks = 0               # ticks dropped because a scrape overran the interval
+        self.first_scrape_unix: Optional[float] = None    # wall clock of the first scrape (aligns with server logs)
+        self.first_scrape_t_s: Optional[float] = None
         self._fh: Optional[TextIO] = None
         self._w: Optional[csv.writer] = None
         self._first_saved = False
@@ -49,6 +52,8 @@ class MetricsPoller:
     async def scrape_once(self) -> None:
         assert self._w is not None
         t = self.now()
+        if self.first_scrape_unix is None:
+            self.first_scrape_unix, self.first_scrape_t_s = time.time(), t
         t_req = time.monotonic()
         ok = 0.0
         try:
@@ -78,13 +83,17 @@ class MetricsPoller:
             self._fh.flush()
 
     async def run(self) -> None:
-        """Scrape every ``interval_s`` (fixed-rate schedule, no drift) until cancelled."""
+        """Scrape every ``interval_s`` (fixed-rate schedule, no drift; overrun ticks are skipped and counted)."""
         loop = asyncio.get_running_loop()
         nxt = loop.time()
         try:
             while True:
                 await self.scrape_once()
                 nxt += self.cfg.interval_s
-                await asyncio.sleep(max(0.0, nxt - loop.time()))
+                now = loop.time()
+                if nxt < now:             # the scrape overran the interval: skip the missed ticks, do not burst-catch-up
+                    self.n_skipped_ticks += int((now - nxt) // self.cfg.interval_s) + 1
+                    nxt = now + self.cfg.interval_s
+                await asyncio.sleep(max(0.0, nxt - now))
         except asyncio.CancelledError:
             pass
