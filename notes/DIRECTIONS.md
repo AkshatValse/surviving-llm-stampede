@@ -64,3 +64,34 @@ Venues (all candidates are ML-systems, so roughly the same list): MLSys main tra
 - #1 → branch `pilot/vat` (CPU Numba stencil candidates on the M3 Max; real timings, offline protocol resampling).
 - #2 → branch `pilot/kvrent` (discrete-event simulation).
 - #3: no local pilot is possible (no PyTorch installed locally).
+
+---
+
+## Update 2026-10-21 (after pilots and direction search round 2)
+
+**Pilot outcomes**
+- #2, KV rent-or-buy: the kill criterion was met in the pilot model. Continuum-style TTL and both ski-rental policies landed within about 1% of the clairvoyant oracle. See `notes/LOG.md`.
+- #1, VAT: the protocol comparison was uninformative because the candidate set was badly designed. The pilot did find a large candidate×process variance component (ICC up to 0.87), which comes from grid placement and cache aliasing.
+  - The theory I sketched (`notes/THEORY_session_effects.md`) is essentially prior art.
+  - Kalibera & Jones (2013) cover the multi-level design.
+  - Lindon (arXiv 2610.25613, submitted 2026-10-19, scout-read) covers cluster-level e-processes.
+  - Hait (arXiv 2609.37873) covers cost-aware allocation.
+  - **VAT is downgraded.** What is left is a GPU measurement note, plus a design fix: re-randomize placement, or treat session means as the unit of inference.
+
+**Round 2 search.** I asked for genuinely novel phenomena, using 5 math lenses with adversarial refutation. Details are in `notes/DIRECTION_SEARCH_2.md`. The new leader:
+- **Prefix-cache metastability in agent serving.**
+  - Cache-oblivious FCFS ordering has a congested, all-miss metastable state above the all-miss capacity, with hysteresis.
+  - Work-conserving hit-first (LPM) ordering removes the trap without admission control.
+  - SGLang's LPM falls back to FCFS when more than 128 requests are waiting, so it inherits the trap.
+  - Closest prior work:
+    - Bronson et al. HotOS'21 (metastable failures; cold-cache folklore)
+    - Ao/Simchi-Levi group (2504.11320, 2606.15555)
+    - CONCUR (empirical thrashing plus AIMD admission)
+    - Nie, Si & Zhou (2605.04595)
+  - Status: verified pilot running on `pilot/prefix-meta` with a continuous-batching model, with review and independent verification.
+- **Hedge: delayed-gradient edge of stability.**
+  - Under a one-step delay, the cap on Adam's preconditioned sharpness becomes 1/η, versus about 2.7/η with EF.
+  - This is a mechanism for the AdamW delay penalty that Zmushko et al. 2026 observed.
+  - It fits Akshat's stability-analysis background.
+  - Status: pilot running on `pilot/delay-eos`.
+- Killed in round 2: the 2^p ring law, and Godambe–Joshi straggler cutting. Parked: agent-swarm phase locking (Floyd–Jacobson on batching servers).
