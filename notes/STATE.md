@@ -8,7 +8,7 @@ _Last updated: 2026-10-21 ~15:35 CDT_
 
 ## RESUME HERE
 - **Stage 0 PASSED** (job 17060165). See `notes/LOG.md`, plan §"Stage 0 result" on `harness/prefix-meta`, and local results in `results/nova/s0_smoke_17060165_pulled_20261021-152347/`.
-- **Next is Stage C**, the real closed-population μ(n). It is **awaiting Akshat's OK**.
+- **Stage C SUBMITTED** (approved). Jobs: 17062103 (FCFS, n=16/20/24/32), 17062104 (FCFS, n=48/96/300), 17062105 (LPM, n=48/300). When all three finish, pull `results/agentload_c_closed*/`, `results/agentload_analysis_closed*/` and `results/nova_job_logs/1706210[345]-*` to a new local dir, then run `analysis.summarize closed` over all run dirs.
 - Sync the Nova clone to harness 89a3c7d or later before submitting.
 
 Stage C commands. Run them on Nova from `/work/classtmp/avalse/swapp/repo` after `env | grep ^SBATCH_` prints nothing:

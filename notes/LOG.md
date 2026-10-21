@@ -291,3 +291,27 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
 **GPU cost of Stage 0 so far:** about 0.55 GPU-h for the passing job, plus about 4 GPU-min across the three failed attempts.
 
 **Next:** Stage C, the closed μ(n) on the real engine. Awaiting Akshat's OK.
+
+## 2026-10-21 — Stage C submitted: real closed-population μ(n) on SGLang
+**Authorization:** Akshat approved the three Stage C jobs in chat: OUTPUT_FEEDBACK=server, 300k-token KV cap.
+
+**Setup:**
+- Harness 89a3c7d, synced to the Nova clone.
+- Each job: 1×A100, 4 h limit, account `f2026.coms.6250.02`.
+- MODE=closed: one run per n. Each run is 900 s of warmup plus 1800 s measured, with a flush and canary-verify between runs.
+
+| Job | Policy | n values |
+|---|---|---|
+| 17062103 | FCFS | 16, 20, 24, 32 |
+| 17062104 | FCFS | 48, 96, 300 |
+| 17062105 | LPM | 48, 300 |
+
+**Plan arithmetic:** about 8.5 GPU-h.
+
+**Analysis plan.** The real λ_miss is not measured yet; that is E0a. So the comparison with the simulator is on shape:
+- the peak location n\*;
+- the collapse ratio μ(300)/μ\*;
+- hit rate against n;
+- the LPM tail versus the FCFS tail.
+
+Known bias: μ(300) is biased upward because all sessions start at the same time and the run is short. It serves only as a check (see the harness review).
