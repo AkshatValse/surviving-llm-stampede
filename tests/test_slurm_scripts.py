@@ -55,6 +55,8 @@ def test_default_engine_labels_name_the_kill_rule_cells():
 
 
 @pytest.mark.parametrize("script,env,label", [
+    ("sglang_job.sbatch", {"MODE": "smoke"}, "sglang-smoke"),
+    ("vllm_job.sbatch", {"MODE": "smoke"}, "vllm-smoke"),
     ("sglang_job.sbatch", {"MODE": "miss"}, "sglang-nocache"),
     ("sglang_job.sbatch", {"MODE": "burst"}, "sglang-fcfs-r1"),
     ("sglang_job.sbatch", {"MODE": "burst", "POLICY": "lpm", "REFRESH": "0"}, "sglang-lpm-r0"),
@@ -97,7 +99,7 @@ def test_engine_launch_commands_contain_the_spec_flags():
     assert "UNVERIFIED" in sg and "UNVERIFIED" in vl
 
 
-@pytest.mark.parametrize("mode,port", [("miss", 18091), ("cap", 18092), ("burst", 18093)])
+@pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093)])
 def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
     env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
                POP_CHECK="6" if mode == "miss" else "")
@@ -117,7 +119,8 @@ def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
     meta = json.loads((Path(run_dirs[0]) / "meta.json").read_text())
     assert meta["engine_label"] == "mock-fcfs" and meta["seeds"] == [0] and meta["status"] == "finished"
     assert meta["outcome"]["requests_ok"] > 5
-    ana = {"miss": ("agentload_analysis_miss", "calibration.json"), "cap": ("agentload_analysis_stable", "stable_runs.csv"),
+    ana = {"smoke": ("agentload_analysis_windows", "windows.csv"),
+           "miss": ("agentload_analysis_miss", "calibration.json"), "cap": ("agentload_analysis_stable", "stable_runs.csv"),
            "burst": ("agentload_analysis_burst", "burst_runs.csv")}[mode]
     d = sorted((tmp_path / ana[0]).iterdir())[-1]
     assert (d / ana[1]).exists()

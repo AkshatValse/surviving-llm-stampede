@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # LOCAL smoke test of the job-script glue (banner, server launch, health wait, probe, run loop, flush, post-analysis)
 # against the mock server. Runs on a laptop; never touches SLURM or Nova. Usage:
-#   ENV_GEN=/opt/anaconda3 slurm/local_smoke.sh MODE        (MODE = miss | cap | burst; default burst)
+#   ENV_GEN=/opt/anaconda3 slurm/local_smoke.sh MODE        (MODE = smoke | miss | cap | burst; default burst)
 # Writes under $RESULTS_ROOT (default: a fresh temp dir, printed at the end).
 set -u -o pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,7 +10,7 @@ REPO_DIR="$(cd "$HERE/.." && pwd)"
 export MODE="${1:-burst}" ENGINE_LABEL="mock-fcfs" SEEDS="${SEEDS:-0}" MULTS="${MULTS:-1.0}"
 export RESULTS_ROOT="${RESULTS_ROOT:-$(mktemp -d)}"
 export PORT="${PORT:-18091}" GAP_S=1 HEALTH_TIMEOUT_S=30
-export POP=4 POP_CHECK="${POP_CHECK-}" MISS_RUN_S=12 MISS_WARMUP_S=3 CAP_RUN_S=12 BURST_RUN_S=14 T_BURST=6 TRAP_MIN_S=3 HIT_EVAL_FROM_S=4
+export POP=4 POP_CHECK="${POP_CHECK-}" SMOKE_RUN_S=8 MISS_RUN_S=12 MISS_WARMUP_S=3 CAP_RUN_S=12 BURST_RUN_S=14 T_BURST=6 TRAP_MIN_S=3 HIT_EVAL_FROM_S=4
 export REPO_DIR
 # scale the workload down so a 12 s run exercises sessions, turns, cache hits and a burst
 export GEN_EXTRA="--set workload.initial_context_tokens=200 --set workload.new_prompt_tokens=55 --set workload.decode_tokens=10 --set workload.mean_turns=4 --set workload.max_turns=12 --set workload.tool_time_mean_s=0.3 --set arrivals.burst.n=10 --set arrivals.burst.width_s=1 --set run.preflight_wait_s=10 --set metrics.interval_s=1 --set server.request_token_ids=true"

@@ -132,6 +132,7 @@ post_analysis() {
   [ -s "$f" ] || { log "no run dirs recorded; skipping analysis"; return 0; }
   dirs=$(tr '\n' ' ' < "$f")
   case "$MODE" in
+    smoke) gen_python -m analysis.summarize windows --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} ;;
     miss)  gen_python -m analysis.summarize miss --run-dirs $dirs --warmup-s "$MISS_WARMUP_S" \
                --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-}
            if [ -s "$JOB_DIR/run_dirs_miss_popcheck.txt" ]; then
@@ -150,7 +151,12 @@ between_runs() {   # let the server drain cancelled requests, then flush the pre
   flush_cache || true
 }
 
-# ------------------------------------------------------------------ the three modes
+# ------------------------------------------------------------------ the modes (smoke, miss, cap, burst)
+mode_smoke() {  # Stage 0: engine with caching ON, closed population, one run; checks flags/probe/metrics/timing
+  run_gen configs/agentload_e0_miss.yaml "agentload_s0_smoke" --seed 0 --set "arrivals.closed_n=$POP" \
+      --set "run.duration_s=$SMOKE_RUN_S" || { log "smoke run failed"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
+}
+
 mode_miss() {   # E0a: caching disabled server-side, closed population
   local seed
   for seed in $SEEDS; do
@@ -202,7 +208,7 @@ job_main() {
   : "${SEEDS:=0}"
   : "${GAP_S:=180}"
   : "${POP:=32}"; : "${POP_CHECK=64}"      # POP_CHECK="" disables the population-sensitivity run
-  : "${MISS_RUN_S:=2700}"; : "${MISS_WARMUP_S:=900}"; : "${CAP_RUN_S:=3000}"; : "${BURST_RUN_S:=8700}"; : "${T_BURST:=1200}"
+  : "${SMOKE_RUN_S:=1800}"; : "${MISS_RUN_S:=2700}"; : "${MISS_WARMUP_S:=900}"; : "${CAP_RUN_S:=3000}"; : "${BURST_RUN_S:=8700}"; : "${T_BURST:=1200}"
   : "${TRAP_MIN_S:=3000}"; : "${HIT_EVAL_FROM_S:=4500}"      # short protocol (deviation D1); simulator: 10000 / 10000
   BASE_URL="http://127.0.0.1:$PORT"
   TS=$(date +%Y%m%d-%H%M%S)
@@ -224,10 +230,11 @@ job_main() {
       --set "server.base_url=\"$BASE_URL\"" 2>&1 | tee "$JOB_DIR/probe.txt" || log "probe failed (continuing)"
   flush_cache || true
   case "$MODE" in
+    smoke) mode_smoke ;;
     miss)  mode_miss ;;
     cap)   mode_cap ;;
     burst) mode_burst ;;
-    *) die "MODE must be miss|cap|burst, got '$MODE'" ;;
+    *) die "MODE must be smoke|miss|cap|burst, got '$MODE'" ;;
   esac
   post_analysis
   log "all runs finished ($FAILED_RUNS failed); results under $RESULTS_ROOT (job log dir $JOB_DIR)"

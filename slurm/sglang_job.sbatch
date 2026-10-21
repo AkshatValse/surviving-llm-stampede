@@ -20,7 +20,7 @@
 # (the double-quoted lists above need `--export=ALL,MODE=...` quoting that suits your shell; or `export` the vars first.)
 #
 # ---------------------------------------------------------------- Parameters (env vars; defaults in the engine file)
-#  MODE        miss | cap | burst                          (required)
+#  MODE        smoke | miss | cap | burst                  (required; smoke = Stage-0 test job, cache ON, one closed run)
 #  POLICY      fcfs | lpm                                   (default fcfs)
 #  REFRESH     1 | 0   SGLANG_ENABLE_WAITING_PREFIX_REFRESH (default 1 = shipped default)
 #  LPM_INF     1 -> use ENV_SGLANG_PATCHED (WAITING_QUEUE_PREFIX_MATCH_MAX patched to a huge value; patch NOT applied here)
@@ -33,9 +33,10 @@
 #  ENV_SGLANG / ENV_SGLANG_PATCHED / ENV_GEN / HF_HOME : env prefixes and cache dir (PLACEHOLDERS from notes/NOVA_ENV_PLAN.md)
 
 set -u -o pipefail
-: "${MODE:?MODE must be miss|cap|burst}"
+: "${MODE:?MODE must be smoke|miss|cap|burst}"
 if [ -z "${ENGINE_LABEL:-}" ]; then
-  if [ "$MODE" = "miss" ]; then ENGINE_LABEL="sglang-nocache"
+  if [ "$MODE" = "smoke" ]; then ENGINE_LABEL="sglang-smoke"
+  elif [ "$MODE" = "miss" ]; then ENGINE_LABEL="sglang-nocache"
   elif [ "${LPM_INF:-0}" = "1" ]; then ENGINE_LABEL="sglang-lpminf"
   else ENGINE_LABEL="sglang-${POLICY:-fcfs}-r${REFRESH:-1}"; fi
 fi

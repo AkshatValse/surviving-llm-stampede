@@ -14,16 +14,17 @@
 # collect logs, run the light analysis. Same parameters as slurm/sglang_job.sbatch (POLICY/REFRESH/LPM_INF do not apply;
 # vLLM v0.32.0 has FCFS only, per notes/lit/engine-sources-prefix-cache.md).
 #
-# Before sbatch:  mkdir -p logs
+# Before sbatch:  mkdir -p logs   (MODE = smoke | miss | cap | burst, as in slurm/sglang_job.sbatch)
 #   sbatch --export=ALL,MODE=miss,SEEDS="0 1 2",ENGINE_LABEL=vllm-nocache slurm/vllm_job.sbatch
 #   sbatch --export=ALL,MODE=burst,MULTS="1.6",SEEDS="0",CALIB_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
 #
 #  ENV_VLLM / ENV_GEN / HF_HOME: PLACEHOLDERS (notes/NOVA_ENV_PLAN.md says vLLM needs its own env: it pins its own torch).
 
 set -u -o pipefail
-: "${MODE:?MODE must be miss|cap|burst}"
+: "${MODE:?MODE must be smoke|miss|cap|burst}"
 if [ -z "${ENGINE_LABEL:-}" ]; then
-  if [ "$MODE" = "miss" ]; then ENGINE_LABEL="vllm-nocache"; else ENGINE_LABEL="vllm-fcfs"; fi
+  if [ "$MODE" = "smoke" ]; then ENGINE_LABEL="vllm-smoke"
+  elif [ "$MODE" = "miss" ]; then ENGINE_LABEL="vllm-nocache"; else ENGINE_LABEL="vllm-fcfs"; fi
 fi
 : "${SEEDS:=0}"
 export MODE ENGINE_LABEL SEEDS
