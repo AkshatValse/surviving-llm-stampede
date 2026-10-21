@@ -2,7 +2,17 @@
 
 Every Nova step below needs Akshat's explicit OK before it runs. The project rule is to ask before any `sbatch`. Steps A–C are prerequisites: the smoke job runs with `HF_HUB_OFFLINE=1` and from a git checkout on Nova, so the code, the envs and the model weights must already be there.
 
-**Placeholder.** `<WORK>` stands for the project directory on `/work`. Fill it in from the storage check ("Needs Akshat" #2), for example `/work/<group>/avalse`. Nothing below is valid until it is filled in.
+**Storage (checked 2026-10-21 over SSH, read-only).**
+- **Project root:** `/work/classtmp/avalse/swapp`. This is new and created in step A.
+  - `/work/classtmp` is ISU's class storage: NFS, 16 TB with 14 TB free. ISU's class page says class files **are deleted at semester end**, so results must be copied off after every job.
+  - `/work/classtmp/avalse/` already holds three `hpcml-*` dirs from the earlier project (about 12 GB). They are **not touched**.
+- **Home:** `/home/avalse`, using 16 MB. ISU states a 10 GB hard quota. Every cache (pip, micromamba, HF, Triton/FlashInfer via `XDG_CACHE_HOME`) is therefore redirected to class storage.
+- **Other locations:**
+  - `/ptmp`: Lustre, no user dir. A 2021 ISU deck says files are purged 90 days after creation; this may be outdated.
+  - `/lss`: does not exist on Nova.
+  - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
+- **Account (verified):** `f2026.coms.6250.02`, QoS `instruction,scavenger`.
+- **Internet:** the login node reaches huggingface.co and pypi.org (HTTP 200). Compute nodes are untested.
 
 **Local verification (done).** I ran the exact `MODE=smoke` code path (`slurm/local_smoke.sh smoke`, `OUTPUT_FEEDBACK=auto`) against the mock engine at harness commit 2f22e08: exit 0, 138/138 requests ok, 0 guard errors. This tests only the glue code, not SGLang.
 
@@ -10,12 +20,13 @@ Every Nova step below needs Akshat's explicit OK before it runs. The project rul
 On the Mac:
 ```bash
 git -C /Users/akshat/research/jannesari-swapp bundle create /tmp/swapp-harness.bundle harness/prefix-meta
-scp /tmp/swapp-harness.bundle nova:<WORK>/swapp-harness.bundle
+ssh nova 'mkdir -p /work/classtmp/avalse/swapp'
+scp /tmp/swapp-harness.bundle nova:/work/classtmp/avalse/swapp/swapp-harness.bundle
 ```
 On Nova:
 ```bash
-git clone -b harness/prefix-meta <WORK>/swapp-harness.bundle <WORK>/swapp/repo
-git -C <WORK>/swapp/repo log --oneline -1
+git clone -b harness/prefix-meta /work/classtmp/avalse/swapp/swapp-harness.bundle /work/classtmp/avalse/swapp/repo
+git -C /work/classtmp/avalse/swapp/repo log --oneline -1
 ```
 The last command should print `2f22e08` or a later commit.
 
@@ -24,14 +35,15 @@ The last command should print `2f22e08` or a later commit.
 ```bash
 salloc --account=f2026.coms.6250.02 --partition=instruction --qos=instruction --cpus-per-task=8 --mem=32G --time=01:00:00
 # on the compute node:
-module load micromamba/<exact name from `module -t avail micromamba`>
-export MAMBA_ROOT_PREFIX=<WORK>/swapp/mamba-root
-micromamba create -y -p <WORK>/swapp/envs/swapp  -c conda-forge python=3.11 numpy pandas pyyaml aiohttp huggingface_hub pytest
-micromamba create -y -p <WORK>/swapp/envs/sglang -c conda-forge python=3.11
-<WORK>/swapp/envs/sglang/bin/pip install "sglang[all]==0.5.22"
-<WORK>/swapp/envs/sglang/bin/python -c "import sglang; print(sglang.__version__)"
-<WORK>/swapp/envs/sglang/bin/pip freeze > <WORK>/swapp/envs/sglang.lock.txt
-<WORK>/swapp/envs/swapp/bin/pip freeze  > <WORK>/swapp/envs/swapp.lock.txt
+module load micromamba/1.4.2-7jjmfkf          # also present: micromamba/1.4.2-lcemqbe
+export PIP_CACHE_DIR=/work/classtmp/avalse/swapp/cache/pip XDG_CACHE_HOME=/work/classtmp/avalse/swapp/cache CONDA_PKGS_DIRS=/work/classtmp/avalse/swapp/mamba-pkgs
+export MAMBA_ROOT_PREFIX=/work/classtmp/avalse/swapp/mamba-root
+micromamba create -y -p /work/classtmp/avalse/swapp/envs/swapp  -c conda-forge python=3.11 numpy pandas pyyaml aiohttp huggingface_hub pytest
+micromamba create -y -p /work/classtmp/avalse/swapp/envs/sglang -c conda-forge python=3.11
+/work/classtmp/avalse/swapp/envs/sglang/bin/pip install "sglang[all]==0.5.22"
+/work/classtmp/avalse/swapp/envs/sglang/bin/python -c "import sglang; print(sglang.__version__)"
+/work/classtmp/avalse/swapp/envs/sglang/bin/pip freeze > /work/classtmp/avalse/swapp/envs/sglang.lock.txt
+/work/classtmp/avalse/swapp/envs/swapp/bin/pip freeze  > /work/classtmp/avalse/swapp/envs/swapp.lock.txt
 exit
 ```
 **Unverified:**
@@ -39,23 +51,23 @@ exit
 - Whether the SGLang wheel pulls its own torch and flashinfer. It should, since the node driver supports CUDA 12.x.
 
 ## C. Download the model weights (CPU-only job, about 15 GB)
-On Nova, from `<WORK>/swapp/repo`:
+On Nova, from `/work/classtmp/avalse/swapp/repo`:
 ```bash
 env | grep ^SBATCH_
 mkdir -p logs
-sbatch --export=ALL,HF_HOME=<WORK>/hf,ENV_GEN=<WORK>/swapp/envs/swapp slurm/download_model.sbatch
+sbatch --export=ALL,HF_HOME=/work/classtmp/avalse/swapp/hf,XDG_CACHE_HOME=/work/classtmp/avalse/swapp/cache,ENV_GEN=/work/classtmp/avalse/swapp/envs/swapp slurm/download_model.sbatch
 ```
 - The `env` check must print nothing.
 - The job asks for 2 CPUs, 8 GB and 1 h on `instruction` under account `f2026.coms.6250.02`, with no GPU.
 - After it finishes, copy the `RESOLVED_REVISION <sha>` line from `logs/pm-download-<jobid>.out`. That sha is `HF_REVISION` below.
 
 ## D. Stage 0 smoke: the job to approve
-On Nova, from `<WORK>/swapp/repo`:
+On Nova, from `/work/classtmp/avalse/swapp/repo`:
 ```bash
 env | grep ^SBATCH_
 mkdir -p logs
 sbatch --time=01:30:00 \
-  --export=ALL,MODE=smoke,ENV_GEN=<WORK>/swapp/envs/swapp,ENV_SGLANG=<WORK>/swapp/envs/sglang,HF_HOME=<WORK>/hf,HF_REVISION=<sha from step C> \
+  --export=ALL,MODE=smoke,ENV_GEN=/work/classtmp/avalse/swapp/envs/swapp,ENV_SGLANG=/work/classtmp/avalse/swapp/envs/sglang,HF_HOME=/work/classtmp/avalse/swapp/hf,XDG_CACHE_HOME=/work/classtmp/avalse/swapp/cache,HF_REVISION=<sha from step C> \
   slurm/sglang_job.sbatch
 ```
 The `env` check must print nothing.
@@ -99,6 +111,6 @@ The `env` check must print nothing.
 - Either case costs at most about 20 min of one GPU.
 
 **After it finishes:**
-1. I pull `results/nova_job_logs/<jobid>-*` back to a new timestamped local dir with read-only `rsync`.
+1. I pull `results/nova_job_logs/<jobid>-*` and `results/agentload_s0_smoke/*` back to a new timestamped local dir with read-only `rsync`. This is required, because class storage is wiped at semester end.
 2. I fill in the unverified items in the plan.
 3. I propose the vLLM smoke job (same shape, `slurm/vllm_job.sbatch`, needs its own env) and then Stage C. Each needs a separate OK.
