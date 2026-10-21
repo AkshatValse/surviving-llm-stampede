@@ -161,3 +161,44 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
 - The paired kill test is about 75.8.
 - The total plan is about 236.
 **Open:** The ±15% token band has only been validated on the simulator. `slope_frac` is still to be decided. Staggered starts for Stage C are not implemented.
+
+## 2026-10-21 — Prefix-meta round 5: does metastability survive realistic KV allocation? (sim)
+**Question:** Is the collapse an artifact of reserving each request's full end-of-turn KV at admission?
+**Setup:**
+- Branch `pilot/prefix-meta`.
+- Pre-registration `configs/prefix_meta_r5_prereg.yaml` (e24e3cd), with amendments 7ab10f4 and 12459fc. All amendments are append-only and were committed before the registered runs.
+- Runs at 12459fc on a clean tree; results committed in 44dd21f. 546 tests pass.
+- Engine semantics come from a scout's summarized read of the vLLM v0.32.0 and SGLang v0.5.22 sources (`notes/lit/engine-alloc-semantics-vllm-sglang.md`). They are unverified.
+- Modes:
+  - ONDEMAND_PREEMPT (vLLM-like): admission requires the full prompt to fit; decode grows per step; on OOM the last-running request is preempted with recompute, and its KV is trimmed tail-first.
+  - RATIO_RESERVE (SGLang-like): new_token_ratio 0.7 decaying to 0.098, with retraction on decode OOM.
+- Verifier: recomputed everything from raw data (stdlib only) and re-ran sample cells bit-identically from `git archive`.
+- Results: `results/prefix_meta_r5_{calib,curve,burst,cap}/20261021-070[3-4]*`, report `results/prefix_meta_r5/20261021-070550`.
+**Result:**
+- S1–S4 PASS in both modes (registered readings). KILL is FALSE.
+- Thrashing curve (λ_miss units):
+
+  | Mode | μ\*/μ(300) | μ(300) FCFS | Max deviation from FULL_RESERVE |
+  |---|---|---|---|
+  | ONDEMAND | 4.07 | 0.977 | 1.2% |
+  | RATIO | 4.10 | 0.972 | 3.3% |
+
+  - n\*=20 in every mode.
+  - FCFS hit rate at n=300 is exactly 0.
+- Burst 200 at 2×: 5/5 not recovered. No-burst: 5/5 good.
+- Cap at n\*=20: 3/3 recover; no cap: 0/3.
+- LPM advantage over FCFS: 0.157 and 0.192 λ_miss.
+- Preemption is 0.002–0.008 per admitted turn.
+**Variants:**
+- `ondemand_first_chunk` (an alternative reading of vLLM admission): heavy preemption thrash (0.18–0.49 per turn) and λ_miss −28%. The absolute collapse is unchanged, but the normalized C1 fails, so the verdict is "mixed".
+- `lpm128` (SGLang's FCFS fallback above 128 waiting): the LPM advantage is about 0 with hit rate 0. In congestion, **deployed SGLang LPM behaves like FCFS**.
+**Verified vs. not:**
+- Verified: everything above.
+- Caveats:
+  - Not a severe test. The pre-registration predicted the null, and the reservation excess is only about 2–4% of M.
+  - Real-engine semantics are summarized from source, not verified.
+- **Untested and probably larger gaps:**
+  - Whole-session all-or-nothing eviction, versus block-wise or radix-leaf eviction with partial prefix hits.
+  - Long-decode workloads (d-sweep).
+**Interpretation:** The reservation-artifact threat is retired *in simulation*. The mechanism is idle-KV crowd-out, which full reservation only marginally amplifies. Partial-prefix eviction is the remaining simulator-side threat. It is best settled on the real engine (Stage C, measured μ(n)) rather than by more simulation.
+**Next:** Real-engine Stage C, pending Akshat's approval. Optionally, a round-6 simulation adds block-level partial-prefix eviction plus a d-sweep.
