@@ -242,3 +242,18 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
     - A fail-fast pre-launch toolchain check was added.
     - `ATTN_BACKEND=triton` is available as a fallback. Not used yet, because FlashInfer is SGLang's A100 default.
 - **Smoke attempt 3, job 17060085:** submitted with `CUDA_HOME_SHIM` set.
+- **Smoke attempt 3, job 17060085:** FAILED after 1:04. The toolchain checks passed (ninja, nvcc, shim libraries) and FlashInfer started its JIT build. Every kernel then failed with `#error "CUDA compiler and CUDA toolkit headers are incompatible"`.
+  - Cause: the `sglang[all]` resolve mixed CUDA minor versions across the split pip toolkit. Torch's runtime is 13.0, but the compiler-side wheels resolved newer:
+
+    | Wheel | Resolved | Pinned to |
+    |---|---|---|
+    | nvidia-cuda-nvcc | 13.4.92 | 13.0.88 |
+    | nvidia-nvvm (cicc) | 13.4.92 | 13.0.88 |
+    | nvidia-cuda-crt | 13.4.92 | 13.0.88 |
+    | nvidia-cuda-cccl | 13.3 | 13.0.85 |
+    | nvidia-cuda-runtime | 13.0.96 | (unchanged) |
+
+  - Fix: the four compiler-side wheels were pinned on the login node, run with `nice`. `pip check` is clean.
+  - Verified on the login node: a test `.cu` that includes FlashInfer's CCCL and cub compiles for sm_80 (COMPILE_OK). An intermediate attempt that pinned only nvcc failed with `ptxas: Unsupported .version 9.4`. torch still imports.
+  - The pins are now in `setup_nova.sbatch` (bbb6a12) so a rebuild reproduces them.
+- **Smoke attempt 4, job 17060165:** submitted.
