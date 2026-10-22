@@ -1,0 +1,334 @@
+{
+  "quick": false,
+  "overrides": [],
+  "lambda_cap_interpretation": "lambda_cap is a finite-horizon (cap_horizon_s) STABILITY / lifetime boundary for pure LPM from an empty start, not a mean-field memory-time capacity: below it the good state uses well under M and an escape is a fluctuation event (see cap_hazard: P(escape by H) vs lambda with Wilson CIs); it depends on seeds, horizon, chunk size and free_kv_on_session_end.",
+  "lambda_miss": 0.047418947368421054,
+  "lambda_miss_per_seed": [
+    0.04937894736842105,
+    0.047094736842105266,
+    0.04685263157894737,
+    0.04518947368421053,
+    0.048578947368421055
+  ],
+  "lambda_miss_se": 0.0007274468691034555,
+  "lambda_miss_turns_based": 0.04743549105177622,
+  "lambda_miss_by_population": {
+    "60": 0.047418947368421054,
+    "30": 0.04725052631578948,
+    "120": 0.04746315789473684
+  },
+  "miss_busy_frac_mean": 1.0,
+  "lambda_cap": 0.11558368421052631,
+  "lambda_cap_bracket": [
+    0.11558368421052631,
+    0.11706552631578948
+  ],
+  "lambda_cap_unbounded_in_search": false,
+  "R": 2.4375,
+  "R_bracket": [
+    2.4375,
+    2.46875
+  ],
+  "cap_search_frac_stable_by_lambda": [
+    {
+      "lam_mult": 1.0,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 1.5,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.0,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.25,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.375,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.4375,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.46875,
+      "frac_stable": 0.8,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.5,
+      "frac_stable": 0.8,
+      "n_seeds": 5
+    }
+  ],
+  "cap_hazard": [
+    {
+      "policy": "lpm",
+      "lam_mult": 1.5,
+      "lam": 0.07112842105263158,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.0,
+      "lam": 0.09483789473684211,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.25,
+      "lam": 0.10669263157894737,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.5,
+      "lam": 0.11854736842105264,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.75,
+      "lam": 0.1304021052631579,
+      "n_runs": 20,
+      "n_escaped": 5,
+      "frac_escaped": 0.25,
+      "frac_escaped_ci95_lo": 0.11186005278940309,
+      "frac_escaped_ci95_hi": 0.4687050099580636,
+      "escape_time_median_s": 8206.876092405857,
+      "escape_time_min_s": 4666.489543884394,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 3.0,
+      "lam": 0.14225684210526315,
+      "n_runs": 20,
+      "n_escaped": 9,
+      "frac_escaped": 0.45,
+      "frac_escaped_ci95_lo": 0.25819502085709295,
+      "frac_escaped_ci95_hi": 0.6579179916924003,
+      "escape_time_median_s": 6400.836555517561,
+      "escape_time_min_s": 3134.9085177319926,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 1.5,
+      "lam": 0.07112842105263158,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.0,
+      "lam": 0.09483789473684211,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.25,
+      "lam": 0.10669263157894737,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.5,
+      "lam": 0.11854736842105264,
+      "n_runs": 20,
+      "n_escaped": 1,
+      "frac_escaped": 0.05,
+      "frac_escaped_ci95_lo": 0.008881219432873136,
+      "frac_escaped_ci95_hi": 0.23613589351256675,
+      "escape_time_median_s": 16737.312692022944,
+      "escape_time_min_s": 16737.312692022944,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.75,
+      "lam": 0.1304021052631579,
+      "n_runs": 20,
+      "n_escaped": 5,
+      "frac_escaped": 0.25,
+      "frac_escaped_ci95_lo": 0.11186005278940309,
+      "frac_escaped_ci95_hi": 0.4687050099580636,
+      "escape_time_median_s": 7593.6661316312,
+      "escape_time_min_s": 4633.806841761506,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 3.0,
+      "lam": 0.14225684210526315,
+      "n_runs": 20,
+      "n_escaped": 11,
+      "frac_escaped": 0.55,
+      "frac_escaped_ci95_lo": 0.3420820083075997,
+      "frac_escaped_ci95_hi": 0.7418049791429071,
+      "escape_time_median_s": 6023.604049709941,
+      "escape_time_min_s": 3072.968868432596,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    }
+  ],
+  "session_cap_N_star": 45,
+  "session_cap_N_star_length_biased": 28,
+  "length_biased_mean_context_tokens": 10568.686518661441,
+  "mean_turns_effective": 14.761055049953429,
+  "timing": {
+    "total_sim_s": 6763639.712558992,
+    "total_run_wall_s": 70.30647333868546,
+    "wall_s_per_10k_sim_s": 0.10394769137116756,
+    "max_run_wall_s": 0.48135120898950845
+  },
+  "config_e0": {
+    "miss_closed_population": 60,
+    "miss_population_check": [
+      30,
+      120
+    ],
+    "miss_pool_sessions": 60000,
+    "miss_horizon_s": 100000.0,
+    "miss_warmup_s": 5000.0,
+    "miss_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "cap_horizon_s": 20000.0,
+    "cap_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "cap_bracket_mults": [
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0,
+      6.0,
+      8.0,
+      12.0,
+      16.0
+    ],
+    "cap_rel_tol": 0.02,
+    "cap_max_bisect_steps": 10,
+    "cap_hazard": {
+      "policies": [
+        "lpm",
+        "fcfs"
+      ],
+      "mults": [
+        1.5,
+        2.0,
+        2.25,
+        2.5,
+        2.75,
+        3.0
+      ],
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119
+      ],
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    "stable_final_queue_below": 50,
+    "stable_trend_window_s": 5000.0,
+    "stable_trend_max_rise": 10.0,
+    "unstable_queue_stop": 3000
+  }
+}

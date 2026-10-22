@@ -1,0 +1,59 @@
+{
+  "experiment": "e1",
+  "argv": [
+    "experiments/prefix_meta_run.py",
+    "e1",
+    "--workers",
+    "3"
+  ],
+  "git": {
+    "commit": "7e9704ef3acc0bff066183afb02e8c0395503932",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T00:58:37",
+  "end_time": "2026-10-21T01:00:42",
+  "wall_s": 125.10823583602905,
+  "quick": false,
+  "workers": 3,
+  "overrides": [],
+  "tag": null,
+  "n_runs": 885,
+  "timing": {
+    "total_sim_s": 26550000.0,
+    "total_run_wall_s": 368.63004776032176,
+    "wall_s_per_10k_sim_s": 0.13884370913759764,
+    "max_run_wall_s": 2.478567000012845
+  },
+  "calibration": {
+    "lambda_miss": 0.047418947368421054,
+    "lambda_cap": 0.11558368421052631,
+    "R": 2.4375,
+    "session_cap_N_star": 45,
+    "session_cap_N_star_length_biased": 28,
+    "_path": "results/prefix_meta_e0/20261021-005706/e0_summary.json"
+  },
+  "lam_mults_skipped_because_ge_lambda_cap": [
+    3.0,
+    4.0
+  ],
+  "N_star": 45,
+  "N_star_length_biased": 28
+}

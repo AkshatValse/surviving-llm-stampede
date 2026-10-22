@@ -1,0 +1,448 @@
+research_question: In open multi-turn agent serving with prefix (KV) caching on a
+  continuous-batching engine, does cache-oblivious FCFS ordering have a metastable/hysteretic
+  congested state above the all-miss capacity, does a work-conserving hit-first order
+  (LPM) remove it up to the memory-time capacity, and does an LPM that falls back
+  to FCFS when the waiting queue exceeds 128 (as SGLang does) inherit the trap?
+assumptions_note: ALL numeric constants below are rough A100 / ~8B-model-order ASSUMPTIONS
+  chosen for a simulation pilot. None is a measurement. Conclusions are about the
+  qualitative dynamics of the model, not about any real engine. Engine behavior simplifications
+  (whole-session KV eviction, waiting requests do not pin KV, reserve-at-admission,
+  no mid-run preemption, no radix-tree partial prefixes) are documented in src/prefixmeta/engine.py.
+preregistration:
+  date: 2026-10-21
+  expected_verdict: REFRAME
+  why: Memory-gated admission is work-conserving over misses, so under a long queue
+    every freed token becomes a new reservation and idle KV is ~0; a session's KV
+    is evicted during its tool call, before its next turn is queued. LPM then has
+    almost no resident waiting requests to promote, so it cannot leave the congested
+    state.
+  predictions:
+  - 'E1 (cold=300, lambda in {1.25,1.5,2}x lambda_miss): LPM and FCFS both recover
+    0/3; LPM-128 == FCFS bit-identical (queue 300 > 128 on the first pass).'
+  - 'E1 cold-size sweep: FCFS and LPM recovery counts are identical in every (cold,
+    lambda) cell; small cold starts (<=~50) recover 3/3, large (>=~100) 0/3.'
+  - 'E1 FCFS-CAP: with the spec N*=45 it does not recover; with the length-biased
+    N*~28 (and caps <=27) it recovers 3/3. Admission control is the only recovering
+    family.'
+  - 'E2 (burst 200 at 2x): LPM hit rate over [t_b+10k, t_b+25k] is above 0.8 in <=1/5
+    seeds; LPM-128 ~ FCFS trapped.'
+  - 'E3 spec ramp (peak 0.9 lambda_cap): hysteresis area ~0 and FCFS == LPM; E3 above-cap
+    ramp (peak 1.3 lambda_cap): area > 0 with FCFS ~ LPM.'
+  - 'Decision rule: GO is unreachable; verdict REFRAME (not KILL, since LPM-128 is
+    trapped in E2 by the spec''s hit<0.2 for >=10k s criterion).'
+  not_claimed: 'That ''LPM-128 inherits the trap'' is a finding: with queues > 128
+    at the first pass LPM-128 is FCFS by construction. lambda_cap is a finite-horizon
+    stability (lifetime) boundary, not a memory-time capacity.'
+engine:
+  iter_fixed_s: 0.002
+  iter_floor_s: 0.0095
+  per_token_s: 8.4e-05
+  decode_attn_s: 0.00071
+  attn_ctx_norm: 8192
+  prefill_attn_s: 3.5e-09
+  prefill_attn_ctx: end
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 300000
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+workload:
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5
+policies:
+  fcfs:
+    kind: fcfs
+  lpm:
+    kind: lpm
+  lpm128:
+    kind: lpm_fallback
+    threshold: 128
+  aging10:
+    kind: aging_lpm
+    w_max_s: 10.0
+  aging30:
+    kind: aging_lpm
+    w_max_s: 30.0
+  fcfs_cap:
+    kind: fcfs
+    session_cap: auto
+  fcfs_cap_lb:
+    kind: fcfs
+    session_cap: auto_lb
+policy_order:
+- fcfs
+- lpm
+- lpm128
+- aging10
+- aging30
+- fcfs_cap
+- fcfs_cap_lb
+metrics:
+  window_s: 1000.0
+  fine_window_s: 100.0
+  tail_window_s: 5000.0
+parallel:
+  max_workers: 3
+output:
+  root: results
+  git_add_small_files_below_bytes: 400000
+e0:
+  miss_closed_population: 60
+  miss_population_check:
+  - 30
+  - 120
+  miss_pool_sessions: 60000
+  miss_horizon_s: 100000.0
+  miss_warmup_s: 5000.0
+  miss_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  cap_horizon_s: 20000.0
+  cap_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  cap_bracket_mults:
+  - 1.5
+  - 2.0
+  - 2.5
+  - 3.0
+  - 4.0
+  - 6.0
+  - 8.0
+  - 12.0
+  - 16.0
+  cap_rel_tol: 0.02
+  cap_max_bisect_steps: 10
+  cap_hazard:
+    policies:
+    - lpm
+    - fcfs
+    mults:
+    - 1.5
+    - 2.0
+    - 2.25
+    - 2.5
+    - 2.75
+    - 3.0
+    seeds:
+    - 100
+    - 101
+    - 102
+    - 103
+    - 104
+    - 105
+    - 106
+    - 107
+    - 108
+    - 109
+    - 110
+    - 111
+    - 112
+    - 113
+    - 114
+    - 115
+    - 116
+    - 117
+    - 118
+    - 119
+    horizon_s: 20000.0
+    escape_queue_above: 128
+  stable_final_queue_below: 50
+  stable_trend_window_s: 5000.0
+  stable_trend_max_rise: 10.0
+  unstable_queue_stop: 3000
+  quick:
+    miss_population_check: []
+    miss_pool_sessions: 5000
+    miss_horizon_s: 4000.0
+    miss_warmup_s: 500.0
+    miss_seeds:
+    - 0
+    cap_horizon_s: 3000.0
+    cap_seeds:
+    - 0
+    cap_bracket_mults:
+    - 2.0
+    - 4.0
+    cap_max_bisect_steps: 2
+    cap_hazard:
+      policies:
+      - lpm
+      mults:
+      - 2.0
+      seeds:
+      - 100
+      - 101
+      horizon_s: 2000.0
+      escape_queue_above: 128
+e1:
+  cold_sessions: 300
+  lam_mults:
+  - 1.25
+  - 1.5
+  - 2.0
+  - 3.0
+  - 4.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  horizon_s: 30000.0
+  recovered_queue_below: 20.0
+  recovered_hit_above: 0.8
+  robust_policies:
+  - fcfs
+  - lpm
+  robust_seeds:
+  - 0
+  robust_cv: 1.5
+  cold_sweep:
+    cold_sessions:
+    - 25
+    - 50
+    - 75
+    - 100
+    - 125
+    - 150
+    - 200
+    lam_mults:
+    - 1.25
+    - 1.5
+    - 2.0
+    policies: all
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  cap_sweep:
+    caps:
+    - 10
+    - 15
+    - 20
+    - 24
+    - 28
+    - 32
+    - 35
+    - 40
+    - 45
+    lam_mults:
+    - 1.25
+    - 1.5
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    - 2
+  quick:
+    lam_mults:
+    - 2.0
+    policies:
+    - fcfs
+    - lpm
+    - lpm128
+    seeds:
+    - 0
+    horizon_s: 3000.0
+    robust_policies:
+    - fcfs
+    cold_sweep:
+      cold_sessions:
+      - 25
+      lam_mults:
+      - 2.0
+      policies:
+      - fcfs
+      - lpm
+      seeds:
+      - 0
+    cap_sweep:
+      caps:
+      - 20
+      lam_mults:
+      - 2.0
+      seeds:
+      - 0
+e2:
+  lam_mult: 2.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  warmup_s: 5000.0
+  burst_sessions: 200
+  burst_width_s: 60.0
+  after_s: 25000.0
+  hit_eval_from_s: 10000.0
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_queue_below: 20.0
+  burst_sweep:
+    burst_sessions:
+    - 25
+    - 50
+    - 100
+    - 125
+    - 150
+    policies: all
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  quick:
+    policies:
+    - fcfs
+    - lpm128
+    seeds:
+    - 0
+    burst_sweep:
+      burst_sessions:
+      - 25
+      policies:
+      - fcfs
+      - lpm
+      seeds:
+      - 0
+    warmup_s: 1000.0
+    after_s: 3000.0
+    hit_eval_from_s: 1000.0
+e3:
+  lo_mult_of_lambda_miss: 0.5
+  hi_mult_of_lambda_cap: 0.9
+  leg_s: 30000.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  grid_points: 40
+  ramps:
+  - name: spec
+    hi_mult_of_lambda_cap: 0.9
+    seeds:
+    - 0
+    - 1
+    - 2
+  - name: above_cap
+    hi_mult_of_lambda_cap: 1.3
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  escape_queue_above: 128
+  reentry_queue_below: 20
+  reentry_bins: 5
+  quick:
+    leg_s: 3000.0
+    policies:
+    - fcfs
+    - lpm
+    ramps:
+    - name: spec
+      hi_mult_of_lambda_cap: 0.9
+      seeds:
+      - 0
+    - name: above_cap
+      hi_mult_of_lambda_cap: 1.3
+      seeds:
+      - 0
+    seeds:
+    - 0
+e4:
+  lam_mults:
+  - 2.0
+  - 3.0
+  policies:
+  - lpm128
+  seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  horizon_s: 50000.0
+  escape_queue_above: 128
+  good_state_onset_queue_below: 20
+  escaped_by_s:
+  - 10000
+  - 25000
+  - 50000
+  quick:
+    lam_mults:
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    horizon_s: 3000.0
+ablation_skip_ahead:
+  lam_mult: 2.0
+  cold_sessions: 300
+  policies: &id001
+  - fcfs
+  - lpm
+  - lpm128
+  seeds: &id002
+  - 0
+  - 1
+  horizon_s: 10000.0
+  quick:
+    policies:
+    - fcfs
+    - lpm
+    seeds:
+    - 0
+    horizon_s: 2000.0
+decision:
+  go_R_min: 2.0
+  kill_R_below: 1.5
+  lam_mult_min: 1.5
+  lpm_recover_min: 3
+  fcfs_recover_max: 0
+  lpm128_recover_max: 1
+  burst_lpm128_trapped_min: 3
+  burst_lpm_recover_min: 4
+  aging30_fraction_of_lpm_lambda: 0.7
+ablation_skip_ahead_effective:
+  lam_mult: 2.0
+  cold_sessions: 300
+  policies: *id001
+  seeds: *id002
+  horizon_s: 10000.0
+calibration:
+  lambda_miss: 0.047418947368421054
+  lambda_cap: 0.11558368421052631
+  R: 2.4375
+  session_cap_N_star: 45
+  session_cap_N_star_length_biased: 28
+  _path: results/prefix_meta_e0/20261021-005706/e0_summary.json

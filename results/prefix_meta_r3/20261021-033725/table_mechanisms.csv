@@ -1,0 +1,21 @@
+policy,label,recovered_1.5x,recovered_2x,burst_recovered,burst_partial,burst_trapped,burst_n,stable_limit_over_lambda_miss,ceiling_over_lambda_miss,ceiling_ratio_to_lpm
+fcfs,FCFS,0/3,0/3,0,0,5,5,2.4062499999999987,3.572692831350263,0.9298207098426636
+lpm,LPM,0/3,0/3,0,3,2,5,2.4374999999999996,3.842345942106198,1.0
+peek,"queued-session protection, hard pin (non-work-conserving)",0/3,0/3,0,0,5,5,2.4374999999999996,3.8232255964008757,0.995023783388218
+peek_rank,"queued-session protection, ranking only (PEEK-like, work-conserving)",0/3,0/3,0,0,5,5,2.4062499999999987,3.702879891079144,0.9637028905964142
+peek_lpm,queued-session hard pin + LPM order (= LPM here),0/3,0/3,0,3,2,5,,,
+ttl5,blocking TTL pin 5 s + program priority (idle-only release),3/3,3/3,5,0,0,5,2.9062500000000004,4.138992482093173,1.0772045371386754
+ttl10,blocking TTL pin 10 s + program priority (idle-only release),3/3,3/3,5,0,0,5,3.1250000000000004,4.305170780796778,1.1204537138675448
+ttl20,blocking TTL pin 20 s + program priority (idle-only release),0/3,0/3,0,5,0,5,2.4687499999999982,3.870745279109689,1.007391145261617
+ttlf5,blocking TTL pin 5 s + FCFS (idle-only release),0/3,0/3,0,0,5,5,2.6875,3.9784378144793697,1.0354189535309184
+ttlf10,blocking TTL pin 10 s + FCFS (idle-only release),0/3,0/3,0,0,5,5,2.2187499999999996,3.553291304090451,0.9247713135748264
+ttlf20,blocking TTL pin 20 s + FCFS (idle-only release),0/3,0/3,0,0,5,5,2.124999999999999,3.431539690996268,0.8930845225027441
+ttl10e,"Continuum-like 10 s pin, eager unpin (scout spec, unverified)",0/3,0/3,0,1,4,5,2.4374999999999996,3.917140235600543,1.0194657885107938
+ttl20e,"Continuum-like 20 s pin, eager unpin (scout spec, unverified)",0/3,0/3,0,0,5,5,2.4374999999999996,3.972814183389568,1.0339553604098062
+ttl10ef,"Continuum-like 10 s pin, eager unpin only if it fits",0/3,0/3,0,0,5,5,2.4374999999999996,3.904487065648492,1.0161727039882913
+ttl20ef,"Continuum-like 20 s pin, eager unpin only if it fits",0/3,0/3,0,0,5,5,2.4374999999999996,3.9775942698158993,1.0351994145627514
+progfcfs,"program-order FCFS (work-conserving, no pin)",0/3,0/3,0,0,5,5,2.4374999999999996,3.8071982477949438,0.990852542993048
+lb_cap,LB-CAP (N_lb),3/3,2/3,4,1,0,5,2.6875,3.572692831350263,0.9298207098426636
+cap_1p3,CAP 1.3 N_lb,0/3,0/3,0,3,2,5,2.4374999999999996,3.572692831350263,0.9298207098426636
+aimd_cap,AIMD-CAP (start N_lb),3/3,3/3,5,0,0,5,3.0624999999999987,3.880305451962351,1.0098792535675083
+concur_cap,CONCUR-cap (start N_lb),3/3,3/3,5,0,0,5,2.4687499999999982,3.43182087255076,0.8931577021587997

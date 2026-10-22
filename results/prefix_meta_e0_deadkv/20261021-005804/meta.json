@@ -1,0 +1,76 @@
+{
+  "experiment": "e0",
+  "argv": [
+    "experiments/prefix_meta_run.py",
+    "e0",
+    "--workers",
+    "3",
+    "--set",
+    "engine.free_kv_on_session_end=false",
+    "--tag",
+    "deadkv"
+  ],
+  "git": {
+    "commit": "7e9704ef3acc0bff066183afb02e8c0395503932",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T00:58:04",
+  "end_time": "2026-10-21T00:58:29",
+  "wall_s": 25.28703212738037,
+  "quick": false,
+  "workers": 3,
+  "overrides": [
+    "engine.free_kv_on_session_end=false"
+  ],
+  "tag": "deadkv",
+  "n_runs": 295,
+  "timing": {
+    "total_sim_s": 6648070.909740876,
+    "total_run_wall_s": 68.6439107102924,
+    "wall_s_per_10k_sim_s": 0.10325387866984703,
+    "max_run_wall_s": 0.4760768749983981
+  },
+  "lambda_miss": 0.047418947368421054,
+  "lambda_cap": 0.11558368421052631,
+  "R": 2.4375,
+  "N_star": 45,
+  "N_star_length_biased": 28
+}

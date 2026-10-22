@@ -1,0 +1,69 @@
+{
+  "experiment": "mech",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_mech_run.py",
+    "mech",
+    "--quick",
+    "--workers",
+    "3",
+    "--tag",
+    "stage1_smoke",
+    "--set",
+    "mech.quick.policies=[fcfs,lpm,peek,peek_rank,peek_lpm,ttl5,ttl10,ttl20,ttlf5,ttlf10,ttlf20,progfcfs,lb_cap,cap_1p3,aimd_cap,concur_cap]",
+    "--set",
+    "mech.quick.limit.policies=[lpm,fcfs,peek,ttl10,ttlf10,lb_cap,aimd_cap,concur_cap]"
+  ],
+  "git": {
+    "commit": "90cd25c59ccb97b02af07f286f59d4614cb12812",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T01:50:40",
+  "end_time": "2026-10-21T01:50:43",
+  "wall_s": 2.8430190086364746,
+  "quick": true,
+  "workers": 3,
+  "overrides": [
+    "mech.quick.policies=[fcfs,lpm,peek,peek_rank,peek_lpm,ttl5,ttl10,ttl20,ttlf5,ttlf10,ttlf20,progfcfs,lb_cap,cap_1p3,aimd_cap,concur_cap]",
+    "mech.quick.limit.policies=[lpm,fcfs,peek,ttl10,ttlf10,lb_cap,aimd_cap,concur_cap]"
+  ],
+  "tag": "stage1_smoke",
+  "calibration": {
+    "lambda_miss": 0.047418947368421054,
+    "lambda_cap_lpm_round1": 0.11558368421052631,
+    "R_round1": 2.4375,
+    "N_lb": 28,
+    "E_lb": 10568.686518661441,
+    "_path": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta/results/prefix_meta_e0/20261021-005706/e0_summary.json"
+  },
+  "n_runs": 34,
+  "n_limit_search_runs": 38,
+  "timing": {
+    "total_sim_s": 118000.0,
+    "total_run_wall_s": 1.3994865419226699,
+    "wall_s_per_10k_sim_s": 0.11860055440022625,
+    "max_run_wall_s": 0.10208983300253749
+  },
+  "N_lb": 28,
+  "E_lb": 10568.686518661441,
+  "cap_sweep_caps": [
+    28,
+    36
+  ],
+  "cap_1p3": 36,
+  "lam_burst": 0.09483789473684211
+}

@@ -1,0 +1,56 @@
+{
+  "experiment": "r5_curve",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_r5_run.py",
+    "curve",
+    "--quick",
+    "--tag",
+    "stage1_smoke"
+  ],
+  "git": {
+    "commit": "0dcd36f3d15ecff4be675a7024e8cf4782f72935",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    7300
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T06:18:19",
+  "end_time": "2026-10-21T06:18:20",
+  "wall_s": 1.4603371620178223,
+  "quick": true,
+  "workers": 3,
+  "overrides": [],
+  "tag": "stage1_smoke",
+  "n_runs": 18,
+  "timing": {
+    "total_sim_s": 90000.0,
+    "total_run_wall_s": 1.6771489178645425,
+    "wall_s_per_10k_sim_s": 0.18634987976272693,
+    "max_run_wall_s": 0.20200845901854336
+  },
+  "n_grid": [
+    8,
+    24,
+    100
+  ],
+  "warmup_s": 1000.0,
+  "horizon_s": 5000.0,
+  "nstar_by_mode": {
+    "ondemand_preempt": 24,
+    "ratio_reserve": 24,
+    "full_reserve": 24
+  },
+  "common_random_numbers": "same seed -> same workload stream for every mode, policy and n"
+}

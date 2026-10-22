@@ -1,0 +1,4 @@
+mode,lambda_miss,sd,n_seeds,per_seed,seeds,preemptions_per_s,recompute_tok_per_s,prefill_tok_per_s
+ondemand_preempt,0.0434,,1,[0.0434],[7303],0.0046,45.8942,7359.3949999999995
+ratio_reserve,0.043,,1,[0.043],[7303],0.0016,21.692,7354.7156
+full_reserve,0.0434,,1,[0.0434],[7303],0.0,0.0,7350.8135999999995

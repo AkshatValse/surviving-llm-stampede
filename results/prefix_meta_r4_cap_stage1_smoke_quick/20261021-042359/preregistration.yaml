@@ -1,0 +1,276 @@
+research_question: >-
+  In the prefix-cache serving simulator (src/prefixmeta), is the metastability of agentic multi-turn serving
+  explained by the open-system fluid picture dn/dt = lambda - mu(n), where mu(n) is the closed-population
+  "thrashing curve" (n sessions always present, each completed session immediately replaced by a fresh turn-1
+  session)? Concretely: does the measured FCFS-LRU curve have the predicted sharp peak near the length-biased working set
+  N_lb and a tail at the all-miss rate; does the fluid fixed-point analysis predict the critical burst size, the recovery
+  thresholds and the size-scaling of the from-empty stability limit; and does replacing LRU by an eviction rule that does
+  not produce the cyclic-reference cliff (RANDOM, MRU_IDLE) widen the safe session-cap band?
+
+# ======================================================================================================
+# PRE-REGISTRATION, round 4 (thrashing-curve / fluid-picture tests).
+# Written and committed BEFORE any round-4 code was written or run: the only commit it follows is the round-3 results
+# commit 7d61744 (HEAD of branch pilot/prefix-meta at writing, 2026-10-21 04:04 CDT). Nothing under src/, tests/,
+# experiments/ or the round-4 config exists yet.
+# Predictions R1-R6 and the experiment list are copied verbatim from the lead researcher's task text. Everything under
+# `operationalization` and `registered_design` is the implementer's choice, fixed here before any run; it adds
+# definitions only and does not change the research design. Where a verbatim phrase is ambiguous the registered reading
+# is the one that is NOT favourable to the prediction, and the more favourable reading is computed and reported as a
+# separately labelled sensitivity row (never as the headline).
+# ======================================================================================================
+preregistration:
+  date: 2026-10-21
+  baseline_commit_at_writing: 7d61744
+  theory_note: >-
+    notes/THEORY_v3_thrashing_curve.md in the MAIN checkout (written by the lead at main commit 8642a4d; it is not part of
+    this worktree's branch). Status of that note when this file was written: DRAFT, not yet math-checked.
+  fluid_picture: |-
+    Open system with Poisson(lambda) arrivals, N(t) = sessions in the system (queued, running and in a tool call).
+    Fluid limit: dn/dt = lambda - mu(n), mu(n) = long-run session completion rate of the CLOSED system in which n sessions
+    are always present and each completed session is immediately replaced by a fresh turn-1 session.
+    If mu rises to mu* = mu(n*) and falls to mu_inf := mu(n_max) < mu*: for mu_inf < lambda < mu* there are two fixed
+    points, n1 < n* < n2, n1 stable, n2 unstable, and the critical burst is b_c(lambda) = n2 - n1.
+
+  experiments_verbatim:
+    E-curve: >-
+      closed mu(n) for n in {4,8,12,16,20,22,24,26,28,30,32,34,36,40,45,50,60,80,100,150,200,300}; policies FCFS-LRU,
+      LPM-LRU, FCFS-RANDOM, FCFS-MRU_IDLE; 3 seeds; plus FCFS-LRU at k in {0.5, 2} (scale n grid by k).
+    E-burst: >-
+      open system at lambda = 2 lambda_miss, from empty, 5k s warmup, burst sizes {10,20,30,40,50,60,80,100,150} within 60 s,
+      5 seeds, horizon 60k s after burst; 'not recovered' = last-5k-s backlog >= 20 or hit < 0.8 (same reading as round 3).
+      FCFS-LRU primary; also FCFS-RANDOM for comparison (informational).
+    E-cap: >-
+      cold 300 at 2 x lambda_miss, cap N in {24, 28, 32, 36, 40}, eviction in {LRU, RANDOM, MRU_IDLE}, 3 seeds, 150k s.
+    closed_population_measurement: >-
+      warmup 5k s then measure mu(n) = completed sessions/s over >= 30k s, plus hit rate, GPU busy, mean resident KV,
+      evictions/s.
+    eviction_variants: >-
+      LRU (existing), RANDOM (uniform among evictable idle sessions; seeded generator dedicated to eviction), MRU_IDLE
+      (evict the session that became idle most recently).
+    fluid_predictor: >-
+      given a measured mu(n) curve (interpolated monotone-piecewise-linear in n), compute for lambda: fixed points n1
+      (stable), n2 (unstable), predicted critical burst b_c = n2 - n1, mu_inf := mu(n_max).
+
+  predictions:
+    R1: |-
+      FCFS-LRU closed curve peaks at n* in [20, 32] and mu(n) <= 1.2 lambda_miss for all measured n >= 1.5 n*.
+    R2: |-
+      at n = round(1.5 n*), FCFS-RANDOM mu >= 1.25 x FCFS-LRU mu (graceful degradation).
+    R3: |-
+      at lambda = 2 lambda_miss, the fluid-predicted critical burst b_c (from the FCFS-LRU curve) is within a factor of 2 of the empirical critical burst b_emp := smallest burst size in the sweep that leaves FCFS not recovered in >= 3/5 seeds.
+    R4: |-
+      for FCFS and LPM, the empirical recovery threshold from 300 cold sessions (from round-3 phase results at the 150k-s horizon; for LPM between 1.1 and 1.25 x) lies within +-15% of mu_policy(300)/lambda_miss measured here.
+    R5: |-
+      with a session cap N in {32, 36, 40} (all above N_lb = 28), FCFS-RANDOM or FCFS-MRU_IDLE recovers (>= 2/3 from cold 300 at 2 x lambda_miss, 150k-s horizon) for at least 2 of the 3 caps, while FCFS-LRU recovers 0/3 at each.
+    R6: |-
+      lambda_cap(k)/mu*(k) increases with k over k in {0.5, 1, 2} (lambda_cap(k) from round-3 escape results; mu*(k) = max of the closed FCFS-LRU curve at size k measured here with the same k-scaling as round 3).
+
+  # --------------------------------------------------------------------------------------------------
+  # What was already known to the lead / implementer when this file was written (non-blind disclosure).
+  # --------------------------------------------------------------------------------------------------
+  known_at_writing:
+    round3_capacity_table: >-
+      results/prefix_meta_mech/20261021-025902/mech_capacity_by_population.csv (seeds 0-2, horizon 30000 s, warmup 5000 s,
+      closed population WITH the cache, populations {8,16,24,28,32,40,48,64,96,150,300}) had been seen. FCFS sessions/s
+      there: 0.0863 (n=8), 0.1627 (16), 0.1694 (24), 0.1048 (28), 0.0656 (32), 0.0487 (40), 0.0472 (48), 0.0473 (64),
+      0.0475 (96), 0.0476 (150), 0.0481 (300); LPM: 0.0863, 0.1627, 0.1822 (24), 0.1241 (28), 0.0778 (32), 0.0568 (40),
+      0.0554 (48), 0.0555 (64), 0.0550 (96), 0.0555 (150), 0.0551 (300), i.e. LPM's n = 300 throughput is 1.16 x lambda_miss.
+      Hence the SHAPE of R1 (peak between 16 and 28, tail at the all-miss rate) and the R4 value mu_FCFS(300) ~ 1.01
+      lambda_miss and mu_LPM(300) ~ 1.16 lambda_miss were known; R1 and R4 are confirmations on a denser grid with fresh
+      seeds (below), not blind predictions. The grid points 4, 12, 20, 22, 26, 30, 34, 36, 45, 50, 60, 80, 100 and 200 had
+      not been run.
+    round3_phase_and_escape: >-
+      The empirical recovery thresholds of R4 (results/prefix_meta_phase/20261021-025835: FCFS recovers 3/3 up to 0.9 and
+      0/3 from 1.0 x lambda_miss; LPM recovers 3/3 up to 1.1 and 0/3 from 1.25 x; horizon 150000 s for multiples <= 1.25) and
+      the lambda_cap(k) of R6 (results/prefix_meta_escape/20261021-030235/escape_limits.csv, k = 0.25, 0.5, 1;
+      results/prefix_meta_escape_inwindow/20261021-030326/escape_limits.csv, k = 1, 2, 4) are existing round-3 results that
+      were seen; only the mu(300) / mu*(k) sides of R4 and R6 are measured here.
+    round1_round3_lru_caps: >-
+      Static caps under FCFS-LRU from a cold 300 at 2 x lambda_miss were seen: round 1 (results/prefix_meta_e1/20261021-005837)
+      caps 32 and 40 recovered 0/3 at 2x; round 3 (results/prefix_meta_mech/20261021-025902/mech_capsweep_table.csv) caps 30,
+      33, 36, 42 recovered 0/3 and cap 28 recovered 2/3 at 2x (30000-s horizon). So the "FCFS-LRU recovers 0/3 at each" clause
+      of R5 is a confirmation at the 150k-s horizon with fresh seeds.
+    round3_burst: >-
+      FCFS burst 200 at 2x lambda_miss (round 3 mech, seeds 0-4) was trapped in 5/5 seeds (LPM 2/5).
+    never_observed: >-
+      No run with RANDOM or MRU_IDLE eviction existed. No closed curve at k = 0.5 or 2 existed. No burst-size sweep and no
+      cap sweep above 30 under any eviction rule other than LRU existed. R2, the RANDOM / MRU_IDLE clause of R5, R3 (both the
+      curve and the burst sweep) and the mu*(k) side of R6 are therefore blind predictions; R1, R4 and the LRU clause of R5
+      are confirmations of observed regimes.
+    implementation_note: >-
+      Quick-mode smoke runs (1 seed, short horizons, their own seeds) will be made after this commit to test the code. They
+      are provenance-only, are not part of any prediction, and no parameter below was or will be changed after seeing them.
+      The full-size runs use fresh seeds disjoint from every seed used in rounds 1-3 (0-4, 100-119, 1000-1019, 1100-1119,
+      9000-9200).
+
+  # --------------------------------------------------------------------------------------------------
+  # Registered design: grid, seeds, horizons. A test checks configs/prefix_meta_r4.yaml against this block.
+  # --------------------------------------------------------------------------------------------------
+  registered_design:
+    lambda_miss_source: results/prefix_meta_e0/20261021-005706/e0_summary.json     # lambda_miss = 0.047418947 sessions/s
+    N_lb: 28                                                                       # floor(M / E_lb), M = 300000 tokens
+    window_s: 1000.0
+    curve:
+      n_grid: [4, 8, 12, 16, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 80, 100, 150, 200, 300]
+      policies:                                    # name -> (ordering, eviction)
+        fcfs_lru: [fcfs, lru]
+        lpm_lru: [lpm, lru]
+        fcfs_random: [fcfs, random]
+        fcfs_mru_idle: [fcfs, mru_idle]
+      seeds: [2000, 2001, 2002]
+      warmup_s: 5000.0
+      horizon_s: 35000.0                           # measurement window [5000, 35000) = 30000 s = 30 complete windows
+      pool_sessions_per_k: 30000                   # generated sessions available for replacement (a run aborts if exhausted)
+      k_scaled:
+        policy: fcfs_lru
+        sizes: [0.5, 2.0]
+        n_rounding: half_up                        # n_k = floor(k * n + 0.5)
+        engine_scaling: >-
+          scaled_engine_overrides of round 3 (src/prefixmeta/mech_runner.py): M, prefill chunk budget and max running
+          sequences multiplied by k, per_token_s / decode_attn_s / prefill_attn_s divided by k, per-iteration constants
+          unchanged.
+        lambda_miss_k_source:                      # used only to normalise figures; the k = 1 value is lambda_miss above
+          "0.5": results/prefix_meta_escape/20261021-030235/escape_calib.csv           # 0.024560
+          "2.0": results/prefix_meta_escape_inwindow/20261021-030326/escape_calib.csv  # 0.091023
+    burst:
+      lam_mult: 2.0
+      sizes: [10, 20, 30, 40, 50, 60, 80, 100, 150]
+      burst_width_s: 60.0
+      warmup_s: 5000.0                             # burst starts at t_b = 5000 s
+      after_s: 60000.0                             # horizon = t_b + after_s = 65000 s; tail window = last 5000 s
+      seeds: [2100, 2101, 2102, 2103, 2104]
+      policies: {primary: fcfs_lru, informational: fcfs_random}
+      recovered_hit_above: 0.8
+      recovered_backlog_below: 20.0
+    cap:
+      lam_mult: 2.0
+      cold_sessions: 300
+      caps: [24, 28, 32, 36, 40]
+      evictions: [lru, random, mru_idle]           # all under FCFS ordering
+      seeds: [2200, 2201, 2202]
+      horizon_s: 150000.0
+      recovered_hit_above: 0.8
+      recovered_backlog_below: 20.0
+    r4_sources:
+      phase_runs: results/prefix_meta_phase/20261021-025835/runs.csv
+      phase_policies: {FCFS: fcfs, LPM: lpm}
+      min_horizon_s: 150000.0
+    r6_sources:
+      lambda_cap: {"0.5": results/prefix_meta_escape/20261021-030235/escape_limits.csv,
+                   "1.0": results/prefix_meta_escape_inwindow/20261021-030326/escape_limits.csv,
+                   "2.0": results/prefix_meta_escape_inwindow/20261021-030326/escape_limits.csv}
+      lambda_cap_values_at_writing: {"0.5": 0.033386, "1.0": 0.114102, "2.0": 0.295825}
+
+  # --------------------------------------------------------------------------------------------------
+  # Operationalization (fixed before any run).
+  # --------------------------------------------------------------------------------------------------
+  operationalization:
+    notation: >-
+      lambda_miss = 0.047418947 sessions/s (round-1 E0, caching disabled, closed population, FCFS). "Nx" means N *
+      lambda_miss. n = number of sessions in the system (in_system: queued + running + in a tool call; sessions held at a
+      cap gate are NOT in the system). mu(n) = seed-mean of the per-run measured completion rate (below). A "run" is one
+      (policy, n or burst/cap cell, seed). The unit of replication is the SEED.
+    common_random_numbers: >-
+      All policies run with the same seed share the same pre-generated workload (turn counts, tool times, arrival times:
+      common random numbers, src/prefixmeta/workload.py). Within one seed, the cells at different n (curve), different burst
+      sizes (burst) and different caps / eviction rules (cap) therefore all draw from the same session stream (the sessions
+      of a smaller population are the first sessions of a larger one; burst sessions of different sizes share a stream).
+      CRN-coupled cells are NOT independent. No test in this file treats them as independent; every count such as "2 of the
+      3 caps" is a count over cells that share three seeds, and is reported with that caveat. RANDOM eviction uses its own
+      generator (child 4 of numpy SeedSequence(seed); the workload uses children 0-3), so it does not perturb the workload.
+    closed_population_mode: >-
+      The engine's existing closed mode (ArrivalPlan kind "closed": n sessions at t = 0, a fresh turn-1 session injected at
+      the instant a session completes its last turn, drawn in order from a pre-generated pool) is reused after tests verify it
+      against the definition (in_system == n at every engine step, every replacement is a cold turn-1 session, the number of
+      arrivals equals n plus the number of completions). Sessions start synchronised at turn 1 at t = 0, so the 5000-s
+      warm-up is shorter than the mean session lifetime n / mu(n) for the largest n (about 6000 s at n = 300 in the all-miss
+      regime); a stationarity diagnostic (mu over [5000, 20000) vs [20000, 35000)) is reported and not used in any decision.
+    measurement: >-
+      Over the complete 1000-s windows with t_start >= warmup_s (so [5000, 35000)): mu = completed sessions / 30000 s;
+      hit_rate = sum(hits) / sum(admissions); gpu_busy = mean of the window busy fractions; resident_kv_tokens = mean over
+      windows of (reserved + idle KV tokens), where "reserved" is the full end-of-turn context reserved at admission of the
+      running requests (an upper bound on the KV actually held; the engine reserves, it does not track partial growth) and
+      idle KV is the resident KV of sessions in a tool call or waiting; evictions_per_s = evicted whole sessions / 30000 s.
+      Per (policy, n): mean and sample sd over the 3 seeds.
+    eviction_variants: >-
+      Eviction is per WHOLE SESSION (as in all earlier rounds). The evictable set is the idle KV that is not hard-protected
+      (not a running request's KV, not the admitted request's own session, not pinned; the round-4 experiments use no pins).
+      LRU: least recently idle first (existing code path, unchanged). MRU_IDLE: the session whose KV became idle most
+      recently first; idle order = order of insertion into the idle table = time its last turn finished. RANDOM: uniformly
+      at random without replacement among the evictable idle sessions, one draw per victim until enough tokens are freed
+      (eviction is triggered only when an admission needs memory, as for LRU); soft-protected KV, if any, is used only after
+      the unprotected pool is exhausted. Waiting requests do not pin their session's KV under any rule (engine assumption
+      unchanged); KV of a finished session is freed at once (free_kv_on_session_end = true, unchanged).
+    fluid_curve: >-
+      The fluid predictor's curve is the piecewise-linear interpolation through (0, 0) and the seed-mean points
+      (n, mu(n)), after a pool-adjacent-violators projection of the seed-mean values onto unimodal sequences
+      (non-decreasing up to the first argmax, non-increasing after it; the peak value is preserved). It is constant beyond
+      n_max = 300, and mu_inf := that curve's value at n_max (the raw seed-mean at n_max is reported next to it). Fixed
+      points: n1 = smallest n with mu(n) >= lambda; n2 = smallest n >= n* with mu(n) <= lambda; both are exact roots of the
+      piecewise-linear curve; b_c = n2 - n1. If lambda <= mu_inf there is no n2 and b_c = +inf (globally attracting);
+      if lambda > mu* there is no fixed point and b_c is undefined (NaN); if lambda == mu* then n1 = n2 = n* and b_c = 0.
+      The raw (unprojected) piecewise-linear interpolation is computed as a sensitivity (R3-raw).
+    recovered: >-
+      Round-3 reading. A run "recovers" iff over its LAST 5000 s the hit rate (hits / admissions) is > 0.8 AND the mean backlog
+      (waiting queue + gate queue) is < 20. "Not recovered" is the negation: hit rate <= 0.8 OR backlog >= 20. (The task text
+      says "hit < 0.8"; the two differ only at a hit rate of exactly 0.8.)
+
+  # --------------------------------------------------------------------------------------------------
+  # The exact decision readings. Every prediction gets one HEADLINE row (the registered reading); sensitivity rows carry
+  # the suffix named below and never decide the verdict. Verdicts: PASS / FAIL / NOT_EVALUABLE (a required cell is missing).
+  # --------------------------------------------------------------------------------------------------
+  decision_readings:
+    R1: >-
+      n* = argmax over the 22 grid points of the seed-mean FCFS-LRU mu(n) (ties: smallest n). PASS iff 20 <= n* <= 32 AND
+      for every grid n >= 1.5 n* the seed-mean mu(n) <= 1.2 * lambda_miss. Both clauses are also reported separately. A
+      grid point is a measured n. Reported alongside (information): the argmax of each seed's own curve.
+    R2: >-
+      n_R2 = floor(1.5 n* + 0.5) with n* from R1. mu_LRU(n_R2) and mu_RANDOM(n_R2) are the seed-mean curves evaluated by
+      linear interpolation in n between the neighbouring grid points (exact if n_R2 is a grid point). PASS iff
+      mu_RANDOM(n_R2) >= 1.25 * mu_LRU(n_R2). Sensitivity R2-nearest-grid: both evaluated at the grid point nearest to n_R2
+      (ties: the larger n). Sensitivity R2-MRU: the same test for FCFS-MRU_IDLE (informational; not part of R2). The
+      per-seed ratios are reported (seeds are CRN-coupled between the two policies).
+    R3: >-
+      lambda = 2 * lambda_miss. b_c from the FCFS-LRU seed-mean curve (fluid_curve above). b_emp = smallest burst size in
+      {10,...,150} for which at least 3 of the 5 FCFS-LRU burst runs are "not recovered". PASS iff both are finite and
+      0.5 <= b_c / b_emp <= 2 (inclusive). If no size has >= 3/5 not recovered, b_emp is right-censored at "> 150": PASS is
+      impossible to establish; the verdict is FAIL if b_c < 75 (then b_c < 150/2 <= b_emp/2) and NOT_EVALUABLE otherwise.
+      If the smallest size (10) already has >= 3/5 not recovered, b_emp is left-censored at "<= 10": FAIL if b_c > 20,
+      NOT_EVALUABLE otherwise. If b_c is +inf or NaN the verdict is FAIL (when b_emp is finite). Reported alongside: n1, n2,
+      mu*, mu_inf, the full table of not-recovered counts per burst size, whether the counts are monotone in the burst size,
+      and the same for FCFS-RANDOM (informational). Sensitivity R3-raw: b_c from the raw piecewise-linear curve.
+    R4: >-
+      Empirical thresholds from the registered phase runs.csv, rows with horizon_used_s >= 150000 s for the multiples that
+      have it: for policy p, recovered count c_p(m) of 3 seeds at each multiple m. lo_p = largest multiple such that
+      c_p(m') >= 2 for every multiple m' <= m; hi_p = smallest multiple m > lo_p with c_p(m) <= 1. Empirical threshold
+      interval [lo_p, hi_p] (at writing: FCFS (0.9, 1.0], LPM (1.1, 1.25]). Predicted r_p = mu_p(300) / lambda_miss from the
+      seed-mean n = 300 point of this round's E-curve (FCFS-LRU, LPM-LRU). HEADLINE: t_p = (lo_p + hi_p) / 2 and PASS iff
+      |r_p - t_p| <= 0.15 t_p for BOTH policies. Sensitivities: R4-strict (r_p within +-15% of every point of [lo_p, hi_p], i.e.
+      0.85 hi_p <= r_p <= 1.15 lo_p) and R4-lenient (0.85 lo_p <= r_p <= 1.15 hi_p).
+    R5: >-
+      A cell (eviction rule e, cap N) "recovers" iff at least 2 of its 3 seeds are recovered (see `recovered`). Caps
+      {32, 36, 40}. HEADLINE: PASS iff (max over e in {RANDOM, MRU_IDLE} of the number of caps in {32, 36, 40} at which e
+      recovers) >= 2 AND FCFS-LRU has 0 of 3 seeds recovered at each of the caps 32, 36, 40. Sensitivity R5-union: a cap counts
+      if RANDOM or MRU_IDLE recovers there (count of such caps >= 2) with the same LRU clause. Caps 24 and 28 are reported
+      for context only. Cells are CRN-coupled (3 seeds shared by all cells).
+    R6: >-
+      rho(k) = lambda_cap(k) / mu*(k) for k in {0.5, 1, 2}, lambda_cap(k) read from the registered round-3 files (k = 0.5 from the registered-sizes escape
+      limits, k = 1 and 2 from the in-window escape limits; the k = 1 value is identical in both files), mu*(k) = maximum over
+      the k-scaled grid of the seed-mean FCFS-LRU curve (k = 1: the 22-point grid above). PASS iff rho(0.5) < rho(1) < rho(2)
+      (strict). Reported alongside: mu*(k) and its argmax n, per-seed mu*(k), rho(k) using each seed's own maximum, and the
+      caveat that lambda_cap(k) is a finite-horizon (20000 s) from-empty stability limit, not a fluid quantity.
+
+  informational_not_predictions: >-
+    Everything else produced by the report is information: the fluid b_c(lambda) curve over (mu_inf, mu*), n1/n2 at
+    other lambda, the FCFS-RANDOM burst sweep, the k-scaling collapse figure, hit rate / GPU busy / resident KV / evictions
+    per second of every curve point, the cap cells at 24 and 28, and the stationarity diagnostic. No verdict depends on them.
+
+  no_tuning_and_amendments: >-
+    No parameter above is changed after the first full run. If anything is changed after seeing results it is recorded as an
+    append-only amendment in this file, committed before the affected re-run, and the first-run results are still reported.
+    A run that raises (pool exhausted, invariant violated) aborts the experiment instead of being dropped.
+
+  run_plan: >-
+    Stage 1 (this implementation task): code + tests + quick smoke only. Full runs are made later from a clean git tree, at most
+    3 worker processes, results under results/prefix_meta_r4_curve|burst|cap/<ts>/, then the report under
+    results/prefix_meta_r4/<ts>/ with prediction_eval.csv listing R1-R6 under the headline readings first.

@@ -1,0 +1,3 @@
+alloc_mode,burst_n,n_runs,n_recovered,tail_hit_mean,tail_backlog_mean,tail_sessions_per_s,n_preempt_mean,tail_preemptions_per_turn_mean,tail_preempt_max_turn_max,n_tail_thrash,max_preempt_per_turn_run_max,n_not_recovered
+ondemand_preempt,0,5,5,0.931171158442907,0.007661115225371905,0.06708,0.0,0.0,0.0,0,0,0
+ondemand_preempt,200,5,0,0.0,802.8552051348313,0.05267999999999999,7812.8,0.15949092284331295,4.0,5,4,5

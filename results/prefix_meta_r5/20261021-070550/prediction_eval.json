@@ -1,0 +1,3348 @@
+{
+  "rows": [
+    {
+      "id": "S1",
+      "mode": "ondemand_preempt",
+      "reading": "headline",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "C0_unimodal": true,
+        "C1": true,
+        "C2": true,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false,
+        "KILL": false,
+        "mu300": 0.04611111111111107,
+        "mu_max": 0.18775555555555548,
+        "n_star": 20,
+        "mu300_over_lambda": 0.9772354338008203,
+        "mu_max_over_lambda": 3.979114303702716,
+        "max_over_mu300": 4.071807228915665,
+        "mu300_over_max": 0.24559119422416842,
+        "max_unimodal_deviation": 0.00022777777777777813,
+        "max_deviation_over_tol": 0.24136537822791404,
+        "lambda_m": 0.047185263157894675,
+        "mu_bar": [
+          0.08536666666666663,
+          0.1245444444444444,
+          0.16056666666666664,
+          0.18775555555555548,
+          0.1683888888888889,
+          0.10589999999999995,
+          0.06335555555555554,
+          0.04688888888888887,
+          0.0457555555555555,
+          0.04568888888888886,
+          0.04597777777777773,
+          0.04611111111111107
+        ],
+        "mu_se": [
+          0.0002364866294865915,
+          0.0022785093676067464,
+          0.002634247380042191,
+          0.003883313463627427,
+          0.008950612090249666,
+          0.0036579188578165995,
+          0.0021216985974147284,
+          0.00012521586299540563,
+          0.0003465883102329378,
+          0.0003637934565276709,
+          0.00039549937179017986,
+          0.00046241448992632886
+        ],
+        "grid": [
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          40,
+          60,
+          100,
+          200,
+          300
+        ],
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 3.560028005553644e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0063008416795974,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "C0=True C1=True C2=True (mu300/lambda=0.977, max/mu300=4.07, n*=20). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S1-KILL",
+      "mode": "ondemand_preempt",
+      "reading": "headline",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "KILL_FALSE",
+      "numbers": {
+        "KILL": false,
+        "mu300": 0.04611111111111107,
+        "mu_max": 0.18775555555555548,
+        "mu300_over_max": 0.24559119422416842,
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 3.560028005553644e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0063008416795974,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "KILL_FALSE: mu(300) < 0.8 max mu. no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S2",
+      "mode": "ondemand_preempt",
+      "reading": "headline",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5,
+        "n_not_recovered_noburst": 0,
+        "seeds": [
+          3100,
+          3101,
+          3102,
+          3103,
+          3104
+        ],
+        "burst_tail_hit": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "burst_tail_backlog": [
+          1758.4654338505377,
+          1950.083628690063,
+          1858.6787351043608,
+          1770.7059391802727,
+          1871.2040640770936
+        ],
+        "burst_recovered": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "noburst_tail_hit": [
+          0.9316546762589928,
+          0.9335533223338832,
+          0.9317540891144952,
+          0.934222941097183,
+          0.926502311248074
+        ],
+        "noburst_tail_backlog": [
+          0.0121580190403401,
+          0.0131734824810977,
+          0.0142924150271908,
+          0.0158965035845089,
+          0.0128056604333207
+        ],
+        "noburst_recovered": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "thrash": {
+          "burst=200": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0088458298230834,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          },
+          "burst=0": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          }
+        }
+      },
+      "notes": "not recovered: burst 5/5 (need >= 3), no-burst 0/5 (need <= 1). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S3",
+      "mode": "ondemand_preempt",
+      "reading": "headline",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_star": 20,
+        "n_recovered_capped": 3,
+        "n_recovered_nocap": 0,
+        "seeds": [
+          3200,
+          3201,
+          3202
+        ],
+        "capped_tail_hit": [
+          0.934340581756566,
+          0.9341629867523084,
+          0.93173121077606
+        ],
+        "capped_tail_backlog": [
+          0.0375457465197076,
+          0.0176799720839946,
+          0.0127443237180938
+        ],
+        "capped_tail_gate": [
+          0.0220945296998252,
+          0.0010385603075439,
+          0.0
+        ],
+        "nocap_tail_hit": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nocap_tail_backlog": [
+          4835.320368184418,
+          4525.103441449346,
+          4528.7794029939305
+        ],
+        "thrash": {
+          "capped": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          },
+          "no_cap": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0082820131662773,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "cap = n* = 20: capped recovers 3/3 (need >= 2), no-cap recovers 0/3 (need <= 0). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S4",
+      "mode": "ondemand_preempt",
+      "reading": "headline",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "d_m": 0.007422222222222233,
+        "d_m_over_lambda": 0.15729958307926495,
+        "d_m_over_mu300_fcfs": 0.16096385542168712,
+        "threshold_over_lambda": 0.05,
+        "mu300_lpm": 0.0535333333333333,
+        "mu300_fcfs": 0.04611111111111107,
+        "per_seed_diff": [
+          0.0076999999999999985,
+          0.007266666666666699,
+          0.007300000000000001
+        ],
+        "per_seed_diff_over_lambda": [
+          0.16318654352384795,
+          0.15400288523029879,
+          0.1547093204836481
+        ],
+        "lambda_m": 0.047185263157894675,
+        "thrash": {
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0063008416795974,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "lpm_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0082932157449735,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "d_m = 0.00742 = 0.157 lambda_m (threshold 0.05); this tests the allocation rule plus an IDEALISED LPM (no queue-length fallback; vLLM has no LPM policy, SGLang falls back to FCFS above 128 waiting requests); no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "ANSWER",
+      "mode": "ondemand_preempt",
+      "reading": "headline",
+      "claim": "",
+      "verdict": "persists",
+      "numbers": {
+        "S1": "PASS",
+        "KILL": "KILL_FALSE",
+        "supporting": {
+          "S2": "PASS",
+          "S3": "PASS",
+          "S4": "PASS"
+        }
+      },
+      "notes": "S2-S4 as supporting evidence: {'S2': 'PASS', 'S3': 'PASS', 'S4': 'PASS'}. SCOPE: this workload only (d = 100 decode tokens per turn, so the end-of-turn reservation excess is small); nothing here speaks to long-decode workloads. No verdict is aggregated across modes"
+    },
+    {
+      "id": "S1",
+      "mode": "ratio_reserve",
+      "reading": "headline",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "C0_unimodal": true,
+        "C1": true,
+        "C2": true,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false,
+        "KILL": false,
+        "mu300": 0.045977777777777736,
+        "mu_max": 0.18844444444444441,
+        "n_star": 20,
+        "mu300_over_lambda": 0.9717216660486967,
+        "mu_max_over_lambda": 3.982696823631201,
+        "max_over_mu300": 4.098598356694058,
+        "mu300_over_max": 0.2439858490566036,
+        "max_unimodal_deviation": 0.00026388888888889683,
+        "max_deviation_over_tol": 0.26884686935021157,
+        "lambda_m": 0.04731578947368414,
+        "mu_bar": [
+          0.08536666666666663,
+          0.1245444444444444,
+          0.1606222222222222,
+          0.18844444444444441,
+          0.16949999999999998,
+          0.10918888888888885,
+          0.06348888888888887,
+          0.046877777777777734,
+          0.04556666666666662,
+          0.04554444444444441,
+          0.045766666666666594,
+          0.045977777777777736
+        ],
+        "mu_se": [
+          0.0002364866294865915,
+          0.0022785093676067464,
+          0.0026150797263771097,
+          0.0036612249181434747,
+          0.00909727268857927,
+          0.004728414241008088,
+          0.0022331122057471183,
+          0.00010943175335330138,
+          0.00034047896546766823,
+          0.00037135055482373193,
+          0.0003464101615137754,
+          0.0004907791738968396
+        ],
+        "grid": [
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          40,
+          60,
+          100,
+          200,
+          300
+        ],
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 1.1824803708258444e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0025921387501178,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "C0=True C1=True C2=True (mu300/lambda=0.972, max/mu300=4.10, n*=20). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S1-KILL",
+      "mode": "ratio_reserve",
+      "reading": "headline",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "KILL_FALSE",
+      "numbers": {
+        "KILL": false,
+        "mu300": 0.045977777777777736,
+        "mu_max": 0.18844444444444441,
+        "mu300_over_max": 0.2439858490566036,
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 1.1824803708258444e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0025921387501178,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "KILL_FALSE: mu(300) < 0.8 max mu. no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S2",
+      "mode": "ratio_reserve",
+      "reading": "headline",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5,
+        "n_not_recovered_noburst": 0,
+        "seeds": [
+          3100,
+          3101,
+          3102,
+          3103,
+          3104
+        ],
+        "burst_tail_hit": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "burst_tail_backlog": [
+          1775.7850983235658,
+          1966.8883930252027,
+          1872.0298243186603,
+          1786.8373745081171,
+          1887.5390916776669
+        ],
+        "burst_recovered": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "noburst_tail_hit": [
+          0.9318500077796796,
+          0.934445592794921,
+          0.931279284395854,
+          0.9338731443994602,
+          0.9270753707384192
+        ],
+        "noburst_tail_backlog": [
+          0.0128219926037723,
+          0.0139847688940441,
+          0.0151632900672833,
+          0.016525355893273,
+          0.0126886115319037
+        ],
+        "noburst_recovered": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "thrash": {
+          "burst=200": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.00331468821214,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          },
+          "burst=0": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          }
+        }
+      },
+      "notes": "not recovered: burst 5/5 (need >= 3), no-burst 0/5 (need <= 1). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S3",
+      "mode": "ratio_reserve",
+      "reading": "headline",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_star": 20,
+        "n_recovered_capped": 3,
+        "n_recovered_nocap": 0,
+        "seeds": [
+          3200,
+          3201,
+          3202
+        ],
+        "capped_tail_hit": [
+          0.93463687150838,
+          0.9354417145844224,
+          0.9315845988648566
+        ],
+        "capped_tail_backlog": [
+          0.0188639651638397,
+          0.018794208578486,
+          0.0128472794460307
+        ],
+        "capped_tail_gate": [
+          0.0030067622850474,
+          0.0014709791829227,
+          0.0
+        ],
+        "nocap_tail_hit": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nocap_tail_backlog": [
+          4874.743558762662,
+          4560.873477351108,
+          4567.107677125982
+        ],
+        "thrash": {
+          "capped": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          },
+          "no_cap": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0028895768833849,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "cap = n* = 20: capped recovers 3/3 (need >= 2), no-cap recovers 0/3 (need <= 0). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S4",
+      "mode": "ratio_reserve",
+      "reading": "headline",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "d_m": 0.009088888888888869,
+        "d_m_over_lambda": 0.19208997651711765,
+        "d_m_over_mu300_fcfs": 0.19768003866602196,
+        "threshold_over_lambda": 0.05,
+        "mu300_lpm": 0.055066666666666604,
+        "mu300_fcfs": 0.045977777777777736,
+        "per_seed_diff": [
+          0.009833333333333298,
+          0.009300000000000003,
+          0.008133333333333298
+        ],
+        "per_seed_diff_over_lambda": [
+          0.20782350760103777,
+          0.1965517241379314,
+          0.17189469781238365
+        ],
+        "lambda_m": 0.04731578947368414,
+        "thrash": {
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0025921387501178,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "lpm_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0029850746268656,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "d_m = 0.00909 = 0.192 lambda_m (threshold 0.05); this tests the allocation rule plus an IDEALISED LPM (no queue-length fallback; vLLM has no LPM policy, SGLang falls back to FCFS above 128 waiting requests); no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "ANSWER",
+      "mode": "ratio_reserve",
+      "reading": "headline",
+      "claim": "",
+      "verdict": "persists",
+      "numbers": {
+        "S1": "PASS",
+        "KILL": "KILL_FALSE",
+        "supporting": {
+          "S2": "PASS",
+          "S3": "PASS",
+          "S4": "PASS"
+        }
+      },
+      "notes": "S2-S4 as supporting evidence: {'S2': 'PASS', 'S3': 'PASS', 'S4': 'PASS'}. SCOPE: this workload only (d = 100 decode tokens per turn, so the end-of-turn reservation excess is small); nothing here speaks to long-decode workloads. No verdict is aggregated across modes"
+    },
+    {
+      "id": "S1-clause-C0-unimodal",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_deviation_over_tol": 0.24136537822791404
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C1-mu300",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "mu300_over_lambda": 0.9772354338008203
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C2-peak",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_over_mu300": 4.071807228915665,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-burst",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-noburst",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_noburst": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-capped",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_capped": 3
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-nocap",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_nocap": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C0-unimodal",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_deviation_over_tol": 0.26884686935021157
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C1-mu300",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "mu300_over_lambda": 0.9717216660486967
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C2-peak",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_over_mu300": 4.098598356694058,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-burst",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-noburst",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_noburst": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-capped",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_capped": 3
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-nocap",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_nocap": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C0-unimodal@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_deviation_over_tol": 0.3019706943963417
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C1-mu300@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "mu300_over_lambda": 0.9739387359518534
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C2-peak@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_over_mu300": 4.092117988394588,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-burst@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-noburst@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_noburst": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-capped@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_capped": 3
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-nocap@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_nocap": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C0-unimodal@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_deviation_over_tol": 0.26884686935021157
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C1-mu300@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "mu300_over_lambda": 0.9717216660486967
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C2-peak@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_over_mu300": 4.101981633639443,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-burst@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-noburst@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_noburst": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-capped@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_capped": 3
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-nocap@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_nocap": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C0-unimodal@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_deviation_over_tol": 0.27356082745123583
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C1-mu300@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "FAIL",
+      "numbers": {
+        "mu300_over_lambda": 1.3660014797297773
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-clause-C2-peak@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "max_over_mu300": 4.063957682135129,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-burst@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5
+      },
+      "notes": ""
+    },
+    {
+      "id": "S2-clause-noburst@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_noburst": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-capped@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_capped": 3
+      },
+      "notes": ""
+    },
+    {
+      "id": "S3-clause-nocap@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "clause",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_recovered_nocap": 0
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-strict-unimodal",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "FAIL",
+      "numbers": {
+        "C0_unimodal": false,
+        "max_deviation_over_tol": 227777777.77777815,
+        "KILL": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-lenient-unimodal",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "C0_unimodal": true,
+        "max_deviation_over_tol": 0.04827307564558281,
+        "KILL": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-per-seed",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "mixed",
+      "numbers": {
+        "per_seed": [
+          {
+            "seed": 3000,
+            "C0": true,
+            "C1": true,
+            "C2": true,
+            "KILL": false,
+            "pass": true,
+            "n_star": 20
+          },
+          {
+            "seed": 3001,
+            "C0": true,
+            "C1": true,
+            "C2": true,
+            "KILL": false,
+            "pass": true,
+            "n_star": 20
+          },
+          {
+            "seed": 3002,
+            "C0": false,
+            "C1": true,
+            "C2": true,
+            "KILL": false,
+            "pass": false,
+            "n_star": 20
+          }
+        ],
+        "n_pass": 2,
+        "n_seeds": 3,
+        "n_kill": 0
+      },
+      "notes": "2/3 seeds pass all three clauses on their own curve (CRN-coupled, not independent)"
+    },
+    {
+      "id": "S2-hit-only",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_hit_only_burst": 5,
+        "n_not_recovered_hit_only_noburst": 0
+      },
+      "notes": "'not recovered' by hit rate <= 0.8 alone (backlog ignored)"
+    },
+    {
+      "id": "S4-all-seeds",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "per_seed_diff_over_lambda": [
+          0.16318654352384795,
+          0.15400288523029879,
+          0.1547093204836481
+        ]
+      },
+      "notes": "every paired per-seed difference >= 0.05 lambda_m"
+    },
+    {
+      "id": "S1-strict-unimodal",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "FAIL",
+      "numbers": {
+        "C0_unimodal": false,
+        "max_deviation_over_tol": 263888888.88889685,
+        "KILL": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-lenient-unimodal",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "C0_unimodal": true,
+        "max_deviation_over_tol": 0.05577184526016738,
+        "KILL": false
+      },
+      "notes": ""
+    },
+    {
+      "id": "S1-per-seed",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "mixed",
+      "numbers": {
+        "per_seed": [
+          {
+            "seed": 3000,
+            "C0": true,
+            "C1": true,
+            "C2": true,
+            "KILL": false,
+            "pass": true,
+            "n_star": 20
+          },
+          {
+            "seed": 3001,
+            "C0": true,
+            "C1": true,
+            "C2": true,
+            "KILL": false,
+            "pass": true,
+            "n_star": 20
+          },
+          {
+            "seed": 3002,
+            "C0": false,
+            "C1": true,
+            "C2": true,
+            "KILL": false,
+            "pass": false,
+            "n_star": 20
+          }
+        ],
+        "n_pass": 2,
+        "n_seeds": 3,
+        "n_kill": 0
+      },
+      "notes": "2/3 seeds pass all three clauses on their own curve (CRN-coupled, not independent)"
+    },
+    {
+      "id": "S2-hit-only",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_hit_only_burst": 5,
+        "n_not_recovered_hit_only_noburst": 0
+      },
+      "notes": "'not recovered' by hit rate <= 0.8 alone (backlog ignored)"
+    },
+    {
+      "id": "S4-all-seeds",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "per_seed_diff_over_lambda": [
+          0.20782350760103777,
+          0.1965517241379314,
+          0.17189469781238365
+        ]
+      },
+      "notes": "every paired per-seed difference >= 0.05 lambda_m"
+    },
+    {
+      "id": "S1-vs-reference",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "INFO",
+      "numbers": {
+        "ondemand_preempt": {
+          "C0_unimodal": true,
+          "C1": true,
+          "C2": true,
+          "KILL": false,
+          "mu300_over_lambda": 0.9772354338008203,
+          "max_over_mu300": 4.071807228915665,
+          "n_star": 20,
+          "mu_max_over_lambda": 3.979114303702716
+        },
+        "full_reserve": {
+          "C0_unimodal": true,
+          "C1": true,
+          "C2": true,
+          "KILL": false,
+          "mu300_over_lambda": 0.9714275858330509,
+          "max_over_mu300": 4.071084337349398,
+          "n_star": 20,
+          "mu_max_over_lambda": 3.9547636295540713
+        }
+      },
+      "notes": "the same statistics for full_reserve on the same seeds; the registration makes no prediction about it"
+    },
+    {
+      "id": "S1-vs-reference",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "INFO",
+      "numbers": {
+        "ratio_reserve": {
+          "C0_unimodal": true,
+          "C1": true,
+          "C2": true,
+          "KILL": false,
+          "mu300_over_lambda": 0.9717216660486967,
+          "max_over_mu300": 4.098598356694058,
+          "n_star": 20,
+          "mu_max_over_lambda": 3.982696823631201
+        },
+        "full_reserve": {
+          "C0_unimodal": true,
+          "C1": true,
+          "C2": true,
+          "KILL": false,
+          "mu300_over_lambda": 0.9714275858330509,
+          "max_over_mu300": 4.071084337349398,
+          "n_star": 20,
+          "mu_max_over_lambda": 3.9547636295540713
+        }
+      },
+      "notes": "the same statistics for full_reserve on the same seeds; the registration makes no prediction about it"
+    },
+    {
+      "id": "S1@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "C0_unimodal": true,
+        "C1": true,
+        "C2": true,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false,
+        "KILL": false,
+        "mu300": 0.0459555555555555,
+        "mu_max": 0.18805555555555553,
+        "n_star": 20,
+        "mu300_over_lambda": 0.9739387359518534,
+        "mu_max_over_lambda": 3.985472220982867,
+        "max_over_mu300": 4.092117988394588,
+        "mu300_over_max": 0.24437223042836015,
+        "max_unimodal_deviation": 0.00031388888888886357,
+        "max_deviation_over_tol": 0.3019706943963417,
+        "lambda_m": 0.047185263157894675,
+        "mu_bar": [
+          0.08536666666666663,
+          0.1245444444444444,
+          0.16056666666666664,
+          0.18805555555555553,
+          0.16789999999999994,
+          0.10592222222222221,
+          0.06317777777777774,
+          0.046766666666666595,
+          0.045511111111111106,
+          0.04543333333333333,
+          0.0456666666666666,
+          0.0459555555555555
+        ],
+        "mu_se": [
+          0.0002364866294865915,
+          0.0022785093676067464,
+          0.002634247380042191,
+          0.004101008608249722,
+          0.008933416251688125,
+          0.003639359596358257,
+          0.002180412238743893,
+          0.00015275252316519452,
+          0.0003888888888888778,
+          0.0004096068575814831,
+          0.000378593889720019,
+          0.0005197340250456208
+        ],
+        "grid": [
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          40,
+          60,
+          100,
+          200,
+          300
+        ],
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 3.5574106793468595e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0060446524324851,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "C0=True C1=True C2=True (mu300/lambda=0.974, max/mu300=4.09, n*=20). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S1-KILL@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "KILL_FALSE",
+      "numbers": {
+        "KILL": false,
+        "mu300": 0.0459555555555555,
+        "mu_max": 0.18805555555555553,
+        "mu300_over_max": 0.24437223042836015,
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 3.5574106793468595e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0060446524324851,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "KILL_FALSE: mu(300) < 0.8 max mu. no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S2@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5,
+        "n_not_recovered_noburst": 0,
+        "seeds": [
+          3100,
+          3101,
+          3102,
+          3103,
+          3104
+        ],
+        "burst_tail_hit": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "burst_tail_backlog": [
+          1769.256940963868,
+          1963.6955864380773,
+          1869.5489830208244,
+          1783.5056263605547,
+          1884.892233730737
+        ],
+        "burst_recovered": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "noburst_tail_hit": [
+          0.9316546762589928,
+          0.9335533223338832,
+          0.9317540891144952,
+          0.934222941097183,
+          0.926502311248074
+        ],
+        "noburst_tail_backlog": [
+          0.0121580190403401,
+          0.0131734824810977,
+          0.0142924150271908,
+          0.0158965035845089,
+          0.0128056604333207
+        ],
+        "noburst_recovered": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "thrash": {
+          "burst=200": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0098059670352597,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          },
+          "burst=0": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          }
+        }
+      },
+      "notes": "not recovered: burst 5/5 (need >= 3), no-burst 0/5 (need <= 1). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S3@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_star": 20,
+        "n_recovered_capped": 3,
+        "n_recovered_nocap": 0,
+        "seeds": [
+          3200,
+          3201,
+          3202
+        ],
+        "capped_tail_hit": [
+          0.934340581756566,
+          0.9341629867523084,
+          0.93173121077606
+        ],
+        "capped_tail_backlog": [
+          0.0375457465197076,
+          0.0176799720839946,
+          0.0127443237180938
+        ],
+        "capped_tail_gate": [
+          0.0220945296998252,
+          0.0010385603075439,
+          0.0
+        ],
+        "nocap_tail_hit": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nocap_tail_backlog": [
+          4866.466709226348,
+          4552.054925563275,
+          4557.807587695701
+        ],
+        "thrash": {
+          "capped": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          },
+          "no_cap": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0093283582089552,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "cap = n* = 20: capped recovers 3/3 (need >= 2), no-cap recovers 0/3 (need <= 0). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S4@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "d_m": 0.00781111111111113,
+        "d_m_over_lambda": 0.16554132770168167,
+        "d_m_over_mu300_fcfs": 0.16997098646034878,
+        "threshold_over_lambda": 0.05,
+        "mu300_lpm": 0.05376666666666663,
+        "mu300_fcfs": 0.0459555555555555,
+        "per_seed_diff": [
+          0.008833333333333401,
+          0.007100000000000002,
+          0.0075
+        ],
+        "per_seed_diff_over_lambda": [
+          0.18720534213774911,
+          0.1504707089635482,
+          0.15894793200374802
+        ],
+        "lambda_m": 0.047185263157894675,
+        "thrash": {
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0060446524324851,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "lpm_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0080935251798561,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "d_m = 0.00781 = 0.166 lambda_m (threshold 0.05); this tests the allocation rule plus an IDEALISED LPM (no queue-length fallback; vLLM has no LPM policy, SGLang falls back to FCFS above 128 waiting requests); no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "ANSWER@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "",
+      "verdict": "persists",
+      "numbers": {
+        "S1": "PASS",
+        "KILL": "KILL_FALSE",
+        "supporting": {
+          "S2": "PASS",
+          "S3": "PASS",
+          "S4": "PASS"
+        }
+      },
+      "notes": "S2-S4 as supporting evidence: {'S2': 'PASS', 'S3': 'PASS', 'S4': 'PASS'}. SCOPE: this workload only (d = 100 decode tokens per turn, so the end-of-turn reservation excess is small); nothing here speaks to long-decode workloads. No verdict is aggregated across modes"
+    },
+    {
+      "id": "S1@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "PASS",
+      "numbers": {
+        "C0_unimodal": true,
+        "C1": true,
+        "C2": true,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false,
+        "KILL": false,
+        "mu300": 0.045977777777777736,
+        "mu_max": 0.18859999999999996,
+        "n_star": 20,
+        "mu300_over_lambda": 0.9717216660486967,
+        "mu_max_over_lambda": 3.985984427141273,
+        "max_over_mu300": 4.101981633639443,
+        "mu300_over_max": 0.24378461175916089,
+        "max_unimodal_deviation": 0.00026388888888889683,
+        "max_deviation_over_tol": 0.26884686935021157,
+        "lambda_m": 0.04731578947368414,
+        "mu_bar": [
+          0.08536666666666663,
+          0.1245444444444444,
+          0.1606222222222222,
+          0.18859999999999996,
+          0.16897777777777775,
+          0.10662222222222222,
+          0.0635555555555555,
+          0.04691111111111107,
+          0.04556666666666662,
+          0.04554444444444441,
+          0.045766666666666594,
+          0.045977777777777736
+        ],
+        "mu_se": [
+          0.0002364866294865915,
+          0.0022785093676067464,
+          0.0026150797263771097,
+          0.0037854008056293666,
+          0.009512279263674065,
+          0.003672789500645165,
+          0.0021896501778216966,
+          0.0001351725006733034,
+          0.00034047896546766823,
+          0.00037135055482373193,
+          0.0003464101615137754,
+          0.0004907791738968396
+        ],
+        "grid": [
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          40,
+          60,
+          100,
+          200,
+          300
+        ],
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 1.1801220246173454e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0025921387501178,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "C0=True C1=True C2=True (mu300/lambda=0.972, max/mu300=4.10, n*=20). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S1-KILL@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "KILL_FALSE",
+      "numbers": {
+        "KILL": false,
+        "mu300": 0.045977777777777736,
+        "mu_max": 0.18859999999999996,
+        "mu300_over_max": 0.24378461175916089,
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 1.1801220246173454e-05,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0025921387501178,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "KILL_FALSE: mu(300) < 0.8 max mu. no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S2@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5,
+        "n_not_recovered_noburst": 0,
+        "seeds": [
+          3100,
+          3101,
+          3102,
+          3103,
+          3104
+        ],
+        "burst_tail_hit": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "burst_tail_backlog": [
+          1775.7850983235658,
+          1966.8883930252027,
+          1872.0298243186603,
+          1786.8373745081171,
+          1887.5390916776669
+        ],
+        "burst_recovered": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "noburst_tail_hit": [
+          0.9318500077796796,
+          0.934445592794921,
+          0.931279284395854,
+          0.9338731443994602,
+          0.9270753707384192
+        ],
+        "noburst_tail_backlog": [
+          0.0128219926037723,
+          0.0139847688940441,
+          0.0151632900672833,
+          0.016525355893273,
+          0.0126886115319037
+        ],
+        "noburst_recovered": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "thrash": {
+          "burst=200": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.00331468821214,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          },
+          "burst=0": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          }
+        }
+      },
+      "notes": "not recovered: burst 5/5 (need >= 3), no-burst 0/5 (need <= 1). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S3@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_star": 20,
+        "n_recovered_capped": 3,
+        "n_recovered_nocap": 0,
+        "seeds": [
+          3200,
+          3201,
+          3202
+        ],
+        "capped_tail_hit": [
+          0.93463687150838,
+          0.9354417145844224,
+          0.9315845988648566
+        ],
+        "capped_tail_backlog": [
+          0.0188639651638397,
+          0.018794208578486,
+          0.0128472794460307
+        ],
+        "capped_tail_gate": [
+          0.0030067622850474,
+          0.0014709791829227,
+          0.0
+        ],
+        "nocap_tail_hit": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nocap_tail_backlog": [
+          4874.743558762662,
+          4560.873477351108,
+          4567.107677125982
+        ],
+        "thrash": {
+          "capped": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          },
+          "no_cap": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0028895768833849,
+            "max_tail_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "cap = n* = 20: capped recovers 3/3 (need >= 2), no-cap recovers 0/3 (need <= 0). no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "S4@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "d_m": 0.00916666666666667,
+        "d_m_over_lambda": 0.19373377827215463,
+        "d_m_over_mu300_fcfs": 0.19937167713871462,
+        "threshold_over_lambda": 0.05,
+        "mu300_lpm": 0.055144444444444406,
+        "mu300_fcfs": 0.045977777777777736,
+        "per_seed_diff": [
+          0.0104,
+          0.009166666666666698,
+          0.0079333333333333
+        ],
+        "per_seed_diff_over_lambda": [
+          0.21979977753058988,
+          0.1937337782721552,
+          0.1676677790137185
+        ],
+        "lambda_m": 0.04731578947368414,
+        "thrash": {
+          "fcfs_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0025921387501178,
+            "max_preempt_per_turn_in_window": 1.0
+          },
+          "lpm_lru n=300": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0028578232912598,
+            "max_preempt_per_turn_in_window": 1.0
+          }
+        }
+      },
+      "notes": "d_m = 0.00917 = 0.194 lambda_m (threshold 0.05); this tests the allocation rule plus an IDEALISED LPM (no queue-length fallback; vLLM has no LPM policy, SGLang falls back to FCFS above 128 waiting requests); no thrash flag at the cells this rests on"
+    },
+    {
+      "id": "ANSWER@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "sensitivity",
+      "claim": "",
+      "verdict": "persists",
+      "numbers": {
+        "S1": "PASS",
+        "KILL": "KILL_FALSE",
+        "supporting": {
+          "S2": "PASS",
+          "S3": "PASS",
+          "S4": "PASS"
+        }
+      },
+      "notes": "S2-S4 as supporting evidence: {'S2': 'PASS', 'S3': 'PASS', 'S4': 'PASS'}. SCOPE: this workload only (d = 100 decode tokens per turn, so the end-of-turn reservation excess is small); nothing here speaks to long-decode workloads. No verdict is aggregated across modes"
+    },
+    {
+      "id": "S1@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "FAIL",
+      "numbers": {
+        "C0_unimodal": true,
+        "C1": false,
+        "C2": true,
+        "C2_numeric": true,
+        "argmax_at_grid_edge": false,
+        "KILL": false,
+        "mu300": 0.0462111111111111,
+        "mu_max": 0.18779999999999997,
+        "n_star": 20,
+        "mu300_over_lambda": 1.3660014797297773,
+        "mu_max_over_lambda": 5.551372207355781,
+        "max_over_mu300": 4.063957682135129,
+        "mu300_over_max": 0.2460655543722636,
+        "max_unimodal_deviation": 0.00025277777777780314,
+        "max_deviation_over_tol": 0.27356082745123583,
+        "lambda_m": 0.0338294736842105,
+        "mu_bar": [
+          0.08536666666666663,
+          0.1245444444444444,
+          0.16061111111111107,
+          0.18779999999999997,
+          0.16799999999999993,
+          0.10845555555555553,
+          0.06381111111111107,
+          0.04711111111111107,
+          0.0458222222222222,
+          0.04581111111111106,
+          0.045988888888888836,
+          0.0462111111111111
+        ],
+        "mu_se": [
+          0.0002364866294865915,
+          0.0022785093676067464,
+          0.0026188301978055375,
+          0.003536214758016653,
+          0.00845662133741629,
+          0.003546585908298048,
+          0.0020334547626158126,
+          2.939723678960289e-05,
+          0.0002888888888888887,
+          0.0003855411460643721,
+          0.0004235359678343634,
+          0.00046201384191759434
+        ],
+        "grid": [
+          8,
+          12,
+          16,
+          20,
+          24,
+          28,
+          32,
+          40,
+          60,
+          100,
+          200,
+          300
+        ],
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0006734735601496,
+            "max_preempt_per_turn_in_window": 3.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 3,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.1859570074157514,
+            "max_preempt_per_turn_in_window": 3.0
+          }
+        }
+      },
+      "notes": "C0=True C1=False C2=True (mu300/lambda=1.366, max/mu300=4.06, n*=20). THRASH-FLAG at fcfs_lru n=300"
+    },
+    {
+      "id": "S1-KILL@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "the closed FCFS-LRU curve mu(n) is unimodal with mu(300) <= 1.3 lambda_miss(mode) and max mu >= 2 x mu(300) (collapse persists). KILL-criterion for the mechanism: mu(300) >= 0.8 max mu in a mode => metastability is a full-reservation artifact in that mode.",
+      "verdict": "KILL_FALSE",
+      "numbers": {
+        "KILL": false,
+        "mu300": 0.0462111111111111,
+        "mu_max": 0.18779999999999997,
+        "mu300_over_max": 0.2460655543722636,
+        "thrash": {
+          "fcfs_lru n=20": {
+            "n_flagged": 0,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.0006734735601496,
+            "max_preempt_per_turn_in_window": 3.0
+          },
+          "fcfs_lru n=300": {
+            "n_flagged": 3,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.1859570074157514,
+            "max_preempt_per_turn_in_window": 3.0
+          }
+        }
+      },
+      "notes": "KILL_FALSE: mu(300) < 0.8 max mu. THRASH-FLAG at fcfs_lru n=300"
+    },
+    {
+      "id": "S2@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "burst 200 at 2 x lambda_miss(mode) from empty (5k s warmup) leaves FCFS not recovered (last 5 windows: backlog >= 20 or hit < 0.8, 60k s after burst) in >= 3/5 seeds, while the paired no-burst run (b=0, same seeds) is good in >= 4/5.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_not_recovered_burst": 5,
+        "n_not_recovered_noburst": 0,
+        "seeds": [
+          3100,
+          3101,
+          3102,
+          3103,
+          3104
+        ],
+        "burst_tail_hit": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "burst_tail_backlog": [
+          697.0663698337945,
+          876.119381132623,
+          845.9807698272787,
+          752.027927935205,
+          843.081576945255
+        ],
+        "burst_recovered": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "noburst_tail_hit": [
+          0.933249370277078,
+          0.9259087751794396,
+          0.9325238853503184,
+          0.9310551558752996,
+          0.9331186055323988
+        ],
+        "noburst_tail_backlog": [
+          0.007007158478169,
+          0.0059399400010806,
+          0.0081506278389613,
+          0.0081004244195399,
+          0.0091074253891085
+        ],
+        "noburst_recovered": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "thrash": {
+          "burst=200": {
+            "n_flagged": 5,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.1713942307692307,
+            "max_tail_preempt_per_turn_in_window": 4.0
+          },
+          "burst=0": {
+            "n_flagged": 0,
+            "n_runs": 5,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          }
+        }
+      },
+      "notes": "not recovered: burst 5/5 (need >= 3), no-burst 0/5 (need <= 1). THRASH-FLAG at burst=200"
+    },
+    {
+      "id": "S3@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "a static session cap at the mode's measured argmax n* recovers from cold 300 at 2 x lambda_miss(mode) in >= 2/3 seeds (150k s), and FCFS without cap recovers 0/3.",
+      "verdict": "PASS",
+      "numbers": {
+        "n_star": 20,
+        "n_recovered_capped": 3,
+        "n_recovered_nocap": 0,
+        "seeds": [
+          3200,
+          3201,
+          3202
+        ],
+        "capped_tail_hit": [
+          0.9368400079697152,
+          0.9321778447626224,
+          0.9354527938342968
+        ],
+        "capped_tail_backlog": [
+          0.0085362931265262,
+          0.0089640043185965,
+          0.0085697596573852
+        ],
+        "capped_tail_gate": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nocap_tail_hit": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nocap_tail_backlog": [
+          2218.9250020557424,
+          1845.9053639386489,
+          1879.626116272587
+        ],
+        "thrash": {
+          "capped": {
+            "n_flagged": 0,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.0,
+            "max_tail_preempt_per_turn_in_window": 0.0
+          },
+          "no_cap": {
+            "n_flagged": 3,
+            "n_runs": 3,
+            "max_tail_preemptions_per_turn": 0.1447304516755706,
+            "max_tail_preempt_per_turn_in_window": 3.0
+          }
+        }
+      },
+      "notes": "cap = n* = 20: capped recovers 3/3 (need >= 2), no-cap recovers 0/3 (need <= 0). THRASH-FLAG at no_cap"
+    },
+    {
+      "id": "S4@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "PASS",
+      "numbers": {
+        "d_m": 0.0026777777777777373,
+        "d_m_over_lambda": 0.07915517110239755,
+        "d_m_over_mu300_fcfs": 0.05794662178408185,
+        "threshold_over_lambda": 0.05,
+        "mu300_lpm": 0.048888888888888836,
+        "mu300_fcfs": 0.0462111111111111,
+        "per_seed_diff": [
+          0.002766666666666598,
+          0.002733333333333303,
+          0.002533333333333297
+        ],
+        "per_seed_diff_over_lambda": [
+          0.08178272864936431,
+          0.0807973945692526,
+          0.07488539008857534
+        ],
+        "lambda_m": 0.0338294736842105,
+        "thrash": {
+          "fcfs_lru n=300": {
+            "n_flagged": 3,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.1859570074157514,
+            "max_preempt_per_turn_in_window": 3.0
+          },
+          "lpm_lru n=300": {
+            "n_flagged": 3,
+            "n_seeds": 3,
+            "max_preemptions_per_turn": 0.1807919974303675,
+            "max_preempt_per_turn_in_window": 4.0
+          }
+        }
+      },
+      "notes": "d_m = 0.00268 = 0.079 lambda_m (threshold 0.05); this tests the allocation rule plus an IDEALISED LPM (no queue-length fallback; vLLM has no LPM policy, SGLang falls back to FCFS above 128 waiting requests); THRASH-FLAG at fcfs_lru n=300, lpm_lru n=300"
+    },
+    {
+      "id": "ANSWER@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "sensitivity",
+      "claim": "",
+      "verdict": "mixed",
+      "numbers": {
+        "S1": "FAIL",
+        "KILL": "KILL_FALSE",
+        "supporting": {
+          "S2": "PASS",
+          "S3": "PASS",
+          "S4": "PASS"
+        }
+      },
+      "notes": "S2-S4 as supporting evidence: {'S2': 'PASS', 'S3': 'PASS', 'S4': 'PASS'}. SCOPE: this workload only (d = 100 decode tokens per turn, so the end-of-turn reservation excess is small); nothing here speaks to long-decode workloads. No verdict is aggregated across modes"
+    },
+    {
+      "id": "INFO-lambda_miss",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "lambda_miss": 0.047185263157894675,
+        "sd": 0.000761853695030491,
+        "per_seed": [
+          0.0474736842105263,
+          0.0483473684210526,
+          0.0463684210526315,
+          0.0469684210526315,
+          0.0467684210526315
+        ],
+        "seeds": [
+          3300,
+          3301,
+          3302,
+          3303,
+          3304
+        ],
+        "ratio_to_round1_full_reserve": 0.995071931013033,
+        "preemptions_per_s": 0.00416210526315784,
+        "preemptions_per_turn": 0.0059513979094234,
+        "recompute_frac": 0.00597432182672558
+      },
+      "notes": "cache disabled, closed population 60, FCFS; CRN across modes (same seeds)"
+    },
+    {
+      "id": "INFO-lambda_miss",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "lambda_miss": 0.04731578947368414,
+        "sd": 0.0007752401111377582,
+        "per_seed": [
+          0.0476631578947368,
+          0.0484842105263157,
+          0.0465052631578947,
+          0.0470421052631578,
+          0.0468842105263157
+        ],
+        "seeds": [
+          3300,
+          3301,
+          3302,
+          3303,
+          3304
+        ],
+        "ratio_to_round1_full_reserve": 0.9978245504625848,
+        "preemptions_per_s": 0.0015368421052631,
+        "preemptions_per_turn": 0.002190228207783,
+        "recompute_frac": 0.0025387329058123398
+      },
+      "notes": "cache disabled, closed population 60, FCFS; CRN across modes (same seeds)"
+    },
+    {
+      "id": "INFO-lambda_miss",
+      "mode": "full_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "lambda_miss": 0.04746736842105258,
+        "sd": 0.0008162681108611662,
+        "per_seed": [
+          0.0479052631578947,
+          0.0486526315789473,
+          0.046578947368421,
+          0.0471684210526315,
+          0.0470315789473684
+        ],
+        "seeds": [
+          3300,
+          3301,
+          3302,
+          3303,
+          3304
+        ],
+        "ratio_to_round1_full_reserve": 1.0010211407910972,
+        "preemptions_per_s": 0.0,
+        "preemptions_per_turn": 0.0,
+        "recompute_frac": 0.0
+      },
+      "notes": "cache disabled, closed population 60, FCFS; CRN across modes (same seeds)"
+    },
+    {
+      "id": "INFO-reservation-excess",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "policy": "fcfs_lru",
+        "by_n": {
+          "8": {
+            "held_new_mode": 22186.86132893778,
+            "reserved_full_reserve": 22328.40367949248,
+            "excess": 141.54235055470053,
+            "excess_over_M": 0.0004718078351823351
+          },
+          "12": {
+            "held_new_mode": 36626.019866371076,
+            "reserved_full_reserve": 36837.59869717735,
+            "excess": 211.57883080627653,
+            "excess_over_M": 0.0007052627693542551
+          },
+          "16": {
+            "held_new_mode": 53190.32849897586,
+            "reserved_full_reserve": 53500.526560278784,
+            "excess": 310.1980613029227,
+            "excess_over_M": 0.001033993537676409
+          },
+          "20": {
+            "held_new_mode": 76966.92325844431,
+            "reserved_full_reserve": 77506.44984984095,
+            "excess": 539.5265913966432,
+            "excess_over_M": 0.001798421971322144
+          },
+          "24": {
+            "held_new_mode": 138304.81029497166,
+            "reserved_full_reserve": 141813.81358526202,
+            "excess": 3509.003290290362,
+            "excess_over_M": 0.011696677634301208
+          },
+          "28": {
+            "held_new_mode": 213238.20011754427,
+            "reserved_full_reserve": 218896.8451755086,
+            "excess": 5658.645057964342,
+            "excess_over_M": 0.018862150193214473
+          },
+          "32": {
+            "held_new_mode": 256322.831395195,
+            "reserved_full_reserve": 263629.23491122015,
+            "excess": 7306.403516025137,
+            "excess_over_M": 0.024354678386750456
+          },
+          "40": {
+            "held_new_mode": 277860.71865735477,
+            "reserved_full_reserve": 284130.2865213337,
+            "excess": 6269.567863978911,
+            "excess_over_M": 0.02089855954659637
+          },
+          "60": {
+            "held_new_mode": 279385.0845626451,
+            "reserved_full_reserve": 285554.34799668286,
+            "excess": 6169.263434037741,
+            "excess_over_M": 0.02056421144679247
+          },
+          "100": {
+            "held_new_mode": 279289.6967004824,
+            "reserved_full_reserve": 285490.29469006305,
+            "excess": 6200.597989580652,
+            "excess_over_M": 0.02066865996526884
+          },
+          "200": {
+            "held_new_mode": 279559.4341083141,
+            "reserved_full_reserve": 285828.30865875765,
+            "excess": 6268.87455044355,
+            "excess_over_M": 0.0208962485014785
+          },
+          "300": {
+            "held_new_mode": 280196.9551216616,
+            "reserved_full_reserve": 286551.1748754196,
+            "excess": 6354.219753757992,
+            "excess_over_M": 0.02118073251252664
+          }
+        }
+      },
+      "notes": "mean tokens reserved by full_reserve minus mean tokens held by running requests in this mode (different trajectories, indicative only); the registration's bound '<= 0.9 % of M' omitted the unprefilled remainder of in-progress prefills (amendment 2)"
+    },
+    {
+      "id": "INFO-reservation-excess",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "policy": "fcfs_lru",
+        "by_n": {
+          "8": {
+            "held_new_mode": 22186.86132893778,
+            "reserved_full_reserve": 22328.40367949248,
+            "excess": 141.54235055470053,
+            "excess_over_M": 0.0004718078351823351
+          },
+          "12": {
+            "held_new_mode": 36626.019866371076,
+            "reserved_full_reserve": 36837.59869717735,
+            "excess": 211.57883080627653,
+            "excess_over_M": 0.0007052627693542551
+          },
+          "16": {
+            "held_new_mode": 53162.882562019186,
+            "reserved_full_reserve": 53500.526560278784,
+            "excess": 337.64399825959845,
+            "excess_over_M": 0.0011254799941986615
+          },
+          "20": {
+            "held_new_mode": 76142.26330831752,
+            "reserved_full_reserve": 77506.44984984095,
+            "excess": 1364.1865415234352,
+            "excess_over_M": 0.004547288471744784
+          },
+          "24": {
+            "held_new_mode": 137339.5279132283,
+            "reserved_full_reserve": 141813.81358526202,
+            "excess": 4474.2856720337295,
+            "excess_over_M": 0.014914285573445764
+          },
+          "28": {
+            "held_new_mode": 211457.29582060906,
+            "reserved_full_reserve": 218896.8451755086,
+            "excess": 7439.549354899558,
+            "excess_over_M": 0.024798497849665195
+          },
+          "32": {
+            "held_new_mode": 256605.09648572063,
+            "reserved_full_reserve": 263629.23491122015,
+            "excess": 7024.138425499521,
+            "excess_over_M": 0.02341379475166507
+          },
+          "40": {
+            "held_new_mode": 277009.88424182945,
+            "reserved_full_reserve": 284130.2865213337,
+            "excess": 7120.402279504226,
+            "excess_over_M": 0.023734674265014084
+          },
+          "60": {
+            "held_new_mode": 278717.68888638477,
+            "reserved_full_reserve": 285554.34799668286,
+            "excess": 6836.659110298089,
+            "excess_over_M": 0.02278886370099363
+          },
+          "100": {
+            "held_new_mode": 278465.1711643372,
+            "reserved_full_reserve": 285490.29469006305,
+            "excess": 7025.123525725852,
+            "excess_over_M": 0.023417078419086173
+          },
+          "200": {
+            "held_new_mode": 279491.3714977955,
+            "reserved_full_reserve": 285828.30865875765,
+            "excess": 6336.937160962145,
+            "excess_over_M": 0.021123123869873816
+          },
+          "300": {
+            "held_new_mode": 279993.2047920313,
+            "reserved_full_reserve": 286551.1748754196,
+            "excess": 6557.970083388267,
+            "excess_over_M": 0.021859900277960892
+          }
+        }
+      },
+      "notes": "mean tokens reserved by full_reserve minus mean tokens held by running requests in this mode (different trajectories, indicative only); the registration's bound '<= 0.9 % of M' omitted the unprefilled remainder of in-progress prefills (amendment 2)"
+    },
+    {
+      "id": "INFO-stationarity",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "by_n": {
+          "8": {
+            "first_half": 0.08473333333333329,
+            "second_half": 0.08600000000000001
+          },
+          "12": {
+            "first_half": 0.12324444444444439,
+            "second_half": 0.1258444444444444
+          },
+          "16": {
+            "first_half": 0.1596444444444444,
+            "second_half": 0.16148888888888888
+          },
+          "20": {
+            "first_half": 0.18868888888888888,
+            "second_half": 0.18682222222222214
+          },
+          "24": {
+            "first_half": 0.17548888888888883,
+            "second_half": 0.16128888888888884
+          },
+          "28": {
+            "first_half": 0.1042444444444444,
+            "second_half": 0.10755555555555553
+          },
+          "32": {
+            "first_half": 0.06508888888888886,
+            "second_half": 0.06162222222222221
+          },
+          "40": {
+            "first_half": 0.04757777777777777,
+            "second_half": 0.04619999999999996
+          },
+          "60": {
+            "first_half": 0.046066666666666596,
+            "second_half": 0.0454444444444444
+          },
+          "100": {
+            "first_half": 0.04577777777777777,
+            "second_half": 0.045599999999999974
+          },
+          "200": {
+            "first_half": 0.04664444444444443,
+            "second_half": 0.04531111111111107
+          },
+          "300": {
+            "first_half": 0.047377777777777734,
+            "second_half": 0.04484444444444444
+          }
+        }
+      },
+      "notes": "mu over the two halves of the measurement window (FCFS-LRU, seed mean)"
+    },
+    {
+      "id": "INFO-stationarity",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "by_n": {
+          "8": {
+            "first_half": 0.08473333333333329,
+            "second_half": 0.08600000000000001
+          },
+          "12": {
+            "first_half": 0.12324444444444439,
+            "second_half": 0.1258444444444444
+          },
+          "16": {
+            "first_half": 0.15971111111111105,
+            "second_half": 0.1615333333333333
+          },
+          "20": {
+            "first_half": 0.18859999999999996,
+            "second_half": 0.18828888888888884
+          },
+          "24": {
+            "first_half": 0.17615555555555554,
+            "second_half": 0.16284444444444443
+          },
+          "28": {
+            "first_half": 0.10519999999999996,
+            "second_half": 0.11317777777777772
+          },
+          "32": {
+            "first_half": 0.06475555555555552,
+            "second_half": 0.0622222222222222
+          },
+          "40": {
+            "first_half": 0.04748888888888883,
+            "second_half": 0.04626666666666667
+          },
+          "60": {
+            "first_half": 0.04591111111111107,
+            "second_half": 0.0452222222222222
+          },
+          "100": {
+            "first_half": 0.0456444444444444,
+            "second_half": 0.04544444444444443
+          },
+          "200": {
+            "first_half": 0.04657777777777777,
+            "second_half": 0.04495555555555553
+          },
+          "300": {
+            "first_half": 0.04737777777777777,
+            "second_half": 0.04457777777777774
+          }
+        }
+      },
+      "notes": "mu over the two halves of the measurement window (FCFS-LRU, seed mean)"
+    },
+    {
+      "id": "INFO-stationarity",
+      "mode": "full_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "by_n": {
+          "8": {
+            "first_half": 0.08473333333333329,
+            "second_half": 0.08600000000000001
+          },
+          "12": {
+            "first_half": 0.12324444444444439,
+            "second_half": 0.1258444444444444
+          },
+          "16": {
+            "first_half": 0.1596444444444444,
+            "second_half": 0.16148888888888888
+          },
+          "20": {
+            "first_half": 0.18819999999999995,
+            "second_half": 0.1872444444444444
+          },
+          "24": {
+            "first_half": 0.1754888888888889,
+            "second_half": 0.15928888888888887
+          },
+          "28": {
+            "first_half": 0.10082222222222216,
+            "second_half": 0.11059999999999993
+          },
+          "32": {
+            "first_half": 0.0634444444444444,
+            "second_half": 0.06177777777777773
+          },
+          "40": {
+            "first_half": 0.047488888888888865,
+            "second_half": 0.0462222222222222
+          },
+          "60": {
+            "first_half": 0.04597777777777773,
+            "second_half": 0.0454666666666666
+          },
+          "100": {
+            "first_half": 0.04579999999999993,
+            "second_half": 0.04564444444444443
+          },
+          "200": {
+            "first_half": 0.04668888888888887,
+            "second_half": 0.04526666666666667
+          },
+          "300": {
+            "first_half": 0.04737777777777777,
+            "second_half": 0.0448444444444444
+          }
+        }
+      },
+      "notes": "mu over the two halves of the measurement window (FCFS-LRU, seed mean)"
+    },
+    {
+      "id": "INFO-thrash",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "curve_flagged": [],
+        "curve_max_preemptions_per_turn": 0.0084106272598648,
+        "curve_max_preempt_per_turn_in_window": 1.0,
+        "burst_tail_flagged": 0,
+        "burst_runs": 10,
+        "burst_max_tail_preemptions_per_turn": 0.0088458298230834,
+        "burst_max_run_preempt_per_turn": 1.0,
+        "cap_tail_flagged": 0,
+        "cap_runs": 6,
+        "cap_max_tail_preemptions_per_turn": 0.0082820131662773,
+        "cap_max_run_preempt_per_turn": 4.0
+      },
+      "notes": "registered label (amendment 2): preemptions per admitted turn > threshold OR max preemptions of one turn > threshold"
+    },
+    {
+      "id": "INFO-thrash",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "curve_flagged": [],
+        "curve_max_preemptions_per_turn": 0.0030413144798167,
+        "curve_max_preempt_per_turn_in_window": 1.0,
+        "burst_tail_flagged": 0,
+        "burst_runs": 10,
+        "burst_max_tail_preemptions_per_turn": 0.00331468821214,
+        "burst_max_run_preempt_per_turn": 1.0,
+        "cap_tail_flagged": 0,
+        "cap_runs": 6,
+        "cap_max_tail_preemptions_per_turn": 0.0028895768833849,
+        "cap_max_run_preempt_per_turn": 1.0
+      },
+      "notes": "registered label (amendment 2): preemptions per admitted turn > threshold OR max preemptions of one turn > threshold"
+    },
+    {
+      "id": "INFO-lambda_miss@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "lambda_miss": 0.047185263157894675,
+        "sd": 0.000761853695030491,
+        "per_seed": [
+          0.0474736842105263,
+          0.0483473684210526,
+          0.0463684210526315,
+          0.0469684210526315,
+          0.0467684210526315
+        ],
+        "seeds": [
+          3300,
+          3301,
+          3302,
+          3303,
+          3304
+        ],
+        "ratio_to_round1_full_reserve": 0.995071931013033,
+        "preemptions_per_s": 0.00416210526315784,
+        "preemptions_per_turn": 0.0059513979094234,
+        "recompute_frac": 0.00597432182672558
+      },
+      "notes": "cache disabled, closed population 60, FCFS; CRN across modes (same seeds)"
+    },
+    {
+      "id": "INFO-lambda_miss@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "lambda_miss": 0.04731578947368414,
+        "sd": 0.0007752401111377582,
+        "per_seed": [
+          0.0476631578947368,
+          0.0484842105263157,
+          0.0465052631578947,
+          0.0470421052631578,
+          0.0468842105263157
+        ],
+        "seeds": [
+          3300,
+          3301,
+          3302,
+          3303,
+          3304
+        ],
+        "ratio_to_round1_full_reserve": 0.9978245504625848,
+        "preemptions_per_s": 0.0015368421052631,
+        "preemptions_per_turn": 0.002190228207783,
+        "recompute_frac": 0.0025387329058123398
+      },
+      "notes": "cache disabled, closed population 60, FCFS; CRN across modes (same seeds)"
+    },
+    {
+      "id": "INFO-thrash@stage1_whole_victim",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "curve_flagged": [],
+        "curve_max_preemptions_per_turn": 0.0085877085877085,
+        "curve_max_preempt_per_turn_in_window": 1.0,
+        "burst_tail_flagged": 0,
+        "burst_runs": 10,
+        "burst_max_tail_preemptions_per_turn": 0.0098059670352597,
+        "burst_max_run_preempt_per_turn": 1.0,
+        "cap_tail_flagged": 0,
+        "cap_runs": 6,
+        "cap_max_tail_preemptions_per_turn": 0.0093283582089552,
+        "cap_max_run_preempt_per_turn": 4.0
+      },
+      "notes": "registered label (amendment 2): preemptions per admitted turn > threshold OR max preemptions of one turn > threshold"
+    },
+    {
+      "id": "INFO-thrash@stage1_whole_victim",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "curve_flagged": [],
+        "curve_max_preemptions_per_turn": 0.0032158170557408,
+        "curve_max_preempt_per_turn_in_window": 1.0,
+        "burst_tail_flagged": 0,
+        "burst_runs": 10,
+        "burst_max_tail_preemptions_per_turn": 0.00331468821214,
+        "burst_max_run_preempt_per_turn": 1.0,
+        "cap_tail_flagged": 0,
+        "cap_runs": 6,
+        "cap_max_tail_preemptions_per_turn": 0.0028895768833849,
+        "cap_max_run_preempt_per_turn": 1.0
+      },
+      "notes": "registered label (amendment 2): preemptions per admitted turn > threshold OR max preemptions of one turn > threshold"
+    },
+    {
+      "id": "INFO-lambda_miss@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "lambda_miss": 0.0338294736842105,
+        "sd": 0.001193481835624953,
+        "per_seed": [
+          0.0335578947368421,
+          0.0358947368421052,
+          0.0328,
+          0.0333894736842105,
+          0.0335052631578947
+        ],
+        "seeds": [
+          3300,
+          3301,
+          3302,
+          3303,
+          3304
+        ],
+        "ratio_to_round1_full_reserve": 0.7134168054008136,
+        "preemptions_per_s": 0.24687789473684205,
+        "preemptions_per_turn": 0.4918045512548164,
+        "recompute_frac": 0.41759570914845023
+      },
+      "notes": "cache disabled, closed population 60, FCFS; CRN across modes (same seeds)"
+    },
+    {
+      "id": "INFO-thrash@ondemand_first_chunk",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "",
+      "verdict": "INFO",
+      "numbers": {
+        "curve_flagged": [
+          {
+            "policy": "fcfs_lru",
+            "n": 32,
+            "seed": 3000,
+            "preemptions_per_turn": 0.0969588918983783,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 32,
+            "seed": 3001,
+            "preemptions_per_turn": 0.0908047484751098,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 32,
+            "seed": 3002,
+            "preemptions_per_turn": 0.095009950615464,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 40,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1791059048529763,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 40,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1637543453070683,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 40,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1675350511557408,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 60,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1768864450881241,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 60,
+            "seed": 3001,
+            "preemptions_per_turn": 0.186829870006642,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 60,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1793180930050801,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 100,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1978654753040456,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 100,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1861260149090736,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 100,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1850499147796445,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 200,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1927521266656832,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 200,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1795543281592229,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 200,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1815038893690579,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 300,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1820954778735354,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 300,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1859570074157514,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "fcfs_lru",
+            "n": 300,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1686183775616205,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 32,
+            "seed": 3000,
+            "preemptions_per_turn": 0.0899429675569545,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 32,
+            "seed": 3001,
+            "preemptions_per_turn": 0.0801855146865793,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 32,
+            "seed": 3002,
+            "preemptions_per_turn": 0.0844139728237265,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 40,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1635553201818262,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 40,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1576978292078131,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 40,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1631894699140401,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 60,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1821689211174638,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 60,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1964139809350885,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 60,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1666818679314119,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 100,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1792251231069404,
+            "preempt_max_turn": 4.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 100,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1729683720096765,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 100,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1764409188866981,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 200,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1825892441047628,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 200,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1718792248760703,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 200,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1778699357426058,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 300,
+            "seed": 3000,
+            "preemptions_per_turn": 0.1807919974303675,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 300,
+            "seed": 3001,
+            "preemptions_per_turn": 0.1705688596100774,
+            "preempt_max_turn": 3.0
+          },
+          {
+            "policy": "lpm_lru",
+            "n": 300,
+            "seed": 3002,
+            "preemptions_per_turn": 0.1603472714386959,
+            "preempt_max_turn": 4.0
+          }
+        ],
+        "curve_max_preemptions_per_turn": 0.1978654753040456,
+        "curve_max_preempt_per_turn_in_window": 4.0,
+        "burst_tail_flagged": 5,
+        "burst_runs": 10,
+        "burst_max_tail_preemptions_per_turn": 0.1713942307692307,
+        "burst_max_run_preempt_per_turn": 4.0,
+        "cap_tail_flagged": 3,
+        "cap_runs": 6,
+        "cap_max_tail_preemptions_per_turn": 0.1447304516755706,
+        "cap_max_run_preempt_per_turn": 4.0
+      },
+      "notes": "registered label (amendment 2): preemptions per admitted turn > threshold OR max preemptions of one turn > threshold"
+    },
+    {
+      "id": "S4-lpm128",
+      "mode": "ondemand_preempt",
+      "reading": "information",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "INFO",
+      "numbers": {
+        "d_m": -1.1111111111100636e-05,
+        "d_m_over_lambda": -0.0002354784177831084,
+        "mu300_lpm128": 0.04609999999999997,
+        "mu300_fcfs": 0.04611111111111107,
+        "per_seed_diff_over_lambda": [
+          0.0,
+          0.0,
+          -0.0007064352533493252
+        ],
+        "hit_rate_lpm128": 0.0
+      },
+      "notes": "LPM with SGLang's fall back to FCFS above 128 waiting requests, closed n = 300 (informational; not the registered S4)"
+    },
+    {
+      "id": "S4-lpm128",
+      "mode": "ratio_reserve",
+      "reading": "information",
+      "claim": "LPM mu(300) - FCFS mu(300) >= 0.05 lambda_miss in each mode (LPM's short-tool benefit persists).",
+      "verdict": "INFO",
+      "numbers": {
+        "d_m": 0.0,
+        "d_m_over_lambda": 0.0,
+        "mu300_lpm128": 0.045977777777777736,
+        "mu300_fcfs": 0.045977777777777736,
+        "per_seed_diff_over_lambda": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "hit_rate_lpm128": 0.0
+      },
+      "notes": "LPM with SGLang's fall back to FCFS above 128 waiting requests, closed n = 300 (informational; not the registered S4)"
+    }
+  ],
+  "inputs": {
+    "calib": {
+      "dir": "results/prefix_meta_r5_calib/20261021-070308",
+      "experiment": "r5_calib",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 15,
+      "start_time": "2026-10-21T07:03:08",
+      "status": "done",
+      "seeds": [
+        3300,
+        3301,
+        3302,
+        3303,
+        3304
+      ],
+      "variant": null,
+      "overrides": []
+    },
+    "curve": {
+      "dir": "results/prefix_meta_r5_curve/20261021-070313",
+      "experiment": "r5_curve",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 216,
+      "start_time": "2026-10-21T07:03:13",
+      "status": "done",
+      "seeds": [
+        3000,
+        3001,
+        3002
+      ],
+      "variant": null,
+      "overrides": []
+    },
+    "burst": {
+      "dir": "results/prefix_meta_r5_burst/20261021-070356",
+      "experiment": "r5_burst",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 20,
+      "start_time": "2026-10-21T07:03:56",
+      "status": "done",
+      "seeds": [
+        3100,
+        3101,
+        3102,
+        3103,
+        3104
+      ],
+      "variant": null,
+      "overrides": []
+    },
+    "cap": {
+      "dir": "results/prefix_meta_r5_cap/20261021-070404",
+      "experiment": "r5_cap",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 12,
+      "start_time": "2026-10-21T07:04:04",
+      "status": "done",
+      "seeds": [
+        3200,
+        3201,
+        3202
+      ],
+      "variant": null,
+      "overrides": []
+    },
+    "stage1_whole_victim:calib": {
+      "dir": "results/prefix_meta_r5_calib_stage1_whole_victim/20261021-070414",
+      "experiment": "r5_calib",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 10,
+      "start_time": "2026-10-21T07:04:14",
+      "status": "done",
+      "seeds": [
+        3300,
+        3301,
+        3302,
+        3303,
+        3304
+      ],
+      "variant": "stage1_whole_victim",
+      "overrides": []
+    },
+    "stage1_whole_victim:curve": {
+      "dir": "results/prefix_meta_r5_curve_stage1_whole_victim/20261021-070418",
+      "experiment": "r5_curve",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 144,
+      "start_time": "2026-10-21T07:04:18",
+      "status": "done",
+      "seeds": [
+        3000,
+        3001,
+        3002
+      ],
+      "variant": "stage1_whole_victim",
+      "overrides": []
+    },
+    "stage1_whole_victim:burst": {
+      "dir": "results/prefix_meta_r5_burst_stage1_whole_victim/20261021-070450",
+      "experiment": "r5_burst",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 20,
+      "start_time": "2026-10-21T07:04:50",
+      "status": "done",
+      "seeds": [
+        3100,
+        3101,
+        3102,
+        3103,
+        3104
+      ],
+      "variant": "stage1_whole_victim",
+      "overrides": []
+    },
+    "stage1_whole_victim:cap": {
+      "dir": "results/prefix_meta_r5_cap_stage1_whole_victim/20261021-070458",
+      "experiment": "r5_cap",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 12,
+      "start_time": "2026-10-21T07:04:58",
+      "status": "done",
+      "seeds": [
+        3200,
+        3201,
+        3202
+      ],
+      "variant": "stage1_whole_victim",
+      "overrides": []
+    },
+    "ondemand_first_chunk:calib": {
+      "dir": "results/prefix_meta_r5_calib_ondemand_first_chunk/20261021-070508",
+      "experiment": "r5_calib",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 5,
+      "start_time": "2026-10-21T07:05:08",
+      "status": "done",
+      "seeds": [
+        3300,
+        3301,
+        3302,
+        3303,
+        3304
+      ],
+      "variant": "ondemand_first_chunk",
+      "overrides": []
+    },
+    "ondemand_first_chunk:curve": {
+      "dir": "results/prefix_meta_r5_curve_ondemand_first_chunk/20261021-070511",
+      "experiment": "r5_curve",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 72,
+      "start_time": "2026-10-21T07:05:11",
+      "status": "done",
+      "seeds": [
+        3000,
+        3001,
+        3002
+      ],
+      "variant": "ondemand_first_chunk",
+      "overrides": []
+    },
+    "ondemand_first_chunk:burst": {
+      "dir": "results/prefix_meta_r5_burst_ondemand_first_chunk/20261021-070528",
+      "experiment": "r5_burst",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 10,
+      "start_time": "2026-10-21T07:05:28",
+      "status": "done",
+      "seeds": [
+        3100,
+        3101,
+        3102,
+        3103,
+        3104
+      ],
+      "variant": "ondemand_first_chunk",
+      "overrides": []
+    },
+    "ondemand_first_chunk:cap": {
+      "dir": "results/prefix_meta_r5_cap_ondemand_first_chunk/20261021-070532",
+      "experiment": "r5_cap",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 6,
+      "start_time": "2026-10-21T07:05:32",
+      "status": "done",
+      "seeds": [
+        3200,
+        3201,
+        3202
+      ],
+      "variant": "ondemand_first_chunk",
+      "overrides": []
+    },
+    "lpm128:curve": {
+      "dir": "results/prefix_meta_r5_curve_lpm128/20261021-070537",
+      "experiment": "r5_curve",
+      "git_commit": "12459fccaf1c37ebfc4c70eb88ecad59bab4929d",
+      "git_dirty": false,
+      "quick": false,
+      "n_runs": 6,
+      "start_time": "2026-10-21T07:05:37",
+      "status": "done",
+      "seeds": [
+        3000,
+        3001,
+        3002
+      ],
+      "variant": "lpm128",
+      "overrides": []
+    }
+  },
+  "flags": [],
+  "lambda_miss": {
+    "ondemand_preempt": 0.047185263157894675,
+    "ratio_reserve": 0.04731578947368414,
+    "full_reserve": 0.04746736842105258
+  },
+  "evaluation": {
+    "round1_lambda_miss_full_reserve": 0.047418947,
+    "unimodal": {
+      "se_mult": 2.0,
+      "rel_tol_registered": 0.02,
+      "rel_tol_lenient": 0.1,
+      "abs_tol_strict": 1e-12
+    },
+    "S1": {
+      "c1_mult": 1.3,
+      "c2_mult": 2.0,
+      "kill_frac": 0.8
+    },
+    "S2": {
+      "min_not_recovered_burst": 3,
+      "max_not_recovered_nobust": 1
+    },
+    "S3": {
+      "min_recovered_capped": 2,
+      "max_recovered_nocap": 0,
+      "max_nstar_exclusive": 100
+    },
+    "S4": {
+      "min_gap_over_lambda": 0.05
+    }
+  },
+  "thrash": {
+    "preemptions_per_turn_above": 0.05,
+    "max_per_turn_above": 10
+  }
+}

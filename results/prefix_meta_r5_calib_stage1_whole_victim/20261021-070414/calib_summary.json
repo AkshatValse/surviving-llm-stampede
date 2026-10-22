@@ -1,0 +1,9 @@
+{
+  "lambda_miss": {
+    "ondemand_preempt": 0.04718526315789474,
+    "ratio_reserve": 0.047315789473684214
+  },
+  "warmup_s": 5000.0,
+  "horizon_s": 100000.0,
+  "population": 60
+}

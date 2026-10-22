@@ -1,0 +1,7 @@
+variant,policy,largest_lam_mult_all_seeds_recovered
+skip_ahead=0,fcfs,
+skip_ahead=0,lpm,
+skip_ahead=0,lpm128,
+skip_ahead=1,fcfs,
+skip_ahead=1,lpm,
+skip_ahead=1,lpm128,

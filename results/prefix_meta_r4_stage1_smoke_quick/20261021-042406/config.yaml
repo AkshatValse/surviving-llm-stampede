@@ -1,0 +1,98 @@
+research_question: >-
+  In the prefix-cache serving simulator (src/prefixmeta), is the metastability of agentic multi-turn serving
+  explained by the open-system fluid picture dn/dt = lambda - mu(n), where mu(n) is the closed-population
+  "thrashing curve" (n sessions always present, each completed session immediately replaced by a fresh turn-1
+  session)? Concretely: does the measured FCFS-LRU curve have the predicted sharp peak near the length-biased working set
+  N_lb and a tail at the all-miss rate; does the fluid fixed-point analysis predict the critical burst size, the recovery
+  thresholds and the size-scaling of the from-empty stability limit; and does replacing LRU by an eviction rule that does
+  not produce the cyclic-reference cliff (RANDOM, MRU_IDLE) widen the safe session-cap band?
+
+assumptions_note: >-
+  Round 4 of the prefix-cache metastability pilot. Engine, workload and metric constants are inherited from `base_config`
+  (ALL are assumptions, none a measurement). Predictions R1-R6, the registered grid / seeds / horizons and the exact
+  decision readings are in `preregistration_file`, committed (db30e76) before any round-4 code or run; a test checks that the
+  `curve`, `burst` and `cap` sections below equal the registered design. `*.quick` blocks are smoke-test sizes with their own
+  seeds; they are never used for a prediction.
+
+base_config: configs/prefix_meta.yaml
+preregistration_file: configs/prefix_meta_r4_prereg.yaml
+
+calibration:
+  # base-workload lambda_miss (round-1 E0 closed-population procedure, caching disabled). lambda_miss = 0.047418947.
+  e0_summary: results/prefix_meta_e0/20261021-005706/e0_summary.json
+
+metrics:
+  track_memory: true               # window columns reserved_mean / idle_mean (tokens) -> mean resident KV
+
+# ---------------------------------------------------------------- policies (merged with the base config's)
+# kind = admission order; eviction = which idle session's KV goes first when an admission needs memory (eviction.py).
+policies:
+  fcfs_lru:       {kind: fcfs, eviction: lru}
+  lpm_lru:        {kind: lpm,  eviction: lru}
+  fcfs_random:    {kind: fcfs, eviction: random}
+  fcfs_mru_idle:  {kind: fcfs, eviction: mru_idle}
+
+labels:
+  fcfs_lru: "FCFS-LRU"
+  lpm_lru: "LPM-LRU"
+  fcfs_random: "FCFS-RANDOM"
+  fcfs_mru_idle: "FCFS-MRU_IDLE"
+
+# ---------------------------------------------------------------- E-curve: closed-population thrashing curve mu(n)
+# n sessions always present; a completed session is replaced at once by a fresh turn-1 session. mu = completed sessions / s
+# over the complete windows with t_start >= warmup_s (so [5000, 35000) = 30000 s).
+curve:
+  policies: [fcfs_lru, lpm_lru, fcfs_random, fcfs_mru_idle]
+  n_grid: [4, 8, 12, 16, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 80, 100, 150, 200, 300]
+  seeds: [2000, 2001, 2002]
+  warmup_s: 5000.0
+  horizon_s: 35000.0
+  pool_sessions_per_k: 30000        # generated sessions available for replacement; the run aborts if they run out
+  k_scaled:                         # FCFS-LRU at size k: M, chunk budget, max_running x k; per-token costs / k (round-3 scaling)
+    policy: fcfs_lru
+    sizes: [0.5, 2.0]
+    n_rounding: half_up             # n_k = floor(k n + 0.5)
+  quick:
+    n_grid: [8, 24, 40]
+    seeds: [7000]
+    warmup_s: 1000.0
+    horizon_s: 4000.0
+    pool_sessions_per_k: 3000
+    k_scaled: {policy: fcfs_lru, sizes: [0.5], n_rounding: half_up}
+
+# ---------------------------------------------------------------- E-burst: critical burst at lambda = 2 lambda_miss
+burst:
+  lam_mult: 2.0
+  sizes: [10, 20, 30, 40, 50, 60, 80, 100, 150]
+  burst_width_s: 60.0
+  warmup_s: 5000.0                  # burst starts at t_b = warmup_s
+  after_s: 60000.0                  # horizon = t_b + after_s
+  seeds: [2100, 2101, 2102, 2103, 2104]
+  policies: {primary: fcfs_lru, informational: fcfs_random}
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  quick:
+    sizes: [20, 100]
+    seeds: [7100]
+    warmup_s: 1000.0
+    after_s: 3000.0
+
+# ---------------------------------------------------------------- E-cap: static session cap x eviction rule
+cap:
+  lam_mult: 2.0
+  cold_sessions: 300
+  caps: [24, 28, 32, 36, 40]
+  evictions: [lru, random, mru_idle]      # all under FCFS ordering; policy names in `eviction_policy`
+  eviction_policy: {lru: fcfs_lru, random: fcfs_random, mru_idle: fcfs_mru_idle}
+  seeds: [2200, 2201, 2202]
+  horizon_s: 150000.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  quick:
+    caps: [28, 36]
+    seeds: [7200]
+    horizon_s: 6000.0
+
+# ---------------------------------------------------------------- report (figure options only; sources are registered in the prereg)
+report:
+  fluid_lambda_points: 200          # points of the b_c(lambda) curve over (mu_inf, mu*)

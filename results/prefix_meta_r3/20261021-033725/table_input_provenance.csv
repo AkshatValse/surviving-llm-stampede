@@ -1,0 +1,6 @@
+input,dir,git_commit,git_dirty,start_time,end_time,wall_s,n_runs,n_limit_search_runs,quick,workers,hostname,hardware
+phase,results/prefix_meta_phase/20261021-025835,47f2859855df0fd394ca91191952b95ab8cf9ce5,False,2026-10-21T02:58:35,2026-10-21T02:59:01,25.865979194641113,108.0,,False,3,Akshats-MacBook-Pro.local,Apple M3 Max CPU (simulation)
+mech,results/prefix_meta_mech/20261021-025902,47f2859855df0fd394ca91191952b95ab8cf9ce5,False,2026-10-21T02:59:02,2026-10-21T03:02:35,212.8241629600525,874.0,800.0,False,3,Akshats-MacBook-Pro.local,Apple M3 Max CPU (simulation)
+escape,results/prefix_meta_escape/20261021-030235,47f2859855df0fd394ca91191952b95ab8cf9ce5,False,2026-10-21T03:02:35,2026-10-21T03:03:25,49.32571196556091,200.0,110.0,False,3,Akshats-MacBook-Pro.local,Apple M3 Max CPU (simulation)
+escape_inwindow,results/prefix_meta_escape_inwindow/20261021-030326,47f2859855df0fd394ca91191952b95ab8cf9ce5,False,2026-10-21T03:03:26,2026-10-21T03:29:45,1579.669768333435,300.0,150.0,False,3,Akshats-MacBook-Pro.local,Apple M3 Max CPU (simulation)
+robust,results/prefix_meta_robust/20261021-032946,47f2859855df0fd394ca91191952b95ab8cf9ce5,False,2026-10-21T03:29:46,2026-10-21T03:31:01,75.06844305992126,,,False,3,Akshats-MacBook-Pro.local,Apple M3 Max CPU (simulation)

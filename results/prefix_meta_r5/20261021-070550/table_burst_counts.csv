@@ -1,0 +1,5 @@
+alloc_mode,burst_n,n_runs,n_recovered,tail_hit_mean,tail_backlog_mean,tail_sessions_per_s,n_preempt_mean,tail_preemptions_per_turn_mean,tail_preempt_max_turn_max,n_tail_thrash,max_preempt_per_turn_run_max,n_not_recovered
+ondemand_preempt,0,5,5,0.9315374680105256,0.013665216113291639,0.09295999999999996,0.0,0.0,0.0,0,0,0
+ondemand_preempt,200,5,0,0.0,1841.8275601804658,0.06564,458.6,0.0073376742042286,1.0,0,1,5
+ratio_reserve,0,5,5,0.9317046800216667,0.01423680379805528,0.09343999999999998,0.0,0.0,0.0,0,0,0
+ratio_reserve,200,5,0,0.0,1857.8159563706424,0.06523999999999999,139.8,0.00245403615400292,1.0,0,1,5

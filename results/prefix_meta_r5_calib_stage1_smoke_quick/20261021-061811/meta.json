@@ -1,0 +1,49 @@
+{
+  "experiment": "r5_calib",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_r5_run.py",
+    "calib",
+    "--quick",
+    "--tag",
+    "stage1_smoke"
+  ],
+  "git": {
+    "commit": "0dcd36f3d15ecff4be675a7024e8cf4782f72935",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    7303
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T06:18:11",
+  "end_time": "2026-10-21T06:18:12",
+  "wall_s": 0.8857131004333496,
+  "quick": true,
+  "workers": 3,
+  "overrides": [],
+  "tag": "stage1_smoke",
+  "n_runs": 3,
+  "timing": {
+    "total_sim_s": 18000.0,
+    "total_run_wall_s": 0.12340624997159466,
+    "wall_s_per_10k_sim_s": 0.06855902776199703,
+    "max_run_wall_s": 0.045623916026670486
+  },
+  "lambda_miss": {
+    "ondemand_preempt": 0.0434,
+    "ratio_reserve": 0.043,
+    "full_reserve": 0.0434
+  },
+  "common_random_numbers": "same seed -> same workload for every mode"
+}

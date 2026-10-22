@@ -1,0 +1,56 @@
+{
+  "experiment": "r4_cap",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_r4_run.py",
+    "cap",
+    "--quick",
+    "--workers",
+    "3",
+    "--tag",
+    "stage1_smoke"
+  ],
+  "git": {
+    "commit": "8b89e4d1a86bf0cc2eb7e8a354ef8b616227a145",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    7200
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T04:23:59",
+  "end_time": "2026-10-21T04:24:00",
+  "wall_s": 0.9777841567993164,
+  "quick": true,
+  "workers": 3,
+  "overrides": [],
+  "tag": "stage1_smoke",
+  "calibration": {
+    "lambda_miss": 0.047418947368421054,
+    "lambda_cap_lpm_round1": 0.11558368421052631,
+    "R_round1": 2.4375,
+    "N_lb": 28,
+    "E_lb": 10568.686518661441,
+    "_path": "/Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta/results/prefix_meta_e0/20261021-005706/e0_summary.json"
+  },
+  "n_runs": 6,
+  "timing": {
+    "total_sim_s": 36000.0,
+    "total_run_wall_s": 0.36417150107445195,
+    "wall_s_per_10k_sim_s": 0.10115875029845887,
+    "max_run_wall_s": 0.07809308404102921
+  },
+  "lambda_miss": 0.047418947368421054,
+  "lam": 0.09483789473684211,
+  "common_random_numbers": "same seed -> same workload for every cap and eviction rule"
+}

@@ -1,0 +1,336 @@
+{
+  "quick": false,
+  "overrides": [
+    "engine.prefill_attn_ctx=mid"
+  ],
+  "lambda_cap_interpretation": "lambda_cap is a finite-horizon (cap_horizon_s) STABILITY / lifetime boundary for pure LPM from an empty start, not a mean-field memory-time capacity: below it the good state uses well under M and an escape is a fluctuation event (see cap_hazard: P(escape by H) vs lambda with Wilson CIs); it depends on seeds, horizon, chunk size and free_kv_on_session_end.",
+  "lambda_miss": 0.05190315789473684,
+  "lambda_miss_per_seed": [
+    0.05425263157894737,
+    0.05154736842105263,
+    0.05142105263157895,
+    0.04981052631578947,
+    0.05248421052631579
+  ],
+  "lambda_miss_se": 0.0007278656233474491,
+  "lambda_miss_turns_based": 0.05177036875560637,
+  "lambda_miss_by_population": {
+    "60": 0.05190315789473684,
+    "30": 0.0515642105263158,
+    "120": 0.05192
+  },
+  "miss_busy_frac_mean": 1.0,
+  "lambda_cap": 0.11678210526315788,
+  "lambda_cap_bracket": [
+    0.11678210526315788,
+    0.1184040789473684
+  ],
+  "lambda_cap_unbounded_in_search": false,
+  "R": 2.25,
+  "R_bracket": [
+    2.25,
+    2.28125
+  ],
+  "cap_search_frac_stable_by_lambda": [
+    {
+      "lam_mult": 1.0,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 1.5,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.0,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.25,
+      "frac_stable": 1.0,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.28125,
+      "frac_stable": 0.8,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.3125,
+      "frac_stable": 0.8,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.375,
+      "frac_stable": 0.8,
+      "n_seeds": 5
+    },
+    {
+      "lam_mult": 2.5,
+      "frac_stable": 0.6,
+      "n_seeds": 5
+    }
+  ],
+  "cap_hazard": [
+    {
+      "policy": "lpm",
+      "lam_mult": 1.5,
+      "lam": 0.07785473684210525,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.0,
+      "lam": 0.10380631578947368,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.25,
+      "lam": 0.11678210526315788,
+      "n_runs": 20,
+      "n_escaped": 1,
+      "frac_escaped": 0.05,
+      "frac_escaped_ci95_lo": 0.008881219432873136,
+      "frac_escaped_ci95_hi": 0.23613589351256675,
+      "escape_time_median_s": 13600.75889380988,
+      "escape_time_min_s": 13600.75889380988,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.5,
+      "lam": 0.1297578947368421,
+      "n_runs": 20,
+      "n_escaped": 4,
+      "frac_escaped": 0.2,
+      "frac_escaped_ci95_lo": 0.0806563532712,
+      "frac_escaped_ci95_hi": 0.41602172202575993,
+      "escape_time_median_s": 12022.652471607591,
+      "escape_time_min_s": 4951.301736950415,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 2.75,
+      "lam": 0.14273368421052632,
+      "n_runs": 20,
+      "n_escaped": 8,
+      "frac_escaped": 0.4,
+      "frac_escaped_ci95_lo": 0.21880396741419272,
+      "frac_escaped_ci95_hi": 0.613422057684794,
+      "escape_time_median_s": 6253.341872381581,
+      "escape_time_min_s": 3269.8782163463675,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "lpm",
+      "lam_mult": 3.0,
+      "lam": 0.1557094736842105,
+      "n_runs": 20,
+      "n_escaped": 16,
+      "frac_escaped": 0.8,
+      "frac_escaped_ci95_lo": 0.5839782779742401,
+      "frac_escaped_ci95_hi": 0.9193436467288,
+      "escape_time_median_s": 8817.590850222905,
+      "escape_time_min_s": 2685.5139287786897,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 1.5,
+      "lam": 0.07785473684210525,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.0,
+      "lam": 0.10380631578947368,
+      "n_runs": 20,
+      "n_escaped": 0,
+      "frac_escaped": 0.0,
+      "frac_escaped_ci95_lo": 0.0,
+      "frac_escaped_ci95_hi": 0.16113012549493322,
+      "escape_time_median_s": null,
+      "escape_time_min_s": null,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.25,
+      "lam": 0.11678210526315788,
+      "n_runs": 20,
+      "n_escaped": 1,
+      "frac_escaped": 0.05,
+      "frac_escaped_ci95_lo": 0.008881219432873136,
+      "frac_escaped_ci95_hi": 0.23613589351256675,
+      "escape_time_median_s": 12746.74235550769,
+      "escape_time_min_s": 12746.74235550769,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.5,
+      "lam": 0.1297578947368421,
+      "n_runs": 20,
+      "n_escaped": 7,
+      "frac_escaped": 0.35,
+      "frac_escaped_ci95_lo": 0.18118954786794464,
+      "frac_escaped_ci95_hi": 0.5671494897805354,
+      "escape_time_median_s": 7937.729500687529,
+      "escape_time_min_s": 4711.573314497763,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 2.75,
+      "lam": 0.14273368421052632,
+      "n_runs": 20,
+      "n_escaped": 10,
+      "frac_escaped": 0.5,
+      "frac_escaped_ci95_lo": 0.2992949144298199,
+      "frac_escaped_ci95_hi": 0.7007050855701801,
+      "escape_time_median_s": 5986.335655910089,
+      "escape_time_min_s": 3112.2684737721747,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    {
+      "policy": "fcfs",
+      "lam_mult": 3.0,
+      "lam": 0.1557094736842105,
+      "n_runs": 20,
+      "n_escaped": 18,
+      "frac_escaped": 0.9,
+      "frac_escaped_ci95_lo": 0.6989617935882066,
+      "frac_escaped_ci95_hi": 0.9721341060158468,
+      "escape_time_median_s": 7984.348020000827,
+      "escape_time_min_s": 2376.9347243324955,
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    }
+  ],
+  "session_cap_N_star": 45,
+  "session_cap_N_star_length_biased": 28,
+  "length_biased_mean_context_tokens": 10568.686518661441,
+  "mean_turns_effective": 14.761055049953429,
+  "timing": {
+    "total_sim_s": 6373891.614619478,
+    "total_run_wall_s": 67.8377632474876,
+    "wall_s_per_10k_sim_s": 0.10643068214698145,
+    "max_run_wall_s": 0.5291310829925351
+  },
+  "config_e0": {
+    "miss_closed_population": 60,
+    "miss_population_check": [
+      30,
+      120
+    ],
+    "miss_pool_sessions": 60000,
+    "miss_horizon_s": 100000.0,
+    "miss_warmup_s": 5000.0,
+    "miss_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "cap_horizon_s": 20000.0,
+    "cap_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "cap_bracket_mults": [
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0,
+      6.0,
+      8.0,
+      12.0,
+      16.0
+    ],
+    "cap_rel_tol": 0.02,
+    "cap_max_bisect_steps": 10,
+    "cap_hazard": {
+      "policies": [
+        "lpm",
+        "fcfs"
+      ],
+      "mults": [
+        1.5,
+        2.0,
+        2.25,
+        2.5,
+        2.75,
+        3.0
+      ],
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119
+      ],
+      "horizon_s": 20000.0,
+      "escape_queue_above": 128
+    },
+    "stable_final_queue_below": 50,
+    "stable_trend_window_s": 5000.0,
+    "stable_trend_max_rise": 10.0,
+    "unstable_queue_stop": 3000
+  }
+}

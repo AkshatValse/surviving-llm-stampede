@@ -1,0 +1,7 @@
+variant,policy,lam_mult,n_runs,n_recovered,n_recovered_incl_gate,tail_hit_mean,tail_queue_mean,tail_gate_mean,tail_busy_mean,tail_sessions_per_s
+skip_ahead=0,fcfs,2.0,2,0,0,0.0,387.50531629463796,0.0,1.0,0.064
+skip_ahead=0,lpm,2.0,2,0,0,0.14957308230041416,366.00093650878034,0.0,1.0,0.0696
+skip_ahead=0,lpm128,2.0,2,0,0,0.0,387.50531629463796,0.0,1.0,0.064
+skip_ahead=1,fcfs,2.0,2,0,0,0.0,377.44913707275623,0.0,1.0,0.06559999999999999
+skip_ahead=1,lpm,2.0,2,0,0,0.03218203877573897,375.45079615705106,0.0,1.0,0.066
+skip_ahead=1,lpm128,2.0,2,0,0,0.0,377.44913707275623,0.0,1.0,0.06559999999999999

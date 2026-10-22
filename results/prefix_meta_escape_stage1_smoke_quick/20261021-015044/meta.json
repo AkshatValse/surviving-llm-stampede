@@ -1,0 +1,79 @@
+{
+  "experiment": "escape",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_mech_run.py",
+    "escape",
+    "--quick",
+    "--workers",
+    "3",
+    "--tag",
+    "stage1_smoke",
+    "--set",
+    "escape.quick.sizes=[0.25,0.5,1.0]",
+    "--set",
+    "escape.quick.calib.seeds=[0,1,2]",
+    "--set",
+    "escape.quick.calib.horizon_s=30000",
+    "--set",
+    "escape.quick.calib.warmup_s=3000",
+    "--set",
+    "escape.quick.calib.pool_sessions=20000",
+    "--set",
+    "escape.quick.horizon_s=20000",
+    "--set",
+    "escape.quick.lam_mults=[2.25]"
+  ],
+  "git": {
+    "commit": "90cd25c59ccb97b02af07f286f59d4614cb12812",
+    "dirty": false,
+    "branch": "pilot/prefix-meta"
+  },
+  "seeds": [
+    1000,
+    1001,
+    1002
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T01:50:44",
+  "end_time": "2026-10-21T01:50:45",
+  "wall_s": 1.6856489181518555,
+  "quick": true,
+  "workers": 3,
+  "overrides": [
+    "escape.quick.sizes=[0.25,0.5,1.0]",
+    "escape.quick.calib.seeds=[0,1,2]",
+    "escape.quick.calib.horizon_s=30000",
+    "escape.quick.calib.warmup_s=3000",
+    "escape.quick.calib.pool_sessions=20000",
+    "escape.quick.horizon_s=20000",
+    "escape.quick.lam_mults=[2.25]"
+  ],
+  "tag": "stage1_smoke",
+  "n_runs": 9,
+  "timing": {
+    "total_sim_s": 118255.74578696638,
+    "total_run_wall_s": 1.1313316249870695,
+    "wall_s_per_10k_sim_s": 0.09566821615798055,
+    "max_run_wall_s": 0.2885355839971453
+  },
+  "lambda_miss_by_k": {
+    "0.25": 0.01285185185185185,
+    "0.5": 0.02408641975308642,
+    "1.0": 0.047074074074074074
+  },
+  "queue_thresholds": {
+    "0.25": 28,
+    "0.5": 56,
+    "1.0": 113
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "verdict": "REFRAME",
+  "items": {
+    "R_ge_2": {
+      "pass": true,
+      "R": 2.4375
+    },
+    "recovery_split_at_lam_ge_1.5": {
+      "pass": false,
+      "lam_mults_satisfying": [],
+      "note": "LPM 3/3, FCFS 0/3, LPM-128 <=1/3 recovered (E1 base variant)"
+    },
+    "burst_traps_lpm128": {
+      "pass": true,
+      "n_trapped": 5,
+      "n_runs": 5
+    },
+    "burst_lpm_returns": {
+      "pass": false,
+      "n_hit_returned": 0,
+      "n_runs": 5
+    },
+    "aging30_keeps_70pct_of_lpm_lambda": {
+      "pass": false,
+      "lpm_largest_lam_mult": null,
+      "aging30_largest_lam_mult": null
+    }
+  },
+  "kill_conditions": {
+    "R_below_1.5": false,
+    "lpm128_never_trapped": false
+  },
+  "lpm128_trap_evidence": {
+    "e2_spec_criterion_n_trapped": 5,
+    "e2_n_runs": 5,
+    "e1_attributable_lam_mults": [],
+    "e1_lpm128_any_nonrecovery_not_used": true
+  },
+  "reframe_condition": {
+    "R_ge_2_and_LPM_never_recovers_3of3_at_lam_ge_1.5": true
+  },
+  "inputs": {
+    "e0": "results/prefix_meta_e0/20261021-005706/e0_summary.json",
+    "e1": "results/prefix_meta_e1/20261021-005837",
+    "e2": "results/prefix_meta_e2/20261021-010106",
+    "e3": "results/prefix_meta_e3/20261021-010155",
+    "e4": "results/prefix_meta_e4/20261021-010225",
+    "e0_sensitivity": [
+      "results/prefix_meta_e0_mid/20261021-005738",
+      "results/prefix_meta_e0_deadkv/20261021-005804"
+    ]
+  }
+}
