@@ -173,7 +173,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     a, inp = cfg["analysis"], cfg["inputs"]
     tp = load_params(ANALYSIS).trap_v2
     tol, slope_frac = float(tp["rate_tolerance"]), float(tp["slope_frac"])
-    bdir, cdir, edir = Path(inp["burst_info_dir"]), Path(inp["curve_dir"]), Path(inp["e0_dir"])
+    bdir, cdir, edir = (p if p.is_absolute() else REPO / p for p in (Path(inp["burst_info_dir"]), Path(inp["curve_dir"]), Path(inp["e0_dir"])))
     files = {"burst_windows": bdir / "windows.csv", "burst_runs": bdir / "runs.csv", "burst_meta": bdir / "meta.json",
              "burst_config": bdir / "config_effective.yaml",
              "curve_windows": cdir / "windows.csv", "e0_windows": edir / "windows.csv", "e0_runs": edir / "runs.csv",

@@ -13,7 +13,7 @@ import scipy
 import yaml
 
 W = Path(__file__).parent
-CFG = Path("/Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta/configs/prefix_meta.yaml")
+CFG = Path(__file__).resolve().parents[2] / "configs" / "prefix_meta.yaml"
 REPO = CFG.parent.parent
 LOGS = {
     "17060165": ("results/nova/s0_smoke_17060165_pulled_20261021-152347/nova_job_logs/17060165-20261021-104104/server.log",
@@ -25,7 +25,7 @@ LOGS = {
     "17062105": ("results/nova/stageC_1706210x_pulled_20261022-125454/nova_job_logs/17062105-20261021-165439/server.log",
                  "nova22-gpu-2", "stage C closed, lpm, n in {48,300}"),
 }
-ROOT = Path("/Users/akshat/research/jannesari-swapp")
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def sig(x, n=3):

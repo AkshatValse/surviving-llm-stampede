@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path("/Users/akshat/research/jannesari-swapp/results/nova")
+ROOT = Path(__file__).resolve().parents[2] / "results" / "nova"      # tracked in git (real Nova data)
 LOGS = sorted(
     list((ROOT / "s0_smoke_17060165_pulled_20261021-152347" / "nova_job_logs").glob("*/server.log"))
     + list((ROOT / "stageC_1706210x_pulled_20261022-125454" / "nova_job_logs").glob("*/server.log"))

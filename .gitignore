@@ -1,15 +1,27 @@
-# Claude Code personal files
+# Claude Code personal / machine-local files
 CLAUDE.local.md
 .claude/settings.local.json
+.claude/worktrees/
 
-# Research outputs
-results/
+# Research outputs. Policy (see README.md, "Data policy"):
+#  - results/nova/        TRACKED: real-engine data pulled from Nova. Irreplaceable: ISU class storage is wiped at semester end.
+#  - results/vat_collect/, results/vat_alignment/
+#                         TRACKED: wall-clock timing measurements (not bit-reproducible by rerunning).
+#  - everything else      IGNORED: simulator outputs, regenerable bit-identically from the commit in each meta.json.
+#                         Their small summaries (summary/runs CSVs, meta.json, config copies) are force-added (git add -f).
+results/*
+!results/nova/
+!results/vat_collect/
+!results/vat_alignment/
 logs/*
 !logs/.gitkeep
 figures/out/*.png
 
+# Derived intermediates of the calibration scripts (regenerated from results/nova/ server logs by parse_logs.py)
+calibration/**/*.pkl
+
+# Python / OS
 .DS_Store
 __pycache__/
 *.pyc
 .pytest_cache/
-.claude/worktrees/

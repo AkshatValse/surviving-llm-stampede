@@ -93,7 +93,7 @@ def test_parse_variant_and_references():
         ts.e0_references(w, runs, 999, 5000.0)
 
 
-MAIN = Path("/Users/akshat/research/jannesari-swapp/results")
+MAIN = Path(__file__).resolve().parent.parent / "results"      # recorded simulator outputs (gitignored; regenerate to run)
 RECORDED = (MAIN / "prefix_meta_r4_burst_info/20261021-051020/windows.csv").exists() and (MAIN / "prefix_meta_e0/20261021-005706/windows.csv").exists()
 
 

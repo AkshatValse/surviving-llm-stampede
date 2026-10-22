@@ -18,9 +18,10 @@ assumptions_note: >-
   session fails), not from a backlog trace. Deterministic: no random numbers are drawn.
 
 inputs:
-  burst_info_dir: /Users/akshat/research/jannesari-swapp/results/prefix_meta_r4_burst_info/20261021-051020
-  curve_dir: /Users/akshat/research/jannesari-swapp/results/prefix_meta_r4_curve/20261021-050856
-  e0_dir: /Users/akshat/research/jannesari-swapp/results/prefix_meta_e0/20261021-005706
+  # relative paths resolve against the repo root (these simulator outputs are gitignored: regenerate them to rerun)
+  burst_info_dir: results/prefix_meta_r4_burst_info/20261021-051020
+  curve_dir: results/prefix_meta_r4_curve/20261021-050856
+  e0_dir: results/prefix_meta_e0/20261021-005706
 
 analysis:
   policy: fcfs_lru
