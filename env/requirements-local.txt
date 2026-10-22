@@ -1,0 +1,17 @@
+# Local (analysis + simulator + harness tests) Python environment.
+# Versions are the ones every recorded local result and test run used: MacBook Pro M3 Max, /opt/anaconda3 base, Python 3.12.7.
+# Simulator results are bit-identical only under these numpy/pandas versions (verifiers re-ran cells bit-identically with
+# numpy 1.26.4 / pandas 2.2.2); newer versions should give the same verdicts but may change low-order digits.
+#   python -m venv .venv && .venv/bin/pip install -r env/requirements-local.txt     (Python 3.12)
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.2.2
+pyyaml==6.0.1
+matplotlib==3.9.2
+aiohttp==3.10.5
+pytest==7.4.4
+# only for the archived VAT pilot (branch pilot/vat) and its parquet data under results/vat_*:
+numba==0.60.0
+pyarrow==24.0.0
+# The Nova engine/generator environments are NOT this file: their exact `pip freeze` is recorded per job in
+# results/nova/*/nova_job_logs/*/pip_freeze_{sglang,swapp}.txt, and slurm/setup_nova.sbatch rebuilds them.

@@ -1,6 +1,6 @@
 # STATE
 
-_Last updated: 2026-10-22 ~14:00 CDT (moving to an always-on PC)_
+_Last updated: 2026-10-22 ~17:15 CDT (repo cleaned for GitHub multi-machine use)_
 
 ## Phase
 - **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds.
@@ -8,23 +8,22 @@ _Last updated: 2026-10-22 ~14:00 CDT (moving to an always-on PC)_
 
 ## RESUME HERE (written 2026-10-22 ~14:00, just before moving to an always-on PC)
 
-### 0. Migrating to the new machine (do this first)
-- **Nothing has a remote; every branch is local only.** Copy the WHOLE directory `/Users/akshat/research/jannesari-swapp`, including:
-  - `.git/` (all branches);
-  - `results/` (gitignored: about 200+ MB of pulled Nova data and simulator outputs);
-  - `.claude/` (project agents and settings).
-- After copying to a new path, run `git worktree repair` from the repo root, or delete `.claude/worktrees/` and run `git worktree prune`. Recreate worktrees as needed from these branches:
-  - `harness/prefix-meta`: the real-engine harness. It is the source of the Nova clone.
-  - `pilot/prefix-meta`: the simulator, rounds 1–5, clean.
-  - `wip/r6-separate-batching`: the simulator's SGLang-style separate prefill/decode batching mode. **UNREVIEWED, interrupted mid-implementation, tests not run.**
-  - Killed directions: `pilot/kvrent`, `pilot/vat`, `pilot/delay-eos`.
-- **Optional, Akshat's call:** create a private GitHub remote and push every branch, so future moves are trivial.
-- On the new PC, check these:
-  - **Python.** This Mac used `/opt/anaconda3/bin/python` with NumPy 1.26, SciPy, pandas 2.2, Numba, matplotlib, PyYAML, pytest and aiohttp. Update the paths in CLAUDE.md.
-  - **SSH.** The `ssh nova` alias must work non-interactively (`ssh -o BatchMode=yes nova true`). A ControlMaster session or keys is fine; never handle passwords.
-  - **Lost on the move:** the scratchpad (`/private/tmp/...`) and the workflow journals (`~/.claude/projects/...`). Everything needed from them has been copied into the repo.
+### 0. Multi-machine setup (updated 2026-10-22 ~17:15: GitHub is now the sync point)
+- **Remote:** private GitHub repo `origin` = `github.com/AkshatValse/jannesari-swapp`. Every branch was pushed at 14:28.
+- **Cleanup done on the laptop afterwards. Pushing it was left to Akshat's other chat.**
+  - `pilot/prefix-meta` and `harness/prefix-meta` were merged into **`main`**. **Develop on `main` from now on.**
+  - `results/nova/` (the real Nova data) is now tracked in git.
+  - Paths are repo-relative.
+  - Added `README.md` and `env/requirements-local.txt`.
+  - Deleted the two redundant `worktree-agent-*` branches.
+- **New machine:** `git clone`, then set up the env from `env/requirements-local.txt`, then run `python -m pytest -q`. See README → "Setting up a machine". That includes copying the user-level `~/.claude` agents and skills, which are not in the repo.
+- **Nova clone** (`/work/classtmp/avalse/swapp/repo`): it still has `harness/prefix-meta` checked out at 89a3c7d, which is what E0a was submitted from. `main` is a fast-forward descendant of it. At the next sync:
+  1. bundle `main`;
+  2. `git checkout -B main` and `git pull --ff-only ../swapp-harness.bundle main`.
+  Do this **after** the E0a jobs finish (they run from the current checkout).
+- **Lost on the move:** the laptop scratchpad and the workflow journals. Everything needed from them was copied into the repo (`calibration/round6_server_log_fit/`, `results/nova/*/verification/`).
 
-### 1. Nova: E0a is in flight
+### 1. Nova: E0a is in flight (status unknown since ~14:00: Nova was unreachable from the laptop at 17:03 because DNS failed, likely off VPN)
 - **Jobs.** 17072634 (POP=32, seed 0) was RUNNING at 13:49. 17072635 (seed 1), 17072636 (seed 2) and 17072637 (POP=64 check) were PENDING. All have a 1.5 h limit.
   ```bash
   ssh nova 'sacct -j 17072634,17072635,17072636,17072637 -X -o JobID,State,ExitCode,Elapsed,NodeList'
@@ -33,9 +32,9 @@ _Last updated: 2026-10-22 ~14:00 CDT (moving to an always-on PC)_
   1. Pull the run dirs read-only (`results/agentload_e0_miss/<ts>/` × 4, `results/agentload_analysis_miss/<ts>/`, `results/nova_job_logs/1707263[4-7]-*`) to a new local dir.
   2. Check: the 3 seeds agree within about 5%; POP=64 is within about 5% of POP=32; there is no trend across 300 s bins.
   3. Build the combined `calibration.json` from the 3 POP=32 run dirs. On the Nova login node with nice: `$W/envs/swapp/bin/python -m analysis.summarize miss --run-dirs <3 dirs> --warmup-s 900 --out-root results`.
-- **Then E0b** (Akshat authorized "submit everything you think is best"): 6 parallel one-run jobs, `--time=01:30:00`, `MULTS` = each of 1.25 1.5 1.75 2.0 2.5 3.0, with `CALIB_FILE` set to the combined file. Commands are in `notes/E2_RUNBOOK.md` on `harness/prefix-meta`; split `MULTS` into one value per job.
+- **Then E0b** (Akshat authorized "submit everything you think is best"): 6 parallel one-run jobs, `--time=01:30:00`, `MULTS` = each of 1.25 1.5 1.75 2.0 2.5 3.0, with `CALIB_FILE` set to the combined file. Commands are in `notes/E2_RUNBOOK.md` (now on `main`); split `MULTS` into one value per job.
 - **Then pre-registration** (runbook Stage 3):
-  - Use `--n-cap-rule smallest_within_margin`, which gives n_cap=20. It was added in harness commit fe48315.
+  - Use `--n-cap-rule smallest_within_margin`, which gives n_cap=20. It was added in commit fe48315, now on `main`.
   - 2 λ points at ⅓ and ⅔ of the window.
   - Copy the inputs into `prereg/inputs/<date>/`, commit, and sync to Nova.
 - **Then E2:** 18 one-arm jobs, each with `--time=03:10:00`.
@@ -55,8 +54,8 @@ _Last updated: 2026-10-22 ~14:00 CDT (moving to an always-on PC)_
 
 ## Nova setup (done)
 - **Project root:** `/work/classtmp/avalse/swapp`, class storage. It is deleted at semester end. Never touch the sibling `hpcml-*` dirs.
-- **Repo:** `repo/` is a clone of the `harness/prefix-meta` git bundle, at bbb6a12.
-  - To update it: run `git bundle create` locally, `scp` it to `swapp-harness.bundle`, then `git pull --ff-only ../swapp-harness.bundle harness/prefix-meta`.
+- **Repo:** `repo/` is a clone of a git bundle (no GitHub credentials on Nova). It is currently `harness/prefix-meta` at 89a3c7d.
+  - To update it: `git bundle create swapp.bundle main` locally, `scp` it to `swapp-harness.bundle`, then on Nova `git checkout -B main && git pull --ff-only ../swapp-harness.bundle main` (see section 0).
 - **Envs:**
   - `envs/swapp` (generator): pandas 3, numpy 2.4; 113 analysis tests pass.
   - `envs/sglang`: sglang 0.5.22, torch 2.14.1+cu130. The compiler-side CUDA wheels are pinned to 13.0 to match the runtime.
@@ -69,10 +68,10 @@ _Last updated: 2026-10-22 ~14:00 CDT (moving to an always-on PC)_
   - 17060003, 17060022, 17060085: smoke attempts 1–3. Each failed at startup on a harness or toolchain issue, and each was fixed.
   - 17060165: smoke attempt 4. **PASSED.**
 
-## Branches (local only; nothing pushed)
-- `main`: notes, CLAUDE.md, LOG, MORNING.
-- `pilot/prefix-meta` (worktree `.claude/worktrees/prefix-meta`): the simulator, rounds 1–5.
-- `harness/prefix-meta` (worktree `.claude/worktrees/pm-harness`): the real-engine harness and SLURM scripts. This is the source of the Nova clone.
+## Branches (GitHub `origin`; see README → Branches)
+- `main`: **everything active**. The simulator, harness, analysis, SLURM scripts and notes were merged in on 2026-10-22.
+- `pilot/prefix-meta`, `harness/prefix-meta`: historical; recorded results cite their commits.
+- `wip/r6-separate-batching`: unreviewed, interrupted simulator change.
 - Killed: `pilot/kvrent`, `pilot/vat`, `pilot/delay-eos`.
 
 ## Open decisions (Akshat)
