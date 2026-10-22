@@ -13,7 +13,8 @@ _Last updated: 2026-10-22 ~13:20 CDT_
   - Hit rate falls to 0 at n≥48 (engine-confirmed). The all-miss floor is about 0.075 sessions/s, roughly 3× below the peak.
   - Hit fractions at n≤24 match the simulator within 0.01.
   - Metastability is not yet tested.
-- **Awaiting Akshat:** choose and approve the next GPU batch. The ranked list is in the LOG entry. My suggested order:
+- **Akshat chose (2026-10-22):** skip the closed-system follow-ups. Go E0a, then E0b, then pre-registration, then the E2 paired-arm kill test. Runbook with exact commands and GPU-h: `notes/E2_RUNBOOK.md` on `harness/prefix-meta`, about 59 GPU-h total with 2 λ points. **Awaiting OK to submit E0a.**
+- (Superseded) choose and approve the next GPU batch. The ranked list is in the LOG entry. My suggested order:
   1. Pre-aged-start harness work (local, no GPU).
   2. E0a λ_miss at the stationary mix.
   3. Replicates plus hysteresis at n=24/28/32.
