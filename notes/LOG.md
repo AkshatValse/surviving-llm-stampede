@@ -368,3 +368,19 @@ Comparison with the simulator's FCFS curve:
 4. M-scaling, including the native pool: about 5 GPU-h.
 5. Patched-threshold LPM to test causality: about 4 GPU-h.
 6. Then E0b, pre-registration, and the paired-arm open-system kill test.
+
+## 2026-10-22 — Local (M3 Max) round 6 launched: calibrate the simulator from engine timing, then make blind predictions
+**Why.** Turn the simulator from a qualitative match into an out-of-sample quantitative test of the real engine.
+
+**Design.** Fixed in workflow `sim-calibration-predictions` (run wf_62e1fc6c-410). The prompts were frozen at launch, before any E0a/E0b/E2 result existed.
+1. **Calibrate.** Fit the iteration-time cost model *only* from SGLang server-log per-batch timing (Stage 0 and Stage C logs), using the metric definitions read from the SGLang source. It is not fitted to μ(n).
+2. **Add an SGLang-faithful batching mode.** SGLang runs prefill and decode as separate iterations with prefill priority (`enable_mixed_chunk=False`). The default mixed mode stays bit-identical.
+3. **Validate.** Compare the simulated μ(n) and hit fraction against real Stage C, out of sample, using the same protocol: synchronized start, window [900, 2700).
+4. **Make blind predictions.**
+   - (B1) E0a λ_miss and the all-miss token rate.
+   - (B2) E0b from-empty stable fractions per multiple.
+   - (B3) E2 per-arm TRAPPED / RECOVERED / PASS at λ ∈ {1.3, 1.6, 2.0, 2.4}× the predicted λ_ref, in both absolute and relative units.
+   - (B4) Native-pool curves at M = 600k and 900k.
+5. **Verify independently,** including a check that no data leaked in.
+
+**Blindness rule.** The agents may read only Stage 0/C data and SGLang source. They are forbidden from Nova `results/` and `logs/`, and from squeue/sacct. The main session will not change the workflow after any E0a/E0b/E2 result appears. Predictions count as blind if the PREDICTIONS.md commit timestamp precedes the corresponding real result, or if the agents demonstrably could not access it.
