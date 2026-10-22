@@ -1,0 +1,14 @@
+                         mean    std  count
+cand             diag                      
+col_t32_ser_nofm False -0.774  0.322    360
+                 True  -1.379  0.427     72
+col_t64_ser_nofm False -0.789  0.385    360
+                 True  -1.378  0.395     72
+row_t0_ser_nofm  False  1.610  0.680    360
+                 True   1.736  0.636     72
+row_t16_ser_nofm False  0.412  0.510    360
+                 True   0.340  0.333     72
+col_t32_ser_nofm cross-process corr of 36 cell means: 0.764
+col_t64_ser_nofm cross-process corr of 36 cell means: 0.666
+row_t0_ser_nofm cross-process corr of 36 cell means: 0.060
+row_t16_ser_nofm cross-process corr of 36 cell means: 0.122

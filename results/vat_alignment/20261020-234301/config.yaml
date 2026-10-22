@@ -1,0 +1,14 @@
+research_question: Is the large between-process variance of paired log-speedups for some stencil candidates explained by the relative memory placement (alignment offset) of the two grids, i.e. a deterministic layout effect that within-process randomization of placement would turn into iid noise?
+hardware: Apple M3 Max CPU (local pilot)
+seed: 20261021
+N: 2048
+iters: 4
+numba_threads: 4
+# candidates by name (from src/vat/kernels.py); baseline is numpy slicing
+candidates: [col_t32_ser_nofm, col_t64_ser_nofm, row_t16_ser_nofm, row_t0_ser_nofm]
+# offsets (in float64 elements) applied to the start of grid a and grid b inside a large page-aligned buffer
+offsets_a: [0, 8, 16, 64, 128, 512]
+offsets_b: [0, 8, 16, 64, 128, 512]
+reps_per_cell: 6   # paired blocks per (candidate, offset_a, offset_b) cell, cells visited in random order
+processes: 2       # fresh processes, to check that offset -> time is reproducible across processes
+output_root: results

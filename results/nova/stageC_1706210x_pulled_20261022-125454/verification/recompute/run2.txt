@@ -1,0 +1,35 @@
+CRN ('FCFS', 16) same n_turns for idx in common: 1.0 n_common 499 initial cohort arrival_s max 0.012
+CRN ('FCFS', 20) same n_turns for idx in common: 1.0 n_common 499 initial cohort arrival_s max 0.015
+CRN ('FCFS', 48) same n_turns for idx in common: 1.0 n_common 258 initial cohort arrival_s max 0.013
+CRN ('LPM', 48) same n_turns for idx in common: 1.0 n_common 337 initial cohort arrival_s max 0.016
+CRN ('FCFS', 24) same n_turns for idx in common: 1.0 n_common 499 initial cohort arrival_s max 0.007
+CRN ('FCFS', 96) same n_turns for idx in common: 1.0 n_common 338 initial cohort arrival_s max 0.014
+CRN ('LPM', 300) same n_turns for idx in common: 1.0 n_common 499 initial cohort arrival_s max 0.02
+CRN ('FCFS', 32) same n_turns for idx in common: 1.0 n_common 383 initial cohort arrival_s max 0.012
+CRN ('FCFS', 300) same n_turns for idx in common: 1.0 n_common 499 initial cohort arrival_s max 0.019
+
+count-biased E[k] = 14.028748490248374  E[prompt] = 10468.686518661443
+E[total prompt tokens per session] = 154528.85800266682
+
+ ('FCFS', 24) 150 s bins over full run (bin start s: turns/s, hit, median lat)
+0:3.85/0.89/2 150:3.70/0.92/2 300:3.39/0.89/2 450:2.51/0.78/3 600:3.14/0.90/2 750:1.91/0.72/7 900:1.43/0.48/12 1050:2.43/0.77/3 1200:3.65/0.89/2 1350:3.80/0.93/2 1500:3.67/0.91/2 1650:3.61/0.94/2 1800:3.35/0.87/2 1950:3.70/0.90/2 2100:3.60/0.92/2 2250:3.76/0.93/2 2400:3.82/0.93/2 2550:3.13/0.90/2
+
+ ('FCFS', 32) 150 s bins over full run (bin start s: turns/s, hit, median lat)
+0:4.68/0.87/2 150:3.23/0.76/5 300:2.15/0.63/9 450:1.40/0.32/17 600:1.36/0.36/19 750:0.91/0.15/29 900:1.19/0.21/22 1050:1.59/0.42/17 1200:1.31/0.31/18 1350:1.05/0.20/24 1500:0.81/0.12/29 1650:0.85/0.13/33 1800:1.25/0.24/22 1950:1.70/0.53/13 2100:1.82/0.49/13 2250:1.45/0.36/20 2400:3.96/0.81/3 2550:3.53/0.79/3
+
+ ('LPM', 48) 150 s bins over full run (bin start s: turns/s, hit, median lat)
+0:4.33/0.73/3 150:1.82/0.22/22 300:1.57/0.17/26 450:1.56/0.23/28 600:1.65/0.27/26 750:1.46/0.25/30 900:1.20/0.23/37 1050:1.32/0.33/39 1200:1.32/0.36/38 1350:1.44/0.40/33 1500:1.37/0.38/36 1650:1.15/0.35/43 1800:1.10/0.35/48 1950:1.54/0.45/19 2100:1.48/0.41/31 2250:1.44/0.40/34 2400:1.79/0.43/22 2550:1.96/0.45/17
+
+ ('FCFS', 48) 150 s bins over full run (bin start s: turns/s, hit, median lat)
+0:4.35/0.73/3 150:1.52/0.05/27 300:1.45/0.05/29 450:1.31/0.01/33 600:1.23/0.00/36 750:1.29/0.00/34 900:1.14/0.00/37 1050:1.04/0.00/41 1200:1.01/0.00/44 1350:0.91/0.00/47 1500:0.97/0.00/49 1650:0.89/0.00/47 1800:0.90/0.00/50 1950:0.96/0.00/49 2100:0.73/0.00/51 2250:0.88/0.00/50 2400:0.90/0.00/50 2550:0.81/0.00/51
+
+In-flight expectations (requests in flight). L(k) = in-window mean latency by turn, smoothed by linear fit on k
+('FCFS', 16): L(k)=1.5+0.00k s; stationary in-flight E[k]=14.39, E[prompt]=10705; observed window-avg in-flight E[k]=14.04, E[prompt]=10476; uncached tok/s per bin=[1.5, 1.73, 1.73, 1.7, 1.71, 1.73]k
+('FCFS', 20): L(k)=1.7+0.00k s; stationary in-flight E[k]=14.44, E[prompt]=10738; observed window-avg in-flight E[k]=13.65, E[prompt]=10220; uncached tok/s per bin=[2.28, 2.19, 2.11, 2.2, 2.05, 2.14]k
+('FCFS', 24): L(k)=2.2+0.04k s; stationary in-flight E[k]=16.12, E[prompt]=11828; observed window-avg in-flight E[k]=13.72, E[prompt]=10265; uncached tok/s per bin=[8.14, 3.02, 2.66, 3.73, 2.53, 2.93]k
+('FCFS', 32): L(k)=11.3+0.21k s; stationary in-flight E[k]=16.23, E[prompt]=11897; observed window-avg in-flight E[k]=15.92, E[prompt]=11698; uncached tok/s per bin=[10.3, 10.99, 10.18, 10.19, 10.13, 6.47]k
+('FCFS', 48): L(k)=45.5+0.06k s; stationary in-flight E[k]=14.21, E[prompt]=10589; observed window-avg in-flight E[k]=16.54, E[prompt]=12101; uncached tok/s per bin=[11.49, 11.21, 11.09, 11.63, 10.56, 10.75]k
+('FCFS', 96): L(k)=81.0+0.18k s; stationary in-flight E[k]=14.35, E[prompt]=10680; observed window-avg in-flight E[k]=14.78, E[prompt]=10959; uncached tok/s per bin=[11.84, 12.0, 11.68, 11.6, 11.31, 11.19]k
+('FCFS', 300): L(k)=166.5+0.85k s; stationary in-flight E[k]=14.75, E[prompt]=10937; observed window-avg in-flight E[k]=9.88, E[prompt]=7770; uncached tok/s per bin=[12.61, 12.61, 12.65, 12.61, 11.66, 12.7]k
+('LPM', 48): L(k)=29.6+-0.03k s; stationary in-flight E[k]=13.86, E[prompt]=10359; observed window-avg in-flight E[k]=15.59, E[prompt]=11486; uncached tok/s per bin=[10.74, 10.39, 10.45, 10.25, 10.07, 10.36]k
+('LPM', 300): L(k)=167.7+0.81k s; stationary in-flight E[k]=14.71, E[prompt]=10913; observed window-avg in-flight E[k]=9.86, E[prompt]=7757; uncached tok/s per bin=[12.66, 12.61, 12.63, 11.63, 12.63, 11.71]k

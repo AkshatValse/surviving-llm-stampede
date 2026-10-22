@@ -1,0 +1,108 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "sglang-fcfs-r1": {
+      "n": [
+        16,
+        20,
+        24,
+        32
+      ],
+      "n_runs": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.17555431268395913,
+        0.2238868137457633,
+        0.23333225457194676,
+        0.1149991290057621
+      ],
+      "mu_turns_based": [
+        0.17576156093925963,
+        0.21501576008953432,
+        0.22551731480537204,
+        0.11576922789161058
+      ],
+      "turns_per_s": [
+        2.5944260766901555,
+        3.1738594712891954,
+        3.328873498559774,
+        1.7088759459986678
+      ],
+      "hit_frac_turns": [
+        0.9321199143468951,
+        0.9268335375459479,
+        0.8876835781041389,
+        0.5052015604681405
+      ],
+      "hit_frac_followup": [
+        1.0,
+        0.9971751412429378,
+        0.9545944005743001,
+        0.5418410041841004
+      ],
+      "cached_frac_tokens": [
+        0.9355575672766644,
+        0.9302860933341569,
+        0.8828960867429734,
+        0.46331805668786974
+      ],
+      "queue_mean": [
+        0.0,
+        0.0,
+        0.25,
+        6.966666666666666
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 24,
+        "turns_based": 24
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 24,
+      "mu_max": 0.23333225457194676,
+      "argmax_margin_rel": 0.04048064783632819,
+      "runner_up_n": 20,
+      "argmax_ambiguous": true,
+      "n_inf": 300,
+      "mu_n_inf": null,
+      "missing_n": [
+        48,
+        96,
+        300
+      ],
+      "complete_grid": false,
+      "extra_n": [],
+      "mu_by_n": {
+        "16": 0.17555431268395913,
+        "20": 0.2238868137457633,
+        "24": 0.23333225457194676,
+        "32": 0.1149991290057621
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "sglang-fcfs-r1",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 24,
+  "mu_300": null,
+  "mu_max": 0.23333225457194676,
+  "notes": [
+    "primary cell sglang-fcfs-r1: n grid incomplete, missing [48, 96, 300]; n_cap is the argmax over the points that exist",
+    "n_cap=24 is ambiguous: runner-up n=20 is within 5% (margin 0.04048064783632819); one run per n",
+    "mu(n=300) missing: the recovery threshold cannot be predicted"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

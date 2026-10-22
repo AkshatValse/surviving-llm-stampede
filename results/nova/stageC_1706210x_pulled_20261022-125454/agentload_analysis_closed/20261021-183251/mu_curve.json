@@ -1,0 +1,80 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "sglang-lpm-r1": {
+      "n": [
+        48,
+        300
+      ],
+      "n_runs": [
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.08666586101661623,
+        0.10499866823656845
+      ],
+      "mu_turns_based": [
+        0.09657455370370753,
+        0.11034903829214568
+      ],
+      "turns_per_s": [
+        1.4255423036451107,
+        1.6288682289397813
+      ],
+      "hit_frac_turns": [
+        0.38503507404520654,
+        0.0
+      ],
+      "hit_frac_followup": [
+        0.4099585062240664,
+        0.0
+      ],
+      "cached_frac_tokens": [
+        0.37438721672277775,
+        0.0
+      ],
+      "queue_mean": [
+        19.163888888888888,
+        269.0138888888889
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 300,
+        "turns_based": 300
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 300,
+      "mu_max": 0.10499866823656845,
+      "argmax_margin_rel": 0.1746003785366808,
+      "runner_up_n": 48,
+      "argmax_ambiguous": false,
+      "n_inf": 300,
+      "mu_n_inf": 0.10499866823656845,
+      "missing_n": [],
+      "complete_grid": true,
+      "extra_n": [],
+      "mu_by_n": {
+        "48": 0.08666586101661623,
+        "300": 0.10499866823656845
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": null,
+  "primary_label_explicit": false,
+  "primary_hardware": null,
+  "fcfs_substr": "fcfs",
+  "n_cap": null,
+  "mu_300": null,
+  "mu_max": null,
+  "notes": [
+    "no cell label contains 'fcfs': n_cap is null (the CAPPED arm needs the FCFS cell)"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}
