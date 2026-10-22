@@ -35,8 +35,8 @@ COMS 6250 (Fall 2026) × ISU SwaPP lab. Akshat Valse (lead) with Dr. Ali Jannesa
 1. `git clone` this repo.
 2. Create a Python 3.12 env: `python -m venv .venv && .venv/bin/pip install -r env/requirements-local.txt`.
 3. Run the tests: `.venv/bin/python -m pytest -q`.
-   - The full suite takes about 10–20 min and is CPU-only.
-   - A few tests skip unless the gitignored simulator outputs exist locally.
+   - The full suite is CPU-only. On a fresh clone (M3 Max, 2026-10-22) it gave 860 passed and 1 skipped in 13 min.
+   - The skipped test (`test_trap_sim_traces.py::test_recorded_simulator_traps`) needs gitignored simulator outputs. It runs once those are regenerated.
 4. Nova access: `ssh nova` must work **non-interactively** (`ssh -o BatchMode=yes nova true`, via keys or a ControlMaster session). Nova hostnames only resolve on the ISU network or VPN. Agents never handle passwords or MFA.
 5. Claude Code user-level config is **not** in this repo: `~/.claude/CLAUDE.md`, the global agents `referee`, `math-checker`, `experiment-auditor` and `lit-scout`, and the skills `lit-check`, `new-experiment`, `nova-slurm`, `paper-figure` and `results-log`. Copy them to each machine so both behave the same.
 6. Update the machine-specific paths in `CLAUDE.md` → Environment (the Python path, for example).
