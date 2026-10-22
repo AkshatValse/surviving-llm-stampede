@@ -1,6 +1,6 @@
 # STATE
 
-_Last updated: 2026-10-22 ~17:15 CDT (repo cleaned for GitHub multi-machine use)_
+_Last updated: 2026-10-22 evening (moved to the Nova-Research repo)_
 
 ## Phase
 - **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds.
@@ -8,20 +8,18 @@ _Last updated: 2026-10-22 ~17:15 CDT (repo cleaned for GitHub multi-machine use)
 
 ## RESUME HERE (written 2026-10-22 ~14:00, just before moving to an always-on PC)
 
-### 0. Multi-machine setup (updated 2026-10-22 ~17:15: GitHub is now the sync point)
-- **Remote:** private GitHub repo `origin` = `github.com/AkshatValse/jannesari-swapp`. Every branch was pushed at 14:28.
-- **Cleanup done on the laptop afterwards. Pushing it was left to Akshat's other chat.**
-  - `pilot/prefix-meta` and `harness/prefix-meta` were merged into **`main`**. **Develop on `main` from now on.**
-  - `results/nova/` (the real Nova data) is now tracked in git.
-  - Paths are repo-relative.
-  - Added `README.md` and `env/requirements-local.txt`.
-  - Deleted the two redundant `worktree-agent-*` branches.
-- **New machine:** `git clone`, then set up the env from `env/requirements-local.txt`, then run `python -m pytest -q`. See README → "Setting up a machine". That includes copying the user-level `~/.claude` agents and skills, which are not in the repo.
-- **Nova clone** (`/work/classtmp/avalse/swapp/repo`): it still has `harness/prefix-meta` checked out at 89a3c7d, which is what E0a was submitted from. `main` is a fast-forward descendant of it. At the next sync:
-  1. bundle `main`;
-  2. `git checkout -B main` and `git pull --ff-only ../swapp-harness.bundle main`.
-  Do this **after** the E0a jobs finish (they run from the current checkout).
-- **Lost on the move:** the laptop scratchpad and the workflow journals. Everything needed from them was copied into the repo (`calibration/round6_server_log_fit/`, `results/nova/*/verification/`).
+### 0. Multi-machine setup (updated 2026-10-22 evening: canonical repo is now Nova-Research)
+- **Canonical repo:** private GitHub `AkshatValse/Nova-Research`, default branch `main`.
+  - Its history is a rewrite of `AkshatValse/jannesari-swapp` with the AI co-author trailers stripped. Trees are identical and hashes changed; `provenance/commit-map.tsv` maps old to new.
+  - `jannesari-swapp` stays as the provenance archive. **Do not delete it.**
+- **Branches:** `main` (everything active) and `wip/r6-separate-batching` (unreviewed). Earlier lines are `archive/*` tags.
+- **Commits:** no AI attribution trailers (CLAUDE.md conventions).
+- **New machine:** `git clone https://github.com/AkshatValse/Nova-Research.git`, then follow README → "Setting up a machine". Also copy the user-level `~/.claude` agents and skills, which are not in the repo.
+- **Nova clone** (`/work/classtmp/avalse/swapp/repo`): it still holds the OLD history, with `harness/prefix-meta` at old commit 89a3c7d. The four E0a jobs run from it. A bundle of the new `main` will NOT fast-forward it. Once the E0a jobs are finished:
+  1. Move the old clone aside: `mv repo repo_old_history`. It holds E0a's results and logs, so pull those first.
+  2. `git clone -b main swapp-nova.bundle repo` from a bundle of the new `main`.
+  3. Copy the needed `results/` and `logs/` across.
+- **Lost on the move:** the laptop scratchpad and workflow journals. Everything needed from them is in the repo (`calibration/round6_server_log_fit/`, `results/nova/*/verification/`).
 
 ### 1. Nova: E0a is in flight (status unknown since ~14:00: Nova was unreachable from the laptop at 17:03 because DNS failed, likely off VPN)
 - **Jobs.** 17072634 (POP=32, seed 0) was RUNNING at 13:49. 17072635 (seed 1), 17072636 (seed 2) and 17072637 (POP=64 check) were PENDING. All have a 1.5 h limit.
@@ -68,11 +66,11 @@ _Last updated: 2026-10-22 ~17:15 CDT (repo cleaned for GitHub multi-machine use)
   - 17060003, 17060022, 17060085: smoke attempts 1–3. Each failed at startup on a harness or toolchain issue, and each was fixed.
   - 17060165: smoke attempt 4. **PASSED.**
 
-## Branches (GitHub `origin`; see README → Branches)
-- `main`: **everything active**. The simulator, harness, analysis, SLURM scripts and notes were merged in on 2026-10-22.
-- `pilot/prefix-meta`, `harness/prefix-meta`: historical; recorded results cite their commits.
-- `wip/r6-separate-batching`: unreviewed, interrupted simulator change.
-- Killed: `pilot/kvrent`, `pilot/vat`, `pilot/delay-eos`.
+## Branches and tags (Nova-Research; see README → Branches and tags)
+- `main`: **everything active**.
+- `wip/r6-separate-batching`: an unreviewed, interrupted simulator change.
+- Tags `archive/pilot-prefix-meta` and `archive/harness-prefix-meta`: tips of the lines merged into main.
+- Tags `archive/pilot-kvrent`, `archive/pilot-vat` and `archive/pilot-delay-eos`: killed directions.
 
 ## Open decisions (Akshat)
 - KV pool: 300k-token cap vs. native.
