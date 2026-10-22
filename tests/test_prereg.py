@@ -478,3 +478,20 @@ def test_check_job_authorises_only_the_registered_job(tmp_path, registered, caps
     assert pr_mod.main(["check-job", str(loose), *base[1:], "--allow-uncommitted"]) == 0
     # an unfilled template never authorises anything
     assert pr_mod.main(["check-job", str(TEMPLATE), *base[1:], "--allow-uncommitted"]) == 1
+
+
+def test_n_cap_rule_smallest_within_margin_picks_the_smaller_near_tie_and_is_recorded():
+    # Stage C on SGLang: mu(20)=0.2239, mu(24)=0.2333 (argmax, runner-up within 5%): the rule must pick 20 and record why
+    mus = (0.1756, 0.2239, 0.2333, 0.1150, 0.0489, 0.0611, 0.1078)
+    default = filled(mus=mus)
+    assert default["measured"]["n_cap"] == 24 and default["measured"]["n_cap_argmax"] == 24
+    assert default["measured"]["n_cap_rule"] == "argmax_n mu(n)"
+    f = filled(mus=mus, n_cap_rule="smallest_within_margin")
+    assert f["measured"]["n_cap"] == 20 and f["measured"]["n_cap_argmax"] == 24
+    assert f["measured"]["mu_n_cap"] == pytest.approx(0.2239)
+    assert "smallest n" in f["measured"]["n_cap_rule"] and "0.05" in f["measured"]["n_cap_rule"]
+    # a clear argmax (runner-up outside the margin) is unchanged by the rule
+    clear = filled(n_cap_rule="smallest_within_margin")
+    assert clear["measured"]["n_cap"] == N_CAP
+    with pytest.raises(ValueError):
+        filled(n_cap_rule="largest")

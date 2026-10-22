@@ -228,7 +228,7 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
          lambda_mults: Optional[Sequence[float]] = None, rule: Optional[str] = None,
          engine_cell_label: Optional[str] = None,
          mu_curve_path: str = "", calibration_path: str = "", e0b_path: str = "", e2_cfg_path: str = "",
-         p: Optional[AnalysisParams] = None) -> Dict[str, Any]:
+         n_cap_rule: str = "argmax", p: Optional[AnalysisParams] = None) -> Dict[str, Any]:
     """Fill the measured values and the formula-derived boundaries of ``template`` (a deep copy is returned). The
     lambda points and their rule come from the arguments (or stay as in the template). ``status`` becomes FILLED only
     if :func:`validate` finds no error. ``e0b`` (the ``lambda_cap_bracket.json`` of E0b) and ``e2_cfg`` (the raw E2 config:
@@ -252,6 +252,19 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
     lam_ref, tok_ref = float(calibration[key]), float(calibration[tok_key])
     mu_300, mu_max, n_cap = cell.get("mu_n_inf"), cell.get("mu_max"), cell["argmax_n"]
     mu_by_n = {int(k): v for k, v in cell["mu_by_n"].items()}
+    n_cap_argmax = n_cap
+    n_cap_rule_text = "argmax_n mu(n)"
+    if n_cap_rule == "smallest_within_margin":
+        # the CAPPED arm's cap: the SMALLEST n whose mu(n) is within the argmax noise margin of mu_max (one run per n: the
+        # argmax among near-ties is noise, and a smaller cap keeps the closed system further from the cliff)
+        if p is None:
+            raise ValueError("n_cap_rule='smallest_within_margin' needs the analysis params (closed.argmax_margin_warn)")
+        margin = float(p.raw["closed"]["argmax_margin_warn"])
+        ok = sorted(n for n, v in mu_by_n.items() if v is not None and mu_max is not None and float(v) >= (1.0 - margin) * float(mu_max))
+        n_cap = ok[0] if ok else n_cap
+        n_cap_rule_text = f"smallest n with mu(n) >= (1 - {margin:g}) * mu_max (closed.argmax_margin_warn)"
+    elif n_cap_rule != "argmax":
+        raise ValueError(f"unknown n_cap_rule {n_cap_rule!r} (argmax | smallest_within_margin)")
     mu_n_cap = mu_by_n.get(int(n_cap)) if n_cap is not None else None
     b = None
     if e0b is not None:
@@ -274,6 +287,7 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
         hw_problems.append(f"calibration, Stage C and E0b ran on different hardware: {sorted(hw_vals)}")
     pr["measured"] = {
         "mu_by_n": mu_by_n, "mu_300": mu_300, "mu_max": mu_max, "n_cap": n_cap, "mu_n_cap": mu_n_cap,
+        "n_cap_rule": n_cap_rule_text, "n_cap_argmax": n_cap_argmax,
         "n_cap_ambiguous": cell["argmax_ambiguous"], "complete_grid": cell["complete_grid"],
         "lambda_miss": calibration.get("lambda_miss"), "lambda_miss_turns_based": calibration.get("lambda_miss_turns_based"),
         "lambda_ref": lam_ref, "all_miss_uncached_tokens_per_s": tok_ref,
@@ -432,6 +446,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     f.add_argument("--out", required=True, help="new file (refuses to overwrite)")
     f.add_argument("--lambda-mults", nargs="*", type=float, default=None)
     f.add_argument("--rule", default=None, help="text: how the lambda points were chosen inside the window")
+    f.add_argument("--n-cap-rule", default="argmax", choices=["argmax", "smallest_within_margin"],
+                   help="how the CAPPED arm's cap is chosen from mu(n) (recorded in measured.n_cap_rule)")
     f.add_argument("--params", default="configs/agentload_analysis.yaml")
     f.add_argument("--set", action="append", default=[], help="override an analysis param (as summarize --set)")
     v = sub.add_parser("validate", help="exit 1 if the file has error-severity problems")
@@ -465,7 +481,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                   json.loads(Path(args.calibration).read_text()), e0b=json.loads(Path(args.e0b_bracket).read_text()),
                   e2_cfg=yaml.safe_load(Path(args.e2_config).read_text()), lambda_mults=args.lambda_mults, rule=args.rule,
                   engine_cell_label=args.engine_cell_label, mu_curve_path=args.mu_curve, calibration_path=args.calibration,
-                  e0b_path=args.e0b_bracket, e2_cfg_path=args.e2_config, p=p)
+                  e0b_path=args.e0b_bracket, e2_cfg_path=args.e2_config, n_cap_rule=args.n_cap_rule, p=p)
         out.write_text(yaml.safe_dump(pr, sort_keys=False))
         print(f"wrote {out} status={pr['status']}")
         for x in pr["fill_problems"]:
