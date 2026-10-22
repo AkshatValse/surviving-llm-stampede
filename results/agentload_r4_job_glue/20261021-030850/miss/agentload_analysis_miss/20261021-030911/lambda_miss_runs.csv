@@ -1,0 +1,2 @@
+label,seed,warmup_s,measure_s,sessions_completed,turns_completed,sessions_per_s,turns_per_s,lambda_miss_sessions,lambda_miss_turns_based,effective_mean_turns,aborted,closed_n
+mock-fcfs,0,3.0,9.002722083998378,37,157,4.109868065989125,17.43916990162953,4.109868065989125,4.502412478018706,3.8732945919036865,False,4

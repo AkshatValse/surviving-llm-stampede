@@ -1,0 +1,55 @@
+{
+  "experiment": "agentload_plan_budget",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "analysis.plan_budget"
+  ],
+  "git": {
+    "commit": "f1f001e712e39658aa9d56d320834d860ff2a142",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T07:04:48",
+  "end_time": "2026-10-21T07:04:48",
+  "wall_s": 0.01262,
+  "slurm_env": {},
+  "totals": {
+    "gate0_smoke": 1.6833333333333333,
+    "gateC_closed_mu": 8.475,
+    "gate1_calibration": 16.458333333333332,
+    "gate2_kill_test": 75.82499999999999,
+    "gate_native_pool": 40.99166666666666,
+    "full_grid": 92.67499999999998,
+    "total": 236.1083333333333,
+    "cheap_before_prereg": 26.616666666666664,
+    "through_kill_test": 102.44166666666665,
+    "through_native_pool": 143.4333333333333,
+    "alt_literal_e2": {
+      "gate0_smoke": 1.6833333333333333,
+      "gateC_closed_mu": 8.475,
+      "gate1_calibration": 16.458333333333332,
+      "gate2_kill_test": 220.57500000000005,
+      "gate_native_pool": 89.24166666666669,
+      "full_grid": 269.59166666666675,
+      "total": 606.0250000000001,
+      "cheap_before_prereg": 26.616666666666664,
+      "through_kill_test": 247.19166666666672,
+      "through_native_pool": 336.4333333333334
+    }
+  }
+}

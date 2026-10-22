@@ -1,0 +1,11 @@
+research_question: >-
+  Mock-server settings for local harness tests (not a model of any real engine).
+mock_server:
+  kv_capacity_tokens: 20000
+  slots: 8
+  fixed_s: 0.002
+  per_uncached_token_s: 0.000002
+  per_completion_token_s: 0.0002
+  cached_style: usage        # usage | choice_meta | none
+  metrics_style: vllm        # vllm | sglang
+  model_name: mock

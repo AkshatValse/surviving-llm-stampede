@@ -1,0 +1,77 @@
+{
+  "schema": "kill_verdict_v2",
+  "criterion": "TRAPPED iff session completion rate within +-rate_tolerance of lambda_miss AND backlog slope > slope_frac*(lambda-lambda_miss) over the post-burst window; DRAINING iff slope<0; RECOVERED iff hit > recovered_hit_above and backlog < recovered_backlog_below at the end. PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= pass_fraction_min of the seeds.",
+  "rule": {
+    "eval_from_s": 4,
+    "min_eval_s": 2,
+    "rate_estimator": "sessions",
+    "rate_tolerance": 0.15,
+    "slope_frac": 0.5,
+    "slope_dt_s": 1,
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "end_window_s": 3,
+    "pass_fraction_min": 0.6666666666666666,
+    "min_seeds": 3,
+    "trace_bin_s": 1
+  },
+  "hit_metric": "frac_turns_cached_gt50",
+  "prereg": {
+    "provided": false
+  },
+  "pre_registered": false,
+  "fcfs_substr": "fcfs",
+  "cells": [
+    {
+      "label": "mock-fcfs",
+      "rate_mult": 1.0,
+      "lambda": 1.0,
+      "lambda_miss": 1.0,
+      "seeds": {
+        "0": {
+          "missing_arms": [],
+          "burst_trapped": false,
+          "noburst_good": false,
+          "capped_recovered": false,
+          "states": {
+            "burst": "indeterminate",
+            "noburst": "indeterminate",
+            "capped": "draining"
+          },
+          "pass": false
+        }
+      },
+      "n_seeds_seen": 1,
+      "n_seeds_complete": 1,
+      "n_pass": 0,
+      "frac_pass": 0.0,
+      "burst_trapped_frac": 0.0,
+      "noburst_good_frac": 0.0,
+      "capped_recovered_frac": 0.0,
+      "enough_seeds": false,
+      "meets": false,
+      "incomplete": [],
+      "diagnosis": "INSUFFICIENT: 1 seeds < min_seeds",
+      "in_registered_window": null,
+      "pairing_problems": {},
+      "meets_valid_pairing": false
+    }
+  ],
+  "fcfs_cells_meeting_rule": [],
+  "kill_test_pass_rule_only": false,
+  "kill_test_pass_decisive": null,
+  "decisive_note": "a decisive PASS needs a valid, committed pre-registration file and a lambda inside its registered window; without --prereg the verdict is exploratory",
+  "pairing_problems": {},
+  "skipped_runs": [],
+  "legacy_secondary_burst_arm": {
+    "mock-fcfs|1.0": {
+      "n_burst_runs": 1,
+      "n_legacy_trap": 0
+    }
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}

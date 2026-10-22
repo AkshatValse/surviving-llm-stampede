@@ -1,0 +1,32 @@
+{
+  "after_flush": {
+    "cached_source": "usage.prompt_tokens_details",
+    "cached_tokens": 0,
+    "http": 200,
+    "prompt_tokens": 1024
+  },
+  "cache_expected": true,
+  "exit_code": 0,
+  "idle": {
+    "idle": true,
+    "kv_in_use": {
+      "metric": "vllm:kv_cache_usage_perc",
+      "value": 0.0
+    },
+    "n_categories_known": 3,
+    "running": {
+      "metric": "vllm:num_requests_running",
+      "value": 0.0
+    },
+    "waited_s": 0.02,
+    "waiting": {
+      "metric": "vllm:num_requests_waiting",
+      "value": 0.0
+    }
+  },
+  "ok": true,
+  "phase": "check",
+  "reason": "canary not cached after flush (0 tokens)",
+  "salt": 900003,
+  "tokens": 1024
+}

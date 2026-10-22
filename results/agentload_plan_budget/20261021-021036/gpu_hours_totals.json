@@ -1,0 +1,14 @@
+{
+  "gate0_smoke": 1.6,
+  "gate1_calibration": 15.599999999999998,
+  "gate2_kill_test": 24.449999999999996,
+  "full_grid": 89.64999999999999,
+  "total": 131.29999999999998,
+  "alt_literal_e2": {
+    "gate0_smoke": 1.6,
+    "gate1_calibration": 15.599999999999998,
+    "gate2_kill_test": 72.70000000000002,
+    "full_grid": 266.5666666666667,
+    "total": 356.46666666666675
+  }
+}

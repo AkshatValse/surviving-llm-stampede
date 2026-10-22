@@ -1,0 +1,7 @@
+run_dir,t_start,queue_mean,queue_max,source
+results/agentload_mock_demo/20261021-021039,0.0,0.0,0.0,engine_waiting
+results/agentload_mock_demo/20261021-021039,2.0,0.0,0.0,engine_waiting
+results/agentload_mock_demo/20261021-021039,4.0,0.0,0.0,engine_waiting
+results/agentload_mock_demo/20261021-021039,6.0,0.0,0.0,engine_waiting
+results/agentload_mock_demo/20261021-021039,8.0,0.0,0.0,engine_waiting
+results/agentload_mock_demo/20261021-021039,10.0,0.0,0.0,engine_waiting

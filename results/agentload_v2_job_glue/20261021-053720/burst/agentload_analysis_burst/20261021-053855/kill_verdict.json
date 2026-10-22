@@ -1,0 +1,26 @@
+{
+  "interval": [
+    1.2,
+    2.0
+  ],
+  "fraction_min": 0.6666666666666666,
+  "min_runs_per_cell": 3,
+  "cells": {},
+  "n_fcfs_cells_with_data": 0,
+  "mechanism_transfers_any_fcfs_cell_strict": false,
+  "mechanism_transfers_any_fcfs_cell_loose": false,
+  "kill_strict": null,
+  "kill_loose": null,
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  },
+  "skipped_no_burst": [
+    "/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_v2_job_glue/20261021-053720/burst/agentload_e2_burst/20261021-053823"
+  ],
+  "arms_in_kill_table": [
+    "burst"
+  ],
+  "role": "SECONDARY: hit-rate criterion of the first draft. The pre-registered kill-test verdict is kill_verdict_v2.json (`summarize burst2`: throughput criterion, paired arms)"
+}

@@ -1,0 +1,22 @@
+{
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "hardware_all": [
+    "Apple M3 Max CPU (simulation)"
+  ],
+  "hostnames": [
+    "Akshats-MacBook-Pro.local"
+  ],
+  "output_ids_sources": [
+    "server_ids"
+  ],
+  "lambda_miss": 4.109868065989125,
+  "lambda_miss_turns_based": 4.502412478018706,
+  "lambda_miss_se": null,
+  "lambda_miss_turns_based_se": null,
+  "n_runs": 1,
+  "warmup_s": 3.0,
+  "labels": [
+    "mock-fcfs"
+  ],
+  "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>')."
+}

@@ -1,0 +1,16 @@
+--- request 1: HTTP 200
+{"id": "cmpl-1", "object": "text_completion", "model": "mock", "choices": [{"index": 0, "text": "t93354 t19804 t97926 t30118 t62383 t50174 t38358 t8854", "finish_reason": "length"}], "usage": {"prompt_tokens": 64, "completion_tokens": 8, "total_tokens": 72, "prompt_tokens_details": {"cached_tokens": 0}}}
+parsed: {"prompt_tokens": 64, "completion_tokens": 8, "cached_tokens": 0, "cached_source": "usage.prompt_tokens_details", "raw_usage_json": "{\"usage\":{\"completion_tokens\":8,\"prompt_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":0},\"total_tokens\":72}}"}
+--- request 2: HTTP 200
+{"id": "cmpl-2", "object": "text_completion", "model": "mock", "choices": [{"index": 0, "text": "t93354 t19804 t97926 t30118 t62383 t50174 t38358 t8854", "finish_reason": "length"}], "usage": {"prompt_tokens": 64, "completion_tokens": 8, "total_tokens": 72, "prompt_tokens_details": {"cached_tokens": 63}}}
+parsed: {"prompt_tokens": 64, "completion_tokens": 8, "cached_tokens": 63, "cached_source": "usage.prompt_tokens_details", "raw_usage_json": "{\"usage\":{\"completion_tokens\":8,\"prompt_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":63},\"total_tokens\":72}}"}
+--- request 3 (return_token_ids=true): HTTP 200
+{"id": "cmpl-3", "object": "text_completion", "model": "mock", "choices": [{"index": 0, "text": "t93354 t19804 t97926 t30118 t62383 t50174 t38358 t8854", "finish_reason": "length", "token_ids": [93354, 19804, 97926, 30118, 62383, 50174, 38358, 8854]}], "usage": {"prompt_tokens": 64, "completion_tokens": 8, "total_tokens": 72, "prompt_tokens_details": {"cached_tokens": 63}}}
+--- /metrics HTTP 200; 6 names with prefixes ['vllm:', 'sglang:']:
+vllm:e2e_request_latency_seconds_count
+vllm:kv_cache_usage_perc
+vllm:num_requests_running
+vllm:num_requests_waiting
+vllm:prefix_cache_hits_total
+vllm:prefix_cache_queries_total
+PROBE_SUMMARY {"metrics_http": 200, "n_metric_names": 6, "output_ids_path": "choices.0.token_ids", "output_ids_present": true, "prompt_tokens_sent": 64, "request1_cached_source": "usage.prompt_tokens_details", "request1_cached_tokens": 0, "request1_http": 200, "request1_prompt_tokens": 64, "request2_cached_source": "usage.prompt_tokens_details", "request2_cached_tokens": 63, "request2_http": 200, "request2_prompt_tokens": 64, "return_token_ids_http": 200}

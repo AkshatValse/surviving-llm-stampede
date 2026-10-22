@@ -1,0 +1,37 @@
+{
+  "experiment": "agentload_tests",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "pytest",
+    "-p",
+    "no:cacheprovider",
+    "--junitxml=/Users/akshat/research/jannesari-swapp/.claude/worktrees/pm-harness/results/agentload_tests/20261021-052646/junit.xml",
+    "-v"
+  ],
+  "git": {
+    "commit": "367f8aca3f1f235fb0164c72bb925041fabe1444",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T05:26:46",
+  "end_time": "2026-10-21T05:36:07",
+  "wall_s": 560.400187,
+  "slurm_env": {},
+  "returncode": 0,
+  "summary_line": "======================= 274 passed in 560.06s (0:09:20) ========================"
+}

@@ -1,0 +1,45 @@
+research_question: 'Harness smoke test: does the open-loop multi-turn agent load generator,
+  pointed at the local mock OpenAI-compatible server with a simulated prefix cache,
+  produce well-formed request/metrics logs (growing prompts, cached_tokens, scripted
+  burst) that the analysis code can window?'
+assumptions_note: Scaled-down workload (L0=200, Delta=55, d=10) and a mock server;
+  none of these numbers describe a real engine. This config exists only to exercise
+  the pipeline locally (CPU, seconds).
+server:
+  base_url: http://127.0.0.1:18080
+  model: mock
+  request_timeout_s: 60
+  extra_body:
+    ignore_eos: true
+  request_token_ids: true
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 200
+  new_prompt_tokens: 55
+  decode_tokens: 10
+  mean_turns: 4
+  max_turns: 12
+  tool_time_mean_s: 0.3
+  tool_time_dist: exp
+arrivals:
+  kind: constant
+  rate: 2.0
+  burst:
+    n: 10
+    t_s: 6.0
+    width_s: 1.0
+run:
+  duration_s: 12
+  seed: 0
+  max_inflight: 500
+  max_errors: 20
+  preflight_wait_s: 10
+metrics:
+  enabled: true
+  interval_s: 1.0
+meta:
+  hardware: Apple M3 Max CPU (simulation)
+  engine_label: mock
+output:
+  root: results
+  name: agentload_mock_demo

@@ -1,0 +1,79 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/opt/anaconda3/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst",
+    "--run-dirs",
+    "results/agentload_mock_demo/20261021-021039",
+    "--set",
+    "windows.window_s=2",
+    "--set",
+    "windows.fine_window_s=1",
+    "--set",
+    "burst.tail_window_s=4",
+    "--set",
+    "burst.trap_min_s=4",
+    "--set",
+    "burst.hit_eval_from_s=2",
+    "--name",
+    "agentload_mock_demo_burst"
+  ],
+  "git": {
+    "commit": "c37374d0c9e4a8001505c6ce50f6be390aaf9c1a",
+    "dirty": false,
+    "branch": "harness/prefix-meta",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.7",
+    "numpy": "1.26.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshats-MacBook-Pro.local",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-21T02:10:59",
+  "end_time": "2026-10-21T02:10:59",
+  "wall_s": 0.022951,
+  "slurm_env": {},
+  "inputs": [
+    {
+      "run_dir": "results/agentload_mock_demo/20261021-021039",
+      "label": "mock",
+      "seed": 0,
+      "run_git": {
+        "commit": "c37374d0c9e4a8001505c6ce50f6be390aaf9c1a",
+        "dirty": false,
+        "branch": "harness/prefix-meta",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-21T02:10:39",
+      "hardware": "Apple M3 Max CPU (simulation)",
+      "slurm_env": {}
+    }
+  ],
+  "n_runs": 1,
+  "kill_verdict": {
+    "interval": [
+      1.2,
+      2.0
+    ],
+    "fraction_min": 0.6666666666666666,
+    "min_runs_per_cell": 3,
+    "cells": {},
+    "n_fcfs_cells_with_data": 0,
+    "mechanism_transfers_any_fcfs_cell_strict": false,
+    "mechanism_transfers_any_fcfs_cell_loose": false,
+    "kill_strict": null,
+    "kill_loose": null
+  }
+}

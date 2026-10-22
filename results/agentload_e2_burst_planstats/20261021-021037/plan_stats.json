@@ -1,0 +1,12 @@
+{
+  "kind": "constant",
+  "seed": 0,
+  "resolved_rate": 0.07587031578947369,
+  "n_sessions": 914,
+  "n_burst_sessions": 200,
+  "n_turns_total": 13533,
+  "mean_turns_per_session": 14.806345733041576,
+  "expected_turns_per_session": 14.761055049953429,
+  "all_miss_prompt_tokens_total": 141076650,
+  "max_prompt_tokens": 40350
+}

@@ -1,0 +1,86 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "mock-fcfs": {
+      "n": [
+        2,
+        4
+      ],
+      "n_runs": [
+        1,
+        1
+      ],
+      "mu_sessions": [
+        2.332865313112685,
+        4.109955109971543
+      ],
+      "mu_turns_based": [
+        2.237095087979969,
+        4.502507835803016
+      ],
+      "turns_per_s": [
+        8.664928305847116,
+        17.43953925041979
+      ],
+      "hit_frac_turns": [
+        0.7307692307692307,
+        0.7643312101910829
+      ],
+      "hit_frac_followup": [
+        1.0,
+        1.0
+      ],
+      "cached_frac_tokens": [
+        0.739985820630982,
+        0.7659058607139871
+      ],
+      "queue_mean": [
+        0.0,
+        0.0
+      ],
+      "n_aborted_runs": 0,
+      "argmax_n_by_estimator": {
+        "sessions": 4,
+        "turns_based": 4
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 4,
+      "mu_max": 4.109955109971543,
+      "argmax_margin_rel": 0.43238666829895434,
+      "runner_up_n": 2,
+      "argmax_ambiguous": false,
+      "n_inf": 300,
+      "mu_n_inf": null,
+      "missing_n": [
+        16,
+        24,
+        32,
+        48,
+        96,
+        300
+      ],
+      "complete_grid": false,
+      "extra_n": [
+        2,
+        4
+      ],
+      "mu_by_n": {
+        "2": 2.332865313112685,
+        "4": 4.109955109971543
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "mock-fcfs",
+  "fcfs_substr": "fcfs",
+  "n_cap": 4,
+  "mu_300": null,
+  "mu_max": 4.109955109971543,
+  "notes": [
+    "primary cell mock-fcfs: n grid incomplete, missing [16, 24, 32, 48, 96, 300]; n_cap is the argmax over the points that exist",
+    "mu(n=300) missing: the recovery threshold cannot be predicted"
+  ],
+  "warmup_s": 3.0,
+  "inputs_unverified_start": []
+}
