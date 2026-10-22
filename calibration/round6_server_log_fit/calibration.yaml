@@ -1,0 +1,338 @@
+# Calibrated iteration-time cost model for the prefix-meta simulator (keys = configs/prefix_meta.yaml 'engine').
+# Only the five cost parameters and prefill_attn_ctx differ from the config; all other engine keys are copied unchanged.
+engine:
+  iter_fixed_s: 0.00924
+  iter_floor_s: 0.00126
+  per_token_s: 6.26e-05
+  decode_attn_s: 0.00031
+  attn_ctx_norm: 8192
+  prefill_attn_s: 2.24e-09
+  prefill_attn_ctx: mid
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 300000
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+provenance:
+  created: '2026-10-22T13:43:28'
+  what: Iteration-time cost model fitted to SGLang 0.5.22 server logs (Qwen2.5-7B-Instruct, 1x A100 80GB PCIe).
+  scripts:
+    parse_logs.py: /private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/simcal/calib/parse_logs.py
+    build_datasets.py: /private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/simcal/calib/build_datasets.py
+    fit.py: /private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/simcal/calib/fit.py
+    validate.py: /private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/simcal/calib/validate.py
+    hits.py: /private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/simcal/calib/hits.py
+    make_yaml.py: /private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/simcal/calib/make_yaml.py
+  environment:
+    python: 3.12.7
+    numpy: 1.26.4
+    scipy: 1.13.1
+    interpreter: /opt/anaconda3/bin/python
+    machine: arm64
+  simulator_repo:
+    path: /Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta
+    commit: 44dd21f4f5a1f0414026f5c400ce467b7190c36d
+    dirty: true
+    config_read: /Users/akshat/research/jannesari-swapp/.claude/worktrees/prefix-meta/configs/prefix_meta.yaml
+    previous_values:
+      iter_fixed_s: 0.002
+      iter_floor_s: 0.0095
+      per_token_s: 8.4e-05
+      decode_attn_s: 0.00071
+      prefill_attn_s: 3.5e-09
+      prefill_attn_ctx: end
+  data:
+    logs:
+    - job: '17060165'
+      path: /Users/akshat/research/jannesari-swapp/results/nova/s0_smoke_17060165_pulled_20261021-152347/nova_job_logs/17060165-20261021-104104/server.log
+      node: nova22-gpu-1
+      content: s0 smoke, fcfs
+      sha256: 5795b9cb9cf37804c83c425ef91d370438e3dc4736f663551be0337da7fc7056
+    - job: '17062103'
+      path: /Users/akshat/research/jannesari-swapp/results/nova/stageC_1706210x_pulled_20261022-125454/nova_job_logs/17062103-20261021-153631/server.log
+      node: nova22-gpu-1
+      content: stage C closed, fcfs, n in {16,20,24,32}
+      sha256: 4b616d56b8c15d24e38463c87e83eb98d942b6ca635021e3809bc8c4506a463e
+    - job: '17062104'
+      path: /Users/akshat/research/jannesari-swapp/results/nova/stageC_1706210x_pulled_20261022-125454/nova_job_logs/17062104-20261021-164755/server.log
+      node: nova22-gpu-3
+      content: stage C closed, fcfs, n in {48,96,300}
+      sha256: 72dc4c08b4a06af97e24e8d0a49f1bc5ce3a6c5f88cc0c8a768fd3def45a5564
+    - job: '17062105'
+      path: /Users/akshat/research/jannesari-swapp/results/nova/stageC_1706210x_pulled_20261022-125454/nova_job_logs/17062105-20261021-165439/server.log
+      node: nova22-gpu-2
+      content: stage C closed, lpm, n in {48,300}
+      sha256: 066405f5c9881d0d01ef9a8b3ef1b0de65c57d5bf3a25de97ecc60e1039e4700
+    engine: sglang 0.5.22, flashinfer 0.7.1, torch 2.14.1; attention/sampling backend flashinfer; CUDA graphs on; overlap
+      scheduler on; enable_mixed_chunk False; chunked_prefill_size 8192; max_prefill_tokens 16384; max_running_requests 256;
+      max_total_tokens 300000; page_size 1; decode_log_interval 40; model Qwen/Qwen2.5-7B-Instruct rev a09a35458c70; workload
+      ignore_eos, 100 output tokens/turn
+    blindness: Only the two allowed pulled dirs (server.log + run metadata) and read-only SGLang source on Nova were used;
+      no E0a/E0b/E2 data, no Nova results/ or logs/, no squeue/sacct.
+  definitions:
+    input_throughput: (#new-token + replay tokens) / wall time since the previous Prefill line; both logged at result processing
+      of every prefill batch (metrics_reporter.py report_prefill_stats). The interval includes any decode iterations and idle
+      time since the previous prefill.
+    gen_throughput: sum of decode-batch sizes over the last 40 decode batches / wall time since the previous Decode line (logged
+      when forward_ct_decode % 40 == 0; prefill first tokens not counted). The interval includes prefill iterations run in
+      between.
+    decode_token: '#token = max_total_num_tokens - (available + evictable) = KV tokens pinned by running requests; verified:
+      token usage == #token/300000 to rounding on all decode lines, and #token grows by exactly 40*R in 1144/1183 candidate
+      windows.'
+    cached_token: radix prefix of newly admitted requests; continuation chunks report 0 (add_chunked_req passes prefix_len=0),
+      so continuation prefixes were reconstructed from chunk chains.
+  selection:
+    decode: 'consecutive Decode lines, no Prefill line between, equal #running-req R>0, #token growth == 40*R => tau = R /
+      gen_throughput (exact).'
+    prefill: 'previous batch line is a Prefill with #new-token == 8192 (budget exhausted => chunked request, whose continuation
+      SGLang always schedules next); single-sequence batch with reconstructable prefix => tau = #new-token / input_throughput.'
+    n_decode: 1144
+    n_prefill: 1355
+    decode_blocks: 186
+    prefill_blocks: 129
+    decode_R_range:
+    - 1
+    - 142
+    prefill_X_range:
+    - 159
+    - 8192
+    prefill_prefix_range:
+    - 8192
+    - 35069
+  fit:
+    method: joint least squares on relative residuals, simulator form applied to SEPARATE P and D iterations (mixed chunk
+      off), decode and prefill sets weighted equally; 'mid' causal pair count A = X*prefix + X(X+1)/2.
+    bootstrap:
+      kind: cluster (120 s blocks per job/epoch), resampled independently per set
+      n_boot: 500
+      seed: 20261022
+      hits_seed: 7
+      hits_n_boot: 500
+    estimates:
+      iter_fixed_s:
+        value: 0.009239
+        ci95:
+        - 0.009
+        - 0.0104
+      iter_floor_s:
+        value: 0.001257
+        ci95:
+        - 0.000101
+        - 0.00147
+      per_token_s:
+        value: 6.256e-05
+        ci95:
+        - 6.15e-05
+        - 6.34e-05
+      decode_attn_s:
+        value: 0.0003095
+        ci95:
+        - 0.000276
+        - 0.000316
+      prefill_attn_s:
+        value: 2.238e-09
+        ci95:
+        - 2.19e-09
+        - 2.3e-09
+    iter_fixed_plus_floor_ci95:
+    - 0.01046
+    - 0.01056
+    metrics_decode:
+      n: 1144
+      r2: 0.9917
+      med_abs_rel: 0.007488
+      p95_abs_rel: 0.04297
+      mean_rel: 0.0002094
+    metrics_prefill:
+      n: 1355
+      r2: 0.9982
+      med_abs_rel: 0.01302
+      p95_abs_rel: 0.08269
+      mean_rel: -0.001998
+    identifiability: Decode data pin only iter_fixed+iter_floor (~10.5 ms); the split is set by the prefill intercept (iter_floor
+      CI is wide). per_token_s is identified by prefill X variation and is forced to be the decode per-sequence slope above
+      the knee R = floor/per_token ~ 20; the decode-only slope is smaller (see alternatives). prefill_attn_s is identified
+      by the prefix variation of 8192-token chunks (8k..35k prefix).
+  assumed_values_on_same_data:
+    metrics_decode:
+      n: 1144
+      r2: -3.207
+      med_abs_rel: 0.5632
+      p95_abs_rel: 0.7077
+      mean_rel: 0.4624
+    metrics_prefill_end:
+      n: 1355
+      r2: -1.396
+      med_abs_rel: 0.549
+      p95_abs_rel: 0.5824
+      mean_rel: 0.5054
+  alternatives:
+    decode_only_linear:
+      form: tau_D = a + b*R + c*sumctx/8192
+      est:
+        a_s: 0.0104
+        per_seq_s: 4.351e-05
+        per_ctx8192_s: 0.0002959
+      ci95:
+      - - 0.0104
+        - 0.0104
+      - - 3.93e-05
+        - 5.13e-05
+      - - 0.000288
+        - 0.000301
+      metrics:
+        n: 1144
+        r2: 0.9941
+        med_abs_rel: 0.009409
+        p95_abs_rel: 0.04098
+        mean_rel: -0.0003326
+    prefill_only_linear_mid:
+      est:
+        a_s: 0.009855
+        per_token_s: 6.288e-05
+        prefill_attn_s: 2.208e-09
+      ci95:
+      - - 0.00828
+        - 0.0116
+      - - 6.2e-05
+        - 6.37e-05
+      - - 2.17e-09
+        - 2.26e-09
+      metrics:
+        n: 1355
+        r2: 0.9983
+        med_abs_rel: 0.01235
+        p95_abs_rel: 0.08317
+        mean_rel: -0.001313
+    joint_simform_end:
+      prefill_attn_ctx: end
+      est:
+        iter_fixed_s: 0.01042
+        iter_floor_s: 8.741e-05
+        per_token_s: 5.94e-05
+        decode_attn_s: 0.0002793
+        prefill_attn_s: 1.954e-09
+      metrics_decode:
+        n: 1144
+        r2: 0.9923
+        med_abs_rel: 0.007555
+        p95_abs_rel: 0.04486
+        mean_rel: 0.0006064
+      metrics_prefill:
+        n: 1355
+        r2: 0.995
+        med_abs_rel: 0.02695
+        p95_abs_rel: 0.1023
+        mean_rel: -0.003251
+    hit_prefill_551:
+      form: tau_P(551 new, prefix c) = alpha + beta*c (k=0 tooth of the decode-step comb)
+      alpha_s: 0.03534
+      alpha_ci95:
+      - 0.0351
+      - 0.0357
+      beta_s_per_token: 2.103e-06
+      beta_ci95:
+      - 2.08e-06
+      - 2.13e-06
+      implied_attn_s_per_pair: 3.82e-09
+      n_k0: 1520
+      calibrated_model_rel_error_by_prefix:
+        0-4000: 0.1722107259550394
+        4000-8000: 0.09151162966894826
+        8000-16000: -0.021527856700507587
+        16000-26000: -0.1102621537891716
+  validation:
+    unknown_prefix_continuation_chunks:
+      n: 6650
+      frac_inside_pm2pct: 0.9542857142857143
+      frac_below: 0.04045112781954887
+      frac_above: 0.005263157894736842
+      median_bound_width_tokens: 8189.0
+      frac_implied_prefix_in_bound_pm2048: 0.9798496240601504
+    hit_prefill_comb:
+      note: gaps of hit prefills after a prefill form a comb; tooth k sits at k_hat ~ k - 0.35 for k >= 1 (a prefill that
+        follows decode steps is ~0.35 tau_D ~ 4 ms cheaper than one following a prefill); the spacing between teeth k >= 2
+        measures tau_D out of sample
+      tooth_median_k_hat:
+        '1': 0.651
+        '2': 1.69
+        '3': 2.65
+        '4': 3.65
+        '5': 4.64
+        '6': 5.65
+      tooth_counts:
+        '0': 1457
+        '1': 433
+        '2': 3138
+        '3': 796
+        '4': 616
+        '5': 562
+        '6': 567
+      mean_spacing_teeth_2_to_6_over_model_tauD: 0.988
+    per_job_linear:
+      '17060165':
+        decode_linear:
+          n: 59
+          est:
+          - 0.010522663848161683
+          - 1.9702045059843466e-05
+          - 0.0002993680277745708
+        prefill_linear_mid:
+          n: 195
+          est:
+          - 0.013101839658468813
+          - 6.237609210790363e-05
+          - 2.161100782024393e-09
+      '17062103':
+        decode_linear:
+          n: 537
+          est:
+          - 0.010430139693527712
+          - 3.0977711008916685e-05
+          - 0.00029904525476829664
+        prefill_linear_mid:
+          n: 612
+          est:
+          - 0.010113524149722207
+          - 6.535319493825188e-05
+          - 2.1392091113209207e-09
+      '17062104':
+        decode_linear:
+          n: 291
+          est:
+          - 0.00903744553479511
+          - 4.3130792094503326e-05
+          - 0.0003353074718689505
+        prefill_linear_mid:
+          n: 341
+          est:
+          - 0.0066430717929206184
+          - 6.216331106304602e-05
+          - 2.1944192667590292e-09
+      '17062105':
+        decode_linear:
+          n: 257
+          est:
+          - 0.009483563365515684
+          - 4.106933432034476e-05
+          - 0.0003270260530490732
+        prefill_linear_mid:
+          n: 207
+          est:
+          - 0.009748522595673274
+          - 6.0989180392315365e-05
+          - 2.2702382279591225e-09
+  caveats:
+  - SGLang runs prefill and decode as separate iterations and starves decode while any prefill batch can be formed ('Run prefill
+    first if possible'); the simulator mixes them. With these values a simulator iteration with X prefill tokens and n_D decoders
+    costs ~(iter_fixed+iter_floor - per_token*n_D) less than SGLang's P+D pair.
+  - 'Decode per-sequence slope in SGLang is ~4.4e-5 s/seq; the shared per_token_s forces 6.3e-5 above R~20: +5..12% decode
+    error at R>=80, -6% near R~32 (CUDA-graph bucket structure).'
+  - Hit prefills (551 new tokens) have a higher per-pair attention cost (~3.8e-9 s) than 8192 chunks; the calibrated model
+    is +17% (prefix<4k) .. -11% (prefix>16k) on them, ~0 near 10k.
+  - 'Node-to-node spread (3 A100 nodes): per-job prefill per_token 6.1e-5..6.5e-5 s, decode intercept 9.0..10.5 ms.'
+  - iteration times are wall-clock scheduler cycles (GPU forward plus non-overlapped CPU), which is what the simulator needs,
+    not pure kernel time.

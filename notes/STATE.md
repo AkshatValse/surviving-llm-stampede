@@ -1,24 +1,57 @@
 # STATE
 
-_Last updated: 2026-10-22 ~13:20 CDT_
+_Last updated: 2026-10-22 ~14:00 CDT (moving to an always-on PC)_
 
 ## Phase
 - **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds.
 - **Now:** Stages 0 and C are done (real thrashing curve verified). Next GPU batch awaiting approval.
 
-## RESUME HERE
-- **Stage C is done and verified.** Results are in `notes/LOG.md` (2026-10-22 entry) and `notes/STAGEC_VERIFICATION.md`. Data: `results/nova/stageC_1706210x_pulled_20261022-125454/`.
-- **Headline:**
-  - The real SGLang thrashing curve is unimodal. Peak n≈20–24, at about 0.23 sessions/s.
-  - Hit rate falls to 0 at n≥48 (engine-confirmed). The all-miss floor is about 0.075 sessions/s, roughly 3× below the peak.
-  - Hit fractions at n≤24 match the simulator within 0.01.
-  - Metastability is not yet tested.
-- **Akshat chose (2026-10-22):** skip the closed-system follow-ups. Go E0a, then E0b, then pre-registration, then the E2 paired-arm kill test. Runbook with exact commands and GPU-h: `notes/E2_RUNBOOK.md` on `harness/prefix-meta`, about 59 GPU-h total with 2 λ points. **Awaiting OK to submit E0a.**
-- (Superseded) choose and approve the next GPU batch. The ranked list is in the LOG entry. My suggested order:
-  1. Pre-aged-start harness work (local, no GPU).
-  2. E0a λ_miss at the stationary mix.
-  3. Replicates plus hysteresis at n=24/28/32.
-  4. E0b, pre-registration, then the E2 paired-arm kill test.
+## RESUME HERE (written 2026-10-22 ~14:00, just before moving to an always-on PC)
+
+### 0. Migrating to the new machine (do this first)
+- **Nothing has a remote; every branch is local only.** Copy the WHOLE directory `/Users/akshat/research/jannesari-swapp`, including:
+  - `.git/` (all branches);
+  - `results/` (gitignored: about 200+ MB of pulled Nova data and simulator outputs);
+  - `.claude/` (project agents and settings).
+- After copying to a new path, run `git worktree repair` from the repo root, or delete `.claude/worktrees/` and run `git worktree prune`. Recreate worktrees as needed from these branches:
+  - `harness/prefix-meta`: the real-engine harness. It is the source of the Nova clone.
+  - `pilot/prefix-meta`: the simulator, rounds 1–5, clean.
+  - `wip/r6-separate-batching`: the simulator's SGLang-style separate prefill/decode batching mode. **UNREVIEWED, interrupted mid-implementation, tests not run.**
+  - Killed directions: `pilot/kvrent`, `pilot/vat`, `pilot/delay-eos`.
+- **Optional, Akshat's call:** create a private GitHub remote and push every branch, so future moves are trivial.
+- On the new PC, check these:
+  - **Python.** This Mac used `/opt/anaconda3/bin/python` with NumPy 1.26, SciPy, pandas 2.2, Numba, matplotlib, PyYAML, pytest and aiohttp. Update the paths in CLAUDE.md.
+  - **SSH.** The `ssh nova` alias must work non-interactively (`ssh -o BatchMode=yes nova true`). A ControlMaster session or keys is fine; never handle passwords.
+  - **Lost on the move:** the scratchpad (`/private/tmp/...`) and the workflow journals (`~/.claude/projects/...`). Everything needed from them has been copied into the repo.
+
+### 1. Nova: E0a is in flight
+- **Jobs.** 17072634 (POP=32, seed 0) was RUNNING at 13:49. 17072635 (seed 1), 17072636 (seed 2) and 17072637 (POP=64 check) were PENDING. All have a 1.5 h limit.
+  ```bash
+  ssh nova 'sacct -j 17072634,17072635,17072636,17072637 -X -o JobID,State,ExitCode,Elapsed,NodeList'
+  ```
+- **When all four are done:**
+  1. Pull the run dirs read-only (`results/agentload_e0_miss/<ts>/` × 4, `results/agentload_analysis_miss/<ts>/`, `results/nova_job_logs/1707263[4-7]-*`) to a new local dir.
+  2. Check: the 3 seeds agree within about 5%; POP=64 is within about 5% of POP=32; there is no trend across 300 s bins.
+  3. Build the combined `calibration.json` from the 3 POP=32 run dirs. On the Nova login node with nice: `$W/envs/swapp/bin/python -m analysis.summarize miss --run-dirs <3 dirs> --warmup-s 900 --out-root results`.
+- **Then E0b** (Akshat authorized "submit everything you think is best"): 6 parallel one-run jobs, `--time=01:30:00`, `MULTS` = each of 1.25 1.5 1.75 2.0 2.5 3.0, with `CALIB_FILE` set to the combined file. Commands are in `notes/E2_RUNBOOK.md` on `harness/prefix-meta`; split `MULTS` into one value per job.
+- **Then pre-registration** (runbook Stage 3):
+  - Use `--n-cap-rule smallest_within_margin`, which gives n_cap=20. It was added in harness commit fe48315.
+  - 2 λ points at ⅓ and ⅔ of the window.
+  - Copy the inputs into `prereg/inputs/<date>/`, commit, and sync to Nova.
+- **Then E2:** 18 one-arm jobs, each with `--time=03:10:00`.
+
+### 2. Local round 6: timing-calibrated simulator plus blind predictions (INTERRUPTED)
+- **Done:** calibration from SGLang server-log timing only. Decode R² 0.992, prefill R² 0.998, median error about 1%; the assumed constants were about 55% too high. Files: `calibration/round6_server_log_fit/` (`calibration.yaml`, scripts, `CALIBRATION_REPORT.md`). Large parsed pickles: `results/sim_calibration_round6/`.
+- **Not done:**
+  - Finish and test `wip/r6-separate-batching`.
+  - Validate against Stage C μ(n), out of sample.
+  - Make blind predictions (B1 E0a, B2 E0b, B3 E2 arms, B4 native pool) and commit `PREDICTIONS.md` **before** looking at the matching real results.
+  - Independent verification.
+  - The original workflow script is described in `notes/LOG.md` (round-6 entry). Rerun those stages on the new PC.
+- **Blindness after the move:**
+  - B1 (E0a) can no longer be time-blind. E0a will finish first, so treat B1 as non-blind unless the prediction agents are provably walled off from E0a data.
+  - B2–B4 stay blind if `PREDICTIONS.md` is committed before E0b and E2 results are read.
+  - **Suggested order:** commit predictions before submitting E0b, or at least before pulling its results.
 
 ## Nova setup (done)
 - **Project root:** `/work/classtmp/avalse/swapp`, class storage. It is deleted at semester end. Never touch the sibling `hpcml-*` dirs.
