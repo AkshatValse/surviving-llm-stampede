@@ -1,26 +1,23 @@
 # STATE
 
-_Last updated: 2026-10-21 ~15:35 CDT_
+_Last updated: 2026-10-22 ~13:20 CDT_
 
 ## Phase
 - **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds.
-- **Now:** Stage 0 passed. Stage C is next and is awaiting approval.
+- **Now:** Stages 0 and C are done (real thrashing curve verified). Next GPU batch awaiting approval.
 
 ## RESUME HERE
-- **Stage 0 PASSED** (job 17060165). See `notes/LOG.md`, plan §"Stage 0 result" on `harness/prefix-meta`, and local results in `results/nova/s0_smoke_17060165_pulled_20261021-152347/`.
-- **Stage C SUBMITTED** (approved). Jobs: 17062103 (FCFS, n=16/20/24/32), 17062104 (FCFS, n=48/96/300), 17062105 (LPM, n=48/300). When all three finish, pull `results/agentload_c_closed*/`, `results/agentload_analysis_closed*/` and `results/nova_job_logs/1706210[345]-*` to a new local dir, then run `analysis.summarize closed` over all run dirs.
-- Sync the Nova clone to harness 89a3c7d or later before submitting.
-
-Stage C commands. Run them on Nova from `/work/classtmp/avalse/swapp/repo` after `env | grep ^SBATCH_` prints nothing:
-```bash
-W=/work/classtmp/avalse/swapp; COMMON="ENV_GEN=$W/envs/swapp,ENV_SGLANG=$W/envs/sglang,HF_HOME=$W/hf,XDG_CACHE_HOME=$W/cache,CUDA_HOME_SHIM=$W/cuda13-home,HF_REVISION=a09a35458c702b33eeacc393d103063234e8bc28,OUTPUT_FEEDBACK=server,MODE=closed"
-sbatch --export=ALL,$COMMON,POLICY=fcfs,N_LIST="16 20 24 32" slurm/sglang_job.sbatch
-sbatch --export=ALL,$COMMON,POLICY=fcfs,N_LIST="48 96 300" slurm/sglang_job.sbatch
-sbatch --export=ALL,$COMMON,POLICY=lpm,N_LIST="48 300" slurm/sglang_job.sbatch
-```
-- Shape: 3 jobs, each 1×A100 with a 4 h limit. Plan arithmetic is about 8.5 GPU-h.
-- Each run is 900 s of warmup plus 1800 s measured.
-- [redacted: other course; see provenance/REDACTIONS.md]
+- **Stage C is done and verified.** Results are in `notes/LOG.md` (2026-10-22 entry) and `notes/STAGEC_VERIFICATION.md`. Data: `results/nova/stageC_1706210x_pulled_20261022-125454/`.
+- **Headline:**
+  - The real SGLang thrashing curve is unimodal. Peak n≈20–24, at about 0.23 sessions/s.
+  - Hit rate falls to 0 at n≥48 (engine-confirmed). The all-miss floor is about 0.075 sessions/s, roughly 3× below the peak.
+  - Hit fractions at n≤24 match the simulator within 0.01.
+  - Metastability is not yet tested.
+- **Awaiting Akshat:** choose and approve the next GPU batch. The ranked list is in the LOG entry. My suggested order:
+  1. Pre-aged-start harness work (local, no GPU).
+  2. E0a λ_miss at the stationary mix.
+  3. Replicates plus hysteresis at n=24/28/32.
+  4. E0b, pre-registration, then the E2 paired-arm kill test.
 
 ## Nova setup (done)
 - **Project root:** `/work/classtmp/avalse/swapp`, class storage. It is deleted at semester end. Never touch the sibling `hpcml-*` dirs.

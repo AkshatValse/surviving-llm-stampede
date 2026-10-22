@@ -315,3 +315,56 @@ Novelty sits in the agent-serving application and in the evaluation of deployed 
 - the LPM tail versus the FCFS tail.
 
 Known bias: μ(300) is biased upward because all sessions start at the same time and the run is short. It serves only as a check (see the harness review).
+
+## 2026-10-22 — Stage C: the real-engine closed-population thrashing curve (SGLang)
+**Question.** On a real engine, does the closed-population throughput μ(n) for this agent workload have the simulator's unimodal shape with a cliff, and an all-miss collapse caused by KV crowd-out?
+
+**Setup.**
+- Jobs 17062103, 17062104 and 17062105, all COMPLETED 0:0. Total wall time 7.3 GPU-h.
+- Hardware: three A100 80GB PCIe nodes (nova22-gpu-1, gpu-3, gpu-2) on account `f2026.coms.6250.02`. Harness commit 89a3c7d.
+- Engine: SGLang 0.5.22 serving Qwen2.5-7B, with a 300k-token KV cap, FlashInfer, and `OUTPUT_FEEDBACK=server`.
+- Protocol: one closed run per n, seed 0, 900 s warmup plus 1800 s measured. The canary check passed for all 12.
+- Data pulled read-only to `results/nova/stageC_1706210x_pulled_20261022-125454/`. Harness analysis is in `analysis_local/…/20261022-125619/`.
+- Verification ran as a 4-agent workflow; reports are in `notes/STAGEC_VERIFICATION.md` and scripts in `verification/`.
+
+**Result (sessions/s).** "Hit" is the fraction of turns with more than 50% of tokens cached. "SE" is the batch-means standard error over 300 s bins and understates uncertainty where bins are autocorrelated.
+
+| Policy | n | μ (sessions/s) | Hit | Engine cached share | Note |
+|---|---|---|---|---|---|
+| FCFS | 16 | 0.176 | 0.93 | | |
+| FCFS | 20 | 0.224 | 0.93 | | |
+| FCFS | 24 | 0.233 | 0.89 | | turns-based 0.226 ± 0.019 SE; contains one degraded excursion |
+| FCFS | 32 | 0.115 | 0.51 | | mixes regimes: degraded about 450–2400 s, then recovered to hit 0.80 |
+| FCFS | 48 | 0.049 | **0.000** | 0 of 20.0M tokens | |
+| FCFS | 96 | 0.061 | 0.000 | | |
+| FCFS | 300 | 0.108 | 0.000 | | |
+| LPM | 48 | 0.087 | 0.385 | | rising 0.28 → 0.44; not stationary |
+| LPM | 300 | 0.105 | 0.000 | | queue 269 > 128, so SGLang's LPM has fallen back to FCFS |
+
+**Verified.** Three sources agree that hit is 0 at n≥48: client usage, engine Prometheus counters, and server-log prefill lines. Nothing in the runs points to a fault:
+- Eviction survival is about 3–6 s against a 31–66 s reuse gap, so this is real LRU thrash.
+- Prompt continuity is exact (cached = prompt − 551), and every response returned server token ids.
+- There were 0 errors and 0 retractions.
+
+Comparison with the simulator's FCFS curve:
+- Hit fractions at n≤24 match within 0.01.
+- The 0.5-hit crossing is at about 32.2 (simulator about 30.6).
+- The peak is at n≈20–24 (simulator 20–22).
+
+**Corrections and caveats.**
+- The tail ordering μ(48) < μ(96) < μ(300) is a **synchronized-start transient**, not a property of the system. The throughput-implied all-miss floor is roughly flat at 0.072–0.081 sessions/s, so the real collapse is about 3× (μ\*/floor), not 4.5×. At n=300, in-flight prompts are only 71% of the stationary length.
+- Real/simulator μ ratios range from 1.1 to 2.3, because the simulator's constants were assumed. The shape matches; the levels do not.
+- One seed per n. The n=32→48 step crosses nodes. The server seed was not pinned.
+- The critic's main point: the cliff location follows from memory alone (n_fit = M / E_lb = 28.4). That is Denning's thrashing curve. Novelty therefore has to come from metastability and hysteresis in the open system, from degraded episodes below n_fit, and from the evaluation of the mechanisms that are actually deployed.
+- The degraded-then-recovered episodes at n=24 and n=32 hint at metastable switching. They may also be start-up cohort artifacts, since each run has a single seed.
+- "Deployed LPM falls back to FCFS and therefore loses its benefit at n=300" still rests on reading the code. At n=300 the pool may be oversubscribed whatever the ordering. Testing it needs a patched-threshold run.
+
+**Interpretation.** The simulator's mechanism transfers qualitatively, and partly quantitatively, to a real engine. The thrashing curve is real. The metastability claim is not tested yet.
+
+**Next** (critic's ranking by information per GPU-hour; each needs Akshat's OK):
+1. All-miss calibration (E0a) at the stationary mix: about 1 GPU-h.
+2. Replicates plus a hysteresis test at n ∈ {24, 28, 32}, 3 seeds, one node, server seed pinned, with an injected eviction burst: about 10 GPU-h.
+3. Staggered (pre-aged) starts. Needs harness work first.
+4. M-scaling, including the native pool: about 5 GPU-h.
+5. Patched-threshold LPM to test causality: about 4 GPU-h.
+6. Then E0b, pre-registration, and the paired-arm open-system kill test.
