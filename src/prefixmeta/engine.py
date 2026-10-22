@@ -126,6 +126,44 @@ vLLM v0.32.0 (``ondemand_preempt``) and SGLang v0.5.22 (``ratio_reserve``); NOT 
   - thrash counters: ``max_preempt_per_turn``, ``n_turns_preempted``, ``n_turns_preempted_ge3``; window columns ``recompute_processed``
     (prefill tokens processed for re-admitted requests), ``lost_prefill`` (admitted prefill tokens discarded unprocessed) and
     ``preempt_max_turn`` (review finding F3). ``recompute_tokens`` stays the re-admission DEMAND (tokens a re-admission asks for).
+
+Iteration batching modes (``EngineParams.batching``; ``mixed`` = everything above, the default, bit-identical to the engine before this option)
+------------------------------------------------------------------------------------------------------------------------------------------
+* ``mixed`` (default). Every iteration advances ALL running decode sequences by one token and carries up to ``prefill_chunk_budget`` prefill
+  tokens (chunked prefill piggy-backed on the decode batch); the shared iteration-time formula at the top of this docstring applies.
+* ``separate_prefill_priority`` (SGLang's default scheduler, ``enable_mixed_chunk=False``; scheduler.py ``get_next_batch_to_run``: "run prefill
+  first if possible"). Each iteration is EITHER a prefill iteration OR a decode iteration, never both:
+
+  - At every iteration boundary the admission pass runs first (when the state changed, as before). If it leaves a prefill batch to run (a
+    request was admitted now, or a chunked prefill is in progress, i.e. ``Engine.prefill`` is non-empty) the iteration is a PREFILL iteration:
+    the FIFO chunk hand-out of ``prefill_chunk_budget`` NEW tokens over the admitted-but-unfinished requests (SGLang subtracts the running decode
+    batch from the chunk budget only in mixed mode, so the budget is the full ``prefill_chunk_budget`` here). The decode sequences do NOT
+    advance (no token, no context growth, ``G`` unchanged); a request whose last chunk runs emits its first token in that iteration and then
+    joins the decode set with context prompt + 1, exactly as in mixed mode. Prefill has priority: while requests can be admitted decode starves.
+  - Otherwise, if any sequence is decoding, the iteration is a DECODE iteration: every decode sequence advances one token. The closed-form
+    batching of pure-decode runs (section "Iteration batching") is still EXACT, because the composition of a decode run is fixed between
+    events and its iteration time is linear in the iteration index; it only uses the decode cost terms below (tested against the unbatched engine).
+  - Iteration times::
+
+        tau_prefill = prefill_iter_fixed_s + prefill_per_token_s * (new prefill tokens) + prefill_attn_s * sum_{chunks} new_i * ctx_i
+        tau_decode  = decode_iter_fixed_s + max(decode_iter_floor_s, decode_per_seq_s * n_decode)
+                      + decode_attn_s * sum_{decode seqs} ctx_i / attn_ctx_norm
+
+    ``prefill_attn_s`` and ``decode_attn_s`` are the existing keys. The other five are OPTIONAL and fall back to the shared keys when absent:
+    prefill_iter_fixed_s <- iter_fixed_s, prefill_per_token_s <- per_token_s, decode_iter_fixed_s <- iter_fixed_s, decode_iter_floor_s <-
+    iter_floor_s, decode_per_seq_s <- per_token_s. There is deliberately NO floor on a prefill iteration (the floor models the weight-read time
+    of a small decode batch; a prefill iteration of a few tokens is not modelled separately). In ``mixed`` mode the five keys are ignored.
+  - Supported with ``full_reserve`` and ``ratio_reserve`` (the SGLang-like allocation mode). ``ondemand_preempt`` (vLLM-like) is refused: vLLM's
+    chunked-prefill scheduler is mixed by construction and a separate-iteration vLLM would be a different system.
+  - ``ratio_reserve`` ordering (as in SGLang): the admission pass first; then, if a prefill iteration runs, only its chunks are allocated (decode
+    sequences allocate nothing, the new-token ratio does not decay); if a decode iteration runs, the decode-OOM check / retraction and the ratio
+    decay happen there (``update_running_batch``). In mixed mode the running loop (retraction) comes before the waiting loop instead.
+  - Known gap (also present in mixed mode): the pass is re-run only when the state changed; SGLang's ``batch_is_full`` flag has a similar effect
+    after a failed admission, but a new arrival can be admitted by an LPM pass here while SGLang would not retry until a request finished.
+  - Not modelled (source-read in SGLang's scheduler.py / schedule_policy.py, not measured): ``max_prefill_tokens`` (a second prefill budget that is
+    charged the same new-token amount as the chunk budget, so it never binds while ``prefill_chunk_budget <= max_prefill_tokens``),
+    ``prefill_max_requests``, the prefill / min-free-slots delayers, the page-size rounding of the budgets, and the overlap scheduler.
+  - Extra statistics (``stats()``, only in this mode): n_prefill_iters, n_decode_iters, prefill_busy_s, decode_busy_s.
 """
 from __future__ import annotations
 
@@ -150,6 +188,10 @@ FULL_RESERVE = "full_reserve"
 ONDEMAND_PREEMPT = "ondemand_preempt"
 RATIO_RESERVE = "ratio_reserve"
 ALLOC_MODES = (FULL_RESERVE, ONDEMAND_PREEMPT, RATIO_RESERVE)
+
+MIXED = "mixed"
+SEPARATE_PREFILL_PRIORITY = "separate_prefill_priority"
+BATCHING_MODES = (MIXED, SEPARATE_PREFILL_PRIORITY)
 
 
 def ondemand_admit_ok(held: float, total_tokens: int, watermark_tokens: int, M: float) -> bool:
@@ -205,10 +247,26 @@ class EngineParams:
     #                                           session is evicted all-or-nothing like every idle session; rounds 1-4 / stage-1 behaviour)
     ondemand_admission: str = "full_isl"      # ondemand_preempt waiting-loop test: "full_isl" (registered; scout: scheduler_reserve_full_isl=True,
     #                                           the whole sequence must fit) | "first_chunk" (sensitivity: hit + first chunk must fit)
+    # ---- iteration batching (see the module docstring, "Iteration batching modes"); the default reproduces the engine before this option -------
+    batching: str = MIXED                     # "mixed" | "separate_prefill_priority" (SGLang default scheduler, enable_mixed_chunk=False)
+    prefill_iter_fixed_s: Optional[float] = None   # the five optional per-iteration-type costs are used ONLY by separate_prefill_priority;
+    prefill_per_token_s: Optional[float] = None    # None = fall back to the shared key (iter_fixed_s / per_token_s / iter_floor_s). The attention
+    decode_iter_fixed_s: Optional[float] = None    # terms keep their shared keys: prefill_attn_s (prefill iterations), decode_attn_s (decode iterations).
+    decode_iter_floor_s: Optional[float] = None
+    decode_per_seq_s: Optional[float] = None
 
     @classmethod
     def from_dict(cls, d: dict) -> "EngineParams":
         p = cls(**d)
+        if p.batching not in BATCHING_MODES:
+            raise ValueError(f"batching must be one of {BATCHING_MODES}, got {p.batching!r}")
+        if p.batching == SEPARATE_PREFILL_PRIORITY and p.alloc_mode == ONDEMAND_PREEMPT:
+            raise ValueError("batching='separate_prefill_priority' is implemented for alloc_mode full_reserve and ratio_reserve only "
+                             "(vLLM-like ondemand_preempt schedules mixed iterations by construction)")
+        for k in ("prefill_iter_fixed_s", "prefill_per_token_s", "decode_iter_fixed_s", "decode_iter_floor_s", "decode_per_seq_s"):
+            v = getattr(p, k)
+            if v is not None and not (v >= 0.0):
+                raise ValueError(f"{k} must be >= 0 (or absent), got {v!r}")
         if p.prefill_attn_ctx not in ("end", "mid"):
             raise ValueError("prefill_attn_ctx must be 'end' or 'mid'")
         if p.alloc_mode not in ALLOC_MODES:
@@ -380,6 +438,28 @@ class Engine:
         self.max_held_tokens = 0           # only tracked when debug
         self.processed_prefill_tokens = 0  # prefill tokens processed by iterations (all modes)
         self.trace: Optional[list] = None  # set to [] to record ("A", sid, turn, hit, t) / ("D", sid, turn, t); allocation modes also ("P", sid, turn, kv_kept, t) preemption / retraction and ("R", sid, turn, hit_tokens, new_tokens, t) re-admission
+
+        # iteration batching. In ``mixed`` mode the decode cost terms ARE the shared keys, so the decode run below evaluates exactly the same floats
+        # as the engine before the option existed (bit-identical); ``separate_prefill_priority`` resolves the optional per-type keys (module docstring).
+        self._sep = params.batching == SEPARATE_PREFILL_PRIORITY
+        self._dc_fixed = params.iter_fixed_s
+        self._dc_floor = params.iter_floor_s
+        self._dc_seq = params.per_token_s
+        self._pf_fixed = params.iter_fixed_s
+        self._pf_tok = params.per_token_s
+        if self._sep:
+            if params.decode_iter_fixed_s is not None:
+                self._dc_fixed = params.decode_iter_fixed_s
+            if params.decode_iter_floor_s is not None:
+                self._dc_floor = params.decode_iter_floor_s
+            if params.decode_per_seq_s is not None:
+                self._dc_seq = params.decode_per_seq_s
+            if params.prefill_iter_fixed_s is not None:
+                self._pf_fixed = params.prefill_iter_fixed_s
+            if params.prefill_per_token_s is not None:
+                self._pf_tok = params.prefill_per_token_s
+        self.n_prefill_iters = 0           # separate_prefill_priority only: prefill-only iterations (decode iterations = n_iterations - this)
+        self.prefill_busy_s = 0.0          # separate_prefill_priority only: time spent in prefill iterations
 
         # round 5: allocation modes. Everything below is inert (never read) when alloc_mode == full_reserve.
         self._alloc = params.alloc_mode
@@ -967,12 +1047,16 @@ class Engine:
                 ntok += c
                 attn += c * ((req.pos + 0.5 * c) if mid else (req.pos + c))
         n_D = self.n_D
-        sumctx = self.sum_off + n_D * self.G
-        dec_tok = ntok + n_D
-        tok_t = p.per_token_s * dec_tok
-        if tok_t < p.iter_floor_s:
-            tok_t = p.iter_floor_s
-        tau = p.iter_fixed_s + tok_t + p.decode_attn_s * sumctx / p.attn_ctx_norm + p.prefill_attn_s * attn
+        if self._sep:
+            # prefill-only iteration (batching=separate_prefill_priority): the decode sequences do not take part and do not advance
+            tau = self._pf_fixed + self._pf_tok * ntok + p.prefill_attn_s * attn
+        else:
+            sumctx = self.sum_off + n_D * self.G
+            dec_tok = ntok + n_D
+            tok_t = p.per_token_s * dec_tok
+            if tok_t < p.iter_floor_s:
+                tok_t = p.iter_floor_s
+            tau = p.iter_fixed_s + tok_t + p.decode_attn_s * sumctx / p.attn_ctx_norm + p.prefill_attn_s * attn
         t0 = self.now
         self.now = t0 + tau
         self.busy_s += tau
@@ -987,12 +1071,17 @@ class Engine:
             if rp:
                 self.recompute_processed_tokens += rp
                 self.rec.add_recompute_processed(self.now, rp)
-        self.G += 1
+        if self._sep:
+            self.n_prefill_iters += 1
+            self.prefill_busy_s += tau
+        else:
+            self.G += 1
         self.n_iterations += 1
         self.n_steps += 1
-        if self._dyn and n_D:
-            self._decay_ratio(1)
-        self._collect_done_decodes()      # decode members of this iteration (before new members join)
+        if not self._sep:
+            if self._dyn and n_D:
+                self._decay_ratio(1)
+            self._collect_done_decodes()      # decode members of this iteration (before new members join)
         d = self.wl.decode_tokens
         G = self.G
         finished = False
@@ -1032,7 +1121,7 @@ class Engine:
             while h and h[0][2].gone:                  # entries of preempted / retracted requests
                 heapq.heappop(h)
         n_D = self.n_D
-        c0 = p.iter_fixed_s + max(p.iter_floor_s, p.per_token_s * n_D)
+        c0 = self._dc_fixed + max(self._dc_floor, self._dc_seq * n_D)
         a = p.decode_attn_s / p.attn_ctx_norm
         b = a * n_D
         tau0 = c0 + a * (self.sum_off + n_D * self.G)
@@ -1127,6 +1216,8 @@ class Engine:
         p = self.p
         if self.mech.any_protection:
             raise ValueError(f"alloc_mode={self._alloc} does not support TTL / PEEK protection")
+        if self._sep and self._alloc == ONDEMAND_PREEMPT:
+            raise ValueError("batching='separate_prefill_priority' is not implemented for alloc_mode='ondemand_preempt'")
         if self.policy.name not in ("fcfs", "lpm", "lpm_fallback"):
             raise ValueError(f"alloc_mode={self._alloc} supports the ordering policies fcfs, lpm and lpm_fallback only, "
                              f"got {self.policy.name!r}")
@@ -1567,6 +1658,9 @@ class Engine:
 
     # ---- main loop (allocation modes)
     def _run_dyn(self, horizon: float) -> None:
+        if self._sep:
+            self._run_dyn_separate(horizon)
+            return
         always_pass = self.policy.time_dependent
         mem_on = self.rec.mem_on
         od = self._alloc == ONDEMAND_PREEMPT
@@ -1632,6 +1726,73 @@ class Engine:
         self.rec.set_queue(self.end_time, self.n_wait)
         self.rec.set_gate(self.end_time, len(self._gate))
 
+    def _run_dyn_separate(self, horizon: float) -> None:
+        """Main loop of ``ratio_reserve`` with ``batching=separate_prefill_priority`` (SGLang ``get_next_batch_to_run``): the admission pass
+        first; if a prefill batch results, run a prefill-only iteration (only its chunks are allocated; decode sequences neither allocate nor
+        advance, the new-token ratio does not decay); otherwise run decode iterations, where the decode-OOM check / retraction and the ratio
+        decay happen (``update_running_batch``)."""
+        always_pass = self.policy.time_dependent
+        mem_on = self.rec.mem_on
+        M = self.M
+        while self.now < horizon and not self.stopped:
+            self._process_exogenous(self.now)
+            if self.stopped:
+                break
+            self._process_done()
+            if self.debug:
+                self.check_invariants()
+            if (self.dirty or (always_pass and self.n_wait > 0)) and not self.stopped:
+                self._schedule_pass_dyn()
+            self._plan_chunks_ratio()
+            if mem_on:
+                self.rec.set_mem(self.now, self.held, self.idle_sum, 0)
+            if self.stop_hit is not None:
+                self._check_hit_stop()
+                if self.stopped:
+                    break
+            if self.n_D == 0 and not self.prefill:
+                if self.n_wait > 0:
+                    raise RuntimeError("engine idle with waiting requests and no admissible request (deadlock)")
+                self.new_token_ratio = self._ratio_init          # scheduler fully idle: tracker.reset()
+                nxt = self._next_exogenous_time()
+                if nxt >= horizon:
+                    self.now = horizon
+                    break
+                self.now = nxt
+                continue
+            if self._step_chunks:
+                self._stall_guard = 0
+                self._iterate_with_prefill(self._step_chunks)
+            elif self.n_D > 0:
+                self._stall_guard = 0
+                self._running_step_ratio()                       # decode-OOM check (retract, re-estimate the ratio) + one token per decode request
+                nxt = self._next_exogenous_time()
+                if always_pass and self.n_wait > 0:
+                    nt = self.policy.next_time_event(self, self.now)
+                    if nt < nxt:
+                        nxt = nt
+                if self.dirty:
+                    n_cap = 1               # a retraction re-queued a request: the admission pass is due at the next boundary
+                else:
+                    n_cap = None if M == INF else 1 + int((M - self.held) // self.n_D)
+                self._iterate_decode(nxt if nxt < horizon else horizon, n_cap)
+            else:
+                # prefilling requests only, none could be allocated (cannot happen with the registered admission test)
+                self._stall_guard += 1
+                if self._stall_guard > 1000:
+                    raise RuntimeError("prefill stall without progress")
+                v = self._newest_prefilling()
+                kv = self._leave_running(v)
+                self.held -= kv
+                self._requeue(v, kv, front=False)
+                self.n_fallback_retract += 1
+        if self.stopped and self.stop_reason == "hit":
+            self.end_time = self.now
+        else:
+            self.end_time = self.stop_time if (self.stopped and self.stop_time is not None) else horizon
+        self.rec.set_queue(self.end_time, self.n_wait)
+        self.rec.set_gate(self.end_time, len(self._gate))
+
     # ------------------------------------------------------------------ introspection
     def in_flight(self) -> int:
         return self.in_system + len(self._gate)
@@ -1675,6 +1836,14 @@ class Engine:
             "n_eager_unpins": self.n_eager_unpins,
             "n_soft_evictions": self.n_soft_evictions,
         }
+        if self._sep:
+            out.update({
+                "batching": SEPARATE_PREFILL_PRIORITY,
+                "n_prefill_iters": self.n_prefill_iters,
+                "n_decode_iters": self.n_iterations - self.n_prefill_iters,
+                "prefill_busy_s": self.prefill_busy_s,
+                "decode_busy_s": self.busy_s - self.prefill_busy_s,
+            })
         if self._dyn:
             out.update({
                 "alloc_mode": self._alloc,

@@ -532,8 +532,12 @@ def test_results_are_deterministic_and_the_closed_mode_keeps_n_sessions(cfg5, mo
 # ============================================================================ (5) naive reference simulator
 def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: float, *, M: float, mode: str, cache: bool = True,
                         limited: bool = True, chunk_budget: Optional[int] = None, max_seqs: Optional[int] = None,
-                        watermark: float = 0.0, tail: bool = True, first_chunk: bool = False):
-    """Deliberately naive iteration-by-iteration re-implementation of both allocation modes from the prose of the pre-registration:
+                        watermark: float = 0.0, tail: bool = True, first_chunk: bool = False, sep: Optional[dict] = None):
+    """``sep`` (ratio_reserve only; batching=separate_prefill_priority): dict with pf_fixed, pf_tok, dc_fixed, dc_floor, dc_seq. The turn is then
+    admission pass -> chunk plan -> (chunks: prefill-only iteration, decode neither allocates nor advances) else (decode-OOM check / retraction,
+    one token per decode request, decode-only iteration, ratio decay) -- SGLang get_next_batch_to_run / update_running_batch.
+
+    Deliberately naive iteration-by-iteration re-implementation of both allocation modes from the prose of the pre-registration:
     plain lists, everything recomputed from per-request records on every turn, the LITERAL vLLM running loop, the SGLang sort key,
     no global counters / batching / lazy queues. A pass runs when the state changed (arrival, tool return, completion, prefill iteration,
     preemption), never in a turn with a preemption / retraction. ``tail`` = amendment 2 (the entry of a preempted request is trimmed
@@ -644,6 +648,31 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
             budget -= c
         return ch
 
+    def ratio_running_step():
+        """SGLang decode-OOM check: retract (fewest outputs first) until one token per decode request fits, re-estimate the ratio, allocate
+        one token per decode request. Returns (retracted, tokens allocated)."""
+        nonlocal ratio
+        retracted = False
+        dec = [x for x in running if x["kind"] == "dec"]
+        if held_now() + len(dec) > M:
+            retracted = True
+            while held_now() + len(dec) > M and len(dec) > 1:
+                v = min(dec, key=lambda x: (x["gen"], -x["r"]["prompt"], -x["r"]["rid"]))
+                dec.remove(v)
+                running.remove(v)
+                requeue(v, v["r"]["prompt"], front=False)
+                need = min(R * len(dec), idle_sum()) if headroom else 0
+                evict_tokens(need)
+            while held_now() + len(dec) > M:
+                pfs = [x for x in running if x["kind"] == "pf"]
+                v = pfs[-1]
+                running.remove(v)
+                requeue(v, v["pos"], front=False)
+            n_k = len(dec)
+            ratio = min(1.0, (sum(x["gen"] for x in dec) + R * n_k) / (D * n_k + 1))
+        evict_to_fit(held_now() + len(dec))
+        return retracted, len(dec)
+
     while t < horizon:
         # ---- exogenous events (arrival before tool return at ties)
         while True:
@@ -697,26 +726,8 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
             step_alloc = used - held_now()
             # preempted requests were requeued in pop order (newest first) at the FRONT: oldest victim ends up first
             evict_to_fit(held_now() + step_alloc)
-        else:
-            dec = [x for x in running if x["kind"] == "dec"]
-            if held_now() + len(dec) > M:
-                retracted = True
-                while held_now() + len(dec) > M and len(dec) > 1:
-                    v = min(dec, key=lambda x: (x["gen"], -x["r"]["prompt"], -x["r"]["rid"]))
-                    dec.remove(v)
-                    running.remove(v)
-                    requeue(v, v["r"]["prompt"], front=False)
-                    need = min(R * len(dec), idle_sum()) if headroom else 0
-                    evict_tokens(need)
-                while held_now() + len(dec) > M:
-                    pfs = [x for x in running if x["kind"] == "pf"]
-                    v = pfs[-1]
-                    running.remove(v)
-                    requeue(v, v["pos"], front=False)
-                n_k = len(dec)
-                ratio = min(1.0, (sum(x["gen"] for x in dec) + R * n_k) / (D * n_k + 1))
-            step_alloc = len(dec)
-            evict_to_fit(held_now() + step_alloc)
+        elif sep is None:
+            retracted, step_alloc = ratio_running_step()
             changed = retracted
 
         # ---- waiting loop
@@ -778,7 +789,8 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
         if mode == "ratio_reserve":
             # chunks are handed out FIFO but only up to the free memory
             pf = [x for x in running if x["kind"] == "pf"]
-            free = M - held_now() - len([x for x in running if x["kind"] == "dec"])
+            n_dec_alloc = 0 if sep is not None else len([x for x in running if x["kind"] == "dec"])      # separate: decode allocates in its own iteration
+            free = M - held_now() - n_dec_alloc
             budget, chunks = CB, []
             for x in pf:
                 if budget <= 0 or free <= 0:
@@ -793,7 +805,7 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
                 chunks.append((x, c))
                 budget -= c
                 free -= need
-            evict_to_fit(held_now() + len([x for x in running if x["kind"] == "dec"]) + sum(c + (1 if c == x["rem"] else 0) for x, c in chunks))
+            evict_to_fit(held_now() + n_dec_alloc + sum(c + (1 if c == x["rem"] else 0) for x, c in chunks))
 
         # ---- idle engine
         if not running:
@@ -809,15 +821,25 @@ def reference_dyn_trace(cfg: dict, specs: SessionSpecs, kind: str, horizon: floa
             continue
 
         # ---- one iteration
+        if sep is not None and not chunks:
+            retracted, step_alloc = ratio_running_step()               # decode iteration: the decode-OOM check happens here
         dec = [x for x in running if x["kind"] == "dec"]
         ntok = sum(c for _, c in chunks)
         attn = sum(c * (x["pos"] + c) for x, c in chunks)
-        tau = (e["iter_fixed_s"] + max(e["iter_floor_s"], e["per_token_s"] * (ntok + len(dec)))
-               + e["decode_attn_s"] * sum(x["ctx"] for x in dec) / e["attn_ctx_norm"] + e["prefill_attn_s"] * attn)
+        if sep is not None and chunks:
+            tau = sep["pf_fixed"] + sep["pf_tok"] * ntok + e["prefill_attn_s"] * attn
+            dec_adv = []                                               # prefill iteration: decode sequences neither advance nor decay the ratio
+        elif sep is not None:
+            tau = (sep["dc_fixed"] + max(sep["dc_floor"], sep["dc_seq"] * len(dec)) + e["decode_attn_s"] * sum(x["ctx"] for x in dec) / e["attn_ctx_norm"])
+            dec_adv = dec
+        else:
+            tau = (e["iter_fixed_s"] + max(e["iter_floor_s"], e["per_token_s"] * (ntok + len(dec)))
+                   + e["decode_attn_s"] * sum(x["ctx"] for x in dec) / e["attn_ctx_norm"] + e["prefill_attn_s"] * attn)
+            dec_adv = dec
         t += tau
-        if mode == "ratio_reserve" and dec and not retracted:
+        if mode == "ratio_reserve" and dec_adv and not retracted:
             ratio = max(ratio - ratio_decay, ratio_min)
-        for x in dec:
+        for x in dec_adv:
             x["ctx"] += 1
             x["gen"] += 1
             x["left"] -= 1

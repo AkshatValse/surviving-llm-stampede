@@ -511,6 +511,9 @@ def scaled_engine_overrides(engine_cfg: dict, k: float) -> Dict[str, Any]:
     by k (so the iteration time of a k-scaled population equals the base one), per-iteration constants unchanged."""
     if k <= 0:
         raise ValueError("k must be > 0")
+    if engine_cfg.get("batching", "mixed") != "mixed":
+        raise ValueError("k-scaling is defined for the shared (mixed) iteration-cost keys only; batching="
+                         f"{engine_cfg['batching']!r} has per-iteration-type cost keys that this scaling does not touch")
     return {"kv_memory_tokens": float(engine_cfg["kv_memory_tokens"]) * k,
             "prefill_chunk_budget": max(1, int(round(engine_cfg["prefill_chunk_budget"] * k))),
             "max_running_seqs": max(1, int(round(engine_cfg["max_running_seqs"] * k))),
