@@ -826,10 +826,13 @@ def test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites(cfg,
 
 # ----------------------------------------------------------------------------- independent reference simulator
 def reference_trace(cfg: dict, specs: SessionSpecs, policy: dict, horizon: float, *, M: float, limited: bool = True,
-                    skip_ahead: bool = False, cap: int | None = None, cache: bool = True, free_on_end: bool = True):
+                    skip_ahead: bool = False, cap: int | None = None, cache: bool = True, free_on_end: bool = True,
+                    sep: dict | None = None):
     """Deliberately naive iteration-by-iteration re-implementation (plain lists, full re-sorting on every pass,
     pass at EVERY iteration boundary, per-sequence ctx arrays, no global counters / batching / lazy queues).
-    Returns the admission/completion trace in the same format as Engine.trace."""
+    Returns the admission/completion trace in the same format as Engine.trace.
+    ``sep`` (batching=separate_prefill_priority): dict with pf_fixed, pf_floor, pf_tok, dc_fixed, dc_floor, dc_seq; each iteration is then EITHER a
+    prefill iteration (some request has prefill left: chunks only, decode sequences do not advance) OR a decode iteration."""
     e, w = cfg["engine"], cfg["workload"]
     L0, DELTA, D = w["initial_context_tokens"], w["new_prompt_tokens"], w["decode_tokens"]
     prompt_len = lambda turn: L0 + (turn - 1) * (DELTA + D)          # noqa: E731
@@ -971,10 +974,16 @@ def reference_trace(cfg: dict, specs: SessionSpecs, policy: dict, horizon: float
             budget -= c
             ntok += c
             attn += c * (x["pos"] + c)
-        tau = (e["iter_fixed_s"] + max(e["iter_floor_s"], e["per_token_s"] * (ntok + len(dec)))
-               + e["decode_attn_s"] * sum(x["ctx"] for x in dec) / e["attn_ctx_norm"] + e["prefill_attn_s"] * attn)
+        k = sep or {}
+        if sep is not None and pf:
+            tau = k["pf_fixed"] + max(k["pf_floor"], k["pf_tok"] * ntok) + e["prefill_attn_s"] * attn
+            adv = []
+        else:
+            tau = (k.get("dc_fixed", e["iter_fixed_s"]) + max(k.get("dc_floor", e["iter_floor_s"]), k.get("dc_seq", e["per_token_s"]) * (ntok + len(dec)))
+                   + e["decode_attn_s"] * sum(x["ctx"] for x in dec) / e["attn_ctx_norm"] + e["prefill_attn_s"] * attn)
+            adv = dec
         t += tau
-        for x in dec:
+        for x in adv:
             x["ctx"] += 1
             x["left"] -= 1
             if x["left"] == 0:

@@ -67,6 +67,18 @@ engine:
   # sessions, raises the escape rate). Spec allows either ("evictable (or freed)"); default true keeps the E0
   # calibration comparable; the false variant is run as an E0 sensitivity (--set engine.free_kv_on_session_end=false).
   free_kv_on_session_end: true
+  # Iteration batching (src/prefixmeta/engine.py, "Iteration batching modes"). Absent = `mixed` (every iteration advances all decode sequences and
+  # carries up to prefill_chunk_budget prefill tokens; the formula at the top of this section). `separate_prefill_priority` models SGLang's default
+  # scheduler (enable_mixed_chunk=False): each iteration is EITHER a prefill iteration (admitted requests' chunks only; decode sequences do not
+  # advance) OR a decode iteration; prefill first whenever a prefill batch can be formed. Supported with alloc_mode full_reserve / ratio_reserve.
+  # Allowed values: mixed | separate_prefill_priority (anything else is an error; separate_prefill_priority is refused with ondemand_preempt).
+  # Optional per-iteration-type costs (separate mode only; absent = fall back to the shared key in brackets; the attention terms keep prefill_attn_s
+  # and decode_attn_s). A prefill iteration costs  prefill_iter_fixed_s + max(prefill_iter_floor_s, prefill_per_token_s * new_tokens) + attention,
+  # a decode iteration  decode_iter_fixed_s + max(decode_iter_floor_s, decode_per_seq_s * n_decode) + attention:
+  #   batching: separate_prefill_priority
+  #   prefill_iter_fixed_s: ...   [iter_fixed_s]     prefill_iter_floor_s: ... [iter_floor_s]     prefill_per_token_s: ...  [per_token_s]
+  #   decode_iter_fixed_s: ...    [iter_fixed_s]     decode_iter_floor_s: ...  [iter_floor_s]     decode_per_seq_s: ...     [per_token_s]
+  # Probe runner (curve / open-loop / burst arms) with engine overrides from a YAML spec: configs/prefix_meta_probe.yaml.
 
 # ---------------------------------------------------------------- workload
 workload:

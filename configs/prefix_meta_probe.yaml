@@ -1,0 +1,54 @@
+# Probe spec (src/prefixmeta/probe.py): mu(n) curve, open-loop stability from empty, burst with paired no-burst / client-side-cap arms.
+#
+#   /opt/anaconda3/bin/python experiments/prefix_meta_probe_run.py curve --spec configs/prefix_meta_probe.yaml [--quick] [--workers 3]
+#   /opt/anaconda3/bin/python experiments/prefix_meta_probe_run.py open  --spec configs/prefix_meta_probe.yaml
+#   /opt/anaconda3/bin/python experiments/prefix_meta_probe_run.py burst --spec configs/prefix_meta_probe.yaml
+#   ... --set engine.batching=mixed        (dotted override of any entry of the merged config)
+#
+# ILLUSTRATIVE EXAMPLE: every number is the simulator's inherited ASSUMPTION (configs/prefix_meta.yaml), none is calibrated to a real engine, and
+# the six per-iteration-type cost keys are left at their documented fallbacks (the shared keys).
+base_config: configs/prefix_meta_r5.yaml      # r5 -> prefix_meta.yaml; policies fcfs_lru / lpm_lru (LRU eviction); the default if omitted
+
+# Global engine / workload overrides: merged over the base config's `engine` / `workload` sections (any EngineParams / WorkloadParams field).
+engine:
+  alloc_mode: ratio_reserve                    # full_reserve | ratio_reserve (SGLang-like) | ondemand_preempt (not with separate batching)
+  batching: separate_prefill_priority          # mixed (default) | separate_prefill_priority (SGLang enable_mixed_chunk=False)
+  # Optional per-iteration-type costs, used only by separate_prefill_priority; absent = fall back to the shared key:
+  # prefill_iter_fixed_s: 0.002                #   <- iter_fixed_s
+  # prefill_iter_floor_s: 0.0095               #   <- iter_floor_s
+  # prefill_per_token_s: 0.000084              #   <- per_token_s      (prefill_attn_s keeps its own key)
+  # decode_iter_fixed_s: 0.002                 #   <- iter_fixed_s
+  # decode_iter_floor_s: 0.0095                #   <- iter_floor_s
+  # decode_per_seq_s: 0.000084                 #   <- per_token_s      (decode_attn_s keeps its own key)
+# workload:
+#   decode_tokens: 100
+
+parallel:
+  max_workers: 3                               # hard cap on processes; raise (at most 6 in this CLI) only deliberately
+
+probe:
+  curve:                                       # (i) closed population: n sessions always in the system; mu(n) = completed sessions / s after warm-up
+    policies: [fcfs_lru, lpm_lru]
+    n_grid: [8, 16, 24, 32, 40, 60]
+    seeds: [0, 1, 2]
+    warmup_s: 5000.0
+    horizon_s: 35000.0                         # horizon - warmup must be a multiple of metrics.window_s (1000 s)
+    pool_sessions: 20000                       # sessions available for replacement; the run aborts if the pool runs out
+    cache_enabled: true                        # false: all-miss service rate (lambda_miss(n)); n = 60 is the round-1 E0 calibration population
+  open:                                        # (ii) open loop from an EMPTY start: stable iff not early-stopped, final backlog < 50 and no upward trend
+    policy: fcfs_lru
+    lambda_miss: 0.0474                        # sessions / s; with lam_mults gives lambda = mult * lambda_miss (or list absolute `lambdas`)
+    lam_mults: [1.0, 1.5, 2.0]
+    seeds: [0, 1, 2]
+    horizon_s: 20000.0
+    # search: {bracket_mults: [1.5, 2, 3, 4], rel_tol: 0.05, max_bisect_steps: 6}    # bracket + bisection of the stable limit (all seeds stable)
+  burst:                                       # (iii) open system from empty, burst at t_burst = warmup_s; arms on the SAME seeds (paired)
+    policy: fcfs_lru
+    lambda_miss: 0.0474
+    lam_mult: 2.0
+    burst_n: 200
+    burst_width_s: 60.0
+    warmup_s: 5000.0
+    after_s: 60000.0
+    cap: 28                                    # client-side cap of the `burst_cap` arm (omit: no capped arm); arms: no_burst, burst, burst_cap
+    seeds: [0, 1, 2]
