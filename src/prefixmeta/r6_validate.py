@@ -32,6 +32,7 @@ import pandas as pd
 from . import probe
 from .engine import EngineParams
 from .mech_runner import begin, finish
+from .runner import git_info
 from .sim import deep_update, load_config
 from .workload import WorkloadParams
 
@@ -310,34 +311,97 @@ def _pct(x: float) -> str:
     return "n/a" if x is None or not math.isfinite(x) else f"{100 * x:+.1f}%"
 
 
-def md_main_table(table: pd.DataFrame, arm: str = "primary") -> str:
-    """Markdown mu table of one arm: real | mixed (seed-mean +- se) | rel. err. | separate | rel. err. (also vs the turns-based real)."""
+def _rows_by_batching(table: pd.DataFrame, arm: str):
+    """(index, mixed rows, separate rows) of one arm; the index is the union of the (policy, n) cells present, FCFS first, ascending n."""
     t = table[table["arm"] == arm]
     m, s = t[t["batching"] == MIXED].set_index(["policy", "n"]), t[t["batching"] == SEP].set_index(["policy", "n"])
+    idx = sorted(set(m.index) | set(s.index), key=lambda pn: (pn[0] != "fcfs_lru", pn[0], pn[1]))
+    return idx, m, s
+
+
+def _cell(row: Optional[pd.Series], col: str, fmt: str) -> str:
+    if row is None:
+        return "n/a"
+    v = row[col]
+    if fmt == "pct":
+        return _pct(v)
+    if fmt == "diff":
+        return f"{v:+.3f}" if math.isfinite(v) else "n/a"
+    return _f(v)
+
+
+def md_main_table(table: pd.DataFrame, arm: str = "primary") -> str:
+    """Markdown mu table of one arm: real | mixed (seed-mean +- se) | rel. err. | separate | rel. err. (also vs the turns-based real).
+    A batching mode the arm does not have shows n/a."""
+    idx, m, s = _rows_by_batching(table, arm)
     lines = ["| policy | n | real mu | mixed mu (se) | rel.err | separate mu (se) | rel.err | real mu (turns) | mixed rel.err (turns) | separate rel.err (turns) |",
              "|---|---|---|---|---|---|---|---|---|---|"]
-    for idx in m.index:
-        a, b = m.loc[idx], (s.loc[idx] if idx in s.index else None)
-        pol, n = idx
-        lines.append(f"| {'FCFS' if pol == 'fcfs_lru' else 'LPM(128)'} | {n} | {_f(a['real_mu'])} | {_f(a['mu_mean'])} ({_f(a['mu_se'])}) | "
-                     f"{_pct(a['rel_err_mu'])} | {_f(b['mu_mean']) if b is not None else 'n/a'} ({_f(b['mu_se']) if b is not None else 'n/a'}) | "
-                     f"{_pct(b['rel_err_mu']) if b is not None else 'n/a'} | {_f(a['real_mu_turns'])} | {_pct(a['rel_err_mu_turns'])} | "
-                     f"{_pct(b['rel_err_mu_turns']) if b is not None else 'n/a'} |")
+    for i in idx:
+        a = m.loc[i] if i in m.index else None
+        b = s.loc[i] if i in s.index else None
+        ref = a if a is not None else b
+        pol, n = i
+        lines.append(f"| {'FCFS' if pol == 'fcfs_lru' else 'LPM(128)'} | {n} | {_f(ref['real_mu'])} | {_cell(a, 'mu_mean', 'f')} ({_cell(a, 'mu_se', 'f')}) | "
+                     f"{_cell(a, 'rel_err_mu', 'pct')} | {_cell(b, 'mu_mean', 'f')} ({_cell(b, 'mu_se', 'f')}) | {_cell(b, 'rel_err_mu', 'pct')} | "
+                     f"{_f(ref['real_mu_turns'])} | {_cell(a, 'rel_err_mu_turns', 'pct')} | {_cell(b, 'rel_err_mu_turns', 'pct')} |")
     return "\n".join(lines)
 
 
 def md_hit_table(table: pd.DataFrame, arm: str = "primary") -> str:
     """Markdown hit-fraction table of one arm: real | mixed | difference | separate | difference (absolute differences; real hit is 0 at n >= 48)."""
-    t = table[table["arm"] == arm]
-    m, s = t[t["batching"] == MIXED].set_index(["policy", "n"]), t[t["batching"] == SEP].set_index(["policy", "n"])
+    idx, m, s = _rows_by_batching(table, arm)
     lines = ["| policy | n | real hit | mixed hit | diff | separate hit | diff |", "|---|---|---|---|---|---|---|"]
-    for idx in m.index:
-        a, b = m.loc[idx], (s.loc[idx] if idx in s.index else None)
-        pol, n = idx
-        sep_hit = _f(b["hit_mean"]) if b is not None else "n/a"
-        sep_diff = f"{b['abs_err_hit']:+.3f}" if b is not None else "n/a"
-        lines.append(f"| {'FCFS' if pol == 'fcfs_lru' else 'LPM(128)'} | {n} | {_f(a['real_hit'])} | {_f(a['hit_mean'])} | "
-                     f"{a['abs_err_hit']:+.3f} | {sep_hit} | {sep_diff} |")
+    for i in idx:
+        a = m.loc[i] if i in m.index else None
+        b = s.loc[i] if i in s.index else None
+        ref = a if a is not None else b
+        pol, n = i
+        lines.append(f"| {'FCFS' if pol == 'fcfs_lru' else 'LPM(128)'} | {n} | {_f(ref['real_hit'])} | {_cell(a, 'hit_mean', 'f')} | "
+                     f"{_cell(a, 'abs_err_hit', 'diff')} | {_cell(b, 'hit_mean', 'f')} | {_cell(b, 'abs_err_hit', 'diff')} |")
+    return "\n".join(lines)
+
+
+def _df_md(df: pd.DataFrame) -> str:
+    """Plain markdown table of a DataFrame (no optional tabulate dependency)."""
+    cols = [str(c) for c in df.columns]
+    lines = ["| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)]
+    for row in df.itertuples(index=False):
+        lines.append("| " + " | ".join("n/a" if (isinstance(v, float) and not math.isfinite(v)) else str(v) for v in row) + " |")
+    return "\n".join(lines)
+
+
+def zscore_table(runs: pd.DataFrame, real: pd.DataFrame) -> pd.DataFrame:
+    """Where the single real value falls in the simulator's seed distribution, per (arm, batching, policy, n): sim mean / sd over seeds,
+    z = (real - mean) / sd and the fraction of seeds with sim <= real, for mu_sessions and the turns-based estimator."""
+    rows = []
+    for key, g in runs.groupby(KEY, sort=False):
+        r = real[(real["policy"] == key[2]) & (real["n"] == key[3])]
+        if r.empty:
+            continue
+        r = r.iloc[0]
+        row = dict(zip(KEY, key))
+        row["n_seeds"] = len(g)
+        for tag, col, rcol in (("mu", "mu", "real_mu"), ("mu_turns", "mu_turns", "real_mu_turns")):
+            x = g[col].to_numpy(dtype=float)
+            sd = float(x.std(ddof=1)) if len(x) > 1 else float("nan")
+            row[f"{tag}_sim_mean"] = float(x.mean())
+            row[f"{tag}_sim_sd"] = sd
+            row[f"{tag}_real"] = float(r[rcol])
+            row[f"{tag}_z"] = (float(r[rcol]) - float(x.mean())) / sd if sd and math.isfinite(sd) else float("nan")
+            row[f"{tag}_frac_sim_le_real"] = float((x <= float(r[rcol])).mean())
+        row["hit_sim_mean"] = float(g["hit_rate"].mean())
+        row["hit_real"] = float(r["real_hit"])
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def md_zscore_table(z: pd.DataFrame, arm: str = "primary") -> str:
+    t = z[z["arm"] == arm]
+    lines = ["| batching | policy | n | real mu | sim mean (sd) | z | frac sims <= real | real mu (turns) | sim mean (sd) | z |", "|---|---|---|---|---|---|---|---|---|---|"]
+    for _, r in t.iterrows():
+        lines.append(f"| {r['batching']} | {'FCFS' if r['policy'] == 'fcfs_lru' else 'LPM(128)'} | {r['n']} | {_f(r['mu_real'])} | "
+                     f"{_f(r['mu_sim_mean'])} ({_f(r['mu_sim_sd'])}) | {r['mu_z']:+.2f} | {_f(r['mu_frac_sim_le_real'], 2)} | {_f(r['mu_turns_real'])} | "
+                     f"{_f(r['mu_turns_sim_mean'])} ({_f(r['mu_turns_sim_sd'])}) | {r['mu_turns_z']:+.2f} |")
     return "\n".join(lines)
 
 
@@ -360,8 +424,9 @@ def md_summary_table(summ: Dict[str, Any]) -> str:
 # ======================================================================= CLI
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="Round-6 validation of the simulator against the real Stage C curve")
-    ap.add_argument("cmd", choices=["run"])
-    ap.add_argument("--spec", "--config", dest="config", required=True)
+    ap.add_argument("cmd", choices=["run", "report"])
+    ap.add_argument("--spec", "--config", dest="config", default=None, help="validation spec (run)")
+    ap.add_argument("--run-dir", default=None, help="result dir of a finished `run` (report)")
     ap.add_argument("--quick", action="store_true", help="smoke test: primary arm only, 1 seed, 3 cells, no supplementary runs")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out-root", default="results")
@@ -422,11 +487,52 @@ def cmd_run(cfg: dict, args: argparse.Namespace, repo_dir: Path) -> Path:
     return ctx.out
 
 
+def cmd_report(run_dir: Path, repo_dir: Path) -> Path:
+    """Post-processing of a finished ``run`` result dir (no simulation): corrected per-arm tables and the position of the real values inside the
+    simulator's seed distribution. Writes NEW files (report.md, zscores_*.csv, report_meta.json); refuses to overwrite an existing report."""
+    if (run_dir / "report.md").exists():
+        raise FileExistsError(f"{run_dir / 'report.md'} exists; reports are never overwritten")
+    meta = json.loads((run_dir / "meta.json").read_text())
+    real = pd.read_csv(run_dir / "real_stagec.csv")
+    table = pd.read_csv(run_dir / "cell_table.csv")
+    runs = pd.read_csv(run_dir / "runs.csv")
+    z3 = zscore_table(runs, real)
+    z3.to_csv(run_dir / "zscores_registered_seeds.csv", index=False)
+    md = [f"# Report of {run_dir.name} (run commit {meta['git']['commit']}, dirty={meta['git']['dirty']})", ""]
+    for arm in table["arm"].unique():
+        md += [f"## mu table, arm {arm} (registered seeds {meta['registered_seeds']})", md_main_table(table, arm), ""]
+        if arm == "primary":
+            md += ["## hit table, arm primary", md_hit_table(table, arm), ""]
+    md += ["## position of the real value in the simulator's seed distribution, primary arm, registered seeds (3)", md_zscore_table(z3, "primary"), ""]
+    if (run_dir / "supp_seeds_runs.csv").exists():
+        r20 = pd.read_csv(run_dir / "supp_seeds_runs.csv")
+        z20 = zscore_table(r20, real)
+        z20.to_csv(run_dir / "zscores_20seeds.csv", index=False)
+        t20 = pd.read_csv(run_dir / "supp_seeds_cell_table.csv")
+        md += ["## supplementary 20-seed (100-119) mu table, primary arm", md_main_table(t20, "primary"), "",
+               "## supplementary 20-seed hit table, primary arm", md_hit_table(t20, "primary"), "",
+               "## position of the real value in the simulator's 20-seed distribution, primary arm", md_zscore_table(z20, "primary"), ""]
+    diag = table[table["arm"] == "primary"][["batching", "policy", "n", "gpu_busy_mean", "prefill_tok_per_s_mean", "evictions_per_s_mean",
+                                               "reserved_tokens_mean", "idle_tokens_mean"]]
+    md += ["## simulator diagnostics, primary arm (means over the measured window and seeds)", _df_md(diag.round(3)), ""]
+    (run_dir / "report.md").write_text("\n".join(md))
+    (run_dir / "report_meta.json").write_text(json.dumps({"report_git": git_info(repo_dir), "run_commit": meta["git"]["commit"]}, indent=2))
+    print("\n".join(md))
+    return run_dir / "report.md"
+
+
 def main(argv: Optional[List[str]] = None, repo_dir: Optional[Path] = None) -> int:
     args = build_parser().parse_args(argv)
     if not (1 <= args.workers <= MAX_WORKERS):
         raise SystemExit(f"--workers must be in 1..{MAX_WORKERS}")
     repo_dir = repo_dir or Path(__file__).resolve().parent.parent.parent
+    if args.cmd == "report":
+        if not args.run_dir:
+            raise SystemExit("report needs --run-dir")
+        cmd_report(Path(args.run_dir), repo_dir)
+        return 0
+    if not args.config:
+        raise SystemExit("run needs --spec")
     cfg = load_validation_config(args.config, repo_dir, args.set)
     cmd_run(cfg, args, repo_dir)
     return 0

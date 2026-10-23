@@ -170,3 +170,38 @@ def test_quick_cli_run_writes_a_complete_result_dir(tmp_path):
     tab = pd.read_csv(d / "cell_table.csv")
     assert set(tab["batching"]) == {rv.MIXED, SEP} and set(tab["arm"]) == {"primary"} and len(tab) == 6   # 3 cells x 2 batching modes
     assert tab["rel_err_mu"].notna().all()
+
+
+# ============================================================================ report helpers
+def test_md_tables_show_na_for_a_batching_mode_an_arm_does_not_have():
+    row = {"arm": "S3", "batching": SEP, "policy": "fcfs_lru", "n": 16, "mu_mean": 0.17, "mu_se": 0.01, "real_mu": 0.176, "rel_err_mu": -0.034,
+           "real_mu_turns": 0.176, "rel_err_mu_turns": -0.03, "hit_mean": 0.93, "real_hit": 0.932, "abs_err_hit": -0.002}
+    md = rv.md_main_table(pd.DataFrame([row]), "S3")
+    line = md.splitlines()[-1]
+    assert "n/a (n/a)" in line and "0.170 (0.010)" in line and "-3.4%" in line            # mixed columns n/a, separate columns filled
+    hit = rv.md_hit_table(pd.DataFrame([row]), "S3").splitlines()[-1]
+    assert "| n/a | n/a | 0.930 | -0.002 |" in hit
+
+
+def test_zscore_table_hand_values():
+    runs = pd.DataFrame({"arm": "primary", "batching": rv.MIXED, "policy": "fcfs_lru", "n": 24, "seed": [0, 1, 2, 3],
+                         "mu": [0.20, 0.22, 0.24, 0.26], "mu_turns": [0.2, 0.2, 0.2, 0.2], "hit_rate": [0.8, 0.9, 0.9, 0.8]})
+    real = pd.DataFrame({"policy": ["fcfs_lru"], "n": [24], "real_mu": [0.233], "real_mu_turns": [0.21], "real_hit": [0.89]})
+    z = rv.zscore_table(runs, real).iloc[0]
+    sd = float(np.std([0.20, 0.22, 0.24, 0.26], ddof=1))                                  # 0.0258199
+    assert z["mu_sim_mean"] == pytest.approx(0.23) and z["mu_sim_sd"] == pytest.approx(sd)
+    assert z["mu_z"] == pytest.approx((0.233 - 0.23) / sd) and z["mu_frac_sim_le_real"] == 0.5     # 0.20 and 0.22 are <= 0.233
+    assert math.isnan(z["mu_turns_z"])                                                     # zero spread -> NaN, not inf
+    assert z["hit_sim_mean"] == pytest.approx(0.85)
+
+
+def test_report_writes_new_files_and_never_overwrites(tmp_path):
+    rv.main(["run", "--spec", str(REPO / SPEC), "--quick", "--workers", "1", "--out-root", str(tmp_path)], repo_dir=REPO)
+    d = next((tmp_path / "r6_validate_stagec_quick").iterdir())
+    before = {f.name: f.read_bytes() for f in d.iterdir()}
+    rv.main(["report", "--run-dir", str(d)], repo_dir=REPO)
+    assert (d / "report.md").exists() and (d / "zscores_registered_seeds.csv").exists() and (d / "report_meta.json").exists()
+    for name, content in before.items():                                                   # nothing that existed was touched
+        assert (d / name).read_bytes() == content, name
+    with pytest.raises(FileExistsError):
+        rv.main(["report", "--run-dir", str(d)], repo_dir=REPO)
