@@ -413,3 +413,5 @@ Comparison with the simulator's FCFS curve:
 **Interpretation:** λ_ref for E0b and E2 stays `lambda_miss_turns_based` = 0.0715 sessions/s as pre-planned; the three estimators agree at the mean (0.0717 / 0.0715 / 0.0728) and the pre-registration's 10% boundary margin covers the SE (5%). The value sits at the low end of the Stage C throughput-implied floor (0.072–0.081). The seed check "fails" only because sessions/s is the wrong unit for a token-bound regime; report the token rate as the primary all-miss capacity in the paper and sessions/s as derived.
 
 **Next:** E0b, six one-run jobs at 1.25–3.0 × λ_ref with `CALIB_FILE=results/agentload_analysis_miss/20261023-142433/calibration.json` (authorized 2026-10-22: "submit everything you think is best"). Then pre-registration from `prereg/inputs/2026-10-23/`.
+
+## 2026-10-23 — [redacted: unrelated unpublished project, cluster-wide accounting data; see provenance/REDACTIONS.md]
