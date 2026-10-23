@@ -415,3 +415,11 @@ Comparison with the simulator's FCFS curve:
 **Next:** E0b, six one-run jobs at 1.25–3.0 × λ_ref with `CALIB_FILE=results/agentload_analysis_miss/20261023-142433/calibration.json` (authorized 2026-10-22: "submit everything you think is best"). Then pre-registration from `prereg/inputs/2026-10-23/`.
 
 ## 2026-10-23 — [redacted: unrelated unpublished project, cluster-wide accounting data; see provenance/REDACTIONS.md]
+
+## 2026-10-23 — Round 6 resumed as a Sonnet workflow; Stage 1 done, Stage 2 interrupted by the machine transfer
+**Question:** Can the interrupted round-6 work (SGLang-faithful separate batching; calibrated-simulator validation; blind predictions) be completed before E0b results are read?
+**Setup:** Workflow `r6-blind-predictions` (script frozen in `notes/workflows/r6-blind-predictions.js`), four Sonnet stages in isolated worktrees cut from `bf20ed4`, forbidden from ssh, from `results/nova/e0a_*`, and from LOG entries dated 2026-10-23+.
+**Result:** Stage 1 (Port) finished: commit `772b08f` on `r6/separate-batching` adds `engine.batching: mixed | separate_prefill_priority` (mixed default bit-identical; refused with `ondemand_preempt` and with k-scaling); full suite 1019 passed, 0 failed, 1 skipped (agent-reported; not re-run by the main session). Stage 2 (Validate) committed its harness (`1cdec96` on `r6/validation`) and was interrupted mid-implementation; its uncommitted edits were committed as WIP `58451c8` (unreviewed, tests not run). Stages 3–4 did not start. Both branches pushed.
+**Verified vs. not:** Verified: the commits exist and are pushed. Not verified: the 1019-test count, the separate-batching semantics, anything in the WIP commit.
+**Interpretation:** No real E0b/E2 data was read by any agent (E0b was still running). Blindness for B2 is still achievable if predictions are committed before E0b results are pulled; see STATE → HAND-OFF.
+**Next:** on the PC, resume at Validate; or pull E0b and log B2 as non-blind.

@@ -1,6 +1,28 @@
 # STATE
 
-_Last updated: 2026-10-23 ~14:45 CDT (E0b submitted)_
+_Last updated: 2026-10-23 ~15:15 CDT (hand-off to the always-on PC)_
+
+## HAND-OFF 2026-10-23 ~15:15 CDT (laptop → always-on PC). Read this first; where it conflicts with older sections below, this wins.
+**Everything is pushed to `origin` (GitHub `AkshatValse/Nova-Research`):** `main`, `r6/separate-batching`, `r6/validation`. The laptop's `.claude/worktrees/` and the user-level `~/.claude` memory/agents/skills are NOT in the repo.
+
+**E0b is running on Nova** (jobs 17084750–17084755; at 15:05 CDT three were RUNNING on nova22-gpu-[1-3] since ~14:40–15:00 and three PENDING with Slurm start estimates 16:12–16:25). Each finishes ~55 min after it starts, so all six should be done by about 17:30 CDT. Check:
+```bash
+ssh nova 'sacct -j 17084750,17084751,17084752,17084753,17084754,17084755 -X -o JobID,State,ExitCode,Elapsed,NodeList'
+```
+The local watcher that polled them was stopped with the laptop session; nothing else was watching.
+
+**Round 6 (timing-calibrated simulator, blind predictions) was interrupted by the transfer.** Status:
+- Stage 1 Port: **done**, commit `772b08f` on `r6/separate-batching` (cut from `bf20ed4`). Config key `engine.batching: mixed | separate_prefill_priority` (default mixed, bit-identical). Full suite 1019 passed, 1 skipped.
+- Stage 2 Validate: **in progress, interrupted.** Branch `r6/validation` (from `r6/separate-batching`): `1cdec96` (validation harness, decision rules declared) and `58451c8` (**WIP, unreviewed, tests not run**: `src/prefixmeta/r6_validate.py`, `tests/test_r6_validate.py`, `calibration/round6_server_log_fit/validate_stagec_reserved_trace.py`). No `VALIDATION.md` yet; outputs in the laptop worktree's `results/r6_validate_stagec/` were not pulled.
+- Stages 3 Predict and 4 Verify: **not started.**
+- The frozen workflow script (prompts, blindness rules, protocol) is `notes/workflows/r6-blind-predictions.js`. Re-run it on the PC as a new Workflow from the Validate stage (the Port stage's result text is in that file's structure; the branch already exists), or do the stages by hand following its prompts.
+
+**Blindness gate (decide before touching E0b results):** prediction B2 (E0b from-empty stable fractions) is blind only if `notes/PREDICTIONS.md` is committed on the r6 branch *before* anyone reads E0b results. Options: (a) finish Validate → Predict → Verify first (a few hours of local Sonnet work), then pull E0b; or (b) pull E0b now and record in `notes/LOG.md` that B2 is non-blind, keeping B3 (E2 arms) and B4 blind by committing predictions before E2 runs. (a) is preferred; (b) is acceptable if time is short. B1 (E0a) is already non-blind in time.
+
+**Then** follow §1 below: pull E0b read-only → `analysis.summarize stable` over the six runs → `lambda_cap_bracket.json` into `prereg/inputs/2026-10-23/` → pre-registration (`--n-cap-rule smallest_within_margin`, two λ points at ⅓ and ⅔ of the window; a dry run with the real `calibration.json` and `mu_curve.json` already FILLED and validated with warnings only: n_cap=20, λ_ref=0.0715, CAPPED-arm drain limit 2.64×λ_ref) → commit → bundle to Nova → **ask Akshat before E2** (18 jobs, ≈50 GPU-h).
+
+[redacted: unrelated unpublished project; see provenance/REDACTIONS.md]
+
 
 ## Phase
 - **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds; Stage 0, Stage C and E0a are done on the real engine.
