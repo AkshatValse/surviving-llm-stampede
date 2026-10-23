@@ -384,3 +384,32 @@ Comparison with the simulator's FCFS curve:
 5. **Verify independently,** including a check that no data leaked in.
 
 **Blindness rule.** The agents may read only Stage 0/C data and SGLang source. They are forbidden from Nova `results/` and `logs/`, and from squeue/sacct. The main session will not change the workflow after any E0a/E0b/E2 result appears. Predictions count as blind if the PREDICTIONS.md commit timestamp precedes the corresponding real result, or if the agents demonstrably could not access it.
+
+## 2026-10-23 — E0a: the real all-miss capacity λ_miss (SGLang, prefix cache disabled)
+**Question:** What is the all-miss capacity λ_miss (sessions/s) of Qwen2.5-7B on one A100 80GB PCIe under the agent workload, and is it stable across seeds and population size?
+
+**Setup:**
+- Nova jobs 17072634 (POP=32, seed 0), 17072635 (seed 1), 17072636 (seed 2), 17072637 (POP=64, seed 0), all COMPLETED 0:0 on nova22-gpu-1, about 49.5 min each (1.5 h limit), account `f2026.coms.6250.02`. Submitted 2026-10-22 by the previous session.
+- Harness at old commit 89a3c7d (= 69e91de after the history rewrite), MODE=miss, `--disable-radix-cache`, engine label `sglang-nocache`, `OUTPUT_FEEDBACK=server`, `KV_TOKENS=300000`, config `configs/agentload_e0_miss.yaml`: closed population, 2700 s per run, analysis window [900, 2700).
+- Data pulled read-only to `results/nova/e0a_1707263x_pulled_20261023-142037/` (run dirs, per-job analyses, job logs). Combined 3-seed calibration: on Nova `results/agentload_analysis_miss/20261023-142433/calibration.json` (login node, nice), bit-identical to the local run in `.../analysis_local_combined/`. Copied to `prereg/inputs/2026-10-23/calibration.json`.
+- The per-bin and token-based checks are the scripts `e0a_bins.py` and `e0a_tok.py` in `analysis_local_combined/`.
+
+**Result (window [900, 2700) s, 1800 s measured):**
+
+| Run | POP | seed | sessions | turns | λ sessions/s | λ turns-based | uncached tok/s |
+|---|---|---|---|---|---|---|---|
+| 17072634 | 32 | 0 | 102 | 1709 | 0.0567 | 0.0643 | 11076 |
+| 17072635 | 32 | 1 | 147 | 2053 | 0.0817 | 0.0773 | 11342 |
+| 17072636 | 32 | 2 | 138 | 1940 | 0.0767 | 0.0730 | 11312 |
+| 17072637 | 64 | 0 | 98 | 1796 | 0.0544 | 0.0676 | 11431 |
+
+- Combined (3 × POP=32): λ_miss = 0.0717 ± 0.0076 (SE over seeds), **λ_miss_turns_based = 0.0715 ± 0.0038**, all-miss uncached prefill rate **11243 ± 84 tok/s**. Max cached tokens 0 in every run; guards report 0 errors.
+- **Runbook checks.** (i) Seeds within 5%: **fails for the session rate** (0.057–0.082, ±17% around the mean) and for turns-based (±9%); **passes for the token rate** (±1.2%). (ii) POP=64 within 5% of POP=32: token rate +3.2% vs seed 0 (inside the seed spread), session rate −4%; saturation confirmed. (iii) No trend across the six 300 s bins: the token rate is flat in all four runs (OLS |t| ≤ 1.4), but the turn and session rates trend within runs (seed 0 falling, t = −2.7 and −2.9; seed 1 rising, t = 5.4 and 3.2; seed 2 flat; POP=64 turns falling t = −3.3).
+- **Cause of the spread:** in-flight composition. Prompt length is exactly 2000 + 650(k−1) tokens at turn k (zero residual), so a session's all-miss work is W(T) = 2000T + 325T(T−1), heavy-tailed in T. The mean turn index of in-window requests was 15.9 / 13.2 / 14.1 for seeds 0/1/2 (mean n_turns of those requests 31.1 / 25.1 / 28.2), so seed 0 spent its window on deeper, costlier turns. The engine is token-bound; session counts over 1800 s are a small sample of a heavy-tailed quantity.
+- **Token-based cross-check:** with E[T] = 14.761 and E[W] = 154,529 tokens per session (exact, geometric(1/15) capped at 60), λ_tok = 11243 / 154529 = **0.0728 sessions/s** (per seed 0.0717–0.0734). It agrees with the turns-based mean within 2% and has a CV under 1%.
+
+**Verified vs. not:** Verified: job states and exit codes (sacct), 0 cached tokens, local and Nova combined analyses identical, the deterministic prompt growth, the bin trends. Not verified: whether a longer window would shrink the session-rate spread (expected, not measured); the server seed was not pinned; one node for all four runs.
+
+**Interpretation:** λ_ref for E0b and E2 stays `lambda_miss_turns_based` = 0.0715 sessions/s as pre-planned; the three estimators agree at the mean (0.0717 / 0.0715 / 0.0728) and the pre-registration's 10% boundary margin covers the SE (5%). The value sits at the low end of the Stage C throughput-implied floor (0.072–0.081). The seed check "fails" only because sessions/s is the wrong unit for a token-bound regime; report the token rate as the primary all-miss capacity in the paper and sessions/s as derived.
+
+**Next:** E0b, six one-run jobs at 1.25–3.0 × λ_ref with `CALIB_FILE=results/agentload_analysis_miss/20261023-142433/calibration.json` (authorized 2026-10-22: "submit everything you think is best"). Then pre-registration from `prereg/inputs/2026-10-23/`.

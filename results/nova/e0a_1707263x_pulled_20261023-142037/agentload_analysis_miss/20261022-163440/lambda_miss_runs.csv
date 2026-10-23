@@ -1,0 +1,2 @@
+label,seed,warmup_s,measure_s,sessions_completed,turns_completed,sessions_per_s,turns_per_s,lambda_miss_sessions,lambda_miss_turns_based,uncached_tokens_per_s,prompt_tokens_per_s,cached_frac_tokens,effective_mean_turns,aborted,closed_n
+sglang-nocache,0,900.0,1800.0137989288196,98,1796,0.05444402707263654,0.9977701288005635,0.05444402707263654,0.06759477052446271,11430.579039029708,11430.579039029708,0.0,14.761055049953429,False,64
