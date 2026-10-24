@@ -1,0 +1,114 @@
+# Round 6, stage PREDICT: blind simulator predictions B1-B4 for the real-engine experiments that follow (E0a / E0b / E2 and the native-pool curves).
+#
+# One probe spec (src/prefixmeta/probe.py) for ALL four predictions; the driver experiments/r6_predict_run.sh passes the per-prediction values with
+# `--set` (the exact commands are in notes/PREDICTIONS.md). Written and committed BEFORE any prediction run (the git commit in every meta.json is that commit).
+#
+# Engine = calibration/round6_server_log_fit/calibration.yaml `engine:` block, copied verbatim (tests/test_r6_predict.py asserts that the effective engine
+# equals the engine of the Validate stage's PRIMARY arm: configs/r6_validate_stagec.yaml with the calibration merged over the base engine, full_reserve,
+# finished-session KV freed at once). The ONLY addition is `batching`: `mixed` is the PRIMARY column (the mode the validation picked), the SECONDARY column is
+# the same spec run with `--set engine.batching=separate_prefill_priority`.
+# Workload = the Stage C workload (identical to configs/r6_validate_stagec.yaml `workload` and to configs/agentload_c_closed.yaml).
+# Differences from the validation runs (everything else is identical): (1) `metrics.tail_window_s: 2500` (only the `tail_*` summary columns of the
+# runs; it does not touch the dynamics); (2) the policies are the base r5 policies (fcfs_lru is all that is used); (3) parallel.max_workers 6 (the validation
+# needed --set parallel.max_workers=6 for the same effect).
+research_question: >-
+  Blind predictions of the calibrated simulator (mixed primary, separate_prefill_priority secondary) for: B1 the all-miss capacity of the Stage C
+  workload, B2 the from-empty open-loop stability edge, B3 the E2 paired burst / cap test, B4 the closed-population curves with a 600k and 900k KV pool.
+
+base_config: configs/prefix_meta_r5.yaml        # r5 -> prefix_meta.yaml; fcfs_lru = FCFS with LRU eviction
+
+engine:                                          # calibration.yaml `engine:` block (verbatim) + batching
+  iter_fixed_s: 0.00924
+  iter_floor_s: 0.00126
+  per_token_s: 6.26e-05
+  decode_attn_s: 0.00031
+  attn_ctx_norm: 8192
+  prefill_attn_s: 2.24e-09
+  prefill_attn_ctx: mid
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 300000
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+  batching: mixed                                # PRIMARY column; the secondary column overrides it with --set engine.batching=separate_prefill_priority
+
+workload:                                        # Stage C: 2000-token first prompt, +550 tool tokens, 100 decoded tokens, T ~ min(Geom(1/15), 60), tool time Exp(5 s)
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5            # unused for exp
+
+metrics:
+  window_s: 100.0              # as in the validation: 100 s windows tile [900, 2700), [0, 3000) and [0, 8700)
+  fine_window_s: 100.0
+  tail_window_s: 2500.0        # B3: the evaluation window "after the burst" = the last 2500 s of the run = [t_burst + 5000, t_burst + 7500)
+
+parallel:
+  max_workers: 6               # hard cap (the task allows at most 6 worker processes)
+
+probe:
+  # B1 (defaults) and B4 (--set probe.curve.cache_enabled=true ...): closed population, synchronized start at t = 0, replacement at once, measured window [900, 2700) s.
+  curve:
+    policies: [fcfs_lru]
+    n_grid: [32]               # B1: POP = 32 (and, in a second call, POP = 64 with seed 0); B4 overrides the grid
+    seeds: [0, 1, 2]
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000        # replacement pool; the run aborts if it runs out (the all-miss rate is about 0.08 sessions/s)
+    cache_enabled: false       # B1: prefix cache DISABLED (the all-miss capacity); B4 sets true
+  # B2: open-loop Poisson arrivals at ABSOLUTE rates, cache ON, FCFS, from an EMPTY cache and queue (E0b protocol).
+  # stable := final backlog (waiting queue + gate; there is no gate here) < 50 AND OLS rise of the 100 s backlog means over the last 1500 s <= stable_trend_max_rise (10 requests)
+  #           AND the run was not stopped early (backlog > 3000, which a 3000 s horizon at these rates cannot reach).
+  open:
+    policy: fcfs_lru
+    lambdas: [0.07, 0.08, 0.09, 0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.18, 0.20, 0.22]
+    seeds: [0, 1, 2]
+    horizon_s: 3000.0
+    stable_final_backlog_below: 50.0
+    stable_trend_window_s: 1500.0
+    stable_trend_max_rise: 10.0
+    unstable_backlog_stop: 3000
+  # B3: E2 paired arms on the same seeds (common random numbers): no_burst, burst (200 sessions uniformly in 60 s from t_burst = 1200 s), burst_cap (same burst, client-side cap 20
+  # = a FIFO gate: a session enters the engine only while fewer than 20 sessions are in the system; the others wait outside and count in the backlog).
+  # Run: 1200 s warm-up, then 7500 s after the burst (horizon 8700 s). `lambda` is set per call with --set probe.burst.lambda=<x>.
+  burst:
+    policy: fcfs_lru
+    lambda: 0.10               # overridden per call (B3 grid: 0.09 0.10 0.11 0.12 0.13 0.14 0.16)
+    burst_n: 200
+    burst_width_s: 60.0
+    warmup_s: 1200.0
+    after_s: 7500.0
+    cap: 20
+    seeds: [0, 1, 2]
+    recovered_hit_above: 0.8   # probe defaults, unchanged
+    recovered_backlog_below: 20.0
+    hit_eval_from_s: 5000.0    # probe-native columns hit_eval / trapped / burst_recovered use the same window as the B3 classification below
+    trap_hit_below: 0.2
+    trap_min_s: 2500.0
+
+# ---------------------------------------------------------------- declared analysis definitions (read by src/prefixmeta/r6_predict.py; fixed before any prediction run)
+predict:
+  b1:
+    reference_population: 32   # the all-miss reference used below: POP = 32, seeds 0-2, 3-seed mean (turns-based lambda_miss, token rate)
+    expected_turns: 14.761     # E[min(Geom(1/15), 60)]
+  b2:
+    edge_rule: >-
+      predicted from-empty edge = the largest grid lambda such that EVERY grid lambda <= it is all-stable (3 of 3 seeds); also reported: the largest all-stable
+      grid lambda irrespective of contiguity, and the 20-seed supplement's stable fractions.
+  b3:
+    lambda_miss: b1_turns_based       # lambda_miss of the threshold below = the B1 turns-based POP = 32 value of the same batching mode
+    eval_window_s: [5000.0, 7500.0]   # relative to t_burst; the last 2500 s of the run (also used for the no_burst arm, same absolute window [6200, 8700))
+    trapped_token_rate_rel_tol: 0.15  # |token_rate / B1 all-miss token rate - 1| <= 0.15
+    trapped_slope_frac: 0.5           # AND backlog slope (OLS of queue_mean + gate_mean per 100 s window over the eval window, requests per second) > 0.5 * (lambda - lambda_miss)
+    recovered_hit_above: 0.8          # RECOVERED := eval-window hit rate > 0.8 AND eval-window mean backlog < 20 (the probe's `recovered` definition)
+    recovered_backlog_below: 20.0
+    good_noburst: recovered           # NOBURST "good" := the same RECOVERED test on the no_burst arm
+    pass_min_frac: 0.6666666666666666 # a condition holds at a lambda if it holds in at least ceil(2/3 * n_seeds) seeds; PASS needs all three conditions
+    sensitivity_eval_windows_s: [[6000.0, 7500.0], [2500.0, 7500.0]]   # labelled sensitivities: last 1500 s, last 5000 s (never used for the verdict)

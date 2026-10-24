@@ -1,0 +1,433 @@
+[03:23:56] START part=b1 cmd=curve tag=r6pred_b1pop32_mixed args: --set engine.batching=mixed
+                 mode    policy  n_nominal  n_seeds   mu_mean    mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         32        3  0.069444  0.01148            0.0            1.0                     0.0
+n* by policy: {'fcfs_lru': 32}
+result dir: results\prefix_meta_probe_curve_r6pred_b1pop32_mixed\20261024-032359
+[03:24:01] DONE  tag=r6pred_b1pop32_mixed dir=results/prefix_meta_probe_curve_r6pred_b1pop32_mixed/20261024-032359
+[03:24:01] START part=b1 cmd=curve tag=r6pred_b1pop64_mixed args: --set engine.batching=mixed --set probe.curve.n_grid=[64] --set probe.curve.seeds=[0]
+                 mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         64        1  0.074444    NaN            0.0            1.0                     0.0
+n* by policy: {'fcfs_lru': 64}
+result dir: results\prefix_meta_probe_curve_r6pred_b1pop64_mixed\20261024-032403
+[03:24:06] DONE  tag=r6pred_b1pop64_mixed dir=results/prefix_meta_probe_curve_r6pred_b1pop64_mixed/20261024-032403
+[03:24:06] START part=b4 cmd=curve tag=r6pred_b4_kv300k_mixed args: --set engine.batching=mixed --set engine.kv_memory_tokens=300000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[0]
+                 mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         16        1  0.182778    NaN       0.928618       0.970359                     0.0
+1  full_reserve|mixed  fcfs_lru         24        1  0.226111    NaN       0.906676       0.995335                     0.0
+2  full_reserve|mixed  fcfs_lru         32        1  0.153889    NaN       0.617966       0.999686                     0.0
+3  full_reserve|mixed  fcfs_lru         48        1  0.076111    NaN       0.000000       1.000000                     0.0
+4  full_reserve|mixed  fcfs_lru         64        1  0.072222    NaN       0.000000       1.000000                     0.0
+5  full_reserve|mixed  fcfs_lru         96        1  0.071111    NaN       0.000000       1.000000                     0.0
+6  full_reserve|mixed  fcfs_lru        300        1  0.106111    NaN       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 24}
+result dir: results\prefix_meta_probe_curve_r6pred_b4_kv300k_mixed\20261024-032408
+[03:24:11] DONE  tag=r6pred_b4_kv300k_mixed dir=results/prefix_meta_probe_curve_r6pred_b4_kv300k_mixed/20261024-032408
+[03:24:11] START part=b4 cmd=curve tag=r6pred_b4_kv600k_mixed args: --set engine.batching=mixed --set engine.kv_memory_tokens=600000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[0]
+                 mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         16        1  0.182778    NaN       0.928618       0.970359                     0.0
+1  full_reserve|mixed  fcfs_lru         24        1  0.254444    NaN       0.931509       0.995952                     0.0
+2  full_reserve|mixed  fcfs_lru         32        1  0.329444    NaN       0.931014       0.999402                     0.0
+3  full_reserve|mixed  fcfs_lru         48        1  0.406111    NaN       0.920892       1.000000                     0.0
+4  full_reserve|mixed  fcfs_lru         64        1  0.105000    NaN       0.314955       1.000000                     0.0
+5  full_reserve|mixed  fcfs_lru         96        1  0.073333    NaN       0.000000       1.000000                     0.0
+6  full_reserve|mixed  fcfs_lru        300        1  0.107778    NaN       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 48}
+result dir: results\prefix_meta_probe_curve_r6pred_b4_kv600k_mixed\20261024-032413
+[03:24:16] DONE  tag=r6pred_b4_kv600k_mixed dir=results/prefix_meta_probe_curve_r6pred_b4_kv600k_mixed/20261024-032413
+[03:24:16] START part=b4 cmd=curve tag=r6pred_b4_kv900k_mixed args: --set engine.batching=mixed --set engine.kv_memory_tokens=900000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[0]
+                 mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         16        1  0.182778    NaN       0.928618       0.970359                     0.0
+1  full_reserve|mixed  fcfs_lru         24        1  0.254444    NaN       0.931509       0.995952                     0.0
+2  full_reserve|mixed  fcfs_lru         32        1  0.329444    NaN       0.931014       0.999402                     0.0
+3  full_reserve|mixed  fcfs_lru         48        1  0.438333    NaN       0.932379       1.000000                     0.0
+4  full_reserve|mixed  fcfs_lru         64        1  0.522778    NaN       0.931344       1.000000                     0.0
+5  full_reserve|mixed  fcfs_lru         96        1  0.079444    NaN       0.049607       1.000000                     0.0
+6  full_reserve|mixed  fcfs_lru        300        1  0.108889    NaN       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 64}
+result dir: results\prefix_meta_probe_curve_r6pred_b4_kv900k_mixed\20261024-032418
+[03:24:21] DONE  tag=r6pred_b4_kv900k_mixed dir=results/prefix_meta_probe_curve_r6pred_b4_kv900k_mixed/20261024-032418
+[03:24:21] START part=b4s cmd=curve tag=r6pred_b4s_kv300k_mixed args: --set engine.batching=mixed --set engine.kv_memory_tokens=300000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[1,2,3,4]
+                 mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         16        4  0.174028  0.008835       0.933274       0.974615                     0.0
+1  full_reserve|mixed  fcfs_lru         24        4  0.216111  0.029376       0.882685       0.997544                     0.0
+2  full_reserve|mixed  fcfs_lru         32        4  0.098889  0.021957       0.407046       0.999815                     0.0
+3  full_reserve|mixed  fcfs_lru         48        4  0.065694  0.004336       0.000000       1.000000                     0.0
+4  full_reserve|mixed  fcfs_lru         64        4  0.066111  0.004864       0.000000       1.000000                     0.0
+5  full_reserve|mixed  fcfs_lru         96        4  0.070000  0.001757       0.000000       1.000000                     0.0
+6  full_reserve|mixed  fcfs_lru        300        4  0.106806  0.005690       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 24}
+result dir: results\prefix_meta_probe_curve_r6pred_b4s_kv300k_mixed\20261024-032423
+[03:24:26] DONE  tag=r6pred_b4s_kv300k_mixed dir=results/prefix_meta_probe_curve_r6pred_b4s_kv300k_mixed/20261024-032423
+[03:24:26] START part=b4s cmd=curve tag=r6pred_b4s_kv600k_mixed args: --set engine.batching=mixed --set engine.kv_memory_tokens=600000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[1,2,3,4]
+                 mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         16        4  0.174028  0.008835       0.933274       0.974615                     0.0
+1  full_reserve|mixed  fcfs_lru         24        4  0.258194  0.008893       0.931695       0.997028                     0.0
+2  full_reserve|mixed  fcfs_lru         32        4  0.331111  0.014106       0.931438       0.999701                     0.0
+3  full_reserve|mixed  fcfs_lru         48        4  0.422083  0.031310       0.923177       1.000000                     0.0
+4  full_reserve|mixed  fcfs_lru         64        4  0.094167  0.046540       0.238629       1.000000                     0.0
+5  full_reserve|mixed  fcfs_lru         96        4  0.069861  0.005018       0.000000       1.000000                     0.0
+6  full_reserve|mixed  fcfs_lru        300        4  0.108056  0.005061       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 48}
+result dir: results\prefix_meta_probe_curve_r6pred_b4s_kv600k_mixed\20261024-032429
+[03:24:32] DONE  tag=r6pred_b4s_kv600k_mixed dir=results/prefix_meta_probe_curve_r6pred_b4s_kv600k_mixed/20261024-032429
+[03:24:32] START part=b4s cmd=curve tag=r6pred_b4s_kv900k_mixed args: --set engine.batching=mixed --set engine.kv_memory_tokens=900000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[1,2,3,4]
+                 mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|mixed  fcfs_lru         16        4  0.174028  0.008835       0.933274       0.974615                     0.0
+1  full_reserve|mixed  fcfs_lru         24        4  0.258194  0.008893       0.931695       0.997028                     0.0
+2  full_reserve|mixed  fcfs_lru         32        4  0.331111  0.014106       0.931438       0.999701                     0.0
+3  full_reserve|mixed  fcfs_lru         48        4  0.439444  0.021693       0.932177       1.000000                     0.0
+4  full_reserve|mixed  fcfs_lru         64        4  0.511667  0.017183       0.932256       1.000000                     0.0
+5  full_reserve|mixed  fcfs_lru         96        4  0.085833  0.038433       0.118501       1.000000                     0.0
+6  full_reserve|mixed  fcfs_lru        300        4  0.107500  0.005923       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 64}
+result dir: results\prefix_meta_probe_curve_r6pred_b4s_kv900k_mixed\20261024-032434
+[03:24:37] DONE  tag=r6pred_b4s_kv900k_mixed dir=results/prefix_meta_probe_curve_r6pred_b4s_kv900k_mixed/20261024-032434
+[03:24:37] START part=b2 cmd=open tag=r6pred_b2_mixed args: --set engine.batching=mixed
+     lam  lam_mult  n_runs  n_stable  final_backlog_mean  trend_rise_mean  tail_hit_mean  tail_busy_mean  tail_sessions_per_s  stable_all
+0   0.07       NaN       3         3            0.000000         0.002916       0.936195        0.763488             0.077111        True
+1   0.08       NaN       3         3            0.000000         0.001791       0.935114        0.800021             0.088000        True
+2   0.09       NaN       3         3            0.000000         0.000973       0.933056        0.828598             0.096444        True
+3   0.10       NaN       3         3            0.000000         0.002112       0.933917        0.854490             0.109778        True
+4   0.11       NaN       3         3            0.000000         0.000682       0.930835        0.858451             0.118222        True
+5   0.12       NaN       3         3            0.000000        -0.003119       0.929838        0.885842             0.128444        True
+6   0.13       NaN       3         3            0.000000        -0.019862       0.929612        0.907844             0.135333        True
+7   0.14       NaN       3         3            2.666667         0.867602       0.921345        0.924318             0.144444        True
+8   0.15       NaN       3         2           17.333333        12.630412       0.598697        0.969662             0.142444       False
+9   0.16       NaN       3         2           25.333333        19.510600       0.583947        0.974490             0.147111       False
+10  0.18       NaN       3         2           38.333333        25.092606       0.616957        0.983019             0.170444       False
+11  0.20       NaN       3         0          191.333333       138.748174       0.000000        1.000000             0.110000       False
+12  0.22       NaN       3         0          256.000000       162.003773       0.000000        1.000000             0.119111       False
+result dir: results\prefix_meta_probe_open_r6pred_b2_mixed\20261024-032440
+[03:24:43] DONE  tag=r6pred_b2_mixed dir=results/prefix_meta_probe_open_r6pred_b2_mixed/20261024-032440
+[03:24:43] START part=b2s cmd=open tag=r6pred_b2s20_mixed args: --set engine.batching=mixed --set probe.open.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+     lam  lam_mult  n_runs  n_stable  final_backlog_mean  trend_rise_mean  tail_hit_mean  tail_busy_mean  tail_sessions_per_s  stable_all
+0   0.07       NaN      20        20                0.00         0.001371       0.931998        0.711116             0.072833        True
+1   0.08       NaN      20        20                0.00         0.001384       0.930829        0.751106             0.081233        True
+2   0.09       NaN      20        20                0.00         0.000856       0.931163        0.785798             0.090633        True
+3   0.10       NaN      20        20                0.00         0.001027       0.932363        0.832914             0.101400        True
+4   0.11       NaN      20        20                0.00         0.003298       0.932572        0.863614             0.110733        True
+5   0.12       NaN      20        20                0.00         0.001354       0.932382        0.887942             0.121567        True
+6   0.13       NaN      20        20                0.00         0.002563       0.931598        0.901563             0.131600        True
+7   0.14       NaN      20        20                0.00         0.003827       0.931491        0.921637             0.140867        True
+8   0.15       NaN      20        20                0.00        -0.023447       0.929314        0.933131             0.150167        True
+9   0.16       NaN      20        19                3.10         2.901608       0.902317        0.948060             0.156867       False
+10  0.18       NaN      20        15               18.65        14.671433       0.808009        0.971175             0.166300       False
+11  0.20       NaN      20         6               84.15        66.786154       0.439090        0.989249             0.148233       False
+12  0.22       NaN      20         4              144.40       107.039472       0.257329        0.995219             0.143833       False
+result dir: results\prefix_meta_probe_open_r6pred_b2s20_mixed\20261024-032445
+[03:24:51] DONE  tag=r6pred_b2s20_mixed dir=results/prefix_meta_probe_open_r6pred_b2s20_mixed/20261024-032445
+[03:24:51] START part=b3 cmd=burst tag=r6pred_b3_lam0.09_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.09
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.934393        0.9335      0.935901           0.010624                      0            3                       3       0.934393         0.010624             0.0             0.092933                0
+1      burst      200   -1       3          3                  0       0.000000        0.0000      0.000000         180.290386                      3            0                       0       0.000000       180.290386             0.0             0.077733                0
+2  burst_cap      200   20       3          0                  3       0.934393        0.9335      0.935901           0.010530                      0            3                       3       0.934393         0.010530             0.0             0.092933                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.09_mixed\20261024-032453
+[03:24:56] DONE  tag=r6pred_b3_lam0.09_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.09_mixed/20261024-032453
+[03:24:56] START part=b3 cmd=burst tag=r6pred_b3_lam0.10_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.10
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3        0.93181      0.929013      0.934975           0.011732                      0            3                       3        0.93181         0.011732        0.000000             0.103733                0
+1      burst      200   -1       3          3                  0        0.00000      0.000000      0.000000         220.813403                      3            0                       0        0.00000       220.813403        0.000000             0.083867                0
+2  burst_cap      200   20       3          0                  3        0.93181      0.929013      0.934975           0.026241                      0            3                       3        0.93181         0.011864        0.014377             0.103733                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.10_mixed\20261024-032459
+[03:25:02] DONE  tag=r6pred_b3_lam0.10_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.10_mixed/20261024-032459
+[03:25:02] START part=b3 cmd=burst tag=r6pred_b3_lam0.11_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.11
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3        0.93352      0.931612       0.93483           0.014187                      0            3                       3        0.93352         0.014187        0.000000             0.112933                0
+1      burst      200   -1       3          3                  0        0.00000      0.000000       0.00000         258.451487                      3            0                       0        0.00000       258.451487        0.000000             0.086667                0
+2  burst_cap      200   20       3          0                  3        0.93352      0.931612       0.93483           0.014833                      0            3                       3        0.93352         0.014385        0.000448             0.112933                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.11_mixed\20261024-032504
+[03:25:07] DONE  tag=r6pred_b3_lam0.11_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.11_mixed/20261024-032504
+[03:25:07] START part=b3 cmd=burst tag=r6pred_b3_lam0.12_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.12
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.933820      0.931752      0.935047           0.016438                      0            3                       3       0.933820         0.016438        0.000000             0.125600                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         300.465630                      3            0                       0       0.000000       300.465630        0.000000             0.086533                0
+2  burst_cap      200   20       3          0                  3       0.933825      0.931767      0.935033           0.018474                      0            3                       3       0.933825         0.016480        0.001994             0.125600                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.12_mixed\20261024-032509
+[03:25:12] DONE  tag=r6pred_b3_lam0.12_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.12_mixed/20261024-032509
+[03:25:12] START part=b3 cmd=burst tag=r6pred_b3_lam0.13_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.13
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.934379      0.932912      0.935232           0.019496                      0            3                       3       0.934379         0.019496        0.000000             0.136133                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         344.312952                      3            0                       0       0.000000       344.312952        0.000000             0.091867                0
+2  burst_cap      200   20       3          0                  3       0.934404      0.932939      0.935268           0.149941                      0            3                       3       0.934404         0.019275        0.130666             0.136133                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.13_mixed\20261024-032515
+[03:25:18] DONE  tag=r6pred_b3_lam0.13_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.13_mixed/20261024-032515
+[03:25:18] START part=b3 cmd=burst tag=r6pred_b3_lam0.14_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.14
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.933618      0.930618      0.936076           0.055410                      0            3                       3       0.933618         0.055410        0.000000               0.1440                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         393.189240                      3            0                       0       0.000000       393.189240        0.000000               0.0936                0
+2  burst_cap      200   20       3          0                  3       0.935677      0.934134      0.936819           0.177473                      0            3                       3       0.935677         0.022025        0.155448               0.1440                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.14_mixed\20261024-032520
+[03:25:23] DONE  tag=r6pred_b3_lam0.14_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.14_mixed/20261024-032520
+[03:25:23] START part=b3 cmd=burst tag=r6pred_b3_lam0.16_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.16
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          1                  2       0.620762      0.000000      0.931639          97.461540                      1            2                       2       0.620762        97.461540        0.000000             0.144533                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         491.076201                      3            0                       0       0.000000       491.076201        0.000000             0.097733                0
+2  burst_cap      200   20       3          0                  3       0.931651      0.930749      0.932249           0.536403                      0            3                       3       0.931651         0.034994        0.501409             0.169067                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.16_mixed\20261024-032525
+[03:25:28] DONE  tag=r6pred_b3_lam0.16_mixed dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.16_mixed/20261024-032525
+[03:25:28] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.09_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.09 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932262      0.924267      0.942506           0.009386                      0           20                      20       0.932262         0.009386        0.000000              0.09082                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         159.807514                     20            0                       0       0.000000       159.807514        0.000000              0.07856                0
+2  burst_cap      200   20      20          0                 20       0.932262      0.924267      0.942506           0.009854                      0           20                      20       0.932262         0.009376        0.000478              0.09082                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.09_mixed\20261024-032531
+[03:25:35] DONE  tag=r6pred_b3s20_lam0.09_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.09_mixed/20261024-032531
+[03:25:35] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.10_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.10 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932108       0.92377      0.940186           0.011210                      0           20                      20       0.932108         0.011210         0.00000              0.10130                0
+1      burst      200   -1      20         20                  0       0.000000       0.00000      0.000000         198.367711                     20            0                       0       0.000000       198.367711         0.00000              0.08048                0
+2  burst_cap      200   20      20          0                 20       0.932107       0.92377      0.940186           0.011214                      0           20                      20       0.932107         0.011184         0.00003              0.10130                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.10_mixed\20261024-032537
+[03:25:42] DONE  tag=r6pred_b3s20_lam0.10_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.10_mixed/20261024-032537
+[03:25:42] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.11_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.11 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.931611      0.922387      0.939072           0.014543                      0           20                      20       0.931611         0.014543        0.000000              0.11096                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         239.270406                     20            0                       0       0.000000       239.270406        0.000000              0.08462                0
+2  burst_cap      200   20      20          0                 20       0.931917      0.922387      0.939072           0.033386                      0           20                      20       0.931917         0.013051        0.020334              0.11096                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.11_mixed\20261024-032544
+[03:25:49] DONE  tag=r6pred_b3s20_lam0.11_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.11_mixed/20261024-032544
+[03:25:49] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.12_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.12 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.931925      0.920338      0.936732           0.014901                      0           20                      20       0.931925         0.014901        0.000000              0.12028                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         280.699238                     20            0                       0       0.000000       280.699238        0.000000              0.08886                0
+2  burst_cap      200   20      20          0                 20       0.931927      0.920338      0.936732           0.024112                      0           20                      20       0.931927         0.014898        0.009214              0.12028                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.12_mixed\20261024-032551
+[03:25:56] DONE  tag=r6pred_b3s20_lam0.12_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.12_mixed/20261024-032551
+[03:25:56] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.13_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.13 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932402      0.921403      0.937775           0.017499                      0           20                      20       0.932402         0.017499        0.000000              0.13098                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         322.459558                     20            0                       0       0.000000       322.459558        0.000000              0.09284                0
+2  burst_cap      200   20      20          0                 20       0.932400      0.921403      0.937775           0.052900                      0           20                      20       0.932400         0.017449        0.035451              0.13098                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.13_mixed\20261024-032558
+[03:26:03] DONE  tag=r6pred_b3s20_lam0.13_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.13_mixed/20261024-032558
+[03:26:03] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.14_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.14 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932333      0.923686      0.937726           0.023566                      0           20                      20       0.932333         0.023566        0.000000              0.14102                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         366.315380                     20            0                       0       0.000000       366.315380        0.000000              0.09634                0
+2  burst_cap      200   20      20          0                 20       0.932822      0.923686      0.938812           0.144236                      0           20                      20       0.932822         0.020427        0.123809              0.14100                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.14_mixed\20261024-032605
+[03:26:10] DONE  tag=r6pred_b3s20_lam0.14_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.14_mixed/20261024-032605
+[03:26:10] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.16_mixed args: --set engine.batching=mixed --set probe.burst.lambda=0.16 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          3                 15       0.733281      0.000000      0.937585          31.111428                      5           15                      15       0.733281        31.111428        0.000000              0.14810                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         455.415712                     20            0                       0       0.000000       455.415712        0.000000              0.10148                0
+2  burst_cap      200   20      20          0                 20       0.931726      0.917645      0.940048           0.750940                      0           20                      20       0.931726         0.036911        0.714028              0.16176                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.16_mixed\20261024-032612
+[03:26:18] DONE  tag=r6pred_b3s20_lam0.16_mixed dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.16_mixed/20261024-032612
+[03:26:18] START part=b1 cmd=curve tag=r6pred_b1pop32_sep args: --set engine.batching=separate_prefill_priority
+                                     mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         32        3  0.068889  0.011153            0.0       0.999991                     0.0
+n* by policy: {'fcfs_lru': 32}
+result dir: results\prefix_meta_probe_curve_r6pred_b1pop32_sep\20261024-032620
+[03:26:22] DONE  tag=r6pred_b1pop32_sep dir=results/prefix_meta_probe_curve_r6pred_b1pop32_sep/20261024-032620
+[03:26:22] START part=b1 cmd=curve tag=r6pred_b1pop64_sep args: --set engine.batching=separate_prefill_priority --set probe.curve.n_grid=[64] --set probe.curve.seeds=[0]
+                                     mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         64        1  0.073333    NaN            0.0            1.0                     0.0
+n* by policy: {'fcfs_lru': 64}
+result dir: results\prefix_meta_probe_curve_r6pred_b1pop64_sep\20261024-032625
+[03:26:27] DONE  tag=r6pred_b1pop64_sep dir=results/prefix_meta_probe_curve_r6pred_b1pop64_sep/20261024-032625
+[03:26:27] START part=b4 cmd=curve tag=r6pred_b4_kv300k_sep args: --set engine.batching=separate_prefill_priority --set engine.kv_memory_tokens=300000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[0]
+                                     mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         16        1  0.182222    NaN       0.928400       0.974356                     0.0
+1  full_reserve|separate_prefill_priority  fcfs_lru         24        1  0.225556    NaN       0.907981       0.996752                     0.0
+2  full_reserve|separate_prefill_priority  fcfs_lru         32        1  0.159444    NaN       0.646490       0.999570                     0.0
+3  full_reserve|separate_prefill_priority  fcfs_lru         48        1  0.074444    NaN       0.013362       1.000000                     0.0
+4  full_reserve|separate_prefill_priority  fcfs_lru         64        1  0.071111    NaN       0.000000       1.000000                     0.0
+5  full_reserve|separate_prefill_priority  fcfs_lru         96        1  0.071111    NaN       0.000000       1.000000                     0.0
+6  full_reserve|separate_prefill_priority  fcfs_lru        300        1  0.104444    NaN       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 24}
+result dir: results\prefix_meta_probe_curve_r6pred_b4_kv300k_sep\20261024-032629
+[03:26:32] DONE  tag=r6pred_b4_kv300k_sep dir=results/prefix_meta_probe_curve_r6pred_b4_kv300k_sep/20261024-032629
+[03:26:32] START part=b4 cmd=curve tag=r6pred_b4_kv600k_sep args: --set engine.batching=separate_prefill_priority --set engine.kv_memory_tokens=600000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[0]
+                                     mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         16        1  0.182222    NaN       0.928400       0.974356                     0.0
+1  full_reserve|separate_prefill_priority  fcfs_lru         24        1  0.247778    NaN       0.932311       0.996791                     0.0
+2  full_reserve|separate_prefill_priority  fcfs_lru         32        1  0.322778    NaN       0.931259       0.999373                     0.0
+3  full_reserve|separate_prefill_priority  fcfs_lru         48        1  0.396667    NaN       0.923416       1.000000                     0.0
+4  full_reserve|separate_prefill_priority  fcfs_lru         64        1  0.128333    NaN       0.490504       1.000000                     0.0
+5  full_reserve|separate_prefill_priority  fcfs_lru         96        1  0.072222    NaN       0.000000       1.000000                     0.0
+6  full_reserve|separate_prefill_priority  fcfs_lru        300        1  0.109444    NaN       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 48}
+result dir: results\prefix_meta_probe_curve_r6pred_b4_kv600k_sep\20261024-032634
+[03:26:37] DONE  tag=r6pred_b4_kv600k_sep dir=results/prefix_meta_probe_curve_r6pred_b4_kv600k_sep/20261024-032634
+[03:26:37] START part=b4 cmd=curve tag=r6pred_b4_kv900k_sep args: --set engine.batching=separate_prefill_priority --set engine.kv_memory_tokens=900000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[0]
+                                     mode    policy  n_nominal  n_seeds   mu_mean  mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         16        1  0.182222    NaN       0.928400       0.974356                     0.0
+1  full_reserve|separate_prefill_priority  fcfs_lru         24        1  0.247778    NaN       0.932311       0.996791                     0.0
+2  full_reserve|separate_prefill_priority  fcfs_lru         32        1  0.322778    NaN       0.931259       0.999373                     0.0
+3  full_reserve|separate_prefill_priority  fcfs_lru         48        1  0.426111    NaN       0.932088       0.999996                     0.0
+4  full_reserve|separate_prefill_priority  fcfs_lru         64        1  0.498889    NaN       0.931737       1.000000                     0.0
+5  full_reserve|separate_prefill_priority  fcfs_lru         96        1  0.087778    NaN       0.179646       1.000000                     0.0
+6  full_reserve|separate_prefill_priority  fcfs_lru        300        1  0.111111    NaN       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 64}
+result dir: results\prefix_meta_probe_curve_r6pred_b4_kv900k_sep\20261024-032639
+[03:26:42] DONE  tag=r6pred_b4_kv900k_sep dir=results/prefix_meta_probe_curve_r6pred_b4_kv900k_sep/20261024-032639
+[03:26:42] START part=b4s cmd=curve tag=r6pred_b4s_kv300k_sep args: --set engine.batching=separate_prefill_priority --set engine.kv_memory_tokens=300000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[1,2,3,4]
+                                     mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         16        4  0.173194  0.008539       0.933100       0.975619                     0.0
+1  full_reserve|separate_prefill_priority  fcfs_lru         24        4  0.216528  0.024438       0.886613       0.997461                     0.0
+2  full_reserve|separate_prefill_priority  fcfs_lru         32        4  0.114722  0.026115       0.496404       0.999884                     0.0
+3  full_reserve|separate_prefill_priority  fcfs_lru         48        4  0.066250  0.005672       0.015013       1.000000                     0.0
+4  full_reserve|separate_prefill_priority  fcfs_lru         64        4  0.065556  0.004468       0.000000       1.000000                     0.0
+5  full_reserve|separate_prefill_priority  fcfs_lru         96        4  0.069028  0.001836       0.000000       1.000000                     0.0
+6  full_reserve|separate_prefill_priority  fcfs_lru        300        4  0.106389  0.006503       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 24}
+result dir: results\prefix_meta_probe_curve_r6pred_b4s_kv300k_sep\20261024-032644
+[03:26:47] DONE  tag=r6pred_b4s_kv300k_sep dir=results/prefix_meta_probe_curve_r6pred_b4s_kv300k_sep/20261024-032644
+[03:26:47] START part=b4s cmd=curve tag=r6pred_b4s_kv600k_sep args: --set engine.batching=separate_prefill_priority --set engine.kv_memory_tokens=600000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[1,2,3,4]
+                                     mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         16        4  0.173194  0.008539       0.933100       0.975619                     0.0
+1  full_reserve|separate_prefill_priority  fcfs_lru         24        4  0.254722  0.009574       0.931737       0.997123                     0.0
+2  full_reserve|separate_prefill_priority  fcfs_lru         32        4  0.325278  0.015612       0.931396       0.999499                     0.0
+3  full_reserve|separate_prefill_priority  fcfs_lru         48        4  0.409444  0.033318       0.922984       1.000000                     0.0
+4  full_reserve|separate_prefill_priority  fcfs_lru         64        4  0.105833  0.042713       0.351337       1.000000                     0.0
+5  full_reserve|separate_prefill_priority  fcfs_lru         96        4  0.070139  0.003723       0.000000       1.000000                     0.0
+6  full_reserve|separate_prefill_priority  fcfs_lru        300        4  0.106389  0.007035       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 48}
+result dir: results\prefix_meta_probe_curve_r6pred_b4s_kv600k_sep\20261024-032650
+[03:26:53] DONE  tag=r6pred_b4s_kv600k_sep dir=results/prefix_meta_probe_curve_r6pred_b4s_kv600k_sep/20261024-032650
+[03:26:53] START part=b4s cmd=curve tag=r6pred_b4s_kv900k_sep args: --set engine.batching=separate_prefill_priority --set engine.kv_memory_tokens=900000 --set probe.curve.cache_enabled=true --set probe.curve.n_grid=[16,24,32,48,64,96,300] --set probe.curve.seeds=[1,2,3,4]
+                                     mode    policy  n_nominal  n_seeds   mu_mean     mu_sd  hit_rate_mean  gpu_busy_mean  preemptions_per_s_mean
+0  full_reserve|separate_prefill_priority  fcfs_lru         16        4  0.173194  0.008539       0.933100       0.975619                     0.0
+1  full_reserve|separate_prefill_priority  fcfs_lru         24        4  0.254722  0.009574       0.931737       0.997123                     0.0
+2  full_reserve|separate_prefill_priority  fcfs_lru         32        4  0.325278  0.015612       0.931396       0.999499                     0.0
+3  full_reserve|separate_prefill_priority  fcfs_lru         48        4  0.426806  0.023480       0.932146       1.000000                     0.0
+4  full_reserve|separate_prefill_priority  fcfs_lru         64        4  0.489722  0.019130       0.932359       1.000000                     0.0
+5  full_reserve|separate_prefill_priority  fcfs_lru         96        4  0.084028  0.028880       0.155825       1.000000                     0.0
+6  full_reserve|separate_prefill_priority  fcfs_lru        300        4  0.108194  0.006855       0.000000       1.000000                     0.0
+n* by policy: {'fcfs_lru': 64}
+result dir: results\prefix_meta_probe_curve_r6pred_b4s_kv900k_sep\20261024-032655
+[03:26:58] DONE  tag=r6pred_b4s_kv900k_sep dir=results/prefix_meta_probe_curve_r6pred_b4s_kv900k_sep/20261024-032655
+[03:26:58] START part=b2 cmd=open tag=r6pred_b2_sep args: --set engine.batching=separate_prefill_priority
+     lam  lam_mult  n_runs  n_stable  final_backlog_mean  trend_rise_mean  tail_hit_mean  tail_busy_mean  tail_sessions_per_s  stable_all
+0   0.07       NaN       3         3            0.000000         0.003310       0.936184        0.765376             0.077111        True
+1   0.08       NaN       3         3            0.000000         0.002109       0.935110        0.796527             0.088000        True
+2   0.09       NaN       3         3            0.000000        -0.000549       0.933067        0.830440             0.096444        True
+3   0.10       NaN       3         3            0.000000         0.002818       0.933941        0.854988             0.109778        True
+4   0.11       NaN       3         3            0.000000        -0.001334       0.930867        0.860963             0.118444        True
+5   0.12       NaN       3         3            0.000000        -0.001931       0.929809        0.889125             0.128444        True
+6   0.13       NaN       3         3            0.000000        -0.020460       0.929475        0.908157             0.135333        True
+7   0.14       NaN       3         3            2.000000         1.007584       0.921893        0.925148             0.145333        True
+8   0.15       NaN       3         3            2.000000         2.285535       0.911517        0.938787             0.158444        True
+9   0.16       NaN       3         1           37.000000        27.290629       0.573219        0.974153             0.142889       False
+10  0.18       NaN       3         2           43.000000        26.815369       0.611121        0.984760             0.170000       False
+11  0.20       NaN       3         0          215.666667       141.887972       0.000000        1.000000             0.109333       False
+12  0.22       NaN       3         0          267.666667       162.240080       0.000000        1.000000             0.119333       False
+result dir: results\prefix_meta_probe_open_r6pred_b2_sep\20261024-032700
+[03:27:03] DONE  tag=r6pred_b2_sep dir=results/prefix_meta_probe_open_r6pred_b2_sep/20261024-032700
+[03:27:03] START part=b2s cmd=open tag=r6pred_b2s20_sep args: --set engine.batching=separate_prefill_priority --set probe.open.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+     lam  lam_mult  n_runs  n_stable  final_backlog_mean  trend_rise_mean  tail_hit_mean  tail_busy_mean  tail_sessions_per_s  stable_all
+0   0.07       NaN      20        20                0.00         0.001075       0.931994        0.712023             0.072833        True
+1   0.08       NaN      20        20                0.00         0.001129       0.930821        0.751979             0.081233        True
+2   0.09       NaN      20        20                0.00         0.000818       0.931171        0.787233             0.090633        True
+3   0.10       NaN      20        20                0.00         0.000939       0.932364        0.833825             0.101400        True
+4   0.11       NaN      20        20                0.00         0.003347       0.932521        0.864715             0.110733        True
+5   0.12       NaN      20        20                0.00         0.002031       0.932396        0.886823             0.121533        True
+6   0.13       NaN      20        20                0.00         0.002325       0.931569        0.902621             0.131567        True
+7   0.14       NaN      20        20                0.00         0.002560       0.931434        0.922527             0.140833        True
+8   0.15       NaN      20        20                0.20        -0.045041       0.929594        0.935891             0.150300        True
+9   0.16       NaN      20        19                3.05         3.253612       0.901333        0.948255             0.156933       False
+10  0.18       NaN      20        15               20.35        15.750472       0.809708        0.971889             0.166600       False
+11  0.20       NaN      20         6               96.30        74.142643       0.423465        0.989811             0.146167       False
+12  0.22       NaN      20         4              161.30       113.278683       0.228679        0.995987             0.142300       False
+result dir: results\prefix_meta_probe_open_r6pred_b2s20_sep\20261024-032706
+[03:27:11] DONE  tag=r6pred_b2s20_sep dir=results/prefix_meta_probe_open_r6pred_b2s20_sep/20261024-032706
+[03:27:11] START part=b3 cmd=burst tag=r6pred_b3_lam0.09_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.09
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.934393        0.9335      0.935901           0.010512                      0            3                       3       0.934393         0.010512             0.0             0.092933                0
+1      burst      200   -1       3          3                  0       0.000000        0.0000      0.000000         192.002634                      3            0                       0       0.000000       192.002634             0.0             0.077200                0
+2  burst_cap      200   20       3          0                  3       0.934393        0.9335      0.935901           0.010548                      0            3                       3       0.934393         0.010548             0.0             0.092933                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.09_sep\20261024-032713
+[03:27:16] DONE  tag=r6pred_b3_lam0.09_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.09_sep/20261024-032713
+[03:27:16] START part=b3 cmd=burst tag=r6pred_b3_lam0.10_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.10
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3        0.93181      0.929032      0.934975           0.011582                      0            3                       3        0.93181         0.011582        0.000000             0.103733                0
+1      burst      200   -1       3          3                  0        0.00000      0.000000      0.000000         233.543175                      3            0                       0        0.00000       233.543175        0.000000             0.083200                0
+2  burst_cap      200   20       3          0                  3        0.93181      0.929032      0.934975           0.027951                      0            3                       3        0.93181         0.011906        0.016045             0.103733                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.10_sep\20261024-032718
+[03:27:21] DONE  tag=r6pred_b3_lam0.10_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.10_sep/20261024-032718
+[03:27:22] START part=b3 cmd=burst tag=r6pred_b3_lam0.11_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.11
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.933515      0.931580      0.934814           0.013665                      0            3                       3       0.933515         0.013665        0.000000             0.112933                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         273.034575                      3            0                       0       0.000000       273.034575        0.000000             0.085733                0
+2  burst_cap      200   20       3          0                  3       0.933520      0.931596      0.934814           0.014606                      0            3                       3       0.933520         0.013844        0.000762             0.112933                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.11_sep\20261024-032724
+[03:27:27] DONE  tag=r6pred_b3_lam0.11_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.11_sep/20261024-032724
+[03:27:27] START part=b3 cmd=burst tag=r6pred_b3_lam0.12_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.12
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3        0.93382      0.931767      0.935033           0.016129                      0            3                       3        0.93382         0.016129        0.000000             0.125600                0
+1      burst      200   -1       3          3                  0        0.00000      0.000000      0.000000         313.155314                      3            0                       0        0.00000       313.155314        0.000000             0.086267                0
+2  burst_cap      200   20       3          0                  3        0.93383      0.931783      0.935047           0.018430                      0            3                       3        0.93383         0.015882        0.002547             0.125600                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.12_sep\20261024-032729
+[03:27:32] DONE  tag=r6pred_b3_lam0.12_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.12_sep/20261024-032729
+[03:27:32] START part=b3 cmd=burst tag=r6pred_b3_lam0.13_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.13
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.934379      0.932912      0.935232           0.019120                      0            3                       3       0.934379         0.019120        0.000000             0.136267                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         357.560398                      3            0                       0       0.000000       357.560398        0.000000             0.091867                0
+2  burst_cap      200   20       3          0                  3       0.934409      0.932953      0.935280           0.162147                      0            3                       3       0.934409         0.019360        0.142787             0.136267                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.13_sep\20261024-032734
+[03:27:37] DONE  tag=r6pred_b3_lam0.13_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.13_sep/20261024-032734
+[03:27:37] START part=b3 cmd=burst tag=r6pred_b3_lam0.14_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.14
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          0                  3       0.934005      0.931792      0.936076           0.036499                      0            3                       3       0.934005         0.036499         0.00000             0.143867                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         404.685774                      3            0                       0       0.000000       404.685774         0.00000             0.094400                0
+2  burst_cap      200   20       3          0                  3       0.935625      0.934146      0.936652           0.194889                      0            3                       3       0.935625         0.021679         0.17321             0.143867                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.14_sep\20261024-032739
+[03:27:42] DONE  tag=r6pred_b3_lam0.14_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.14_sep/20261024-032739
+[03:27:42] START part=b3 cmd=burst tag=r6pred_b3_lam0.16_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.16
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1       3          1                  2       0.621035      0.000000      0.932459         103.490298                      1            2                       2       0.621035       103.490298        0.000000             0.144000                0
+1      burst      200   -1       3          3                  0       0.000000      0.000000      0.000000         507.759844                      3            0                       0       0.000000       507.759844        0.000000             0.097333                0
+2  burst_cap      200   20       3          0                  3       0.931787      0.930806      0.932295           0.578603                      0            3                       3       0.931787         0.033639        0.544964             0.169200                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3_lam0.16_sep\20261024-032745
+[03:27:48] DONE  tag=r6pred_b3_lam0.16_sep dir=results/prefix_meta_probe_burst_r6pred_b3_lam0.16_sep/20261024-032745
+[03:27:48] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.09_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.09 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932259      0.924267      0.942477           0.009419                      0           20                      20       0.932259         0.009419        0.000000              0.09084                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         171.191773                     20            0                       0       0.000000       171.191773        0.000000              0.07782                0
+2  burst_cap      200   20      20          0                 20       0.932259      0.924267      0.942477           0.009945                      0           20                      20       0.932259         0.009399        0.000545              0.09084                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.09_sep\20261024-032750
+[03:27:54] DONE  tag=r6pred_b3s20_lam0.09_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.09_sep/20261024-032750
+[03:27:54] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.10_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.10 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932104       0.92377      0.940171           0.011194                      0           20                      20       0.932104         0.011194        0.000000              0.10132                0
+1      burst      200   -1      20         20                  0       0.000000       0.00000      0.000000         210.116947                     20            0                       0       0.000000       210.116947        0.000000              0.07996                0
+2  burst_cap      200   20      20          0                 20       0.932105       0.92377      0.940171           0.011206                      0           20                      20       0.932105         0.011170        0.000036              0.10132                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.10_sep\20261024-032756
+[03:28:01] DONE  tag=r6pred_b3s20_lam0.10_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.10_sep/20261024-032756
+[03:28:01] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.11_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.11 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.931500      0.922387      0.939072           0.015723                      0           20                      20       0.931500         0.015723        0.000000              0.11100                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         253.299272                     20            0                       0       0.000000       253.299272        0.000000              0.08402                0
+2  burst_cap      200   20      20          0                 20       0.931914      0.922387      0.939072           0.034441                      0           20                      20       0.931914         0.013088        0.021353              0.11100                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.11_sep\20261024-032803
+[03:28:07] DONE  tag=r6pred_b3s20_lam0.11_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.11_sep/20261024-032803
+[03:28:07] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.12_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.12 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.931929      0.920338      0.936746           0.014781                      0           20                      20       0.931929         0.014781        0.000000              0.12026                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         292.421457                     20            0                       0       0.000000       292.421457        0.000000              0.08842                0
+2  burst_cap      200   20      20          0                 20       0.931930      0.920338      0.936746           0.025411                      0           20                      20       0.931930         0.014748        0.010663              0.12026                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.12_sep\20261024-032810
+[03:28:14] DONE  tag=r6pred_b3s20_lam0.12_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.12_sep/20261024-032810
+[03:28:14] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.13_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.13 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932399      0.921403      0.937750           0.017415                      0           20                      20       0.932399         0.017415          0.0000              0.13094                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         334.079148                     20            0                       0       0.000000       334.079148          0.0000              0.09222                0
+2  burst_cap      200   20      20          0                 20       0.932398      0.921403      0.937763           0.056313                      0           20                      20       0.932398         0.017213          0.0391              0.13094                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.13_sep\20261024-032816
+[03:28:21] DONE  tag=r6pred_b3s20_lam0.13_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.13_sep/20261024-032816
+[03:28:21] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.14_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.14 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          0                 20       0.932179      0.923669      0.937715           0.026446                      0           20                      20       0.932179         0.026446        0.000000              0.14098                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         379.703144                     20            0                       0       0.000000       379.703144        0.000000              0.09540                0
+2  burst_cap      200   20      20          0                 20       0.932799      0.923669      0.938790           0.154036                      0           20                      20       0.932799         0.019890        0.134146              0.14100                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.14_sep\20261024-032823
+[03:28:28] DONE  tag=r6pred_b3s20_lam0.14_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.14_sep/20261024-032823
+[03:28:28] START part=b3s cmd=burst tag=r6pred_b3s20_lam0.16_sep args: --set engine.batching=separate_prefill_priority --set probe.burst.lambda=0.16 --set probe.burst.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+         arm  burst_n  cap  n_runs  n_trapped  n_burst_recovered  hit_eval_mean  hit_eval_min  hit_eval_max  tail_backlog_mean  n_not_burst_recovered  n_recovered  n_recovered_queue_only  tail_hit_mean  tail_queue_mean  tail_gate_mean  tail_sessions_per_s  n_stopped_early
+0   no_burst        0   -1      20          3                 13       0.697828      0.000000      0.935642          40.921922                      7           13                      13       0.697828        40.921922        0.000000              0.14434                0
+1      burst      200   -1      20         20                  0       0.000000      0.000000      0.000000         470.271830                     20            0                       0       0.000000       470.271830        0.000000              0.10082                0
+2  burst_cap      200   20      20          0                 20       0.932080      0.924952      0.940039           0.661861                      0           20                      20       0.932080         0.032168        0.629693              0.16176                0
+result dir: results\prefix_meta_probe_burst_r6pred_b3s20_lam0.16_sep\20261024-032830
+[03:28:35] DONE  tag=r6pred_b3s20_lam0.16_sep dir=results/prefix_meta_probe_burst_r6pred_b3s20_lam0.16_sep/20261024-032830
+[03:28:35] ALL DONE parts=b1 b2 b2s b3 b3s b4 b4s

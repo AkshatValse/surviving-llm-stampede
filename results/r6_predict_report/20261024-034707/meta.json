@@ -1,0 +1,74 @@
+{
+  "experiment": "r6_predict_report",
+  "status": "done",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\predict\\src\\prefixmeta\\r6_predict.py",
+    "report",
+    "--spec",
+    "configs/r6_predict.yaml",
+    "--manifest",
+    "results/r6_predict/manifest.tsv"
+  ],
+  "git": {
+    "commit": "ab02e705956dba4d07d57e9786af7ef613394c1c",
+    "dirty": false,
+    "branch": "r6/validation"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T03:47:07",
+  "end_time": "2026-10-24T03:47:08",
+  "wall_s": 1.4826817512512207,
+  "quick": false,
+  "workers": 1,
+  "overrides": [],
+  "tag": null,
+  "manifest": "results\\r6_predict\\manifest.tsv",
+  "n_manifest_dirs": 48,
+  "predict_definitions": {
+    "b1": {
+      "reference_population": 32,
+      "expected_turns": 14.761
+    },
+    "b2": {
+      "edge_rule": "predicted from-empty edge = the largest grid lambda such that EVERY grid lambda <= it is all-stable (3 of 3 seeds); also reported: the largest all-stable grid lambda irrespective of contiguity, and the 20-seed supplement's stable fractions."
+    },
+    "b3": {
+      "lambda_miss": "b1_turns_based",
+      "eval_window_s": [
+        5000.0,
+        7500.0
+      ],
+      "trapped_token_rate_rel_tol": 0.15,
+      "trapped_slope_frac": 0.5,
+      "recovered_hit_above": 0.8,
+      "recovered_backlog_below": 20.0,
+      "good_noburst": "recovered",
+      "pass_min_frac": 0.6666666666666666,
+      "sensitivity_eval_windows_s": [
+        [
+          6000.0,
+          7500.0
+        ],
+        [
+          2500.0,
+          7500.0
+        ]
+      ]
+    }
+  },
+  "E_T": 14.761055049953429
+}
