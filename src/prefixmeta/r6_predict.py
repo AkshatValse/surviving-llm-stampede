@@ -261,6 +261,7 @@ def cmd_report(spec_path: Path, manifest: Path, args: argparse.Namespace, repo_d
     md: List[str] = []
     ctx = begin("r6_predict_report", "r6_predict_report", spec, spec, args, repo_dir)
     all_b1, all_b2, all_b2s, all_b3, all_b3v, all_b3sens, all_b3s, all_b4 = [], [], [], [], [], [], [], []
+    all_b3s_runs: List[pd.DataFrame] = []
     for mode in MODES:
         mt = MODE_TAG[mode]
         S: Dict[str, Any] = {}
@@ -310,6 +311,8 @@ def cmd_report(spec_path: Path, manifest: Path, args: argparse.Namespace, repo_d
             v3s = b3_verdicts(runs3s, float(p3["pass_min_frac"]))
             v3s.insert(0, "mode", mode)
             all_b3s.append(v3s)
+            runs3s.insert(0, "mode", mode)
+            all_b3s_runs.append(runs3s)
             S["b3_supp_20seeds"] = {"PASS": {f"{r.lam:g}": bool(r.PASS) for r in v3s.itertuples()},
                                     "burst_trapped": {f"{r.lam:g}": int(r.burst_trapped) for r in v3s.itertuples()},
                                     "noburst_good": {f"{r.lam:g}": int(r.noburst_good) for r in v3s.itertuples()},
@@ -343,7 +346,7 @@ def cmd_report(spec_path: Path, manifest: Path, args: argparse.Namespace, repo_d
     b1_all, b2_all, b2s_all, b3_all, b3v_all, b3sens_all, b3s_all, b4_all = (cat(x) for x in (all_b1, all_b2, all_b2s, all_b3, all_b3v, all_b3sens, all_b3s,
                                                                                                all_b4))
     for name, df in (("b1_seed", b1_all), ("b2_table", b2_all), ("b2_supp20_table", b2s_all), ("b3_runs", b3_all), ("b3_verdicts", b3v_all),
-                     ("b3_sensitivity_verdicts", b3sens_all), ("b3_supp20_verdicts", b3s_all), ("b4_runs", b4_all)):
+                     ("b3_sensitivity_verdicts", b3sens_all), ("b3_supp20_verdicts", b3s_all), ("b3_supp20_runs", cat(all_b3s_runs)), ("b4_runs", b4_all)):
         if len(df):
             df.to_csv(ctx.out / f"{name}.csv", index=False)
     # ---------------- markdown

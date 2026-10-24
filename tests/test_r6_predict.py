@@ -229,6 +229,7 @@ def test_tiny_end_to_end_report(tmp_path):
     assert set(runs3["arm"]) == {"no_burst", "burst", "burst_cap"} and len(runs3) == 2 * 3 * 2 and (runs3["n_windows"] == 2).all()
     sv = pd.read_csv(d / "b3_supp20_verdicts.csv")
     assert (sv["n_seeds"] == 3).all() and (sv["need"] == 2).all() and len(sv) == 2
+    assert len(pd.read_csv(d / "b3_supp20_runs.csv")) == 2 * 3 * 3
     # the same E[T] estimator as the declared 14.761 (turns-based mu = turns_per_s / E[T])
     assert summ["E_T"] == pytest.approx(14.761, abs=5e-4)
     meta = json.loads((d / "meta.json").read_text())
