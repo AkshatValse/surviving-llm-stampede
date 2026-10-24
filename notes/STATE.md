@@ -1,8 +1,25 @@
 # STATE
 
-_Last updated: 2026-10-23 ~15:15 CDT (hand-off to the always-on PC)_
+_Last updated: 2026-10-24 ~15:25 CDT (always-on PC; the primary host since 2026-10-24)_
 
-## HAND-OFF 2026-10-23 ~15:15 CDT (laptop → always-on PC). Read this first; where it conflicts with older sections below, this wins.
+## NOW (2026-10-24 ~15:25 CDT). Read this first; it supersedes the 2026-10-23 hand-off below.
+**E2 is in the Nova queue: jobs 17093387–17093404** (18 one-arm jobs, submitted 15:13 CDT under Akshat's explicit authorization in chat, 2026-10-24). Order is seed-major (seed 0: mult 1.35 burst/noburst/capped = 17093387–89, mult 1.65 = 17093390–92; seed 1 = 17093393–98; seed 2 = 17093399–404). `--time=03:10:00`, one 8700 s arm each. At submission Slurm estimated starts from 19:20 tonight to 11:11 on 2026-10-25 (the partition had 120 pending jobs), so all should finish by about 14:00 on 2026-10-25. Check:
+```bash
+ssh -F ~/.ssh/isu_nova_config nova 'sacct -j 17093387,17093388,17093389,17093390,17093391,17093392,17093393,17093394,17093395,17093396,17093397,17093398,17093399,17093400,17093401,17093402,17093403,17093404 -X -o JobID,State,ExitCode,Elapsed,NodeList'
+```
+**HARD RULE until all 18 have finished: do not change `repo/` on Nova** (no bundle pull, no edits). Each job validates the pre-registration and runs whatever code is checked out when it *starts*; `repo/` is clean at `d279b7b`. If a job FAILS at its pre-engine checks, read its `logs/pm-sglang-<id>.out`, fix locally, and only then decide about the rest.
+
+**Done since the laptop hand-off (details: `notes/LOG.md`, three 2026-10-24 entries):**
+- Round 6 finished and merged (`78ebbee`): VALIDATION.md (level test NO in both modes, shape reproduced, mixed picked), PREDICTIONS.md frozen at `64bc4e3` (tag `r6-predictions-frozen`, pushed 14:53 CDT before E0b was read), independent verification by a Codex stand-in (`877b936`; strict B3-inside-B2 containment fails, explained).
+- E0b read (`cfbc702`): stable through 2.0 × λ_ref, unstable at 2.5 × and 3.0 ×. B2 is consistent; B1 matches E0a to 1–3%.
+- Pre-registration `configs/agentload_prereg_2026-10-24.yaml` (`d279b7b`): λ points 1.35, 1.65 × λ_ref; n_cap 20; PREREG_SHA256 `2a6d680a…`.
+
+**When all 18 E2 jobs have finished (the next session's job):**
+1. Pull read-only, as for E0b: on Nova `tar` the 18 run dirs (`results/agentload_e2_burst/<ts>/`), the per-job analyses, `results/nova_job_logs/170933*`, `logs/pm-sglang-170933*.out` into one archive, `xz` it, `sha256sum`, `scp` it (the PC's link is ~100 KB/s: always compress), check the hash, extract with `tar --force-local` into `results/nova/e2_170933xx_pulled_<ts>/`, delete the remote archive.
+2. Verdict on the login node (nice, `envs/swapp`): `PYTHONPATH=src:. python -m analysis.summarize burst2 --prereg configs/agentload_prereg_2026-10-24.yaml --run-dirs <all 18> --out-root results` (the jobs' own per-job burst2 sees one arm each and is not the verdict). Pull that dir too.
+3. Compare with B3 in `notes/PREDICTIONS.md` (predicted PASS at both points, both modes), log it, commit, push. Then decide with Akshat what follows (paper figures; the native-pool replication; LPM cells).
+
+## HAND-OFF 2026-10-23 ~15:15 CDT (laptop → always-on PC). SUPERSEDED by the block above; kept for the record.
 **Everything is pushed to `origin` (GitHub `AkshatValse/Nova-Research`):** `main`, `r6/separate-batching`, `r6/validation`. The laptop's `.claude/worktrees/` and the user-level `~/.claude` memory/agents/skills are NOT in the repo.
 
 **E0b is running on Nova** (jobs 17084750–17084755; at 15:05 CDT three were RUNNING on nova22-gpu-[1-3] since ~14:40–15:00 and three PENDING with Slurm start estimates 16:12–16:25). Each finishes ~55 min after it starts, so all six should be done by about 17:30 CDT. Check:
@@ -25,8 +42,8 @@ The local watcher that polled them was stopped with the laptop session; nothing 
 
 
 ## Phase
-- **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 5 verified rounds; Stage 0, Stage C and E0a are done on the real engine.
-- **Now:** E0b (from-empty stability edge) is in the Nova queue. Round 6 (timing-calibrated simulator, blind predictions) is running locally in the background.
+- **Direction:** approved 2026-10-21. Metastable failures in prefix-cached agent serving. Simulation evidence covers 6 rounds (round 6: calibrated simulator, validated against Stage C, blind predictions B1–B4); Stage 0, Stage C, E0a and E0b are done on the real engine.
+- **Now (2026-10-24):** E2, the pre-registered paired-arm kill test, is in the Nova queue (jobs 17093387–17093404). See NOW above.
 
 ## RESUME HERE (written 2026-10-23)
 
@@ -52,10 +69,10 @@ The local watcher that polled them was stopped with the laptop session; nothing 
 
 ## Nova setup (updated 2026-10-23)
 - **Project root:** `/work/classtmp/avalse/swapp`, class storage (deleted at semester end). Never touch the sibling `hpcml-*` dirs.
-- **Repo:** `repo/` is now a clone of the NEW history (bundle `swapp-main.bundle`, main at bf20ed4). The old clone with the old hashes is kept as `repo_old_history/` (its `results/` and `logs/` were copied into `repo/`; file lists and E0a data verified identical). To update: `git bundle create swapp-main.bundle main` locally, `scp` it to `$W/swapp-main.bundle`, then in `repo/`: `git pull --ff-only ../swapp-main.bundle main`.
+- **Repo:** `repo/` is a clone of the NEW history, at **`d279b7b`** since 2026-10-24 15:12 CDT (do not move it while E2 runs). The old clone with the old hashes is kept as `repo_old_history/` (its `results/` and `logs/` were copied into `repo/`; file lists and E0a data verified identical). To update from the PC (slow link, ~100 KB/s up and down): an **incremental** bundle `git bundle create swapp-main-incr.bundle <nova HEAD>..main`, `scp` it to `$W/`, `sha256sum` both ends, then in `repo/`: `git pull --ff-only ../swapp-main-incr.bundle main`. The full bundle is `swapp-main.bundle` (2026-10-23).
 - **Tests on Nova's env:** `tests/test_slurm_scripts.py::test_help_has_flag_large_help_under_pipefail` fails on the login node with `OSError: Argument list too long` (ARG_MAX, not a harness bug); deselect it. The remaining 258 harness/analysis tests pass (2026-10-23).
 - **Envs:** `envs/swapp` (generator; pandas 3, numpy 2.4), `envs/sglang` (sglang 0.5.22, torch 2.14.1+cu130). Lock files `envs/*.lock.txt`. CUDA_HOME shim `cuda13-home/`. Model Qwen/Qwen2.5-7B-Instruct @ a09a3545… in `hf/`. Caches in `cache/`.
-- **Jobs so far** (all on account `f2026.coms.6250.02`; details in `notes/LOG.md`): setup 17059856; smoke 17060003/17060022/17060085 (failed, fixed) and 17060165 (PASSED); Stage C 17062103–17062105; E0a 17072634–17072637; E0b 17084750–17084755 (in flight).
+- **Jobs so far** (all on account `f2026.coms.6250.02`; details in `notes/LOG.md`): setup 17059856; smoke 17060003/17060022/17060085 (failed, fixed) and 17060165 (PASSED); Stage C 17062103–17062105; E0a 17072634–17072637; E0b 17084750–17084755 (done, pulled 2026-10-24); E2 17093387–17093404 (queued 2026-10-24 15:13).
 
 ## Multi-machine setup
 - **Canonical repo:** private GitHub `AkshatValse/Nova-Research`, default branch `main`; `origin` on the laptop was missing and was re-added 2026-10-23. `jannesari-swapp` is the provenance archive (remote `archive`). **Do not delete it.** `provenance/commit-map.tsv` maps old → new hashes.
@@ -67,14 +84,15 @@ The local watcher that polled them was stopped with the laptop session; nothing 
 - Tags `archive/*`: earlier lines and killed directions (see README).
 
 ## Open decisions (Akshat)
-- E2 submission (≈50 GPU-h, 18 jobs) once the pre-registration is committed.
+- ~~E2 submission~~: authorized 2026-10-24 and submitted (17093387–17093404).
+- Whether to merge-review round 6 further: the Codex verifier's unapplied wording patch for PREDICTIONS.md (B2 headline should state the operational trend rule) is in `C:\Users\Akshat\Documents\Codex\2026-10-24\cl\work\prediction-fixes.patch`; apply only as an explicit amendment, never by rewriting the frozen file.
 - KV pool: 300k-token cap vs. native (native-pool replication ≈30–40 GPU-h, not included).
 - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
 - The Codex-folder read rule in `.claude/settings.local.json`.
 - [redacted: unrelated unpublished project, cluster-wide accounting data; see provenance/REDACTIONS.md]
 
 ## Next steps
-1. E0b results → bracket → pre-registration → E2 (OK needed).
-2. Round 6 predictions committed before E0b results are read.
+1. E2 results → `summarize burst2` verdict over all 18 → compare with B3 (see NOW).
+2. ~~Round 6 predictions committed before E0b results are read~~ (done: tag `r6-predictions-frozen`).
 3. Re-verify every citation in `notes/RELATED_WORK_prefix_meta.md` before writing paper text.
 4. Optional: native-pool replication; patched-threshold LPM causality test.
