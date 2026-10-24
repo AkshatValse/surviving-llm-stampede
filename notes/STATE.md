@@ -16,7 +16,7 @@ ssh -F ~/.ssh/isu_nova_config nova 'sacct -j 17093387,17093388,17093389,17093390
 
 **When all 18 E2 jobs have finished (the next session's job):**
 1. Pull read-only, as for E0b: on Nova `tar` the 18 run dirs (`results/agentload_e2_burst/<ts>/`), the per-job analyses, `results/nova_job_logs/170933*`, `logs/pm-sglang-170933*.out` into one archive, `xz` it, `sha256sum`, `scp` it (the PC's link is ~100 KB/s: always compress), check the hash, extract with `tar --force-local` into `results/nova/e2_170933xx_pulled_<ts>/`, delete the remote archive.
-2. Verdict on the login node (nice, `envs/swapp`): `PYTHONPATH=src:. python -m analysis.summarize burst2 --prereg configs/agentload_prereg_2026-10-24.yaml --run-dirs <all 18> --out-root results` (the jobs' own per-job burst2 sees one arm each and is not the verdict). Pull that dir too.
+2. Verdict on the login node (nice, `envs/swapp`), with exactly the overrides the jobs used (the registered rule must equal the applied one): `PYTHONPATH=src:. nice -n 19 $W/envs/swapp/bin/python -m analysis.summarize burst2 --run-dirs <all 18> --out-root results --set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-24.yaml`. The 18 run dirs are listed in `results/nova_job_logs/170933*/run_dirs_burst.txt`. The jobs' own per-job burst2 sees one arm each and is not the verdict. Pull the verdict dir too.
 3. Compare with B3 in `notes/PREDICTIONS.md` (predicted PASS at both points, both modes), log it, commit, push. Then decide with Akshat what follows (paper figures; the native-pool replication; LPM cells).
 
 ## HAND-OFF 2026-10-23 ~15:15 CDT (laptop → always-on PC). SUPERSEDED by the block above; kept for the record.
