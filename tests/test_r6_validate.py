@@ -205,3 +205,21 @@ def test_report_writes_new_files_and_never_overwrites(tmp_path):
         assert (d / name).read_bytes() == content, name
     with pytest.raises(FileExistsError):
         rv.main(["report", "--run-dir", str(d)], repo_dir=REPO)
+
+
+def test_zscore_markdown_shows_na_for_an_undefined_z_not_nan():
+    runs = pd.DataFrame({"arm": "primary", "batching": [rv.MIXED, SEP, SEP, SEP], "policy": "fcfs_lru", "n": 24, "seed": [0, 0, 1, 2],
+                         "mu": [0.2, 0.21, 0.23, 0.25], "mu_turns": [0.2] * 4, "hit_rate": [0.9] * 4})   # mixed: ONE seed; separate: three seeds
+    real = pd.DataFrame({"policy": ["fcfs_lru"], "n": [24], "real_mu": [0.233], "real_mu_turns": [0.21], "real_hit": [0.89]})
+    md = rv.md_zscore_table(rv.zscore_table(runs, real), "primary")
+    mixed_line, sep_line = md.splitlines()[-2:]
+    assert "nan" not in md.lower()
+    assert mixed_line.split("|")[3].strip() == "24" and mixed_line.split("|")[6].strip() == "n/a"      # one seed: sd undefined -> z shown as n/a
+    assert sep_line.split("|")[6].strip() == "+0.15"                                                  # (0.233 - 0.23) / 0.02
+    assert sep_line.split("|")[10].strip() == "n/a"                                                   # turns column has zero spread across seeds
+
+
+def test_report_refuses_an_unfinished_run_dir(tmp_path):
+    (tmp_path / "meta.json").write_text(json.dumps({"status": "running"}))
+    with pytest.raises(ValueError, match="not a finished run"):
+        rv.cmd_report(tmp_path, REPO)

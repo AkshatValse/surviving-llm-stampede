@@ -387,7 +387,9 @@ def zscore_table(runs: pd.DataFrame, real: pd.DataFrame) -> pd.DataFrame:
             row[f"{tag}_sim_mean"] = float(x.mean())
             row[f"{tag}_sim_sd"] = sd
             row[f"{tag}_real"] = float(r[rcol])
-            row[f"{tag}_z"] = (float(r[rcol]) - float(x.mean())) / sd if sd and math.isfinite(sd) else float("nan")
+            # z is undefined for one seed and for (numerically) zero spread: identical values give a float sd ~1e-17, not exactly 0
+            spread_ok = math.isfinite(sd) and sd > 1e-9 * max(abs(float(x.mean())), 1e-12)
+            row[f"{tag}_z"] = (float(r[rcol]) - float(x.mean())) / sd if spread_ok else float("nan")
             row[f"{tag}_frac_sim_le_real"] = float((x <= float(r[rcol])).mean())
         row["hit_sim_mean"] = float(g["hit_rate"].mean())
         row["hit_real"] = float(r["real_hit"])
@@ -395,13 +397,18 @@ def zscore_table(runs: pd.DataFrame, real: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _z(x: float) -> str:
+    return "n/a" if x is None or not math.isfinite(x) else f"{x:+.2f}"
+
+
 def md_zscore_table(z: pd.DataFrame, arm: str = "primary") -> str:
+    """z-score table of one arm; an undefined z (one seed, or zero spread across seeds) shows n/a, never 'nan'."""
     t = z[z["arm"] == arm]
     lines = ["| batching | policy | n | real mu | sim mean (sd) | z | frac sims <= real | real mu (turns) | sim mean (sd) | z |", "|---|---|---|---|---|---|---|---|---|---|"]
     for _, r in t.iterrows():
-        lines.append(f"| {r['batching']} | {'FCFS' if r['policy'] == 'fcfs_lru' else 'LPM(128)'} | {r['n']} | {_f(r['mu_real'])} | "
-                     f"{_f(r['mu_sim_mean'])} ({_f(r['mu_sim_sd'])}) | {r['mu_z']:+.2f} | {_f(r['mu_frac_sim_le_real'], 2)} | {_f(r['mu_turns_real'])} | "
-                     f"{_f(r['mu_turns_sim_mean'])} ({_f(r['mu_turns_sim_sd'])}) | {r['mu_turns_z']:+.2f} |")
+        lines.append(f"| {r['batching']} | {'FCFS' if r['policy'] == 'fcfs_lru' else 'LPM(128)'} | {int(r['n'])} | {_f(r['mu_real'])} | "
+                     f"{_f(r['mu_sim_mean'])} ({_f(r['mu_sim_sd'])}) | {_z(r['mu_z'])} | {_f(r['mu_frac_sim_le_real'], 2)} | {_f(r['mu_turns_real'])} | "
+                     f"{_f(r['mu_turns_sim_mean'])} ({_f(r['mu_turns_sim_sd'])}) | {_z(r['mu_turns_z'])} |")
     return "\n".join(lines)
 
 
@@ -493,6 +500,8 @@ def cmd_report(run_dir: Path, repo_dir: Path) -> Path:
     if (run_dir / "report.md").exists():
         raise FileExistsError(f"{run_dir / 'report.md'} exists; reports are never overwritten")
     meta = json.loads((run_dir / "meta.json").read_text())
+    if meta.get("status") != "done":
+        raise ValueError(f"{run_dir} is not a finished run (meta.json status={meta.get('status')!r}); nothing to report")
     real = pd.read_csv(run_dir / "real_stagec.csv")
     table = pd.read_csv(run_dir / "cell_table.csv")
     runs = pd.read_csv(run_dir / "runs.csv")
