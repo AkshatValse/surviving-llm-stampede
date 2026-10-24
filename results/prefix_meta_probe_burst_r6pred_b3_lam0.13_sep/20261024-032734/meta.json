@@ -1,0 +1,126 @@
+{
+  "experiment": "probe_burst",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_probe_run.py",
+    "burst",
+    "--spec",
+    "configs/r6_predict.yaml",
+    "--workers",
+    "6",
+    "--tag",
+    "r6pred_b3_lam0.13_sep",
+    "--set",
+    "engine.batching=separate_prefill_priority",
+    "--set",
+    "probe.burst.lambda=0.13"
+  ],
+  "git": {
+    "commit": "630ab9edc7f40b33718771b4efb6a52da66b8eb6",
+    "dirty": false,
+    "branch": "r6/validation"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T03:27:34",
+  "end_time": "2026-10-24T03:27:37",
+  "wall_s": 2.900496482849121,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "engine.batching=separate_prefill_priority",
+    "probe.burst.lambda=0.13"
+  ],
+  "tag": "r6pred_b3_lam0.13_sep",
+  "n_runs": 9,
+  "timing": {
+    "total_sim_s": 78300.0,
+    "total_run_wall_s": 1.4861124999006279,
+    "wall_s_per_10k_sim_s": 0.18979725413801124,
+    "max_run_wall_s": 0.20499649998964742
+  },
+  "engine_effective": {
+    "iter_fixed_s": 0.00924,
+    "iter_floor_s": 0.00126,
+    "per_token_s": 6.26e-05,
+    "decode_attn_s": 0.00031,
+    "attn_ctx_norm": 8192,
+    "prefill_attn_s": 2.24e-09,
+    "prefill_attn_ctx": "mid",
+    "prefill_chunk_budget": 8192,
+    "max_running_seqs": 256,
+    "kv_memory_tokens": 300000,
+    "cache_enabled": true,
+    "skip_ahead": false,
+    "admission_limited_by_prefill_budget": true,
+    "batch_decode_iterations": true,
+    "free_kv_on_session_end": true,
+    "batching": "separate_prefill_priority"
+  },
+  "workload_effective": {
+    "initial_context_tokens": 2000,
+    "new_prompt_tokens": 550,
+    "decode_tokens": 100,
+    "mean_turns": 15,
+    "max_turns": 60,
+    "tool_time_mean_s": 5.0,
+    "tool_time_dist": "exp",
+    "tool_time_cv": 1.5
+  },
+  "section_effective": {
+    "policy": "fcfs_lru",
+    "lambda": 0.13,
+    "lambda_miss": null,
+    "lam_mult": null,
+    "burst_n": 200,
+    "burst_width_s": 60.0,
+    "warmup_s": 1200.0,
+    "after_s": 7500.0,
+    "cap": 20,
+    "arms": null,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "hit_eval_from_s": 5000.0,
+    "trap_hit_below": 0.2,
+    "trap_min_s": 2500.0,
+    "engine": {},
+    "workload": {}
+  },
+  "base_config": "configs/prefix_meta_r5.yaml",
+  "arms": {
+    "no_burst": {
+      "burst_n": 0,
+      "cap": null
+    },
+    "burst": {
+      "burst_n": 200,
+      "cap": null
+    },
+    "burst_cap": {
+      "burst_n": 200,
+      "cap": 20
+    }
+  },
+  "lambda": 0.13,
+  "t_burst": 1200.0,
+  "horizon_s": 8700.0,
+  "common_random_numbers": "same seed -> same Poisson stream and sessions for every arm; the burst is an extra stream"
+}

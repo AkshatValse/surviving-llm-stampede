@@ -1,0 +1,729 @@
+research_question: 'Blind predictions of the calibrated simulator (mixed primary,
+  separate_prefill_priority secondary) for: B1 the all-miss capacity of the Stage
+  C workload, B2 the from-empty open-loop stability edge, B3 the E2 paired burst /
+  cap test, B4 the closed-population curves with a 600k and 900k KV pool.'
+assumptions_note: 'Round 5 of the prefix-cache metastability pilot (stage 3: amendment
+  2 of the pre-registration). Engine, workload and metric constants are inherited
+  from `base_config` (ALL are assumptions, none a measurement). The two new allocation
+  modes are simulator models of the allocation / preemption rules a scout reported
+  for vLLM v0.32.0 (ondemand_preempt) and SGLang v0.5.22 (ratio_reserve); the scout
+  read the source through a summarising fetcher, so every rule and constant below
+  is extractor-reported and unverified (see the `unconfirmed` block of the pre-registration).
+  Predictions S1-S4, the registered grid / seeds / horizons and the exact decision
+  readings are in `preregistration_file`, committed (e24e3cd) before any round-5 code
+  or run (its amendment 1, 7ab10f4, before any round-5 experiment command; its amendment
+  2 before any registered-size run); a test checks that the `calibration`, `curve`,
+  `burst` and `cap` sections below equal the registered design (amendment 2 adds the
+  two engine switches under `modes.engine_overrides`, the `thrash` block and the `variants`
+  block). `*.quick` blocks are smoke-test sizes with their own seeds (7300-7310);
+  they are never used for a prediction.'
+preregistration:
+  date: 2026-10-21
+  expected_verdict: REFRAME
+  why: Memory-gated admission is work-conserving over misses, so under a long queue
+    every freed token becomes a new reservation and idle KV is ~0; a session's KV
+    is evicted during its tool call, before its next turn is queued. LPM then has
+    almost no resident waiting requests to promote, so it cannot leave the congested
+    state.
+  predictions:
+  - 'E1 (cold=300, lambda in {1.25,1.5,2}x lambda_miss): LPM and FCFS both recover
+    0/3; LPM-128 == FCFS bit-identical (queue 300 > 128 on the first pass).'
+  - 'E1 cold-size sweep: FCFS and LPM recovery counts are identical in every (cold,
+    lambda) cell; small cold starts (<=~50) recover 3/3, large (>=~100) 0/3.'
+  - 'E1 FCFS-CAP: with the spec N*=45 it does not recover; with the length-biased
+    N*~28 (and caps <=27) it recovers 3/3. Admission control is the only recovering
+    family.'
+  - 'E2 (burst 200 at 2x): LPM hit rate over [t_b+10k, t_b+25k] is above 0.8 in <=1/5
+    seeds; LPM-128 ~ FCFS trapped.'
+  - 'E3 spec ramp (peak 0.9 lambda_cap): hysteresis area ~0 and FCFS == LPM; E3 above-cap
+    ramp (peak 1.3 lambda_cap): area > 0 with FCFS ~ LPM.'
+  - 'Decision rule: GO is unreachable; verdict REFRAME (not KILL, since LPM-128 is
+    trapped in E2 by the spec''s hit<0.2 for >=10k s criterion).'
+  not_claimed: 'That ''LPM-128 inherits the trap'' is a finding: with queues > 128
+    at the first pass LPM-128 is FCFS by construction. lambda_cap is a finite-horizon
+    stability (lifetime) boundary, not a memory-time capacity.'
+engine:
+  iter_fixed_s: 0.00924
+  iter_floor_s: 0.00126
+  per_token_s: 6.26e-05
+  decode_attn_s: 0.00031
+  attn_ctx_norm: 8192
+  prefill_attn_s: 2.24e-09
+  prefill_attn_ctx: mid
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 300000
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+  batching: separate_prefill_priority
+workload:
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5
+policies:
+  fcfs:
+    kind: fcfs
+  lpm:
+    kind: lpm
+  lpm128:
+    kind: lpm_fallback
+    threshold: 128
+  aging10:
+    kind: aging_lpm
+    w_max_s: 10.0
+  aging30:
+    kind: aging_lpm
+    w_max_s: 30.0
+  fcfs_cap:
+    kind: fcfs
+    session_cap: auto
+  fcfs_cap_lb:
+    kind: fcfs
+    session_cap: auto_lb
+  fcfs_lru:
+    kind: fcfs
+    eviction: lru
+  lpm_lru:
+    kind: lpm
+    eviction: lru
+  lpm128_lru:
+    kind: lpm_fallback
+    threshold: 128
+    eviction: lru
+policy_order:
+- fcfs
+- lpm
+- lpm128
+- aging10
+- aging30
+- fcfs_cap
+- fcfs_cap_lb
+metrics:
+  window_s: 100.0
+  fine_window_s: 100.0
+  tail_window_s: 2500.0
+  track_memory: true
+parallel:
+  max_workers: 6
+output:
+  root: results
+  git_add_small_files_below_bytes: 400000
+e0:
+  miss_closed_population: 60
+  miss_population_check:
+  - 30
+  - 120
+  miss_pool_sessions: 60000
+  miss_horizon_s: 100000.0
+  miss_warmup_s: 5000.0
+  miss_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  cap_horizon_s: 20000.0
+  cap_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  cap_bracket_mults:
+  - 1.5
+  - 2.0
+  - 2.5
+  - 3.0
+  - 4.0
+  - 6.0
+  - 8.0
+  - 12.0
+  - 16.0
+  cap_rel_tol: 0.02
+  cap_max_bisect_steps: 10
+  cap_hazard:
+    policies:
+    - lpm
+    - fcfs
+    mults:
+    - 1.5
+    - 2.0
+    - 2.25
+    - 2.5
+    - 2.75
+    - 3.0
+    seeds:
+    - 100
+    - 101
+    - 102
+    - 103
+    - 104
+    - 105
+    - 106
+    - 107
+    - 108
+    - 109
+    - 110
+    - 111
+    - 112
+    - 113
+    - 114
+    - 115
+    - 116
+    - 117
+    - 118
+    - 119
+    horizon_s: 20000.0
+    escape_queue_above: 128
+  stable_final_queue_below: 50
+  stable_trend_window_s: 5000.0
+  stable_trend_max_rise: 10.0
+  unstable_queue_stop: 3000
+  quick:
+    miss_population_check: []
+    miss_pool_sessions: 5000
+    miss_horizon_s: 4000.0
+    miss_warmup_s: 500.0
+    miss_seeds:
+    - 0
+    cap_horizon_s: 3000.0
+    cap_seeds:
+    - 0
+    cap_bracket_mults:
+    - 2.0
+    - 4.0
+    cap_max_bisect_steps: 2
+    cap_hazard:
+      policies:
+      - lpm
+      mults:
+      - 2.0
+      seeds:
+      - 100
+      - 101
+      horizon_s: 2000.0
+      escape_queue_above: 128
+e1:
+  cold_sessions: 300
+  lam_mults:
+  - 1.25
+  - 1.5
+  - 2.0
+  - 3.0
+  - 4.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  horizon_s: 30000.0
+  recovered_queue_below: 20.0
+  recovered_hit_above: 0.8
+  robust_policies:
+  - fcfs
+  - lpm
+  robust_seeds:
+  - 0
+  robust_cv: 1.5
+  cold_sweep:
+    cold_sessions:
+    - 25
+    - 50
+    - 75
+    - 100
+    - 125
+    - 150
+    - 200
+    lam_mults:
+    - 1.25
+    - 1.5
+    - 2.0
+    policies: all
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  cap_sweep:
+    caps:
+    - 10
+    - 15
+    - 20
+    - 24
+    - 28
+    - 32
+    - 35
+    - 40
+    - 45
+    lam_mults:
+    - 1.25
+    - 1.5
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    - 2
+  quick:
+    lam_mults:
+    - 2.0
+    policies:
+    - fcfs
+    - lpm
+    - lpm128
+    seeds:
+    - 0
+    horizon_s: 3000.0
+    robust_policies:
+    - fcfs
+    cold_sweep:
+      cold_sessions:
+      - 25
+      lam_mults:
+      - 2.0
+      policies:
+      - fcfs
+      - lpm
+      seeds:
+      - 0
+    cap_sweep:
+      caps:
+      - 20
+      lam_mults:
+      - 2.0
+      seeds:
+      - 0
+e2:
+  lam_mult: 2.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  warmup_s: 5000.0
+  burst_sessions: 200
+  burst_width_s: 60.0
+  after_s: 25000.0
+  hit_eval_from_s: 10000.0
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_queue_below: 20.0
+  burst_sweep:
+    burst_sessions:
+    - 25
+    - 50
+    - 100
+    - 125
+    - 150
+    policies: all
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  quick:
+    policies:
+    - fcfs
+    - lpm128
+    seeds:
+    - 0
+    burst_sweep:
+      burst_sessions:
+      - 25
+      policies:
+      - fcfs
+      - lpm
+      seeds:
+      - 0
+    warmup_s: 1000.0
+    after_s: 3000.0
+    hit_eval_from_s: 1000.0
+e3:
+  lo_mult_of_lambda_miss: 0.5
+  hi_mult_of_lambda_cap: 0.9
+  leg_s: 30000.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  grid_points: 40
+  ramps:
+  - name: spec
+    hi_mult_of_lambda_cap: 0.9
+    seeds:
+    - 0
+    - 1
+    - 2
+  - name: above_cap
+    hi_mult_of_lambda_cap: 1.3
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  escape_queue_above: 128
+  reentry_queue_below: 20
+  reentry_bins: 5
+  quick:
+    leg_s: 3000.0
+    policies:
+    - fcfs
+    - lpm
+    ramps:
+    - name: spec
+      hi_mult_of_lambda_cap: 0.9
+      seeds:
+      - 0
+    - name: above_cap
+      hi_mult_of_lambda_cap: 1.3
+      seeds:
+      - 0
+    seeds:
+    - 0
+e4:
+  lam_mults:
+  - 2.0
+  - 3.0
+  policies:
+  - lpm128
+  seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  horizon_s: 50000.0
+  escape_queue_above: 128
+  good_state_onset_queue_below: 20
+  escaped_by_s:
+  - 10000
+  - 25000
+  - 50000
+  quick:
+    lam_mults:
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    horizon_s: 3000.0
+ablation_skip_ahead:
+  lam_mult: 2.0
+  cold_sessions: 300
+  policies:
+  - fcfs
+  - lpm
+  - lpm128
+  seeds:
+  - 0
+  - 1
+  horizon_s: 10000.0
+  quick:
+    policies:
+    - fcfs
+    - lpm
+    seeds:
+    - 0
+    horizon_s: 2000.0
+decision:
+  go_R_min: 2.0
+  kill_R_below: 1.5
+  lam_mult_min: 1.5
+  lpm_recover_min: 3
+  fcfs_recover_max: 0
+  lpm128_recover_max: 1
+  burst_lpm128_trapped_min: 3
+  burst_lpm_recover_min: 4
+  aging30_fraction_of_lpm_lambda: 0.7
+labels:
+  fcfs_lru: FCFS-LRU
+  lpm_lru: LPM-LRU
+  full_reserve: FULL_RESERVE (rounds 1-4)
+  ondemand_preempt: ONDEMAND_PREEMPT (vLLM-like)
+  ratio_reserve: RATIO_RESERVE (SGLang-like)
+modes:
+  registered:
+  - ondemand_preempt
+  - ratio_reserve
+  reference: full_reserve
+  engine_overrides:
+    full_reserve:
+      alloc_mode: full_reserve
+    ondemand_preempt:
+      alloc_mode: ondemand_preempt
+      watermark_frac: 0.0
+      victim_kv_eviction: tail
+      ondemand_admission: full_isl
+    ratio_reserve:
+      alloc_mode: ratio_reserve
+      victim_kv_eviction: tail
+      sched_conservativeness: 1.0
+      init_new_token_ratio: 0.7
+      min_new_token_ratio_factor: 0.14
+      new_token_ratio_decay_steps: 600
+      retract_decode_steps: 20
+      clip_max_new_tokens_estimation: 4096
+calibration:
+  population: 60
+  cache_enabled: false
+  policy: fcfs_lru
+  seeds:
+  - 3300
+  - 3301
+  - 3302
+  - 3303
+  - 3304
+  pool_sessions: 60000
+  horizon_s: 100000.0
+  warmup_s: 5000.0
+  quick:
+    seeds:
+    - 7303
+    pool_sessions: 5000
+    horizon_s: 6000.0
+    warmup_s: 1000.0
+curve:
+  policies:
+  - fcfs_lru
+  - lpm_lru
+  n_grid:
+  - 8
+  - 12
+  - 16
+  - 20
+  - 24
+  - 28
+  - 32
+  - 40
+  - 60
+  - 100
+  - 200
+  - 300
+  seeds:
+  - 3000
+  - 3001
+  - 3002
+  warmup_s: 5000.0
+  horizon_s: 35000.0
+  pool_sessions_per_k: 30000
+  quick:
+    n_grid:
+    - 8
+    - 24
+    - 100
+    seeds:
+    - 7300
+    warmup_s: 1000.0
+    horizon_s: 5000.0
+    pool_sessions_per_k: 3000
+burst:
+  policy: fcfs_lru
+  lam_mult: 2.0
+  sizes:
+  - 0
+  - 200
+  burst_width_s: 60.0
+  warmup_s: 5000.0
+  after_s: 60000.0
+  seeds:
+  - 3100
+  - 3101
+  - 3102
+  - 3103
+  - 3104
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  quick:
+    sizes:
+    - 0
+    - 100
+    seeds:
+    - 7301
+    warmup_s: 1000.0
+    after_s: 4000.0
+cap:
+  policy: fcfs_lru
+  lam_mult: 2.0
+  cold_sessions: 300
+  arms:
+  - capped_at_nstar
+  - no_cap
+  seeds:
+  - 3200
+  - 3201
+  - 3202
+  horizon_s: 150000.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  nstar_override: {}
+  quick:
+    seeds:
+    - 7302
+    horizon_s: 6000.0
+    nstar_override:
+      ondemand_preempt: 24
+      ratio_reserve: 24
+thrash:
+  preemptions_per_turn_above: 0.05
+  max_per_turn_above: 10
+evaluation:
+  round1_lambda_miss_full_reserve: 0.047418947
+  unimodal:
+    se_mult: 2.0
+    rel_tol_registered: 0.02
+    rel_tol_lenient: 0.1
+    abs_tol_strict: 1.0e-12
+  S1:
+    c1_mult: 1.3
+    c2_mult: 2.0
+    kill_frac: 0.8
+  S2:
+    min_not_recovered_burst: 3
+    max_not_recovered_nobust: 1
+  S3:
+    min_recovered_capped: 2
+    max_recovered_nocap: 0
+    max_nstar_exclusive: 100
+  S4:
+    min_gap_over_lambda: 0.05
+variants:
+  stage1_whole_victim:
+    note: 'the stage-1 rule: a preempted / retracted request''s session is evicted
+      whole like any idle session (review finding F2 shows it destroys the victim
+      almost always); brackets the real systems from below'
+    set:
+    - modes.engine_overrides.ondemand_preempt.victim_kv_eviction=whole
+    - modes.engine_overrides.ratio_reserve.victim_kv_eviction=whole
+  ondemand_first_chunk:
+    note: vLLM-like admission that needs only the cached prefix + the first chunk
+      to fit (an engine WITHOUT the full-ISL check; review finding F4)
+    modes:
+    - ondemand_preempt
+    set:
+    - modes.engine_overrides.ondemand_preempt.ondemand_admission=first_chunk
+  lpm128:
+    note: LPM that falls back to FCFS when more than 128 requests wait (SGLang; review
+      finding F5), closed n = 300 only
+    commands:
+    - curve
+    set:
+    - curve.policies=[lpm128_lru]
+    - curve.n_grid=[300]
+report:
+  note: 'evaluator + report: src/prefixmeta/r5_eval.py, src/prefixmeta/report_r5.py
+    (command `report` of experiments/prefix_meta_r5_run.py)'
+probe:
+  curve:
+    policies: &id001
+    - fcfs_lru
+    n_grid: &id002
+    - 16
+    - 24
+    - 32
+    - 48
+    - 64
+    - 96
+    - 300
+    seeds: &id003
+    - 0
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000
+    cache_enabled: true
+  open:
+    policy: fcfs_lru
+    lambdas:
+    - 0.07
+    - 0.08
+    - 0.09
+    - 0.1
+    - 0.11
+    - 0.12
+    - 0.13
+    - 0.14
+    - 0.15
+    - 0.16
+    - 0.18
+    - 0.2
+    - 0.22
+    seeds:
+    - 0
+    - 1
+    - 2
+    horizon_s: 3000.0
+    stable_final_backlog_below: 50.0
+    stable_trend_window_s: 1500.0
+    stable_trend_max_rise: 10.0
+    unstable_backlog_stop: 3000
+  burst:
+    policy: fcfs_lru
+    lambda: 0.1
+    burst_n: 200
+    burst_width_s: 60.0
+    warmup_s: 1200.0
+    after_s: 7500.0
+    cap: 20
+    seeds:
+    - 0
+    - 1
+    - 2
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+    hit_eval_from_s: 5000.0
+    trap_hit_below: 0.2
+    trap_min_s: 2500.0
+predict:
+  b1:
+    reference_population: 32
+    expected_turns: 14.761
+  b2:
+    edge_rule: 'predicted from-empty edge = the largest grid lambda such that EVERY
+      grid lambda <= it is all-stable (3 of 3 seeds); also reported: the largest all-stable
+      grid lambda irrespective of contiguity, and the 20-seed supplement''s stable
+      fractions.'
+  b3:
+    lambda_miss: b1_turns_based
+    eval_window_s:
+    - 5000.0
+    - 7500.0
+    trapped_token_rate_rel_tol: 0.15
+    trapped_slope_frac: 0.5
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+    good_noburst: recovered
+    pass_min_frac: 0.6666666666666666
+    sensitivity_eval_windows_s:
+    - - 6000.0
+      - 7500.0
+    - - 2500.0
+      - 7500.0
+_base_config: configs/prefix_meta_r5.yaml
+section_effective:
+  policies: *id001
+  n_grid: *id002
+  seeds: *id003
+  warmup_s: 900.0
+  horizon_s: 2700.0
+  pool_sessions: 5000
+  cache_enabled: true
+  engine: {}
+  workload: {}

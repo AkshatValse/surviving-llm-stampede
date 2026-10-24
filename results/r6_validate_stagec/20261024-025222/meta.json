@@ -1,0 +1,125 @@
+{
+  "experiment": "r6_validate_stagec",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_r6_validate_stagec.py",
+    "run",
+    "--spec",
+    "configs/r6_validate_stagec.yaml",
+    "--workers",
+    "6",
+    "--set",
+    "parallel.max_workers=6"
+  ],
+  "git": {
+    "commit": "cda031449d5c2d2c5e8339ebff70c1a76bc7126b",
+    "dirty": false,
+    "branch": "r6/validation"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T02:52:22",
+  "end_time": "2026-10-24T02:53:41",
+  "wall_s": 78.91783499717712,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "parallel.max_workers=6"
+  ],
+  "tag": null,
+  "n_runs": 243,
+  "calibration_file": "calibration/round6_server_log_fit/calibration.yaml",
+  "calibration_sha256": "284c2dee1a08c8735cf026508808b72ad7b4005939fa25403912d8d8b6b9da8c",
+  "engine_effective": {
+    "iter_fixed_s": 0.00924,
+    "iter_floor_s": 0.00126,
+    "per_token_s": 6.26e-05,
+    "decode_attn_s": 0.00031,
+    "attn_ctx_norm": 8192,
+    "prefill_attn_s": 2.24e-09,
+    "prefill_attn_ctx": "mid",
+    "prefill_chunk_budget": 8192,
+    "max_running_seqs": 256,
+    "kv_memory_tokens": 300000,
+    "cache_enabled": true,
+    "skip_ahead": false,
+    "admission_limited_by_prefill_budget": true,
+    "batch_decode_iterations": true,
+    "free_kv_on_session_end": true
+  },
+  "workload_effective": {
+    "initial_context_tokens": 2000,
+    "new_prompt_tokens": 550,
+    "decode_tokens": 100,
+    "mean_turns": 15,
+    "max_turns": 60,
+    "tool_time_mean_s": 5.0,
+    "tool_time_dist": "exp",
+    "tool_time_cv": 1.5
+  },
+  "protocol": {
+    "warmup_s": 900.0,
+    "horizon_s": 2700.0,
+    "pool_sessions": 5000,
+    "synchronized_start": true,
+    "kv_cap_tokens": 300000
+  },
+  "criteria": {
+    "level_rel_tol": 0.15,
+    "level_excluded_cells": [
+      [
+        "fcfs_lru",
+        32
+      ]
+    ],
+    "closeness_metric": "mean_abs_rel_err_mu",
+    "peak_runner_up_flag_frac": 0.05,
+    "hit_crossing_level": 0.5,
+    "collapse": "mu_300_over_mu_star",
+    "level_judged_on": "mu_sessions"
+  },
+  "registered_seeds": [
+    0,
+    1,
+    2
+  ],
+  "refresh_modelled": false,
+  "real_files": [
+    "results/nova/stageC_1706210x_pulled_20261022-125454/agentload_analysis_closed/20261021-185005/mu_curve.csv",
+    "results/nova/stageC_1706210x_pulled_20261022-125454/agentload_analysis_closed/20261021-191417/mu_curve.csv",
+    "results/nova/stageC_1706210x_pulled_20261022-125454/agentload_analysis_closed/20261021-183251/mu_curve.csv"
+  ]
+}
