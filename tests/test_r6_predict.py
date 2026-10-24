@@ -233,3 +233,14 @@ def test_tiny_end_to_end_report(tmp_path):
     assert summ["E_T"] == pytest.approx(14.761, abs=5e-4)
     meta = json.loads((d / "meta.json").read_text())
     assert meta["status"] == "done" and len(meta["git"]["commit"]) == 40
+
+
+def test_b4_landmarks_hand_case():
+    rows = [dict(mode="mixed", kv_k=600, seed=s, n=n, mu=mu + 0.01 * s, hit_rate=hit)
+            for s in (0, 1) for n, mu, hit in ((16, 0.17, 0.93), (24, 0.25, 0.93), (48, 0.40, 0.92), (64, 0.10, 0.30), (300, 0.10, 0.0))]
+    lm = rp.b4_landmarks(pd.DataFrame(rows)).set_index("seeds")
+    s0 = lm.loc["seed 0"]
+    assert s0["peak_n"] == 48 and s0["peak_mu"] == pytest.approx(0.40) and s0["mu_300"] == pytest.approx(0.10) and s0["n_seeds"] == 1
+    assert s0["hit_crossing_n"] == pytest.approx(48 + 16 * (0.92 - 0.5) / (0.92 - 0.30))
+    both = lm.loc["seeds 0-1 mean"]
+    assert both["n_seeds"] == 2 and both["peak_mu"] == pytest.approx(0.405) and math.isnan(lm.loc["seed 0", "mu_96"])

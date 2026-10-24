@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 
 from .mech_runner import begin, finish
-from .r6_validate import MIXED, SEP, crossing
+from .r6_validate import MIXED, SEP, crossing, first_argmax
 from .runner import git_info
 from .sim import load_config
 from .workload import WorkloadParams
@@ -225,6 +225,21 @@ def b4_table(d: Path, E_T: float) -> pd.DataFrame:
     return out.rename(columns={"n_nominal": "n"})
 
 
+def b4_landmarks(b4: pd.DataFrame) -> pd.DataFrame:
+    """Per (mode, KV pool) and per seed set (seed 0 only / all seeds present): peak n and mu*, the 0.5-hit crossing n, mu(300) and the n=48/64/96 values."""
+    rows = []
+    for (mode, kv), g in b4.groupby(["mode", "kv_k"], sort=True):
+        for label, sel in (("seed 0", g[g["seed"] == 0]), (f"seeds {int(g['seed'].min())}-{int(g['seed'].max())} mean", g)):
+            t = sel.groupby("n").agg(mu=("mu", "mean"), hit=("hit_rate", "mean")).reset_index().sort_values("n")
+            n_star, mu_star = first_argmax(t["n"].tolist(), t["mu"].tolist())
+            row = {"mode": mode, "kv_k": int(kv), "seeds": label, "n_seeds": int(sel["seed"].nunique()), "peak_n": n_star, "peak_mu": mu_star,
+                   "hit_crossing_n": crossing(t["n"].tolist(), t["hit"].tolist(), 0.5)}
+            for n in (48, 64, 96, 300):
+                row[f"mu_{n}"] = float(t.loc[t["n"] == n, "mu"].iloc[0]) if (t["n"] == n).any() else float("nan")
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
 # ======================================================================= report
 def _dirs(man: pd.DataFrame, repo: Path) -> Dict[str, Path]:
     return {r.tag: (repo / r.dir) for r in man.itertuples()}
@@ -371,10 +386,21 @@ def cmd_report(spec_path: Path, manifest: Path, args: argparse.Namespace, repo_d
     md.append("## B4. Closed-population curves with a larger KV pool (cache on, FCFS)\n")
     if len(b4_all):
         reg = b4_all[b4_all["set"].str.startswith("registered")]
-        piv = reg.pivot_table(index="n", columns=["mode", "kv_k"], values=["mu", "mu_turns", "hit_rate"])
-        piv.columns = [f"{a}|{m.split('_')[0]}|{k}k" for a, m, k in piv.columns]
-        md.append("Registered (seed 0; 300k is the validation reference rerun in the same code):\n")
-        md.append(df_md(piv.reset_index(), "{:.4g}") + "\n")
+        md.append("Registered (seed 0; each cell is `mu sessions/s / mu turns-based sessions/s / hit fraction`; the 300k column is the validation's own cell rerun in the same code):\n")
+        for mode in MODES:
+            rm = reg[reg["mode"] == mode]
+            tab = pd.DataFrame({"n": sorted(rm["n"].unique())})
+            for kv in sorted(rm["kv_k"].unique()):
+                g = rm[rm["kv_k"] == kv].set_index("n")
+                tab[f"{kv}k pool"] = [f"{g.loc[n, 'mu']:.4f} / {g.loc[n, 'mu_turns']:.4f} / {g.loc[n, 'hit_rate']:.3f}" for n in tab["n"]]
+            md.append(f"{mode}:\n")
+            md.append(df_md(tab) + "\n")
+        lm = b4_landmarks(b4_all)
+        lm.to_csv(ctx.out / "b4_landmarks.csv", index=False)
+        md.append("Landmarks of the B4 curves (peak = first argmax of mu over the grid; hit crossing = n at which the hit fraction falls through 0.5, linear interpolation "
+                  "between adjacent grid points; coarse grid: 16, 24, 32, 48, 64, 96, 300):\n")
+        md.append(df_md(lm, "{:.4g}") + "\n")
+        summ["b4_landmarks"] = lm.to_dict(orient="records")
         sup = b4_all[b4_all["set"].str.startswith("supp")]
         if len(sup):
             allv = b4_all.copy()
