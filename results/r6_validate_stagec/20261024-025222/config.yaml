@@ -1,0 +1,111 @@
+# Round 6 validation: does the calibrated simulator reproduce the REAL Stage C closed-population curve (level, not just shape)?
+#
+#   /opt/anaconda3/bin/python experiments/prefix_meta_r6_validate_stagec.py run --spec configs/r6_validate_stagec.yaml [--quick] [--workers 4]
+#
+# Written and committed BEFORE any validation run (the git commit in meta.json is that commit). Everything under `validate.criteria` and
+# `validate.arms` is declared in advance: the PRIMARY arm is the most literal reading of "calibration.yaml constants, nothing else changed";
+# the other arms are labelled SENSITIVITIES and are never used to pick the mode unless the primary arm says so too.
+#
+# What is reproduced exactly (src/prefixmeta/probe.py `curve` machinery, ArrivalPlan(kind="closed")):
+#   * closed population of n sessions, all n start at t = 0 (synchronized start), a finished session is replaced at once;
+#   * measured window [900 s, 2700 s): mu = sessions completed in the window / 1800 s; hit = hits / admitted turns over the same window;
+#   * workload = configs/agentload_c_closed.yaml (2000-token first prompt, +550 tool tokens, 100 output tokens, T ~ min(Geom(1/15), 60),
+#     tool times Exp(5 s)); KV cap 300k tokens; engine cost constants from calibration/round6_server_log_fit/calibration.yaml;
+#   * FCFS, and LPM-with-FCFS-fallback-above-128-waiting (policy lpm128_lru) at n = 48 and 300.
+# What is NOT reproduced (the simulator has no such mechanism; see VALIDATION.md): SGLang's waiting-prefix LRU refresh
+# (SGLANG_ENABLE_WAITING_PREFIX_REFRESH, the `sglang-fcfs-r1` cell label), radix-tree partial prefixes, page-size rounding, the overlap scheduler.
+research_question: >-
+  Out of sample (the cost model was fitted to SGLang server-log timing only, never to mu(n)), do the simulator's mixed and separate
+  (SGLang prefill-priority) batching modes reproduce the real Stage C mu(n) and hit-fraction curves of sglang-fcfs-r1 / sglang-lpm-r1
+  within 15% in level, and which mode is closer?
+
+base_config: configs/prefix_meta_r5.yaml          # r5 -> prefix_meta.yaml; policies fcfs_lru / lpm128_lru (LRU eviction), ratio_reserve constants
+calibration_file: calibration/round6_server_log_fit/calibration.yaml     # its `engine:` block is merged over the base engine at load time
+
+# Stage C workload (identical to configs/agentload_c_closed.yaml `workload`; tests/test_r6_validate.py asserts the equality)
+workload:
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5            # unused for exp
+
+# measurement windows must tile [warmup_s, horizon_s): 100 s windows give 9 warm-up + 18 measured windows
+metrics:
+  window_s: 100.0
+  fine_window_s: 100.0
+
+parallel:
+  max_workers: 4               # hard cap (at most 6 in the probe CLI; the task allows 8)
+
+validate:
+  protocol:
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000        # replacement pool; the run aborts if it runs out (max need is about 300 + 0.5 * 2700)
+    synchronized_start: true   # ArrivalPlan(kind="closed"): all n sessions at t = 0
+    kv_cap_tokens: 300000
+
+  seeds: [0, 1, 2]
+  batching_modes: [mixed, separate_prefill_priority]
+
+  # the registered Stage C grid: FCFS at 7 populations, LPM (with SGLang's >128 fallback) at 2
+  cells:
+    - {policy: fcfs_lru,   n: [16, 20, 24, 32, 48, 96, 300]}
+    - {policy: lpm128_lru, n: [48, 300]}
+
+  # Real Stage C values: read at run time from these analysis outputs (single run per n, seed 0, 900 s warm-up + 1800 s measured).
+  real:
+    files:
+      - {path: results/nova/stageC_1706210x_pulled_20261022-125454/agentload_analysis_closed/20261021-185005/mu_curve.csv, note: FCFS n=16..32 (job 17062103)}
+      - {path: results/nova/stageC_1706210x_pulled_20261022-125454/agentload_analysis_closed/20261021-191417/mu_curve.csv, note: FCFS n=48..300 (job 17062104)}
+      - {path: results/nova/stageC_1706210x_pulled_20261022-125454/agentload_analysis_closed/20261021-183251/mu_curve.csv, note: LPM n=48,300 (job 17062105)}
+    label_to_policy: {sglang-fcfs-r1: fcfs_lru, sglang-lpm-r1: lpm128_lru}
+
+  # ---- arms. `primary` = calibration.yaml's engine block unchanged (alloc_mode full_reserve, free_kv_on_session_end true), only `batching` set.
+  # Sensitivities change ONE modelling choice each (S4 changes two) and are reported separately.
+  arms:
+    primary:
+      note: calibration.yaml unchanged (full_reserve, finished-session KV freed at once); the pre-declared primary arm
+      engine: {}
+      batching_modes: [mixed, separate_prefill_priority]
+    S1_ratio_reserve:
+      note: SGLang-like new_token_ratio reservation with retraction (constants = configs/prefix_meta_r5.yaml modes.engine_overrides.ratio_reserve, unverified scout reading)
+      engine_from: modes.engine_overrides.ratio_reserve
+      engine: {}
+      batching_modes: [mixed, separate_prefill_priority]
+    S2_keep_finished_kv:
+      note: a finished session's KV stays as evictable idle KV (the real radix cache cannot know a session ended)
+      engine: {free_kv_on_session_end: false}
+      batching_modes: [mixed, separate_prefill_priority]
+    S3_decode_per_seq:
+      note: calibration caveat 2 -- decode per-sequence slope 4.351e-5 s (decode-only fit, calibration.yaml alternatives.decode_only_linear); separate mode only, the key is ignored in mixed mode
+      engine: {decode_per_seq_s: 4.351e-05}
+      batching_modes: [separate_prefill_priority]
+    S4_sglang_like:
+      note: S1 + S2 (ratio_reserve and finished-session KV kept), the most engine-faithful combination of the simulator's existing switches
+      engine_from: modes.engine_overrides.ratio_reserve
+      engine: {free_kv_on_session_end: false}
+      batching_modes: [mixed, separate_prefill_priority]
+
+  # ---- supplementary runs (primary arm only; labelled supplementary in the report, never part of the verdict)
+  supplementary:
+    fine_grid:        # locate the peak and the 0.5-hit crossing more precisely than the 7-point registered grid
+      policy: fcfs_lru
+      n: [18, 22, 26, 28, 30, 34, 36, 40, 44, 64]
+      seeds: [0, 1, 2]
+    many_seeds:       # seed-to-seed spread of the simulator at the registered cells (fresh seeds, disjoint from 0-2)
+      seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119]
+
+  # ---- decision rules, declared in advance
+  criteria:
+    level_rel_tol: 0.15                       # |sim seed-mean mu - real mu_sessions| / real <= 0.15
+    level_excluded_cells: [[fcfs_lru, 32]]    # the single-seed bistable cell (real hit 0.51 mixes two regimes): reported, not judged
+    closeness_metric: mean_abs_rel_err_mu     # mean over the judged cells of |relative error| of the seed-mean mu_sessions; lower = closer mode
+    peak_runner_up_flag_frac: 0.05            # argmax is flagged when the runner-up mean is within 5% of the max (as in the Stage C plan)
+    hit_crossing_level: 0.5                   # linear interpolation in n between adjacent grid points of the seed-mean hit fraction
+    collapse: mu_300_over_mu_star             # mu(300) / max over the FCFS grid of the seed-mean mu (the Stage C analysis-plan definition)
+    level_judged_on: mu_sessions              # real estimator used for the errors; mu_turns_based is reported alongside

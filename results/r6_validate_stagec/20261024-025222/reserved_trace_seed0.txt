@@ -1,0 +1,5 @@
+# reserved-KV trace, primary arm (calibration.yaml unchanged, full_reserve), FCFS, seed 0, window [900, 2700) s
+n=48 mixed: reserved mean 285047 min 247600 max 300000; time share with reserved<100k 0.00; time share in prefill calls 0.95; mean decode batch (time-weighted over decode calls) 25.9; calls P/D 2664/541
+n=48 separate_prefill_priority: reserved mean 224313 min 69300 max 299850; time share with reserved<100k 0.02; time share in prefill calls 0.92; mean decode batch (time-weighted over decode calls) 17.3; calls P/D 2484/167
+n=300 mixed: reserved mean 294657 min 282200 max 300000; time share with reserved<100k 0.00; time share in prefill calls 0.94; mean decode batch (time-weighted over decode calls) 38.1; calls P/D 3252/754
+n=300 separate_prefill_priority: reserved mean 169507 min 8600 max 299850; time share with reserved<100k 0.28; time share in prefill calls 0.90; mean decode batch (time-weighted over decode calls) 3.8; calls P/D 2729/93

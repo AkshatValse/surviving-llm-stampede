@@ -1,0 +1,1458 @@
+.........................FF.....................F....................F.. [  6%]
+.F...................................................................... [ 13%]
+..........................................FFFFFFFFFFFF.................. [ 20%]
+........................................................................ [ 27%]
+..................................................................s..... [ 34%]
+........................................................................ [ 41%]
+........................................................................ [ 48%]
+..........F............................................................. [ 55%]
+........................................................................ [ 62%]
+........................................................................ [ 69%]
+......................................................FFFFFF............ [ 76%]
+........................................................................ [ 83%]
+........................................................................ [ 90%]
+.................................FFFFF.................................. [ 97%]
+..........FFF.................s                                          [100%]
+================================== FAILURES ===================================
+________________________ test_burst_timing_in_the_log _________________________
+
+basic = (Outcome(out_dir=WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/basic0/agentload_test/20261...ion)'}, 'metrics': {'enabled': True, 'interval_s': 0.5}, 'output': {'name': 'agentload_test', 'root': 'results'}, ...})
+
+    def test_burst_timing_in_the_log(basic):
+        out, truth, raw = basic
+        req, ses, plan, meta = load(out)
+        b = plan[plan["origin"] == "burst"]
+        assert len(b) == 12 and b["arrival_s"].between(2.0, 2.5, inclusive="left").all()
+        first = req[(req["turn"] == 1)].merge(plan[["sid", "arrival_s"]], on="sid")
+        bf = first[first["origin"] == "burst"]
+        assert len(bf) == 12
+>       assert ((bf["t_send"] - bf["arrival_s"]) >= -1e-3).all() and ((bf["t_send"] - bf["arrival_s"]) < 0.25).all()
+E       assert (False)
+E        +  where False = <bound method Series.all of 13    False\n15     True\n18    False\n19    False\n20    False\n21     True\n23    False\n25     True\n26    False\n28    False\n31     True\n32     True\ndtype: bool>()
+E        +    where <bound method Series.all of 13    False\n15     True\n18    False\n19    False\n20    False\n21     True\n23    False\n25     True\n26    False\n28    False\n31     True\n32     True\ndtype: bool> = (13    2.000\n15    2.063\n18    2.109\n19    2.141\n20    2.156\n21    2.188\n23    2.234\n25    2.313\n26    2.313\n28    2.344\n31    2.422\n32    2.484\nName: t_send, dtype: float64 - 13    2.002929\n15    2.041862\n18    2.123080\n19    2.143241\n20    2.170516\n21    2.181073\n23    2.243490\n25    2.308808\n26    2.326199\n28    2.351419\n31    2.419136\n32    2.473821\nName: arrival_s, dtype: float64) >= -0.001.all
+
+tests\test_agentload_e2e.py:102: AssertionError
+_______________________ test_sessions_and_planned_turns _______________________
+
+basic = (Outcome(out_dir=WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/basic0/agentload_test/20261...ion)'}, 'metrics': {'enabled': True, 'interval_s': 0.5}, 'output': {'name': 'agentload_test', 'root': 'results'}, ...})
+
+    def test_sessions_and_planned_turns(basic):
+        out, *_ = basic
+        req, ses, plan, meta = load(out)
+        done = ses[ses["status"] == "completed"]
+        assert len(done) > 10
+        # completed sessions sent exactly their planned number of turns, with increasing send times
+        per = req.groupby("sid").agg(n=("turn", "size"), mx=("turn", "max"))
+        m = done.merge(per, left_on="sid", right_index=True)
+        assert (m["n"] == m["n_turns"]).all() and (m["mx"] == m["n_turns"]).all()
+        for sid, g in req.groupby("sid"):
+            g = g.sort_values("turn")
+>           assert (np.diff(g["t_send"]) > 0).all()
+E           assert False
+E            +  where False = <built-in method all of numpy.ndarray object at 0x000001830B4065B0>()
+E            +    where <built-in method all of numpy.ndarray object at 0x000001830B4065B0> = array([0.   , 0.078, 0.078]) > 0.all
+E            +      where array([0.   , 0.078, 0.078]) = <function diff at 0x00000183059A76B0>(30    2.063\n31    2.063\n40    2.141\n47    2.219\nName: t_send, dtype: float64)
+E            +        where <function diff at 0x00000183059A76B0> = np.diff
+
+tests\test_agentload_e2e.py:117: AssertionError
+_____________________ test_gate_waits_are_logged_and_fifo _____________________
+
+arms = {'burst': Outcome(out_dir=WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/arms0/agentload_te...ncelled': 0, 'max_inflight_seen': 6, 'metrics_scrapes': 10, 'metrics_scrape_failures': 0, 'metrics_skipped_ticks': 0})}
+
+    def test_gate_waits_are_logged_and_fifo(arms):
+        s, _, req, meta = read(arms["capped"])
+        adm = s[s["t_admit"].notna()].sort_values("t_admit")
+        waited = adm[adm["gate_wait_s"] > 0]
+        assert len(waited) >= 10                                  # the 25-session burst has to queue behind 4 slots
+        assert np.allclose(adm["t_admit"] - adm["arrival_s"], adm["gate_wait_s"], atol=0.05)   # wait == admit - arrival
+        assert adm["gate_wait_s"].max() > 0.1
+        # FIFO: sessions are admitted in arrival order
+>       assert (np.diff(adm["arrival_s"].to_numpy()) >= -1e-9).all()
+E       assert False
+E        +  where False = <built-in method all of numpy.ndarray object at 0x000001830ACC8330>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001830ACC8330> = array([ 0.13732544,  0.11098784,  0.16648427,  0.13334882,  0.04479613,\n        0.37282434,  0.1090462 ,  0.23359764, ...\n        0.14953506,  0.10028525,  0.04419574,  0.00962352,  0.10290395,\n        0.0493926 ,  0.0651613 ,  0.02059459]) >= -1e-09.all
+E        +      where array([ 0.13732544,  0.11098784,  0.16648427,  0.13334882,  0.04479613,\n        0.37282434,  0.1090462 ,  0.23359764, ...\n        0.14953506,  0.10028525,  0.04419574,  0.00962352,  0.10290395,\n        0.0493926 ,  0.0651613 ,  0.02059459]) = <function diff at 0x00000183059A76B0>(array([0.03507293, 0.17239837, 0.28338621, 0.44987048, 0.5832193 ,\n       0.62801543, 1.00083977, 1.10988596, 1.343483...    1.81124225, 1.96077731, 2.06106255, 2.1052583 , 2.11488181,\n       2.21778577, 2.26717837, 2.33233966, 2.35293425]))
+E        +        where <function diff at 0x00000183059A76B0> = np.diff
+E        +        and   array([0.03507293, 0.17239837, 0.28338621, 0.44987048, 0.5832193 ,\n       0.62801543, 1.00083977, 1.10988596, 1.343483...    1.81124225, 1.96077731, 2.06106255, 2.1052583 , 2.11488181,\n       2.21778577, 2.26717837, 2.33233966, 2.35293425]) = <bound method IndexOpsMixin.to_numpy of 0     0.035073\n1     0.172398\n2     0.283386\n3     0.449870\n4     0.583219\n5  ...   2.105258\n39    2.114882\n40    2.217786\n41    2.267178\n42    2.332340\n43    2.352934\nName: arrival_s, dtype: float64>()
+E        +          where <bound method IndexOpsMixin.to_numpy of 0     0.035073\n1     0.172398\n2     0.283386\n3     0.449870\n4     0.583219\n5  ...   2.105258\n39    2.114882\n40    2.217786\n41    2.267178\n42    2.332340\n43    2.352934\nName: arrival_s, dtype: float64> = 0     0.035073\n1     0.172398\n2     0.283386\n3     0.449870\n4     0.583219\n5     0.628015\n6     1.000840\n7     1.10988...    2.105258\n39    2.114882\n40    2.217786\n41    2.267178\n42    2.332340\n43    2.352934\nName: arrival_s, dtype: float64.to_numpy
+
+tests\test_agentload_gate.py:224: AssertionError
+__________________ test_sigterm_finalizes_meta_and_sessions ___________________
+
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_sigterm_finalizes_meta_an0')
+
+    def test_sigterm_finalizes_meta_and_sessions(tmp_path):
+        port = _free_port()
+        env = dict(os.environ, PYTHONPATH=str(REPO / "src"))
+        srv = subprocess.Popen([sys.executable, "-m", "agentload.mock_server", "--port", str(port)], env=env,
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            for _ in range(100):
+                try:
+                    socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
+                    break
+                except OSError:
+                    time.sleep(0.1)
+            gen = subprocess.Popen([sys.executable, "-m", "agentload", "run", "--config", str(REPO / "configs/agentload_mock.yaml"),
+                                    "--set", f"server.base_url=\"http://127.0.0.1:{port}\"", "--set", "run.duration_s=120",
+                                    "--out-root", str(tmp_path), "--name", "sigterm"],
+                                   env=env, cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            time.sleep(4.0)
+            gen.send_signal(signal.SIGTERM)
+            out, err = gen.communicate(timeout=30)
+        finally:
+            srv.terminate()
+            srv.wait(timeout=10)
+>       assert gen.returncode == 143, (out, err)
+E       AssertionError: ('', '')
+E       assert 1 == 143
+E        +  where 1 = <Popen: returncode: 1 args: ['C:\\Users\\Akshat\\Desktop\\Claude Code\\.venv...>.returncode
+
+tests\test_agentload_robustness.py:144: AssertionError
+___________________ test_raise_nofile_reports_what_happened ___________________
+
+    def test_raise_nofile_reports_what_happened():
+        info = client_mod._raise_nofile()
+>       assert info["soft_after"] is not None and (info["soft_after"] == -1 or info["soft_after"] >= info["soft_before"] or info["error"])
+E       assert (None is not None)
+
+tests\test_agentload_robustness.py:195: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_aging10_cold100_s7413_H6000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_aging10_cold100_s7413_H6000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...8cb479fc41bc'} == {'n_windows':...8cb479fc41bc'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 1.000043878728965, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 1.000043878728965, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_burst60_lpm_s7412_H9000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_burst60_lpm_s7412_H9000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...f2a09d1d419e'} == {'n_windows':...f2a09d1d419e'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 0.9407499774293887, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 0.9407499774293887, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_closed_fcfs_n32_s7400_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_closed_fcfs_n32_s7400_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...debe6cb8b4fd'} == {'n_windows':...debe6cb8b4fd'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 0.9999909745076679, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 0.9999909745076679, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_nobatch_closed_fcfs_n32_s7415_H3000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_nobatch_closed_fcfs_n32_s7415_H3000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...3777340b2625'} == {'n_windows':...3777340b2625'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 1.000039898751868, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 1.000039898751868, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_ttl_cold60_s7414_H6000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_ttl_cold60_s7414_H6000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...c611e77072a5'} == {'n_windows':...c611e77072a5'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 0.8053164845388313, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 0.8053164845388313, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_cap20_cold300_lpm_s7411_H9000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ondemand_cap20_cold300_lpm_s7411_H9000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...096ea75c37a9'} == {'n_windows':...096ea75c37a9'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 11233250, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9294255233667128, 'cap_final': 20, ...}} != {'summary': {'admitted_prefill_tokens': 11233250, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9294255233667128, 'cap_final': 20, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_fcfs_n40_s7403_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ondemand_closed_fcfs_n40_s7403_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...f6c1982de9f2'} == {'n_windows':...f6c1982de9f2'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 57947660, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 1.0001020215578162, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 57947660, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 1.0001020215578162, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_lpm_n24_s7404_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ondemand_closed_lpm_n24_s7404_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...32c262e95a58'} == {'n_windows':...32c262e95a58'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 25651071, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9994568902962576, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 25651071, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9994568902962576, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_burst60_fcfs_s7410_H9000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_burst60_fcfs_s7410_H9000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...4299da9dfed2'} == {'n_windows':...4299da9dfed2'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 49381164, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9451188295019145, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 49381164, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9451188295019145, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_fcfs_n40_s7401_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_closed_fcfs_n40_s7401_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...f55356051399'} == {'n_windows':...f55356051399'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 58568593, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.000057492285469, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 58568593, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.000057492285469, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_lpm_n24_s7402_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_closed_lpm_n24_s7402_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...1b803cbbc459'} == {'n_windows':...1b803cbbc459'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 22210139, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9989861566749534, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 22210139, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9989861566749534, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_whole_victim_n40_s7405_H6000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_closed_whole_victim_n40_s7405_H6000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...60235f49b0ac'} == {'n_windows':...60235f49b0ac'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 43407296, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.0000028514441275, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 43407296, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.0000028514441275, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+__ test_pre_full_run_table_marks_runs_before_and_after_the_amendment_commit ___
+
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_pre_full_run_table_marks_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001830B911310>
+
+    def test_pre_full_run_table_marks_runs_before_and_after_the_amendment_commit(tmp_path, monkeypatch):
+        def mk_dir(name, stamp, commit, dirty, quick=True):
+            d = tmp_path / "results" / name / stamp
+            d.mkdir(parents=True)
+            (d / "meta.json").write_text(json.dumps({"experiment": name, "start_time": "2026-10-21T" + stamp,
+                                                     "git": {"commit": commit, "dirty": dirty}, "quick": quick, "n_runs": 3}))
+            return d
+>       a = mk_dir("prefix_meta_mech_quick", "01:35:12", "a8b2da7aaa", True)
+
+tests\test_mech_runner.py:825: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_mech_runner.py:821: in mk_dir
+    d.mkdir(parents=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_pre_full_run_table_marks_0/results/prefix_meta_mech_quick/01:35:12')
+mode = 511, parents = True, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'C:\\Users\\Akshat\\AppData\\Local\\Temp\\pytest-of-Akshat\\pytest-8\\test_pre_full_run_table_marks_0\\results\\prefix_meta_mech_quick\\01:35:12'
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1311: OSError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[burst50_fcfs_lru_s2100_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'burst50_fcfs_lru_s2100_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_...ariant": "g"}' == '{"busy_frac_...ariant": "g"}'
+E         Skipping 1019 identical leading characters in diff, use -v to show
+E         Skipping 97 identical trailing characters in diff, use -v to show
+E         - 79780051929, "tail_busy_frac": 1.0, "tail_gate_mean": 0.0, "tail_hit_rate": 0.0, "tail_queue_max": 424.0, "tail_queue_mean": 360.8144265976531, "tail_queue_trend_rise": 104.34879780051929, "tail_s
+E         ?           ^                                                                                                                                                                               ^
+E         + 79780051924, "tail_busy_frac": 1.0, "tail_gate_mean": 0....
+E         
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[cap20_cold300_lpm_lru_s2201_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'cap20_cold300_lpm_lru_s2201_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_...ariant": "g"}' == '{"busy_frac_...ariant": "g"}'
+E         Skipping 1234 identical leading characters in diff, use -v to show
+E         Skipping 84 identical trailing characters in diff, use -v to show
+E         - 70624400899, "tail_s
+E         ?           ^
+E         + 70624400892, "tail_s
+E         ?           ^
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[cap28_cold300_fcfs_lru_s2200_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'cap28_cold300_fcfs_lru_s2200_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_...ariant": "g"}' == '{"busy_frac_...ariant": "g"}'
+E         Skipping 1016 identical leading characters in diff, use -v to show
+E         Skipping 97 identical trailing characters in diff, use -v to show
+E         - 074336770873, "tail_busy_frac": 0.889558146411931, "tail_gate_mean": 0.0, "tail_hit_rate": 0.9366949849273773, "tail_queue_max": 3.0, "tail_queue_mean": 0.01578048112169017, "tail_queue_trend_rise": -0.005964074336770873, "tail_s
+E         ?           ^^^                                                                                                                                                                                                       ...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_lru_n28_s2000_H35000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'closed_fcfs_lru_n28_s2000_H35000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_..."k=1.0|n=28"}' == '{"busy_frac_..."k=1.0|n=28"}'
+E         Skipping 1065 identical leading characters in diff, use -v to show
+E         - 54701070043, "tail_busy_frac": 0.9999952752597354, "tail_gate_mean": 0.0, "tail_hit_rate": 0.6596188621505077, "tail_queue_max": 19.0, "tail_queue_mean": 2.981832539717307, "tail_queue_trend_rise": 1.235854701070043, "tail_s": 5000.0, "tail_sessions_per_s": 0.0954, "tail_turns_per_s": 1.4371999999999998, "variant": "k=1.0|n=28"}
+E         ?           ^^                                                                                                                                                                    ...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_random_n32_s2000_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'closed_fcfs_random_n32_s2000_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_..."k=1.0|n=32"}' == '{"busy_frac_..."k=1.0|n=32"}'
+E         Skipping 1069 identical leading characters in diff, use -v to show
+E         - 77465536315, "tail_busy_frac": 1.0, "tail_gate_mean": 0.0, "tail_hit_rate": 0.42424242424242425, "tail_queue_max": 19.0, "tail_queue_mean": 4.832976861579953, "tail_queue_trend_rise": -3.694977465536315, "tail_s": 5000.0, "tail_sessions_per_s": 0.069, "tail_turns_per_s": 1.0292, "variant": "k=1.0|n=32"}
+E         ?           ^^                                                                                                                                                                                             ^...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[closed_lpm_lru_n24_s2001_H35000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'closed_lpm_lru_n24_s2001_H35000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_..."k=1.0|n=24"}' == '{"busy_frac_..."k=1.0|n=24"}'
+E         Skipping 1066 identical leading characters in diff, use -v to show
+E         Skipping 94 identical trailing characters in diff, use -v to show
+E         - 84459014793, "tail_busy_frac": 0.9993974828356352, "tail_gate_mean": 0.0, "tail_hit_rate": 0.8740093805595989, "tail_queue_max": 15.0, "tail_queue_mean": 0.7665341448562955, "tail_queue_trend_rise": -0.5427684459014793, "tail_s
+E         ?           ^^                                                                                                                                                                                                          ...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_______ test_job_glue_runs_locally_against_the_mock_server[smoke-18090] _______
+
+mode = 'smoke', port = 18090
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_job_glue_runs_locally_aga0')
+
+    @pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093),
+                                           ("closed", 18094)])
+    def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
+        env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
+                   POP_CHECK="6" if mode == "miss" else "")
+        r = subprocess.run([BASH, str(SLURM / "local_smoke.sh"), mode], capture_output=True, text=True, env=env, timeout=240,
+                           cwd=REPO)
+        assert r.returncode == 0, r.stdout[-3000:] + r.stderr[-3000:]     # a failed run makes the job exit non-zero
+        assert "0 failed" in r.stdout
+        assert "CANARY_RESULT" in r.stdout
+        logs = list((tmp_path / "nova_job_logs").iterdir())
+        assert len(logs) == 1
+        banner = (logs[0] / "banner.txt").read_text()
+        for needle in ("hostname:", "nvidia-smi", "commit:", "SEEDS=\"0\"", "ENGINE=mock", f"MODE={mode}", "research_question"):
+            assert needle in banner, needle
+        assert "vllm:num_requests_waiting" in (logs[0] / "probe.txt").read_text()
+        assert "agentload_c_closed.yaml" in banner and 'N_LIST="' in banner and "ARMS=" in banner      # Stage-C config + new params
+        ev = (logs[0] / "job_events.log").read_text()
+        assert "flush HTTP 200" in ev and "reset_and_verify: verified=true" in ev
+        assert "CANARY_RESULT" in (logs[0] / "canary.log").read_text()
+        assert "PROBE_SUMMARY" in (logs[0] / "probe.txt").read_text()
+        assert (logs[0] / "flag_check.txt").exists() and any(f.name.startswith("pip_freeze_") for f in logs[0].iterdir())
+        run_dirs = (logs[0] / f"run_dirs_{mode}.txt").read_text().split()
+        assert len(run_dirs) == N_RUNS[mode] and (Path(run_dirs[0]) / "meta.json").exists()
+        meta = json.loads((Path(run_dirs[0]) / "meta.json").read_text())
+        assert meta["engine_label"] == "mock-fcfs" and meta["seeds"] == [0] and meta["status"] == "finished"
+        assert meta["start_state_verified"] is True and "canary" in meta["start_state_detail"]
+        assert meta["content_salt"] == 1 and meta["output_feedback_configured"] == "server"
+        assert meta["outcome"]["output_ids_source_counts"] == {"server_ids": meta["outcome"]["requests_ok"]}
+        assert meta["outcome"]["prompt_tokens_mismatch"] == 0 and meta["force_close_connections"] is True
+        assert meta["outcome"]["requests_ok"] > 5
+        ana = {"smoke": ("agentload_analysis_windows", "windows.csv"),
+               "miss": ("agentload_analysis_miss", "calibration.json"), "cap": ("agentload_analysis_stable", "stable_runs.csv"),
+               "closed": ("agentload_analysis_closed", "mu_curve.json"),
+               "burst": ("agentload_analysis_burst", "burst_runs.csv")}[mode]
+        d = sorted((tmp_path / ana[0]).iterdir())[-1]
+        assert (d / ana[1]).exists()
+        if mode == "miss":       # the population-sensitivity run is analysed separately, not averaged into lambda_miss
+            pc = (logs[0] / "run_dirs_miss_popcheck.txt").read_text().split()
+            assert len(pc) == 1 and "popcheck" in pc[0] and pc[0] != run_dirs[0]
+            cal = json.loads((d / "calibration.json").read_text())
+            assert cal["n_runs"] == 1
+            d2 = sorted((tmp_path / "agentload_analysis_miss_popcheck").iterdir())[-1]
+            assert json.loads((d2 / "calibration.json").read_text())["n_runs"] == 1
+        if mode == "closed":
+            curve = json.loads((d / "mu_curve.json").read_text())
+            assert curve["primary_label"] == "mock-fcfs" and curve["cells"]["mock-fcfs"]["n"] == [2, 4]
+            assert curve["n_cap"] in (2, 4) and (d / "mu_points.csv").exists()
+            pts = pd.read_csv(d / "mu_points.csv")
+            assert sorted(pts["n"]) == [2, 4] and (pts["warmup_s"] == 3.0).all() and (pts["mu_sessions"] > 0).all()
+            assert [json.loads((Path(r) / "meta.json").read_text())["content_salt"] for r in run_dirs] == [1, 2]
+            for r in run_dirs:
+                assert json.loads((Path(r) / "meta.json").read_text())["start_state_verified"] in (True, False)
+        if mode == "burst":
+            br = pd.read_csv(d / "burst_runs.csv")
+            assert br["t_burst"].iloc[0] == 6.0 and sorted(br["arm"]) == ["burst", "capped"]       # NOBURST has no legacy verdict
+            metas = [json.loads((Path(r) / "meta.json").read_text()) for r in run_dirs]
+            assert [m["arm"] for m in metas] == ["burst", "noburst", "capped"]                     # ARMS order, same seed and rate
+            assert len({(m["seeds"][0], m["resolved_rate_sessions_per_s"], m["lambda_ref_resolved"]) for m in metas}) == 1
+            assert [m["content_salt"] for m in metas] == [1, 2, 3] and all(m["analysis_t_burst_s"] == 6.0 for m in metas)
+            assert [m["gate_n_cap_resolved"] for m in metas] == [None, None, 3]                    # fake Stage-C mu_curve.json: n_cap 3
+            assert metas[2]["outcome"]["gate"]["max_active_seen"] <= 3
+            # the pre-registration the job validated is bound into every run, with the E0a token reference (fake calibration: 1000 tokens/s)
+            assert len({m["prereg_sha256"] for m in metas}) == 1 and re.fullmatch(r"[0-9a-f]{64}", metas[0]["prereg_sha256"])
+            assert all(m["uncached_tokens_ref_resolved"] == 1000.0 and m["prereg_file"].endswith("prereg.yaml") for m in metas)
+            assert "PREREG_OK" in r.stdout and "PREREG_ALLOW_UNCOMMITTED=1" in r.stdout
+            plans = [pd.read_csv(Path(r) / "plan.csv") for r in run_dirs]
+            assert (plans[0]["origin"] == "burst").sum() == 10 and (plans[1]["origin"] == "burst").sum() == 0
+            d2 = sorted((tmp_path / "agentload_analysis_burst2").iterdir())[-1]
+            kv = json.loads((d2 / "kill_verdict_v2.json").read_text())
+            assert kv["cells"][0]["n_seeds_complete"] == 1 and kv["pairing_problems"] == {} and kv["guards"]["n_errors"] == 0
+            assert kv["prereg"]["provided"] and kv["prereg"]["valid"] and kv["pre_registered"] is False       # smoke prereg is not committed
+            assert kv["prereg"]["provenance"]["sha256"] == metas[0]["prereg_sha256"]
+            assert kv["kill_test_pass_decisive"] is None
+        # the mock server process must be gone
+>       assert subprocess.run(["pgrep", "-f", f"agentload.mock_server --port {port}"], capture_output=True).returncode != 0
+
+tests\test_slurm_scripts.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:1026: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['pgrep', '-f', 'agentload.mock_server --port...>
+args = 'pgrep -f "agentload.mock_server --port 18090"', executable = None
+preexec_fn = None, close_fds = False, pass_fds = (), cwd = None, env = None
+startupinfo = <subprocess.STARTUPINFO object at 0x00000183135A6C60>
+creationflags = 0, shell = False, p2cread = Handle(4368), p2cwrite = -1
+c2pread = 14, c2pwrite = Handle(3372), errread = 17, errwrite = Handle(4344)
+unused_restore_signals = True, unused_gid = None, unused_gids = None
+unused_uid = None, unused_umask = -1, unused_start_new_session = False
+unused_process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       unused_restore_signals,
+                       unused_gid, unused_gids, unused_uid,
+                       unused_umask,
+                       unused_start_new_session, unused_process_group):
+        """Execute program (MS Windows version)"""
+    
+        assert not pass_fds, "pass_fds not supported on Windows."
+    
+        if isinstance(args, str):
+            pass
+        elif isinstance(args, bytes):
+            if shell:
+                raise TypeError('bytes args is not allowed on Windows')
+            args = list2cmdline([args])
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = list2cmdline([args])
+        else:
+            args = list2cmdline(args)
+    
+        if executable is not None:
+            executable = os.fsdecode(executable)
+    
+        # Process startup details
+        if startupinfo is None:
+            startupinfo = STARTUPINFO()
+        else:
+            # bpo-34044: Copy STARTUPINFO since it is modified above,
+            # so the caller can reuse it multiple times.
+            startupinfo = startupinfo.copy()
+    
+        use_std_handles = -1 not in (p2cread, c2pwrite, errwrite)
+        if use_std_handles:
+            startupinfo.dwFlags |= _winapi.STARTF_USESTDHANDLES
+            startupinfo.hStdInput = p2cread
+            startupinfo.hStdOutput = c2pwrite
+            startupinfo.hStdError = errwrite
+    
+        attribute_list = startupinfo.lpAttributeList
+        have_handle_list = bool(attribute_list and
+                                "handle_list" in attribute_list and
+                                attribute_list["handle_list"])
+    
+        # If we were given an handle_list or need to create one
+        if have_handle_list or (use_std_handles and close_fds):
+            if attribute_list is None:
+                attribute_list = startupinfo.lpAttributeList = {}
+            handle_list = attribute_list["handle_list"] = \
+                list(attribute_list.get("handle_list", []))
+    
+            if use_std_handles:
+                handle_list += [int(p2cread), int(c2pwrite), int(errwrite)]
+    
+            handle_list[:] = self._filter_handle_list(handle_list)
+    
+            if handle_list:
+                if not close_fds:
+                    warnings.warn("startupinfo.lpAttributeList['handle_list'] "
+                                  "overriding close_fds", RuntimeWarning)
+    
+                # When using the handle_list we always request to inherit
+                # handles but the only handles that will be inherited are
+                # the ones in the handle_list
+                close_fds = False
+    
+        if shell:
+            startupinfo.dwFlags |= _winapi.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = _winapi.SW_HIDE
+            if not executable:
+                # gh-101283: without a fully-qualified path, before Windows
+                # checks the system directories, it first looks in the
+                # application directory, and also the current directory if
+                # NeedCurrentDirectoryForExePathW(ExeName) is true, so try
+                # to avoid executing unqualified "cmd.exe".
+                comspec = os.environ.get('ComSpec')
+                if not comspec:
+                    system_root = os.environ.get('SystemRoot', '')
+                    comspec = os.path.join(system_root, 'System32', 'cmd.exe')
+                    if not os.path.isabs(comspec):
+                        raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
+                if os.path.isabs(comspec):
+                    executable = comspec
+            else:
+                comspec = executable
+    
+            args = '{} /c "{}"'.format (comspec, args)
+    
+        if cwd is not None:
+            cwd = os.fsdecode(cwd)
+    
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+    
+        # Start the process
+        try:
+>           hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                                     # no special security
+                                     None, None,
+                                     int(not close_fds),
+                                     creationflags,
+                                     env,
+                                     cwd,
+                                     startupinfo)
+E                                    FileNotFoundError: [WinError 2] The system cannot find the file specified
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:1538: FileNotFoundError
+_______ test_job_glue_runs_locally_against_the_mock_server[miss-18091] ________
+
+mode = 'miss', port = 18091
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_job_glue_runs_locally_aga1')
+
+    @pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093),
+                                           ("closed", 18094)])
+    def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
+        env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
+                   POP_CHECK="6" if mode == "miss" else "")
+        r = subprocess.run([BASH, str(SLURM / "local_smoke.sh"), mode], capture_output=True, text=True, env=env, timeout=240,
+                           cwd=REPO)
+        assert r.returncode == 0, r.stdout[-3000:] + r.stderr[-3000:]     # a failed run makes the job exit non-zero
+        assert "0 failed" in r.stdout
+        assert "CANARY_RESULT" in r.stdout
+        logs = list((tmp_path / "nova_job_logs").iterdir())
+        assert len(logs) == 1
+        banner = (logs[0] / "banner.txt").read_text()
+        for needle in ("hostname:", "nvidia-smi", "commit:", "SEEDS=\"0\"", "ENGINE=mock", f"MODE={mode}", "research_question"):
+            assert needle in banner, needle
+        assert "vllm:num_requests_waiting" in (logs[0] / "probe.txt").read_text()
+        assert "agentload_c_closed.yaml" in banner and 'N_LIST="' in banner and "ARMS=" in banner      # Stage-C config + new params
+        ev = (logs[0] / "job_events.log").read_text()
+        assert "flush HTTP 200" in ev and "reset_and_verify: verified=true" in ev
+        assert "CANARY_RESULT" in (logs[0] / "canary.log").read_text()
+        assert "PROBE_SUMMARY" in (logs[0] / "probe.txt").read_text()
+        assert (logs[0] / "flag_check.txt").exists() and any(f.name.startswith("pip_freeze_") for f in logs[0].iterdir())
+        run_dirs = (logs[0] / f"run_dirs_{mode}.txt").read_text().split()
+        assert len(run_dirs) == N_RUNS[mode] and (Path(run_dirs[0]) / "meta.json").exists()
+        meta = json.loads((Path(run_dirs[0]) / "meta.json").read_text())
+        assert meta["engine_label"] == "mock-fcfs" and meta["seeds"] == [0] and meta["status"] == "finished"
+        assert meta["start_state_verified"] is True and "canary" in meta["start_state_detail"]
+        assert meta["content_salt"] == 1 and meta["output_feedback_configured"] == "server"
+        assert meta["outcome"]["output_ids_source_counts"] == {"server_ids": meta["outcome"]["requests_ok"]}
+        assert meta["outcome"]["prompt_tokens_mismatch"] == 0 and meta["force_close_connections"] is True
+        assert meta["outcome"]["requests_ok"] > 5
+        ana = {"smoke": ("agentload_analysis_windows", "windows.csv"),
+               "miss": ("agentload_analysis_miss", "calibration.json"), "cap": ("agentload_analysis_stable", "stable_runs.csv"),
+               "closed": ("agentload_analysis_closed", "mu_curve.json"),
+               "burst": ("agentload_analysis_burst", "burst_runs.csv")}[mode]
+        d = sorted((tmp_path / ana[0]).iterdir())[-1]
+        assert (d / ana[1]).exists()
+        if mode == "miss":       # the population-sensitivity run is analysed separately, not averaged into lambda_miss
+            pc = (logs[0] / "run_dirs_miss_popcheck.txt").read_text().split()
+            assert len(pc) == 1 and "popcheck" in pc[0] and pc[0] != run_dirs[0]
+            cal = json.loads((d / "calibration.json").read_text())
+            assert cal["n_runs"] == 1
+            d2 = sorted((tmp_path / "agentload_analysis_miss_popcheck").iterdir())[-1]
+            assert json.loads((d2 / "calibration.json").read_text())["n_runs"] == 1
+        if mode == "closed":
+            curve = json.loads((d / "mu_curve.json").read_text())
+            assert curve["primary_label"] == "mock-fcfs" and curve["cells"]["mock-fcfs"]["n"] == [2, 4]
+            assert curve["n_cap"] in (2, 4) and (d / "mu_points.csv").exists()
+            pts = pd.read_csv(d / "mu_points.csv")
+            assert sorted(pts["n"]) == [2, 4] and (pts["warmup_s"] == 3.0).all() and (pts["mu_sessions"] > 0).all()
+            assert [json.loads((Path(r) / "meta.json").read_text())["content_salt"] for r in run_dirs] == [1, 2]
+            for r in run_dirs:
+                assert json.loads((Path(r) / "meta.json").read_text())["start_state_verified"] in (True, False)
+        if mode == "burst":
+            br = pd.read_csv(d / "burst_runs.csv")
+            assert br["t_burst"].iloc[0] == 6.0 and sorted(br["arm"]) == ["burst", "capped"]       # NOBURST has no legacy verdict
+            metas = [json.loads((Path(r) / "meta.json").read_text()) for r in run_dirs]
+            assert [m["arm"] for m in metas] == ["burst", "noburst", "capped"]                     # ARMS order, same seed and rate
+            assert len({(m["seeds"][0], m["resolved_rate_sessions_per_s"], m["lambda_ref_resolved"]) for m in metas}) == 1
+            assert [m["content_salt"] for m in metas] == [1, 2, 3] and all(m["analysis_t_burst_s"] == 6.0 for m in metas)
+            assert [m["gate_n_cap_resolved"] for m in metas] == [None, None, 3]                    # fake Stage-C mu_curve.json: n_cap 3
+            assert metas[2]["outcome"]["gate"]["max_active_seen"] <= 3
+            # the pre-registration the job validated is bound into every run, with the E0a token reference (fake calibration: 1000 tokens/s)
+            assert len({m["prereg_sha256"] for m in metas}) == 1 and re.fullmatch(r"[0-9a-f]{64}", metas[0]["prereg_sha256"])
+            assert all(m["uncached_tokens_ref_resolved"] == 1000.0 and m["prereg_file"].endswith("prereg.yaml") for m in metas)
+            assert "PREREG_OK" in r.stdout and "PREREG_ALLOW_UNCOMMITTED=1" in r.stdout
+            plans = [pd.read_csv(Path(r) / "plan.csv") for r in run_dirs]
+            assert (plans[0]["origin"] == "burst").sum() == 10 and (plans[1]["origin"] == "burst").sum() == 0
+            d2 = sorted((tmp_path / "agentload_analysis_burst2").iterdir())[-1]
+            kv = json.loads((d2 / "kill_verdict_v2.json").read_text())
+            assert kv["cells"][0]["n_seeds_complete"] == 1 and kv["pairing_problems"] == {} and kv["guards"]["n_errors"] == 0
+            assert kv["prereg"]["provided"] and kv["prereg"]["valid"] and kv["pre_registered"] is False       # smoke prereg is not committed
+            assert kv["prereg"]["provenance"]["sha256"] == metas[0]["prereg_sha256"]
+            assert kv["kill_test_pass_decisive"] is None
+        # the mock server process must be gone
+>       assert subprocess.run(["pgrep", "-f", f"agentload.mock_server --port {port}"], capture_output=True).returncode != 0
+
+tests\test_slurm_scripts.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:1026: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['pgrep', '-f', 'agentload.mock_server --port...>
+args = 'pgrep -f "agentload.mock_server --port 18091"', executable = None
+preexec_fn = None, close_fds = False, pass_fds = (), cwd = None, env = None
+startupinfo = <subprocess.STARTUPINFO object at 0x000001830A551670>
+creationflags = 0, shell = False, p2cread = Handle(3720), p2cwrite = -1
+c2pread = 14, c2pwrite = Handle(4324), errread = 17, errwrite = Handle(4232)
+unused_restore_signals = True, unused_gid = None, unused_gids = None
+unused_uid = None, unused_umask = -1, unused_start_new_session = False
+unused_process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       unused_restore_signals,
+                       unused_gid, unused_gids, unused_uid,
+                       unused_umask,
+                       unused_start_new_session, unused_process_group):
+        """Execute program (MS Windows version)"""
+    
+        assert not pass_fds, "pass_fds not supported on Windows."
+    
+        if isinstance(args, str):
+            pass
+        elif isinstance(args, bytes):
+            if shell:
+                raise TypeError('bytes args is not allowed on Windows')
+            args = list2cmdline([args])
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = list2cmdline([args])
+        else:
+            args = list2cmdline(args)
+    
+        if executable is not None:
+            executable = os.fsdecode(executable)
+    
+        # Process startup details
+        if startupinfo is None:
+            startupinfo = STARTUPINFO()
+        else:
+            # bpo-34044: Copy STARTUPINFO since it is modified above,
+            # so the caller can reuse it multiple times.
+            startupinfo = startupinfo.copy()
+    
+        use_std_handles = -1 not in (p2cread, c2pwrite, errwrite)
+        if use_std_handles:
+            startupinfo.dwFlags |= _winapi.STARTF_USESTDHANDLES
+            startupinfo.hStdInput = p2cread
+            startupinfo.hStdOutput = c2pwrite
+            startupinfo.hStdError = errwrite
+    
+        attribute_list = startupinfo.lpAttributeList
+        have_handle_list = bool(attribute_list and
+                                "handle_list" in attribute_list and
+                                attribute_list["handle_list"])
+    
+        # If we were given an handle_list or need to create one
+        if have_handle_list or (use_std_handles and close_fds):
+            if attribute_list is None:
+                attribute_list = startupinfo.lpAttributeList = {}
+            handle_list = attribute_list["handle_list"] = \
+                list(attribute_list.get("handle_list", []))
+    
+            if use_std_handles:
+                handle_list += [int(p2cread), int(c2pwrite), int(errwrite)]
+    
+            handle_list[:] = self._filter_handle_list(handle_list)
+    
+            if handle_list:
+                if not close_fds:
+                    warnings.warn("startupinfo.lpAttributeList['handle_list'] "
+                                  "overriding close_fds", RuntimeWarning)
+    
+                # When using the handle_list we always request to inherit
+                # handles but the only handles that will be inherited are
+                # the ones in the handle_list
+                close_fds = False
+    
+        if shell:
+            startupinfo.dwFlags |= _winapi.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = _winapi.SW_HIDE
+            if not executable:
+                # gh-101283: without a fully-qualified path, before Windows
+                # checks the system directories, it first looks in the
+                # application directory, and also the current directory if
+                # NeedCurrentDirectoryForExePathW(ExeName) is true, so try
+                # to avoid executing unqualified "cmd.exe".
+                comspec = os.environ.get('ComSpec')
+                if not comspec:
+                    system_root = os.environ.get('SystemRoot', '')
+                    comspec = os.path.join(system_root, 'System32', 'cmd.exe')
+                    if not os.path.isabs(comspec):
+                        raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
+                if os.path.isabs(comspec):
+                    executable = comspec
+            else:
+                comspec = executable
+    
+            args = '{} /c "{}"'.format (comspec, args)
+    
+        if cwd is not None:
+            cwd = os.fsdecode(cwd)
+    
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+    
+        # Start the process
+        try:
+>           hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                                     # no special security
+                                     None, None,
+                                     int(not close_fds),
+                                     creationflags,
+                                     env,
+                                     cwd,
+                                     startupinfo)
+E                                    FileNotFoundError: [WinError 2] The system cannot find the file specified
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:1538: FileNotFoundError
+________ test_job_glue_runs_locally_against_the_mock_server[cap-18092] ________
+
+mode = 'cap', port = 18092
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_job_glue_runs_locally_aga2')
+
+    @pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093),
+                                           ("closed", 18094)])
+    def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
+        env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
+                   POP_CHECK="6" if mode == "miss" else "")
+        r = subprocess.run([BASH, str(SLURM / "local_smoke.sh"), mode], capture_output=True, text=True, env=env, timeout=240,
+                           cwd=REPO)
+>       assert r.returncode == 0, r.stdout[-3000:] + r.stderr[-3000:]     # a failed run makes the job exit non-zero
+E       AssertionError:  "prompt_tokens_details": {"cached_tokens": 0}}}
+E         parsed: {"prompt_tokens": 64, "completion_tokens": 8, "cached_tokens": 0, "cached_source": "usage.prompt_tokens_details", "raw_usage_json": "{\"usage\":{\"completion_tokens\":8,\"prompt_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":0},\"total_tokens\":72}}"}
+E         --- request 2: HTTP 200
+E         {"id": "cmpl-2", "object": "text_completion", "model": "mock", "choices": [{"index": 0, "text": "t93354 t19804 t97926 t30118 t62383 t50174 t38358 t8854", "finish_reason": "length"}], "usage": {"prompt_tokens": 64, "completion_tokens": 8, "total_tokens": 72, "prompt_tokens_details": {"cached_tokens": 63}}}
+E         parsed: {"prompt_tokens": 64, "completion_tokens": 8, "cached_tokens": 63, "cached_source": "usage.prompt_tokens_details", "raw_usage_json": "{\"usage\":{\"completion_tokens\":8,\"prompt_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":63},\"total_tokens\":72}}"}
+E         --- request 3 (return_token_ids=true): HTTP 200
+E         {"id": "cmpl-3", "object": "text_completion", "model": "mock", "choices": [{"index": 0, "text": "t93354 t19804 t97926 t30118 t62383 t50174 t38358 t8854", "finish_reason": "length", "token_ids": [93354, 19804, 97926, 30118, 62383, 50174, 38358, 8854]}], "usage": {"prompt_tokens": 64, "completion_tokens": 8, "total_tokens": 72, "prompt_tokens_details": {"cached_tokens": 63}}}
+E         --- /metrics HTTP 200; 6 names with prefixes ['vllm:', 'sglang:']:
+E         vllm:e2e_request_latency_seconds_count
+E         vllm:kv_cache_usage_perc
+E         vllm:num_requests_running
+E         vllm:num_requests_waiting
+E         vllm:prefix_cache_hits_total
+E         vllm:prefix_cache_queries_total
+E         PROBE_SUMMARY {"metrics_http": 200, "n_metric_names": 6, "output_ids_path": "choices.0.token_ids", "output_ids_present": true, "prompt_tokens_sent": 64, "request1_cached_source": "usage.prompt_tokens_details", "request1_cached_tokens": 0, "request1_http": 200, "request1_prompt_tokens": 64, "request2_cached_source": "usage.prompt_tokens_details", "request2_cached_tokens": 63, "request2_http": 200, "request2_prompt_tokens": 64, "return_token_ids_http": 200}
+E         CANARY_RESULT {"cache_expected": true, "exit_code": 0, "first": {"cached_source": "usage.prompt_tokens_details", "cached_tokens": 0, "http": 200, "prompt_tokens": 1024}, "idle": {"idle": true, "kv_in_use": {"metric": "vllm:kv_cache_usage_perc", "value": 0.0}, "n_categories_known": 3, "running": {"metric": "vllm:num_requests_running", "value": 0.0}, "waited_s": 0.0, "waiting": {"metric": "vllm:num_
+E         CANARY_RESULT {"after_flush": {"cached_source": "usage.prompt_tokens_details", "cached_tokens": 0, "http": 200, "prompt_tokens": 1024}, "cache_expected": true, "exit_code": 0, "idle": {"idle": true, "kv_in_use": {"metric": "vllm:kv_cache_usage_perc", "value": 0.0}, "n_categories_known": 3, "running": {"metric": "vllm:num_requests_running", "value": 0.0}, "waited_s": 0.0, "waiting": {"metric": "vll
+E         hardware mismatch: calibration 'Apple M3 Max CPU (simulation)' vs this job 'NVIDIA GeForce RTX 5060, 8151 MiB'
+E         [03:05:40] stopping server pid 7540
+E         FATAL: this job's hardware differs from the calibration's; lambda_miss does not transfer across GPU variants
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Program Files\\Git\\usr\\bin\\bash.EXE', 'C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Re...tderr="FATAL: this job's hardware differs from the calibration's; lambda_miss does not transfer across GPU variants\n").returncode
+
+tests\test_slurm_scripts.py:119: AssertionError
+_______ test_job_glue_runs_locally_against_the_mock_server[burst-18093] _______
+
+mode = 'burst', port = 18093
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_job_glue_runs_locally_aga3')
+
+    @pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093),
+                                           ("closed", 18094)])
+    def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
+        env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
+                   POP_CHECK="6" if mode == "miss" else "")
+        r = subprocess.run([BASH, str(SLURM / "local_smoke.sh"), mode], capture_output=True, text=True, env=env, timeout=240,
+                           cwd=REPO)
+>       assert r.returncode == 0, r.stdout[-3000:] + r.stderr[-3000:]     # a failed run makes the job exit non-zero
+E       AssertionError: conservation, in 69% / 100% / 100% of true traps at lambda = 1.5 / 2 / 2.5 x
+E                                         # lambda_miss, so the pair (a and b) is weak at 1.5 x. Not changed here (it would be tuning on the
+E                                         # simulator); register lambda points >= 2 x, or decide a different slope_frac BEFORE registering.
+E           slope_dt_s: 10.0              # backlog (client sessions in flight incl. gate) is averaged in bins of this width, OLS slope on bin means
+E           recovered_hit_above: 0.8      # RECOVERED / "good": hit fraction > this ...
+E           recovered_backlog_below: 20.0 # ... and backlog < this, both over the last end_window_s
+E           recovered_backlog_metric: outstanding   # outstanding = requests in flight + sessions waiting at the client gate (the analogue of the
+E                                         # simulator's "waiting queue + gate" < 20; excludes sessions asleep in tool time) | sessions =
+E                                         # sessions in the system (arrived minus ended; includes tool-time sleepers, and in a saturated
+E                                         # CAPPED arm the n_cap admitted sessions, so it can never be < 20 while n_cap >= 20). Both are
+E                                         # always written (backlog_end, outstanding_end). REGISTERED.
+E           end_window_s: 300.0
+E           pass_fraction_min: 0.6666666666666666   # PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= this fraction of seeds
+E           min_seeds: 3
+E           trace_bin_s: 50.0             # resolution of backlog_trace.csv (plots only; not used by the verdict)
+E         
+E         closed:                         # Stage C: closed-population mu(n) with the prefix cache ON (summarize closed)
+E           warmup_s: 900.0                       # discarded at the start of every run (measure window = the rest: 1800 s in the plan)
+E           n_grid: [16, 20, 24, 32, 48, 96, 300] # FCFS cell; a missing n is flagged (complete_grid). 20 added: the simulator's mu(n) peaks sharply at
+E                                                 # n = 20-22, the grid {16, 24, 32} straddled it and the argmax flipped between 16 (transient window)
+E                                                 # and 24 (steady state) with a 1.6% margin
+E           lpm_n: [48, 300]                      # LPM cell
+E           n_inf: 300                            # mu(n_inf) stands for mu(infinity). CHECK ONLY: all n sessions start at t=0, so in the 1800 s window
+E                                                 # mu(300) is transient-inflated (simulator +65%); the registered recovery threshold is lambda_miss
+E           mu_estimator: sessions                # decides argmax mu(n) = n_cap and mu_300: sessions (completions/s, literal) | turns_based
+E           argmax_margin_warn: 0.05              # flag n_cap as ambiguous if the runner-up is within this relative margin (1 run per n)
+E         
+E         output:
+E           root: results
+E           name: agentload_analysis
+E         ============================================
+E         mock engine: no flags to check
+E         CAP_FILE PROBLEM: mu_curve.json was measured on ['Apple M3 Max CPU (simulation)'] but this job runs on 'NVIDIA GeForce RTX 5060, 8151 MiB'
+E         FATAL: CAP_FILE C:\Users\Akshat\AppData\Local\Temp\pytest-of-Akshat\pytest-8\test_job_glue_runs_locally_aga3/fake_calib/mu_curve.json is not usable for ENGINE_LABEL=mock-fcfs on this hardware
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Program Files\\Git\\usr\\bin\\bash.EXE', 'C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Re...\test_job_glue_runs_locally_aga3/fake_calib/mu_curve.json is not usable for ENGINE_LABEL=mock-fcfs on this hardware\n').returncode
+
+tests\test_slurm_scripts.py:119: AssertionError
+______ test_job_glue_runs_locally_against_the_mock_server[closed-18094] _______
+
+mode = 'closed', port = 18094
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_job_glue_runs_locally_aga4')
+
+    @pytest.mark.parametrize("mode,port", [("smoke", 18090), ("miss", 18091), ("cap", 18092), ("burst", 18093),
+                                           ("closed", 18094)])
+    def test_job_glue_runs_locally_against_the_mock_server(mode, port, tmp_path):
+        env = dict(os.environ, ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path), PORT=str(port), MULTS="1.0", SEEDS="0",
+                   POP_CHECK="6" if mode == "miss" else "")
+        r = subprocess.run([BASH, str(SLURM / "local_smoke.sh"), mode], capture_output=True, text=True, env=env, timeout=240,
+                           cwd=REPO)
+        assert r.returncode == 0, r.stdout[-3000:] + r.stderr[-3000:]     # a failed run makes the job exit non-zero
+        assert "0 failed" in r.stdout
+        assert "CANARY_RESULT" in r.stdout
+        logs = list((tmp_path / "nova_job_logs").iterdir())
+        assert len(logs) == 1
+        banner = (logs[0] / "banner.txt").read_text()
+        for needle in ("hostname:", "nvidia-smi", "commit:", "SEEDS=\"0\"", "ENGINE=mock", f"MODE={mode}", "research_question"):
+            assert needle in banner, needle
+        assert "vllm:num_requests_waiting" in (logs[0] / "probe.txt").read_text()
+        assert "agentload_c_closed.yaml" in banner and 'N_LIST="' in banner and "ARMS=" in banner      # Stage-C config + new params
+        ev = (logs[0] / "job_events.log").read_text()
+        assert "flush HTTP 200" in ev and "reset_and_verify: verified=true" in ev
+        assert "CANARY_RESULT" in (logs[0] / "canary.log").read_text()
+        assert "PROBE_SUMMARY" in (logs[0] / "probe.txt").read_text()
+        assert (logs[0] / "flag_check.txt").exists() and any(f.name.startswith("pip_freeze_") for f in logs[0].iterdir())
+        run_dirs = (logs[0] / f"run_dirs_{mode}.txt").read_text().split()
+        assert len(run_dirs) == N_RUNS[mode] and (Path(run_dirs[0]) / "meta.json").exists()
+        meta = json.loads((Path(run_dirs[0]) / "meta.json").read_text())
+        assert meta["engine_label"] == "mock-fcfs" and meta["seeds"] == [0] and meta["status"] == "finished"
+        assert meta["start_state_verified"] is True and "canary" in meta["start_state_detail"]
+        assert meta["content_salt"] == 1 and meta["output_feedback_configured"] == "server"
+        assert meta["outcome"]["output_ids_source_counts"] == {"server_ids": meta["outcome"]["requests_ok"]}
+        assert meta["outcome"]["prompt_tokens_mismatch"] == 0 and meta["force_close_connections"] is True
+        assert meta["outcome"]["requests_ok"] > 5
+        ana = {"smoke": ("agentload_analysis_windows", "windows.csv"),
+               "miss": ("agentload_analysis_miss", "calibration.json"), "cap": ("agentload_analysis_stable", "stable_runs.csv"),
+               "closed": ("agentload_analysis_closed", "mu_curve.json"),
+               "burst": ("agentload_analysis_burst", "burst_runs.csv")}[mode]
+        d = sorted((tmp_path / ana[0]).iterdir())[-1]
+        assert (d / ana[1]).exists()
+        if mode == "miss":       # the population-sensitivity run is analysed separately, not averaged into lambda_miss
+            pc = (logs[0] / "run_dirs_miss_popcheck.txt").read_text().split()
+            assert len(pc) == 1 and "popcheck" in pc[0] and pc[0] != run_dirs[0]
+            cal = json.loads((d / "calibration.json").read_text())
+            assert cal["n_runs"] == 1
+            d2 = sorted((tmp_path / "agentload_analysis_miss_popcheck").iterdir())[-1]
+            assert json.loads((d2 / "calibration.json").read_text())["n_runs"] == 1
+        if mode == "closed":
+            curve = json.loads((d / "mu_curve.json").read_text())
+            assert curve["primary_label"] == "mock-fcfs" and curve["cells"]["mock-fcfs"]["n"] == [2, 4]
+            assert curve["n_cap"] in (2, 4) and (d / "mu_points.csv").exists()
+            pts = pd.read_csv(d / "mu_points.csv")
+            assert sorted(pts["n"]) == [2, 4] and (pts["warmup_s"] == 3.0).all() and (pts["mu_sessions"] > 0).all()
+            assert [json.loads((Path(r) / "meta.json").read_text())["content_salt"] for r in run_dirs] == [1, 2]
+            for r in run_dirs:
+                assert json.loads((Path(r) / "meta.json").read_text())["start_state_verified"] in (True, False)
+        if mode == "burst":
+            br = pd.read_csv(d / "burst_runs.csv")
+            assert br["t_burst"].iloc[0] == 6.0 and sorted(br["arm"]) == ["burst", "capped"]       # NOBURST has no legacy verdict
+            metas = [json.loads((Path(r) / "meta.json").read_text()) for r in run_dirs]
+            assert [m["arm"] for m in metas] == ["burst", "noburst", "capped"]                     # ARMS order, same seed and rate
+            assert len({(m["seeds"][0], m["resolved_rate_sessions_per_s"], m["lambda_ref_resolved"]) for m in metas}) == 1
+            assert [m["content_salt"] for m in metas] == [1, 2, 3] and all(m["analysis_t_burst_s"] == 6.0 for m in metas)
+            assert [m["gate_n_cap_resolved"] for m in metas] == [None, None, 3]                    # fake Stage-C mu_curve.json: n_cap 3
+            assert metas[2]["outcome"]["gate"]["max_active_seen"] <= 3
+            # the pre-registration the job validated is bound into every run, with the E0a token reference (fake calibration: 1000 tokens/s)
+            assert len({m["prereg_sha256"] for m in metas}) == 1 and re.fullmatch(r"[0-9a-f]{64}", metas[0]["prereg_sha256"])
+            assert all(m["uncached_tokens_ref_resolved"] == 1000.0 and m["prereg_file"].endswith("prereg.yaml") for m in metas)
+            assert "PREREG_OK" in r.stdout and "PREREG_ALLOW_UNCOMMITTED=1" in r.stdout
+            plans = [pd.read_csv(Path(r) / "plan.csv") for r in run_dirs]
+            assert (plans[0]["origin"] == "burst").sum() == 10 and (plans[1]["origin"] == "burst").sum() == 0
+            d2 = sorted((tmp_path / "agentload_analysis_burst2").iterdir())[-1]
+            kv = json.loads((d2 / "kill_verdict_v2.json").read_text())
+            assert kv["cells"][0]["n_seeds_complete"] == 1 and kv["pairing_problems"] == {} and kv["guards"]["n_errors"] == 0
+            assert kv["prereg"]["provided"] and kv["prereg"]["valid"] and kv["pre_registered"] is False       # smoke prereg is not committed
+            assert kv["prereg"]["provenance"]["sha256"] == metas[0]["prereg_sha256"]
+            assert kv["kill_test_pass_decisive"] is None
+        # the mock server process must be gone
+>       assert subprocess.run(["pgrep", "-f", f"agentload.mock_server --port {port}"], capture_output=True).returncode != 0
+
+tests\test_slurm_scripts.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:548: in run
+    with Popen(*popenargs, **kwargs) as process:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:1026: in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Popen: returncode: None args: ['pgrep', '-f', 'agentload.mock_server --port...>
+args = 'pgrep -f "agentload.mock_server --port 18094"', executable = None
+preexec_fn = None, close_fds = False, pass_fds = (), cwd = None, env = None
+startupinfo = <subprocess.STARTUPINFO object at 0x000001830F815B20>
+creationflags = 0, shell = False, p2cread = Handle(3380), p2cwrite = -1
+c2pread = 14, c2pwrite = Handle(4064), errread = 17, errwrite = Handle(3696)
+unused_restore_signals = True, unused_gid = None, unused_gids = None
+unused_uid = None, unused_umask = -1, unused_start_new_session = False
+unused_process_group = -1
+
+    def _execute_child(self, args, executable, preexec_fn, close_fds,
+                       pass_fds, cwd, env,
+                       startupinfo, creationflags, shell,
+                       p2cread, p2cwrite,
+                       c2pread, c2pwrite,
+                       errread, errwrite,
+                       unused_restore_signals,
+                       unused_gid, unused_gids, unused_uid,
+                       unused_umask,
+                       unused_start_new_session, unused_process_group):
+        """Execute program (MS Windows version)"""
+    
+        assert not pass_fds, "pass_fds not supported on Windows."
+    
+        if isinstance(args, str):
+            pass
+        elif isinstance(args, bytes):
+            if shell:
+                raise TypeError('bytes args is not allowed on Windows')
+            args = list2cmdline([args])
+        elif isinstance(args, os.PathLike):
+            if shell:
+                raise TypeError('path-like args is not allowed when '
+                                'shell is true')
+            args = list2cmdline([args])
+        else:
+            args = list2cmdline(args)
+    
+        if executable is not None:
+            executable = os.fsdecode(executable)
+    
+        # Process startup details
+        if startupinfo is None:
+            startupinfo = STARTUPINFO()
+        else:
+            # bpo-34044: Copy STARTUPINFO since it is modified above,
+            # so the caller can reuse it multiple times.
+            startupinfo = startupinfo.copy()
+    
+        use_std_handles = -1 not in (p2cread, c2pwrite, errwrite)
+        if use_std_handles:
+            startupinfo.dwFlags |= _winapi.STARTF_USESTDHANDLES
+            startupinfo.hStdInput = p2cread
+            startupinfo.hStdOutput = c2pwrite
+            startupinfo.hStdError = errwrite
+    
+        attribute_list = startupinfo.lpAttributeList
+        have_handle_list = bool(attribute_list and
+                                "handle_list" in attribute_list and
+                                attribute_list["handle_list"])
+    
+        # If we were given an handle_list or need to create one
+        if have_handle_list or (use_std_handles and close_fds):
+            if attribute_list is None:
+                attribute_list = startupinfo.lpAttributeList = {}
+            handle_list = attribute_list["handle_list"] = \
+                list(attribute_list.get("handle_list", []))
+    
+            if use_std_handles:
+                handle_list += [int(p2cread), int(c2pwrite), int(errwrite)]
+    
+            handle_list[:] = self._filter_handle_list(handle_list)
+    
+            if handle_list:
+                if not close_fds:
+                    warnings.warn("startupinfo.lpAttributeList['handle_list'] "
+                                  "overriding close_fds", RuntimeWarning)
+    
+                # When using the handle_list we always request to inherit
+                # handles but the only handles that will be inherited are
+                # the ones in the handle_list
+                close_fds = False
+    
+        if shell:
+            startupinfo.dwFlags |= _winapi.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = _winapi.SW_HIDE
+            if not executable:
+                # gh-101283: without a fully-qualified path, before Windows
+                # checks the system directories, it first looks in the
+                # application directory, and also the current directory if
+                # NeedCurrentDirectoryForExePathW(ExeName) is true, so try
+                # to avoid executing unqualified "cmd.exe".
+                comspec = os.environ.get('ComSpec')
+                if not comspec:
+                    system_root = os.environ.get('SystemRoot', '')
+                    comspec = os.path.join(system_root, 'System32', 'cmd.exe')
+                    if not os.path.isabs(comspec):
+                        raise FileNotFoundError('shell not found: neither %ComSpec% nor %SystemRoot% is set')
+                if os.path.isabs(comspec):
+                    executable = comspec
+            else:
+                comspec = executable
+    
+            args = '{} /c "{}"'.format (comspec, args)
+    
+        if cwd is not None:
+            cwd = os.fsdecode(cwd)
+    
+        sys.audit("subprocess.Popen", executable, args, cwd, env)
+    
+        # Start the process
+        try:
+>           hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                                     # no special security
+                                     None, None,
+                                     int(not close_fds),
+                                     creationflags,
+                                     env,
+                                     cwd,
+                                     startupinfo)
+E                                    FileNotFoundError: [WinError 2] The system cannot find the file specified
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\subprocess.py:1538: FileNotFoundError
+____ test_cap_and_burst_refuse_hardware_that_differs_from_the_calibration _____
+
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_cap_and_burst_refuse_hard0')
+
+    def test_cap_and_burst_refuse_hardware_that_differs_from_the_calibration(tmp_path):
+        for i, mode in enumerate(("cap", "burst")):
+            r = _smoke(mode, tmp_path / mode, 18104 + i, FAKE_CALIB_HW="NVIDIA A100-SXM4-80GB, 81920 MiB")
+            assert r.returncode != 0, mode
+            # cap: the calibration check; burst: the capped arm's mu_curve.json and the pre-registration are refused even earlier
+            assert ("hardware differs from the calibration" in r.stderr) if mode == "cap" else ("hardware" in r.stdout + r.stderr), mode
+            jd = next((tmp_path / mode / "nova_job_logs").iterdir())
+            assert not (jd / f"run_dirs_{mode}.txt").exists()                                  # no run was started
+        for i, mode in enumerate(("cap", "burst")):
+            r = _smoke(mode, tmp_path / f"ok{mode}", 18106 + 10 * i, FAKE_CALIB_HW="NVIDIA A100-SXM4-80GB, 81920 MiB", ALLOW_HW_MISMATCH="1")
+>           assert r.returncode == 0 and "ALLOW_HW_MISMATCH=1" in r.stdout, (mode, r.stdout[-1500:] + r.stderr[-1500:])
+E           AssertionError: ('cap', '\\AppData\\Local\\T ... 
+E                 ^
+E             expected escape sequence of 8 hexadecimal numbers, but found \'s\'
+E               in "<u...8\\test_cap_and_burst_refuse_hard0\\okcap/nova_job_logs/local-20261024-030801)
+E             [03:08:12] stopping server pid 8984
+E             ')
+E           assert (1 == 0)
+E            +  where 1 = CompletedProcess(args=['C:\\Program Files\\Git\\usr\\bin\\bash.EXE', 'C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Re..._and_burst_refuse_hard0\\okcap/nova_job_logs/local-20261024-030801)\n[03:08:12] stopping server pid 8984\n', stderr='').returncode
+
+tests\test_slurm_scripts.py:435: AssertionError
+_____________ test_burst_refuses_to_start_without_a_valid_prereg ______________
+
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_burst_refuses_to_start_wi0')
+
+    def test_burst_refuses_to_start_without_a_valid_prereg(tmp_path):
+        """Review finding 4: mode_burst neither required nor recorded the prereg file."""
+        r = _smoke("burst", tmp_path / "none", 18121, PREREG_FILE="/nonexistent/prereg.yaml")
+>       assert r.returncode != 0 and "PREREG_FILE not found" in r.stderr
+E       AssertionError: assert (1 != 0 and 'PREREG_FILE not found' in 'FATAL: CAP_FILE C:\\Users\\Akshat\\AppData\\Local\\Temp\\pytest-of-Akshat\\pytest-8\\test_burst_refuses_to_start_wi0\\none/fake_calib/mu_curve.json is not usable for ENGINE_LABEL=mock-fcfs on this hardware\n')
+E        +  where 1 = CompletedProcess(args=['C:\\Program Files\\Git\\usr\\bin\\bash.EXE', 'C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Re...burst_refuses_to_start_wi0\\none/fake_calib/mu_curve.json is not usable for ENGINE_LABEL=mock-fcfs on this hardware\n').returncode
+E        +  and   'FATAL: CAP_FILE C:\\Users\\Akshat\\AppData\\Local\\Temp\\pytest-of-Akshat\\pytest-8\\test_burst_refuses_to_start_wi0\\none/fake_calib/mu_curve.json is not usable for ENGINE_LABEL=mock-fcfs on this hardware\n' = CompletedProcess(args=['C:\\Program Files\\Git\\usr\\bin\\bash.EXE', 'C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Re...burst_refuses_to_start_wi0\\none/fake_calib/mu_curve.json is not usable for ENGINE_LABEL=mock-fcfs on this hardware\n').stderr
+
+tests\test_slurm_scripts.py:441: AssertionError
+____ test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught _____
+
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-8/test_a_flush_that_answers_200_0')
+
+    def test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught(tmp_path):
+        r = _smoke("cap", tmp_path / "strict", 18107, MOCK_EXTRA="--set flush_is_noop=true")
+        assert r.returncode != 0 and "start-state check did not pass" in r.stderr
+        jd = next((tmp_path / "strict" / "nova_job_logs").iterdir())
+        assert "start state NOT verified" in (jd / "job_events.log").read_text()
+        assert not (jd / "run_dirs_cap.txt").exists()                                          # died before any run
+        res = json.loads((jd / "canary_1_check.json").read_text())
+        assert res["exit_code"] == 1 and "still cached after flush" in res["reason"]
+        # STRICT_FLUSH=0: the job goes on, but the run says in its meta.json that its start state was NOT verified
+        r = _smoke("cap", tmp_path / "lax", 18108, MOCK_EXTRA="--set flush_is_noop=true", STRICT_FLUSH="0")
+>       assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
+E       AssertionError: ength", "token_ids": [93354, 19804, 97926, 30118, 62383, 50174, 38358, 8854]}], "usage": {"prompt_tokens": 64, "completion_tokens": 8, "total_tokens": 72, "prompt_tokens_details": {"cached_tokens": 63}}}
+E         --- /metrics HTTP 200; 6 names with prefixes ['vllm:', 'sglang:']:
+E         vllm:e2e_request_latency_seconds_count
+E         vllm:kv_cache_usage_perc
+E         vllm:num_requests_running
+E         vllm:num_requests_waiting
+E         vllm:prefix_cache_hits_total
+E         vllm:prefix_cache_queries_total
+E         PROBE_SUMMARY {"metrics_http": 200, "n_metric_names": 6, "output_ids_path": "choices.0.token_ids", "output_ids_present": true, "prompt_tokens_sent": 64, "request1_cached_source": "usage.prompt_tokens_details", "request1_cached_tokens": 0, "request1_http": 200, "request1_prompt_tokens": 64, "request2_cached_source": "usage.prompt_tokens_details", "request2_cached_tokens": 63, "request2_http": 200, "request2_prompt_tokens": 64, "return_token_ids_http": 200}
+E         CANARY_RESULT {"cache_expected": true, "exit_code": 0, "first": {"cached_source": "usage.prompt_tokens_details", "cached_tokens": 0, "http": 200, "prompt_tokens": 1024}, "idle": {"idle": true, "kv_in_use": {"metric": "vllm:kv_cache_usage_perc", "value": 0.0}, "n_categories_known": 3, "running": {"metric": "vllm:num_requests_running", "value": 0.0}, "waited_s": 0.0, "waiting": {"metric": "vllm:num_
+E         CANARY_RESULT {"after_flush": {"cached_source": "usage.prompt_tokens_details", "cached_tokens": 1023, "http": 200, "prompt_tokens": 1024}, "cache_expected": true, "exit_code": 1, "idle": {"idle": true, "kv_in_use": {"metric": "vllm:kv_cache_usage_perc", "value": 0.0}, "n_categories_known": 3, "running": {"metric": "vllm:num_requests_running", "value": 0.0}, "waited_s": 0.0, "waiting": {"metric": "
+E         [03:08:47] WARNING: start state NOT verified: canary 1: prime rc=0 check rc=1 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_1_*.json
+E         hardware mismatch: calibration 'Apple M3 Max CPU (simulation)' vs this job 'NVIDIA GeForce RTX 5060, 8151 MiB'
+E         [03:08:48] stopping server pid 9338
+E         FATAL: this job's hardware differs from the calibration's; lambda_miss does not transfer across GPU variants
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['C:\\Program Files\\Git\\usr\\bin\\bash.EXE', 'C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Re...tderr="FATAL: this job's hardware differs from the calibration's; lambda_miss does not transfer across GPU variants\n").returncode
+
+tests\test_slurm_scripts.py:459: AssertionError
+============================== warnings summary ===============================
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:64
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:85: 6 warnings
+tests/test_mech_runner.py: 25 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:89: 6 warnings
+tests/test_mech_runner.py: 25 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:45
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2010: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.space          = oneOf(self._space_widths)("space")
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2012: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.style_literal  = oneOf(
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2020: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    )("sym").leaveWhitespace()
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2024: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.start_group    = Optional(r"\math" + oneOf(self._fontnames)("font")) + "{"
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2027: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.delim          = oneOf(self._delims)
+
+tests/test_mech_runner.py: 47 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:1984: PyparsingDeprecationWarning: 'setName' deprecated - use 'set_name'
+    val.setName(key)
+
+tests/test_mech_runner.py: 44 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:1987: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    val.setParseAction(getattr(self, key))
+
+tests/test_mech_runner.py: 16 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:1748: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    return Empty().setParseAction(raise_error)
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2088: PyparsingDeprecationWarning: 'endQuoteChar' argument is deprecated, use 'end_quote_char'
+    p.text = cmd(r"\text", QuotedString('{', '\\', endQuoteChar="}"))
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2097: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    + OneOrMore(oneOf(["_", "^"]) - p.placeable)("subsuper")
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2146: PyparsingDeprecationWarning: 'unquoteResults' argument is deprecated, use 'unquote_results'
+    p.math_string   = QuotedString('$', '\\', unquoteResults=False)
+
+tests/test_mech_runner.py::test_quick_phase_mech_escape_robust_write_provenance_and_never_overwrite
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2147: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    p.non_math      = Regex(r"(?:(?:\\[$])|[^$])*").leaveWhitespace()
+
+tests/test_mech_runner.py: 54 warnings
+tests/test_prefix_meta.py: 24 warnings
+tests/test_r4.py: 89 warnings
+tests/test_r4_amendment.py: 380 warnings
+tests/test_r5_stage3_runner.py: 108 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2170: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    result = self._expression.parseString(s)
+
+tests/test_mech_runner.py: 54 warnings
+tests/test_prefix_meta.py: 30 warnings
+tests/test_r4.py: 104 warnings
+tests/test_r4_amendment.py: 470 warnings
+tests/test_r5_stage3_runner.py: 126 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2197: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+
+tests/test_mech_runner.py: 54 warnings
+tests/test_prefix_meta.py: 30 warnings
+tests/test_r4.py: 104 warnings
+tests/test_r4_amendment.py: 470 warnings
+tests/test_r5_stage3_runner.py: 126 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\pyparsing\util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+    return fn(self, *args, **kwargs)
+
+tests/test_mech_runner.py: 54 warnings
+tests/test_prefix_meta.py: 24 warnings
+tests/test_r4.py: 89 warnings
+tests/test_r4_amendment.py: 380 warnings
+tests/test_r5_stage3_runner.py: 108 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2178: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    ParserElement.resetCache()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_agentload_e2e.py::test_burst_timing_in_the_log - assert (Fa...
+FAILED tests/test_agentload_e2e.py::test_sessions_and_planned_turns - assert ...
+FAILED tests/test_agentload_gate.py::test_gate_waits_are_logged_and_fifo - as...
+FAILED tests/test_agentload_robustness.py::test_sigterm_finalizes_meta_and_sessions
+FAILED tests/test_agentload_robustness.py::test_raise_nofile_reports_what_happened
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_aging10_cold100_s7413_H6000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_burst60_lpm_s7412_H9000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_closed_fcfs_n32_s7400_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_nobatch_closed_fcfs_n32_s7415_H3000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_ttl_cold60_s7414_H6000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_cap20_cold300_lpm_s7411_H9000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_fcfs_n40_s7403_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_lpm_n24_s7404_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_burst60_fcfs_s7410_H9000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_fcfs_n40_s7401_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_lpm_n24_s7402_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_whole_victim_n40_s7405_H6000]
+FAILED tests/test_mech_runner.py::test_pre_full_run_table_marks_runs_before_and_after_the_amendment_commit
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[burst50_fcfs_lru_s2100_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[cap20_cold300_lpm_lru_s2201_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[cap28_cold300_fcfs_lru_s2200_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_lru_n28_s2000_H35000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_random_n32_s2000_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[closed_lpm_lru_n24_s2001_H35000]
+FAILED tests/test_slurm_scripts.py::test_job_glue_runs_locally_against_the_mock_server[smoke-18090]
+FAILED tests/test_slurm_scripts.py::test_job_glue_runs_locally_against_the_mock_server[miss-18091]
+FAILED tests/test_slurm_scripts.py::test_job_glue_runs_locally_against_the_mock_server[cap-18092]
+FAILED tests/test_slurm_scripts.py::test_job_glue_runs_locally_against_the_mock_server[burst-18093]
+FAILED tests/test_slurm_scripts.py::test_job_glue_runs_locally_against_the_mock_server[closed-18094]
+FAILED tests/test_slurm_scripts.py::test_cap_and_burst_refuse_hardware_that_differs_from_the_calibration
+FAILED tests/test_slurm_scripts.py::test_burst_refuses_to_start_without_a_valid_prereg
+FAILED tests/test_slurm_scripts.py::test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught
+32 failed, 1005 passed, 2 skipped, 3058 warnings in 858.67s (0:14:18)
