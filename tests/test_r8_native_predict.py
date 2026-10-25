@@ -137,6 +137,23 @@ def test_the_burst_sensitivity_counts_the_arms_per_multiple_and_size():
     assert t["stuck (hit < 0.2)"].iloc[2].startswith("10/10") and t["classes by seed"].iloc[2] == "TTTTTIIIII"
 
 
+def test_the_pairs_and_burst_size_stages_are_compared_run_by_run():
+    def frame(arms, mult, d=0.0):
+        rows = []
+        for arm in arms:
+            for seed in range(3):
+                rows.append({"mult": mult, "arm": arm, "seed": seed, "hit": 0.5 + 0.01 * seed + d, "backlog": 10.0 * seed, "slope": 0.001 * seed, "token_rate": 1000.0 + seed})
+        return pd.DataFrame(rows)
+    pairs = pd.concat([frame(["burst", "no_burst", "burst_cap"], 2.85), frame(["burst", "no_burst", "burst_cap"], 4.65)])
+    sizes = pd.concat([frame(["no_burst", "burst_200", "burst_400"], 2.85), frame(["no_burst", "burst_200", "burst_400"], 4.65)])
+    c = R8.pairs_vs_sizes(pairs, sizes, 200)
+    assert c["identical"] and c["n_compared"] == c["n_expected"] == 12 and set(c["max_abs_diff"]) == {"hit", "backlog", "slope", "token_rate"}
+    sizes2 = sizes.copy()
+    sizes2.loc[(sizes2["arm"] == "burst_200") & (sizes2["mult"] == 4.65) & (sizes2["seed"] == 1), "hit"] += 1e-9
+    c2 = R8.pairs_vs_sizes(pairs, sizes2, 200)
+    assert not c2["identical"] and c2["max_abs_diff"]["hit"] == pytest.approx(1e-9, rel=1e-3)
+
+
 # ----------------------------------------------------------------------------- end to end on a tiny scaled-down copy of the REAL spec
 def tiny_spec(tmp_path: Path) -> Path:
     raw = load(SPEC)
@@ -203,6 +220,7 @@ def test_both_modes_all_stages_the_sensitivity_the_reports_and_the_assembly_run_
         assert h["B1n"]["lambda_miss_turns"] > 0.05 and h["B1n"]["busy"] > 0.9 and h["B4n"]["peak_n"] in (8, 16, 32, 64) and h["B4n"]["cap_n"] <= h["B4n"]["peak_n"]
         assert set(h["B2n_e0b"]) == {"1.5", "2.5", "3.5", "pooled"} and h["B3n"]["points"].keys() == {"1.5", "2"}
         assert set(h["B3n_burst_sensitivity"]) == {"1.5", "2"} and set(h["B3n_burst_sensitivity"]["1.5"]["per_size"]) == {"60", "120"}
+    assert "Consistency of two code paths" in text and head["mixed"]["consistency_pairs_vs_burst_sizes"]["identical"] and head["separate"]["consistency_pairs_vs_burst_sizes"]["identical"]
     prov = (d / "provenance.md").read_text(encoding="utf-8")
     assert "**mixed** (`engine.batching` = `mixed`" in prov and "**separate** (`engine.batching` = `separate_prefill_priority`" in prov
     # (in-process runs record pytest's argv, so the overrides column is what carries the --set values here)

@@ -108,6 +108,21 @@ def burst_sensitivity(cl: pd.DataFrame, sizes: Sequence[int], hit_below: float, 
     return pd.DataFrame(rows)
 
 
+def pairs_vs_sizes(pairs: pd.DataFrame, sizes: pd.DataFrame, burst_n: int) -> Dict[str, Any]:
+    """Consistency check between two code paths: the BURST and NOBURST arms of the pairs stage and the ``burst_n``-session and NOBURST arms of the burst-size stage
+    (same spec, seeds and test points, so the runs must be identical). Returns the number of (point, arm, seed) runs compared and the largest absolute difference of
+    hit, backlog, slope and token rate."""
+    cols = ["hit", "backlog", "slope", "token_rate"]
+    a = pairs[pairs["arm"].isin(["burst", "no_burst"])][["mult", "arm", "seed"] + cols].copy()
+    b = sizes[sizes["arm"].isin([f"burst_{int(burst_n)}", "no_burst"])][["mult", "arm", "seed"] + cols].copy()
+    b["arm"] = b["arm"].replace({f"burst_{int(burst_n)}": "burst"})
+    for d in (a, b):
+        d["mult"] = d["mult"].round(6)
+    m = a.merge(b, on=["mult", "arm", "seed"], suffixes=("_pairs", "_sizes"))
+    diffs = {c: float((m[c + "_pairs"] - m[c + "_sizes"]).abs().max()) if len(m) else float("nan") for c in cols}
+    return {"n_compared": int(len(m)), "n_expected": int(min(len(a), len(b))), "max_abs_diff": diffs, "identical": bool(len(m) == len(a) == len(b) and all(v == 0.0 for v in diffs.values()))}
+
+
 def test_points(out_root: str) -> List[float]:
     """The B3n test points (multiples of lambda_miss) of the LATEST edge stage under ``out_root``."""
     sm = stage_summary(out_root, "edge")["workloads"]
@@ -202,6 +217,12 @@ def mode_tables(S: Stages, r7: dict, r8: dict, key: str) -> tuple[str, Dict[str,
         cl = S.csv("burst_sizes", "classified_runs.csv")
         bs = burst_sensitivity(cl, [int(s) for s in r7["burst_sizes"]["sizes"]], hit_below, z)
         md.append("Compact view (declared TRAPPED rule, INDETERMINATE = hit < %g but not TRAPPED, RECOVERED = hit > 0.8 and backlog < 20):\n\n" % hit_below + df_md(bs, "{:.4g}") + "\n")
+        if S.ok("pairs"):
+            cons = pairs_vs_sizes(S.csv("pairs", "classified_runs.csv"), cl, int(r7["pairs"]["burst_n"]))
+            head["consistency_pairs_vs_burst_sizes"] = cons
+            md.append("Consistency of two code paths: the BURST (%d sessions) and NOBURST arms of the paired-arm stage against the same arms of this stage: %d of %d runs compared, "
+                      "largest absolute difference of hit / backlog / slope / token rate = %s, identical: **%s**.\n" % (
+                          int(r7["pairs"]["burst_n"]), cons["n_compared"], cons["n_expected"], " / ".join(f"{v:.3g}" for v in cons["max_abs_diff"].values()), cons["identical"]))
         sm = S.summary("burst_sizes")["by_mult"]
         head["B3n_burst_sensitivity"] = {m: {"lam": v["lam"], "need": v["need"], "per_size": v["per_size"], "noburst_good": v["noburst_good"]} for m, v in sm.items()}
     else:
