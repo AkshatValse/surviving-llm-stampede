@@ -161,6 +161,7 @@ def test_every_stage_and_the_report_of_the_traces_spec_run_end_to_end_on_a_tiny_
     heads = [ln for ln in text.splitlines() if ln.startswith("### ")]
     assert [h.split(".")[0] for h in heads] == ["### 1", "### 2", "### 3", "### 4", "### 5"]            # consecutive; the stages that are not declared are absent
     assert not any(w in text for w in ("Horizon", "Low-lambda", "Burst-size", "NOT RUN"))
+    assert "### 4. Paired-arm test at the two window points (2 seeds)" in text                           # the seed count comes from the effective spec, not a constant
     assert "EMPTY window" in text and "TraceLab per-turn (empirical)" in text and "E[T]" in text           # E[T] differs across the workloads, so it is shown
     prov = (d / "provenance.md").read_text(encoding="utf-8")
     assert "`" + str(spec).replace("\\", "/") in prov.replace("\\", "/") or "tiny_traces.yaml" in prov

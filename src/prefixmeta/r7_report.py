@@ -326,7 +326,7 @@ def build_tables(S: Stages, r7: dict) -> str:
     sections = (("lambda_miss", "Workloads and lambda_miss (B1: cache off, closed POP 32, window [900, 2700) s)", lambda: t_workloads(S, r7)),
                 ("curves", "Closed curve mu(n) (cache on, seeds 0-2) and the cap", lambda: t_curves(S, r7)),
                 ("edge", "From-empty stability edge and the measured window", lambda: t_edge(S, r7, z)),
-                ("pairs", "Paired-arm test at the two window points (10 seeds)", lambda: t_pairs(S, r7, z)),
+                ("pairs", "Paired-arm test at the two window points (%d seeds)" % len(r7["pairs"]["seeds"]), lambda: t_pairs(S, r7, z)),
                 ("burst_sizes", "Burst-size sweep (record workload, 10 seeds)", lambda: t_burst_sizes(S, r7, z)),
                 ("horizon", "Horizon: 30000 s after the burst (record workload, 10 seeds)", lambda: t_horizon(S, r7, z)),
                 ("lowlam", "Low-lambda fragility (record workload, 1.35 x lambda_miss, 20 seeds, BURST)", lambda: t_lowlam(S, r7, z)),
@@ -364,7 +364,7 @@ def headline_numbers(S: Stages) -> Dict[str, Any]:
 
 
 def cmd_report(spec_path: Path, args: argparse.Namespace, repo_dir: Path) -> Path:
-    cfg = load_probe_config(str(spec_path), repo_dir)
+    cfg = load_probe_config(str(spec_path), repo_dir, args.set)               # the same dotted overrides as the stage runs (e.g. r7.pairs.seeds)
     r7 = cfg["r7"]
     S = Stages(args.out_root, r7.get("stages"))
     cfg_eff = {k: v for k, v in cfg.items() if k != "preregistration_file"}      # not a registered run: do not copy a pre-registration into the report dir
