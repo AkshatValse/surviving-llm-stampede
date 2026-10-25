@@ -75,22 +75,48 @@ def ks_distance(x, cdf) -> float:
 
 
 # ---------------------------------------------------------------- lognormal
+def _ks_prepared(x):
+    """Precompute distinct values and ECDF levels on both sides so many CDFs can be tested cheaply."""
+    x = np.sort(np.asarray(x, dtype=float))
+    n = x.size
+    u, idx_first, counts = np.unique(x, return_index=True, return_counts=True)
+    return u, (idx_first + counts) / n, idx_first / n
+
+
+def _ks_from_prepared(prep, F) -> float:
+    u, upper, lower = prep
+    return float(max(np.max(np.abs(upper - F)), np.max(np.abs(lower - F))))
+
+
 def fit_lognormal(x, floor: float) -> dict:
-    """MLE lognormal on max(x, floor). Reports (mu, sigma) of log x, the implied mean and CV, KS distance and the
-    moment-matched variant (same sample mean and CV: what WorkloadParams.tool_time_dist='lognormal' consumes)."""
+    """MLE lognormal on max(x, floor). Reports (mu, sigma) of log x, the implied mean and CV and the KS distance, plus
+    `mean_preserving`: the lognormal with the SAMPLE MEAN that has the KS-optimal CV (what the simulator's
+    tool_time_dist='lognormal' takes as tool_time_mean_s / tool_time_cv; the mean fixes the idle-session count by Little's law)
+    and `moment_matched` (same sample mean and CV)."""
     x = np.maximum(np.asarray(x, dtype=float), floor)
     y = np.log(x)
     mu, sg = float(y.mean()), float(y.std())
-    D = ks_distance(x, lambda v: stats.norm.cdf((np.log(v) - mu) / sg))
+    prep = _ks_prepared(x)
+    u = prep[0]
+    lu = np.log(u)
+    D = _ks_from_prepared(prep, stats.norm.cdf((lu - mu) / sg))
     mean_fit = float(np.exp(mu + 0.5 * sg * sg))
     cv_fit = float(np.sqrt(np.expm1(sg * sg)))
     m, s = float(x.mean()), float(x.std(ddof=1))
     cvm = s / m
     s2 = np.log1p(cvm * cvm)
     mu_m, sg_m = np.log(m) - 0.5 * s2, np.sqrt(s2)
-    Dm = ks_distance(x, lambda v: stats.norm.cdf((np.log(v) - mu_m) / sg_m))
+    Dm = _ks_from_prepared(prep, stats.norm.cdf((lu - mu_m) / sg_m))
+    best = None
+    for cv in np.geomspace(0.1, 60.0, 300):
+        s2c = np.log1p(cv * cv)
+        sgc, muc = np.sqrt(s2c), np.log(m) - 0.5 * s2c
+        d = _ks_from_prepared(prep, stats.norm.cdf((lu - muc) / sgc))
+        if best is None or d < best[0]:
+            best = (d, float(cv), float(muc), float(sgc))
     return {"mu": mu, "sigma": sg, "mean_implied": mean_fit, "cv_implied": cv_fit, "ks": D,
-            "moment_matched": {"mean": m, "cv": cvm, "mu": float(mu_m), "sigma": float(sg_m), "ks": Dm}, "floor_s": floor}
+            "moment_matched": {"mean": m, "cv": cvm, "mu": float(mu_m), "sigma": float(sg_m), "ks": Dm},
+            "mean_preserving": {"mean": m, "cv": best[1], "mu": best[2], "sigma": best[3], "ks": best[0]}, "floor_s": floor}
 
 
 # ---------------------------------------------------------------- two-component lognormal mixture (EM on log x)

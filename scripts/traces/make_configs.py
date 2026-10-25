@@ -92,9 +92,11 @@ def main() -> None:
     w("workload:")
     for k, v in base:
         w(f"  {k}: {v}")
-    w(f"  tool_time_mean_s: {ln['mean_implied']:.4g}          # MLE lognormal fitted to the series capped at {cfg['analysis']['cap_s']:.0f} s (sample mean of the capped series: {cap['mean']:.4g} s)")
+    mp = ln["mean_preserving"]
+    w(f"  tool_time_mean_s: {mp['mean']:.4g}          # sample mean of the series capped at {cfg['analysis']['cap_s']:.0f} s (uncapped mean {ser['raw']['mean']:.4g} s)")
     w("  tool_time_dist: lognormal")
-    w(f"  tool_time_cv: {ln['cv_implied']:.4g}               # implied by the MLE sigma = {ln['sigma']:.4g} (log s); KS distance to the data {ln['ks']:.3f}")
+    w(f"  tool_time_cv: {mp['cv']:.4g}               # the CV that minimises the KS distance at this mean: KS {mp['ks']:.3f}")
+    w(f"  # alternatives: MLE lognormal mean {ln['mean_implied']:.4g} s, CV {ln['cv_implied']:.4g} (KS {ln['ks']:.3f}); moment-matched CV {ln['moment_matched']['cv']:.4g} (KS {ln['moment_matched']['ks']:.3f})")
     w("")
     w("workload_empirical:             # NEEDS the other agent's code")
     for k, v in base:

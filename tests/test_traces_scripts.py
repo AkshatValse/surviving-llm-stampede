@@ -58,6 +58,9 @@ def test_lognormal_fit_recovers_parameters():
     assert f["sigma"] == pytest.approx(1.3, abs=0.02)
     assert f["ks"] < 0.01
     assert f["mean_implied"] == pytest.approx(np.exp(0.7 + 1.3 ** 2 / 2), rel=0.02)
+    mp = f["mean_preserving"]                                  # keeps the sample mean; for lognormal data the KS-optimal CV is the true one
+    assert mp["mean"] == pytest.approx(x.mean(), rel=1e-9)
+    assert mp["cv"] == pytest.approx(np.sqrt(np.expm1(1.3 ** 2)), rel=0.2) and mp["ks"] < 0.02
 
 
 def test_mixture_fit_recovers_two_components_and_beats_single_lognormal():

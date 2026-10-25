@@ -27,7 +27,7 @@ def f(x, nd=3):
 def md(rows, header):
     out = ["| " + " | ".join(header) + " |", "|" + "|".join("---" for _ in header) + "|"]
     for r in rows:
-        out.append("| " + " | ".join(str(c) for c in r) + " |")
+        out.append("| " + " | ".join(str(c).replace("|", "/") for c in r) + " |")
     return "\n".join(out)
 
 
@@ -55,12 +55,13 @@ def fit_table(S, names, labels=None):
             continue
         ln, lp, mp = s["lognormal_capped600"], s["lognormal_pos_capped600"], s["mixture2_pos_capped600"]
         c1, c2 = mp["components"]
+        mpr = ln["mean_preserving"]
         rows.append([labels.get(n, n) if labels else n, f"{100 * s['atom_frac_lt_floor']:.1f}%",
-                     f"{ln['mu']:.2f} / {ln['sigma']:.2f}", f"{ln['ks']:.3f}",
+                     f"{ln['mu']:.2f} / {ln['sigma']:.2f}", f"{ln['ks']:.3f}", f"{mpr['mean']:.3g} s, {mpr['cv']:.3g}, {mpr['ks']:.3f}",
                      f"{lp['mu']:.2f} / {lp['sigma']:.2f}", f"{lp['ks']:.3f}",
                      f"{c1['weight']:.2f}: {c1['median_s']:.3g} s, {c1['sigma']:.2f}", f"{c2['weight']:.2f}: {c2['median_s']:.3g} s, {c2['sigma']:.2f}",
                      f"{mp['ks']:.3f}", f"{s['ks_exp5']:.3f}", f"{s['ks_exp_meanmatched_capped']:.3f}"])
-    return md(rows, ["series (capped 600 s)", "atom <10 ms", "LN mu / sigma (all)", "KS", "LN mu / sigma (positive part)", "KS",
+    return md(rows, ["series (capped 600 s)", "atom <10 ms", "LN MLE mu / sigma (all)", "KS", "mean-preserving LN: mean, CV, KS", "LN mu / sigma (positive part)", "KS",
                      "mix comp 1: weight: median, sigma", "mix comp 2", "KS mix", "KS Exp(5 s)", "KS Exp(mean-matched)"])
 
 
