@@ -1,0 +1,46 @@
+# Real agent-trace workload statistics (referee objection 3: the simulator's tool times are synthetic).
+# Spec for scripts/traces/{fetch,make_sample_list,parse_tracelab,parse_mini_swe,analyze,make_configs,write_meta}.py,
+# driven end to end by scripts/traces/run_all.sh. Committed BEFORE the final runs that use it; the commit hash of that
+# final run is recorded in results/traces_summary/<source>/meta.json.
+#
+#   bash scripts/traces/run_all.sh            (from the repo root; needs results/traces_raw/<source>/ downloaded, see notes/lit/AGENT_TRACES.md)
+#
+# Downloaded files are untrusted data: each source lives in its own directory under results/traces_raw/ (gitignored),
+# nothing in them is executed or imported, and they are only read by the parse scripts (python -I, path as argument).
+
+analysis:
+  seed: 0                          # subsampling of the EM fits (<= 100 000 points); everything else is deterministic
+  cap_s: 600.0                     # "capped" statistics: durations above this are set to cap_s (Claude Code Bash maximum timeout)
+  floor_s: 0.01                    # durations below 10 ms are raised to 10 ms for the log-scale fits
+  exp_ref_mean_s: 5.0              # the simulator's current assumption Exp(5 s), for KS comparison
+  max_turns_workload_of_record: 60 # WorkloadParams.max_turns of the workload of record (2000 / +550 / 100 tokens, mean_turns 15)
+
+sources:
+  tracelab:
+    description: SyFI TraceLab public coding-agent trace (Claude Code + Codex CLI sessions of 43 pseudonymous users, 2026)
+    repo: https://github.com/uw-syfi/TraceLab
+    release: v0.0.2
+    asset: syfi_coding_trace.jsonl.gz
+    url: https://github.com/uw-syfi/TraceLab/releases/download/v0.0.2/syfi_coding_trace.jsonl.gz
+    size_bytes: 100939722
+    sha256: 11ce51ec0a25e3d1d95b025bca2f7d1647e47571eb7cc968acd5fc64d4b4fb65   # GitHub asset digest; the download is verified against it
+    licence: "data CC BY 4.0, code Apache-2.0 (README of the repository)"
+    raw_dir: results/traces_raw/tracelab_v0.0.2
+    norm_dir: results/traces_norm/tracelab
+    summary_dir: results/traces_summary/tracelab
+  mini_swe_v2:
+    description: mini-SWE-agent v2.0.0 trajectories, SWE-bench Verified 'bash-only' leaderboard runs (Feb 2026); seeded sample
+    repo: https://github.com/SWE-bench/experiments
+    s3_bucket: s3://swe-bench-submissions/bash-only/        # public, listable; <run>/trajs/<instance>/<instance>.traj.json
+    runs:
+      - 20260217_mini-v2.0.0_claude-4-5-sonnet-high
+      - 20260217_mini-v2.0.0_gpt-5-2-high
+      - 20260217_mini-v2.0.0_kimi-k2-5-high
+      - 20260217_mini-v2.0.0_claude-4-5-opus-high
+      - 20260217_mini-v2.0.0_gpt-5-mini
+    n_instances_per_run: 100         # the SAME 100 instances in every run (paired), drawn from the 500 SWE-bench Verified ids
+    sample_seed: 20261024
+    licence: "no licence file in SWE-bench/experiments; mini-swe-agent software is MIT; trajectories are published for reproducibility"
+    raw_dir: results/traces_raw/mini_swe_v2
+    norm_dir: results/traces_norm/mini_swe_v2
+    summary_dir: results/traces_summary/mini_swe_v2
