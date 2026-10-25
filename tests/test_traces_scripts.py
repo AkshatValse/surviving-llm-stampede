@@ -19,7 +19,8 @@ SCRIPTS = ROOT / "scripts" / "traces"
 sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(ROOT / "src"))
 
-from common import (fit_lognormal, fit_lognormal_mixture, geometric_mean_param, ks_distance, quantile_table,  # noqa: E402
+from common import (empirical_moments, fit_lognormal, fit_lognormal_mixture, geometric_mean_param, ks_distance, quantile_levels,  # noqa: E402
+                    quantile_table, two_point_match,
                     tool_class)
 
 
@@ -181,3 +182,52 @@ def test_parse_mini_swe_synthetic_chat_and_responses_formats(tmp_path):
         assert [float(r["llm_s"]) for r in rs[1:]] == pytest.approx([2.6, 2.0, 3.5])  # 103.0-100.4, 165.0-163.0, 170.0-166.5
         e = [x for x in eps if x["session"].startswith(model)][0]
         assert (e["n_rounds"], e["n_tool_rounds"], e["n_timeouts"], e["exit_status"]) == ("4", "3", "1", "Submitted")
+
+
+# ------------------------------------------------------------------------------------------------ simulator-facing helpers and configs
+def test_quantile_levels_are_valid_workload_levels():
+    lv = quantile_levels()
+    assert lv[0] == 0.0 and lv[-1] == 1.0 and len(lv) == 250
+    assert all(b > a for a, b in zip(lv[:-1], lv[1:]))
+    assert 0.5 in lv and 0.99 in lv and lv[-2] > 0.99998          # body on a 0.5% grid, dense tail down to 1 - 2e-5
+
+
+def test_empirical_moments_by_hand():
+    # inverse CDF linear on [0,1/2] from 0 to 2 and on [1/2,1] from 2 to 10: E = 0.5*1 + 0.5*6 = 3.5, E[x^2] = 0.5*(4/3) + 0.5*(4+20+100)/3
+    m, cv = empirical_moments([0.0, 0.5, 1.0], [0.0, 2.0, 10.0])
+    assert m == pytest.approx(3.5)
+    m2 = 0.5 * (0 + 0 + 4) / 3 + 0.5 * (4 + 20 + 100) / 3
+    assert cv == pytest.approx(np.sqrt(m2 - 3.5 ** 2) / 3.5)
+
+
+def test_empirical_moments_agree_with_the_simulator_when_it_has_the_option():
+    wl = pytest.importorskip("prefixmeta.workload")
+    if not hasattr(wl, "empirical_moments"):
+        pytest.skip("prefixmeta.workload without the round-7 tool-time laws (branch r7/robustness, 8c08883)")
+    lv, q = quantile_levels(), np.sort(np.random.default_rng(0).lognormal(0.0, 2.0, len(quantile_levels())))
+    assert empirical_moments(lv, q) == pytest.approx(wl.empirical_moments(list(q), list(lv)), rel=1e-12)
+
+
+def test_two_point_match_reproduces_mean_and_cv():
+    t = two_point_match(8.475, 4.658, lo=0.237)
+    assert t["mean"] == pytest.approx(8.475) and t["cv"] == pytest.approx(4.658) and 0 < t["p_hi"] < 0.1 and t["hi"] > 100
+    with pytest.raises(ValueError):
+        two_point_match(1.0, 1.0, lo=2.0)
+
+
+@pytest.mark.parametrize("name", ["tracelab", "mini_swe_v2"])
+def test_proposed_workload_configs_load_into_workload_params(name):
+    import yaml
+    d = yaml.safe_load((ROOT / "configs" / f"workload_trace_{name}.yaml").read_text(encoding="utf-8"))
+    wl = pytest.importorskip("prefixmeta.workload")
+    if not hasattr(wl.WorkloadParams, "__dataclass_fields__") or "tool_time_p_hi" not in wl.WorkloadParams.__dataclass_fields__:
+        # the round-6 code takes only the lognormal section; the others use the round-7 field names
+        wp = wl.WorkloadParams.from_dict(d["workload"])
+        assert wp.tool_time_dist == "lognormal" and wp.tool_time_mean_s > 0
+        pytest.skip("prefixmeta.workload without the round-7 tool-time laws (branch r7/robustness, 8c08883): only the lognormal section was checked")
+    for key, sec in d.items():
+        wp = wl.WorkloadParams.from_dict(sec)
+        mean, cv = wl.tool_time_moments(wp)
+        assert mean == pytest.approx(sec["tool_time_mean_s"], rel=2e-4) and cv == pytest.approx(sec["tool_time_cv"], rel=2e-3), key
+        if wp.tool_time_dist == "empirical":
+            assert len(wp.tool_time_quantiles) == len(wp.tool_time_quantile_levels) == 250

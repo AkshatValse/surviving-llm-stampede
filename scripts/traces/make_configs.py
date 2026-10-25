@@ -175,9 +175,9 @@ def main() -> None:
     w(f"  tool_time_mean_s: {two['mean']:.4g}          # = {sample_mean:.4g}, the sample mean (unused by the sampler when tool_time_p_hi is given)")
     w("  tool_time_dist: bimodal")
     w(f"  tool_time_cv: {two['cv']:.4g}              # = {sample_cv:.4g}, the sample CV (unused by the sampler)")
-    w(f"  tool_time_lo_s: {two['lo']:.4g}")
-    w(f"  tool_time_hi_s: {two['hi']:.4g}")
-    w(f"  tool_time_p_hi: {two['p_hi']:.4g}")
+    w(f"  tool_time_lo_s: {two['lo']:.6g}")
+    w(f"  tool_time_hi_s: {two['hi']:.6g}")
+    w(f"  tool_time_p_hi: {two['p_hi']:.6g}")
     w("  # crude: two atoms. It carries the mean and the CV of the capped series (the quantities that set the idle-session count and the tail), not its shape.")
     w("")
 
@@ -188,12 +188,13 @@ def main() -> None:
         w(f"  tool_time_cv: {EE['cv']:.4g}              # exact CV of the table (sample CV of the capped series {EE['sample_cv_capped']:.4g})")
         for c in extra_comments:
             w("  # " + c)
-        w(f"  # {len(EE['values'])} knots; level 0 = minimum, level 1 = {EE['values'][-1]:.5g} s = the {'cap' if EE['frac_ge_cap'] > 0 else 'maximum'}; inverse CDF linear between knots")
+        w(f"  # {len(EE['values'])} knots; level 0 = minimum, level 1 = {EE['values'][-1]:.5g} s = the {'cap' if EE['frac_ge_cap'] > 0 else 'maximum of the series'}; inverse CDF linear between knots")
         w("  tool_time_quantile_levels: " + fmt_list(EE["levels"], 8))
         w("  tool_time_quantiles: " + fmt_list(EE["values"], 5))
 
     emp_section("workload_empirical", "empirical quantile table of the tool-time series", E,
-                [f"{E['frac_ge_cap'] * 100:.2f}% of the raw series is at or above the {cap:.0f} s cap and holds {ser['time_share_gt_60s'] * 100:.0f}% of the raw time in values above 60 s;",
+                [(f"{E['frac_ge_cap'] * 100:.2f}% of the raw series is at or above the {cap:.0f} s cap" if E['frac_ge_cap'] > 0 else f"no value of the series reaches the {cap:.0f} s cap (maximum {E['max_raw']:.5g} s)")
+                 + f"; values above 60 s hold {ser['time_share_gt_60s'] * 100:.0f}% of the raw time;",
                  f"table mean vs sample mean of the capped series: {100 * (E['mean'] / E['sample_mean_capped'] - 1):+.2f}%, CV {100 * (E['cv'] / E['sample_cv_capped'] - 1):+.2f}%."])
     if h["alt"]:
         alt = h["alt"]
