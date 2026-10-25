@@ -1,8 +1,15 @@
 # STATE
 
-_Last updated: 2026-10-24 ~15:25 CDT (always-on PC; the primary host since 2026-10-24)_
+_Last updated: 2026-10-25 ~15:00 CDT (always-on PC)_
 
-## NOW (2026-10-24 ~15:25 CDT). Read this first; it supersedes the 2026-10-23 hand-off below.
+## NOW (2026-10-25 ~15:00 CDT). Read this first; it supersedes every block below.
+**E2 is a decisive PASS at both pre-registered points** (1.35 and 1.65 × λ_ref; BURST trapped 2/3 and 3/3, NOBURST good 6/6, CAPPED recovered 6/6; verdict `results/agentload_analysis_burst2/20261025-144012/` on frozen `d279b7b`; data `results/nova/e2_170933xx_pulled_20261025-144558/`; LOG 2026-10-25). Every blind B3 prediction held.
+**Also finished overnight (all COMPLETED 0:0; pulled data and LOG entries follow the archive pull):** native-pool Stage C (17096856–57: pool sized by SGLang at 955,757 tokens; μ peaks 0.479 at n = 64, collapses to 0.123 at n = 96) and native E0a (17096858: λ_miss 0.0718 turns-based, same as at 300k); the exploratory policy grid (17097086–103: FCFS refresh-off behaves like refresh-on; stock LPM recovers at 1.35 × in most seeds but traps at 1.65 ×); vLLM install, GPU check and smoke (17097972–74; token ids returned, cached tokens reported, flush verified).
+**Running on Nova (from `repo_next/` at `fb3510e`; `repo/` stays frozen at `d279b7b`):** native E0b **17100938** (mults 1.5, 2.5, 3.5) and **17100939** (4.5, 5.5, 6.5) of the native λ_ref, calibration `results/agentload_analysis_miss/20261025-054653/calibration.json`; vLLM E0a **17100940** (3 seeds + POP 64, `OUTPUT_FEEDBACK=server`).
+**Blind-prediction gate (native):** a Sonnet agent is writing `notes/PREDICTIONS_native.md` on branch `r8/native-predict` (simulator only, pool 955,757, no real native data). Tag and push it BEFORE native E0b results are read; then native prereg (`prereg fill --engine-cell-label sglang-fcfs-r1-native`, cap from the native curve) and native E2.
+**Then:** the vLLM exploratory registration (`derive-exploratory --engine-cell-label vllm-fcfs --calibration <vLLM E0a>`) and 6 BURST jobs; the paper draft.
+
+## NOW (2026-10-24 ~15:25 CDT). Superseded by the block above; kept for the record.
 **E2 is in the Nova queue: jobs 17093387–17093404** (18 one-arm jobs, submitted 15:13 CDT under Akshat's explicit authorization in chat, 2026-10-24). Order is seed-major (seed 0: mult 1.35 burst/noburst/capped = 17093387–89, mult 1.65 = 17093390–92; seed 1 = 17093393–98; seed 2 = 17093399–404). `--time=03:10:00`, one 8700 s arm each. At submission Slurm estimated starts from 19:20 tonight to 11:11 on 2026-10-25 (the partition had 120 pending jobs), so all should finish by about 14:00 on 2026-10-25. Check:
 ```bash
 ssh -F ~/.ssh/isu_nova_config nova 'sacct -j 17093387,17093388,17093389,17093390,17093391,17093392,17093393,17093394,17093395,17093396,17093397,17093398,17093399,17093400,17093401,17093402,17093403,17093404 -X -o JobID,State,ExitCode,Elapsed,NodeList'
