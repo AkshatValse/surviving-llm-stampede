@@ -162,6 +162,10 @@ def test_every_stage_and_the_report_run_end_to_end_on_a_tiny_config(tmp_path):
     text = (Path(d) / "tables.md").read_text()
     for needle in ("lambda_miss", "Wilson", "burst size", "Horizon", "Low-lambda", "Binomial"):
         assert needle.lower() in text.lower(), needle
+    # a spec without the optional r7.stages / r7.title keys keeps all eight numbered sections and the original provenance text
+    assert [ln.split(".")[0] for ln in text.splitlines() if ln.startswith("### ")] == [f"### {i}" for i in range(1, 9)]
+    assert "pairs, all test points (2 workloads, 3 points, seeds 0-1)" in text and "E[T] (turns per session)" not in text
+    assert (Path(d) / "provenance.md").read_text(encoding="utf-8").startswith("Spec: `" + str(spec).replace("\\", "/") + "` (sha256 `")
 
 
 def test_edge_refinement_grid_runs_when_the_lowest_multiple_is_unstable(tmp_path):

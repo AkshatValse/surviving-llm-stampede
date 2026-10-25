@@ -94,10 +94,12 @@ def merged_workload(cfg: dict, r7: dict, name: str) -> WorkloadParams:
 
 
 def expected_turns(cfg: dict, r7: dict, name: str) -> float:
-    """E[T] of a workload; asserted to equal the declared value (it does not depend on the tool-time distribution)."""
+    """E[T] of a workload; asserted to equal the declared value (it does not depend on the tool-time distribution). The spec-wide ``expected_turns`` is the default;
+    a workload that changes the turn law (mean_turns / max_turns) must declare its own ``expected_turns`` next to its ``workload`` override."""
     et = merged_workload(cfg, r7, name).effective_mean_turns()
-    if abs(et - float(r7["expected_turns"])) > 5e-4:
-        raise ValueError(f"E[T]={et} of workload {name} differs from the declared {r7['expected_turns']}")
+    declared = r7["workloads"][name].get("expected_turns", r7["expected_turns"])
+    if abs(et - float(declared)) > 5e-4:
+        raise ValueError(f"E[T]={et} of workload {name} differs from the declared {declared}")
     return et
 
 
@@ -602,6 +604,9 @@ def main(argv: Optional[List[str]] = None, repo_dir: Optional[Path] = None) -> i
         raise SystemExit(f"--workers must be in 1..{MAX_WORKERS}, got {args.workers}")
     repo_dir = repo_dir or Path(__file__).resolve().parent.parent.parent
     cfg = load_probe_config(args.config, repo_dir, args.set)
+    declared = r7_block(cfg).get("stages")            # optional: a spec that runs only some stages lists them (configs/r7_traces_sim.yaml); default: all
+    if declared is not None and args.stage not in declared:
+        raise SystemExit(f"{args.stage!r} is not a stage of this spec (r7.stages = {list(declared)})")
     {"lambda_miss": stage_lambda_miss, "curves": stage_curves, "edge": stage_edge, "pairs": stage_pairs, "burst_sizes": stage_burst_sizes,
      "horizon": stage_horizon, "lowlam": stage_lowlam}[args.stage](cfg, args, repo_dir)
     return 0

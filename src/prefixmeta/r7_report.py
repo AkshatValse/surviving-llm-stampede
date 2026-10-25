@@ -48,10 +48,11 @@ def letters(g: pd.DataFrame) -> str:
 class Stages:
     """Latest result dir, summary.json and meta.json of every stage (None for a stage that was never run)."""
 
-    def __init__(self, out_root: str):
+    def __init__(self, out_root: str, stages: Optional[List[str]] = None):
         self.out_root = out_root
+        self.stages = tuple(stages) if stages else tuple(STAGES)           # r7.stages of the spec (default: all); the report lists only these
         self.dir: Dict[str, Optional[Path]] = {}
-        for s in STAGES:
+        for s in self.stages:
             try:
                 self.dir[s] = stage_dir(out_root, s)
             except FileNotFoundError:
@@ -78,6 +79,9 @@ def t_workloads(S: Stages, r7: dict) -> str:
         row = {"workload": w["label"], "tool-time mean (s)": w["tool_time_mean_s"], "tool-time CV": w["tool_time_cv"],
                "lambda_miss (turns-based, sessions/s)": w["lambda_miss_turns"], "sd over seeds": w["lambda_miss_turns_sd"],
                "lambda_miss (sessions/s)": w["lambda_miss_sessions"], "all-miss token rate (tok/s)": w["token_rate"], "GPU busy": w["busy"]}
+        if len({round(float(x["E_T"]), 6) for x in sm.values()}) > 1:         # different turn laws: sessions/s are not comparable, turns/s are
+            row["E[T] (turns per session)"] = w["E_T"]
+            row["lambda_miss x E[T] (turns/s)"] = w["lambda_miss_turns"] * w["E_T"]
         for k, v in w.items():
             if k.startswith("check_pop"):
                 row[f"{k.replace('check_pop', 'POP ')} lambda_miss (turns)"] = v["lambda_miss_turns"]
@@ -254,8 +258,10 @@ def t_detection(S: Stages, r7: dict, z: float) -> str:
     if S.ok("pairs"):
         c = S.csv("pairs", "classified_runs.csv")
         b = c[c["arm"] == "burst"]
-        srcs.append(("pairs, all test points (5 workloads x 2 points, seeds 0-9)", b))
-        srcs.append(("pairs, record workload only (1.35 and 1.65 x, seeds 0-9)", b[b["workload"] == r7["record_workload"]]))
+        srcs.append((f"pairs, all test points ({b['workload'].nunique()} workloads, {b['call'].nunique()} points, seeds {int(b['seed'].min())}-{int(b['seed'].max())})", b))
+        rec = b[b["workload"] == r7["record_workload"]]
+        if len(rec):
+            srcs.append((f"pairs, record workload only ({' and '.join(f'{m:g}' for m in sorted(rec['mult'].unique()))} x, seeds {int(rec['seed'].min())}-{int(rec['seed'].max())})", rec))
     if S.ok("burst_sizes"):
         c = S.csv("burst_sizes", "classified_runs.csv")
         srcs.append(("burst_sizes, 200 sessions (bit-identical to the record-workload rows of pairs)", c[c["arm"] == "burst_200"]))
@@ -292,7 +298,7 @@ def provenance(S: Stages, spec_path: Path) -> str:
     rows, cmds = [], []
     total = 0.0
     spec_sha = sha256_of(spec_path)
-    for s in STAGES:
+    for s in S.stages:
         if not S.ok(s):
             rows.append({"stage": s, "result dir": "NOT RUN", "commit": "", "dirty": "", "seeds": "", "start": "", "wall s": ""})
             continue
@@ -305,8 +311,9 @@ def provenance(S: Stages, spec_path: Path) -> str:
                      "spec identical to the committed file": same})
         total += float(m["wall_s"])
         cmds.append(" ".join(m["argv"]))
-    txt = ("Spec: `configs/r7_robustness.yaml` (sha256 `%s`); engine = `configs/r6_predict.yaml` engine block, batching `mixed`; base chain `configs/prefix_meta_r5.yaml` -> "
-           "`configs/prefix_meta.yaml`; interpreter `C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe`; at most 6 worker processes.\n\n" % spec_sha)
+    txt = ("Spec: `%s` (sha256 `%s`); engine = `configs/r6_predict.yaml` engine block, batching `mixed`; base chain `configs/prefix_meta_r5.yaml` -> "
+           "`configs/prefix_meta.yaml`; interpreter `C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe`; at most 6 worker processes.\n\n"
+           % (spec_path.as_posix(), spec_sha))
     txt += df_md(pd.DataFrame(rows)) + f"\n\nTotal recorded stage wall time: {total:.0f} s ({total / 60:.1f} min).\n\nCommands (argv as recorded in each `meta.json`; run from the worktree root):\n\n```\n"
     txt += "\n".join(cmds) + "\n```\n"
     return txt
@@ -316,16 +323,20 @@ def provenance(S: Stages, spec_path: Path) -> str:
 def build_tables(S: Stages, r7: dict) -> str:
     z = float(r7["wilson_z"])
     parts = []
-    sections = (("lambda_miss", "1. Workloads and lambda_miss (B1: cache off, closed POP 32, window [900, 2700) s)", lambda: t_workloads(S, r7)),
-                ("curves", "2. Closed curve mu(n) (cache on, seeds 0-2) and the cap", lambda: t_curves(S, r7)),
-                ("edge", "3. From-empty stability edge and the measured window", lambda: t_edge(S, r7, z)),
-                ("pairs", "4. Paired-arm test at the two window points (10 seeds)", lambda: t_pairs(S, r7, z)),
-                ("burst_sizes", "5. Burst-size sweep (record workload, 10 seeds)", lambda: t_burst_sizes(S, r7, z)),
-                ("horizon", "6. Horizon: 30000 s after the burst (record workload, 10 seeds)", lambda: t_horizon(S, r7, z)),
-                ("lowlam", "7. Low-lambda fragility (record workload, 1.35 x lambda_miss, 20 seeds, BURST)", lambda: t_lowlam(S, r7, z)),
-                ("pairs", "8. Post-hoc: how often the declared slope rule labels a stuck BURST run TRAPPED", lambda: t_detection(S, r7, z)))
+    sections = (("lambda_miss", "Workloads and lambda_miss (B1: cache off, closed POP 32, window [900, 2700) s)", lambda: t_workloads(S, r7)),
+                ("curves", "Closed curve mu(n) (cache on, seeds 0-2) and the cap", lambda: t_curves(S, r7)),
+                ("edge", "From-empty stability edge and the measured window", lambda: t_edge(S, r7, z)),
+                ("pairs", "Paired-arm test at the two window points (10 seeds)", lambda: t_pairs(S, r7, z)),
+                ("burst_sizes", "Burst-size sweep (record workload, 10 seeds)", lambda: t_burst_sizes(S, r7, z)),
+                ("horizon", "Horizon: 30000 s after the burst (record workload, 10 seeds)", lambda: t_horizon(S, r7, z)),
+                ("lowlam", "Low-lambda fragility (record workload, 1.35 x lambda_miss, 20 seeds, BURST)", lambda: t_lowlam(S, r7, z)),
+                ("pairs", "Post-hoc: how often the declared slope rule labels a stuck BURST run TRAPPED", lambda: t_detection(S, r7, z)))
+    k = 0
     for stage, title, fn in sections:
-        parts.append(f"### {title}\n")
+        if stage not in S.stages:                 # a spec that does not declare the stage (r7.stages) has no section for it; a declared stage that was not run says so
+            continue
+        k += 1
+        parts.append(f"### {k}. {title}\n")
         parts.append(fn() + "\n" if S.ok(stage) else f"**stage `{stage}` NOT RUN**\n")
     return "\n".join(parts)
 
@@ -355,7 +366,7 @@ def headline_numbers(S: Stages) -> Dict[str, Any]:
 def cmd_report(spec_path: Path, args: argparse.Namespace, repo_dir: Path) -> Path:
     cfg = load_probe_config(str(spec_path), repo_dir)
     r7 = cfg["r7"]
-    S = Stages(args.out_root)
+    S = Stages(args.out_root, r7.get("stages"))
     cfg_eff = {k: v for k, v in cfg.items() if k != "preregistration_file"}      # not a registered run: do not copy a pre-registration into the report dir
     ctx = begin("r7_report", "r7_report", cfg_eff, cfg_eff, args, repo_dir)
     tables = build_tables(S, r7)
@@ -363,13 +374,13 @@ def cmd_report(spec_path: Path, args: argparse.Namespace, repo_dir: Path) -> Pat
     head = headline_numbers(S)
     (ctx.out / "summary.json").write_text(json.dumps(head, indent=2, default=float))
     (ctx.out / "provenance.md").write_text(provenance(S, spec_path), encoding="utf-8")
-    for s in STAGES:                       # small per-stage CSV summaries, copied so the report dir is self-contained
+    for s in S.stages:                     # small per-stage CSV summaries, copied so the report dir is self-contained
         if S.ok(s):
             for name in ("classified_runs.csv", "events.csv", "edge_verdicts.csv", "lambda_miss_runs.csv", "curve_runs.csv", "summary.json"):
                 src = S.dir[s] / name
                 if src.exists():
                     (ctx.out / f"{s}_{name}").write_bytes(src.read_bytes())
-    finish(ctx, [], {"stage": "report", "stage_dirs": {s: (S.dir[s].as_posix() if S.ok(s) else None) for s in STAGES}})
+    finish(ctx, [], {"stage": "report", "stage_dirs": {s: (S.dir[s].as_posix() if S.ok(s) else None) for s in S.stages}})
     print(tables)
     print("result dir:", ctx.out)
     return ctx.out
@@ -383,12 +394,16 @@ def latest_report_dir(out_root: str) -> Path:
     return ds[-1]
 
 
+DEFAULT_TITLE = "Round 7: simulator robustness (tool-time distributions, burst size, horizon, low-lambda fragility)"
+
+
 def cmd_assemble(spec_path: Path, args: argparse.Namespace, repo_dir: Path) -> Path:
+    title = load_probe_config(str(spec_path), repo_dir)["r7"].get("title", DEFAULT_TITLE)       # optional r7.title
     rd = latest_report_dir(args.out_root)
     tables = (rd / "tables.md").read_text(encoding="utf-8")
     prov = (rd / "provenance.md").read_text(encoding="utf-8")
     head = Path(args.headline).read_text(encoding="utf-8").strip()
-    txt = ("# Round 7: simulator robustness (tool-time distributions, burst size, horizon, low-lambda fragility)\n\n"
+    txt = (f"# {title}\n\n"
            f"{head}\n\n## Provenance: what was run\n\nGenerated by `python -m prefixmeta.r7_report assemble` from the report `{rd.as_posix()}` (the tables below are that report's "
            "`tables.md`, verbatim; nothing is retyped).\n\n" + prov + "\n## Tables (generated)\n\n" + tables)
     Path(args.notes).write_text(txt, encoding="utf-8")
