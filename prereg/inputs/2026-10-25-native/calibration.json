@@ -1,0 +1,25 @@
+{
+  "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+  "hardware_all": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "hostnames": [
+    "nova22-gpu-1"
+  ],
+  "output_ids_sources": [
+    "server_ids"
+  ],
+  "lambda_miss": 0.07203642772359199,
+  "lambda_miss_turns_based": 0.07179742331825469,
+  "lambda_miss_se": 0.006970960316909934,
+  "lambda_miss_turns_based_se": 0.0037034036731347117,
+  "all_miss_uncached_tokens_per_s": 11282.003728242735,
+  "all_miss_uncached_tokens_per_s_se": 50.79422026214365,
+  "all_miss_cached_frac_tokens_max": 0.0,
+  "n_runs": 3,
+  "warmup_s": 900.0,
+  "labels": [
+    "sglang-nocache-native"
+  ],
+  "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>'). all_miss_uncached_tokens_per_s = arrivals.uncached_tokens_ref of the E2 runs (trap criterion (a))."
+}
