@@ -61,7 +61,8 @@ Run to (lambda multiple, seed, arm) comes from `trap_v2_runs.csv`.
 | 1.65 | 2 | 20261025-000043 | 20261025-000053 | 20261025-000819 |
 
 **What to read off it.** Every BURST run is at hit 0.00 from the 100 s window starting at 1300 s (0.21-0.33 in the window that contains the burst) and in every
-later window to the end; its backlog is about 200 right after the burst and still growing at the end (206-369 over the last 300 s). Every NOBURST and CAPPED run is at hit ~0.93 and
+later window to the end; its backlog is about 200 right after the burst, falls to 135-172 sessions 300-1300 s after it as short burst sessions finish, then rises
+(206-369 over the last 300 s): still growing at the end in five runs, flat near 206 in the sixth (1.35 x, seed 1; `paper/derived/e2_burst_backlog.csv`). Every NOBURST and CAPPED run is at hit ~0.93 and
 backlog ~10 in the evaluation window. Registered per-run states:
 BURST trapped / indeterminate / trapped at 1.35 x (seed 1 is stuck at hit 0 but its slope is under the threshold) and trapped x3 at 1.65 x.
 Not in the notes, visible here: while the gate drains the 200-session burst, the CAPPED arm's hit fraction dips transiently
@@ -128,7 +129,7 @@ registered E2 cap and the curve's peak region (mu* is at n = 22), c = 28 = N_lb,
 only the tool-time law replaced). Gray bar = measured from-empty window [1, hi] in multiples of the law's own lambda_miss (hi = largest all-stable
 multiple, 10 seeds, B2 rule). The two markers are the test points at lo + (hi - lo)/3 and lo + 2(hi - lo)/3; filled dot = PASS, crossed open circle
 = FAIL under the declared rule (BURST trapped, NOBURST good, CAPPED recovered each in >= 7 of 10 seeds). Number above a marker = BURST trapped /
-seeds; gray note = a non-BURST criterion that failed. Rows: real engine E2 for reference (3 seeds, need 2; window = last all-stable multiple of
+seeds; gray note = a non-BURST criterion that failed. Rows: real engine E2 for reference (3 seeds, need 2 seeds in which all three arms succeed, the registered rule; window = last all-stable multiple of
 E0b); synthetic laws Exp(1 s), Exp(2 s), Exp(5 s) (record), lognormal CV 2, bimodal 1 s / 20 s; real-trace laws TraceLab per turn, TraceLab idle gap,
 mini-SWE-agent tool time, and mini-SWE-agent full workload (declared protocol); last row (gray label) = the labelled post-hoc rerun of the full
 workload with the protocol adjusted (converged lambda_miss, edge horizon = paired horizon, 20000 s after the burst).

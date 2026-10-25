@@ -1,6 +1,6 @@
 \section{Protocol details}\label{app:protocol}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering\footnotesize
 \caption{Real-engine stages (SLURM job IDs on Nova).}\label{tab:stages}
 \begin{tabular}{@{}l l p{3.6cm}@{}}
@@ -23,7 +23,7 @@ vLLM E0a & 17100940 & \pending{running}\\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering\footnotesize
 \caption{Workload and engine of the real-engine runs.}\label{tab:workload}
 \begin{tabular}{@{}l l@{}}
@@ -55,7 +55,7 @@ GPU & A100 80GB PCIe, 81,920\,MiB, driver 580.178.04\\
 
 \paragraph{E2.} One arm per 8700\,s job, each on a fresh server; burst of 200 fresh sessions within 60\,s at $t_b=1200$\,s for BURST and CAPPED; CAPPED gate $\ncap=20$; evaluation window $[t_b+4500,\,8700]$\,s. The registered rule (Table~\ref{tab:rule}) was applied by the analysis tool frozen at the registration commit, with the same parameter overrides that the jobs themselves used.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering\footnotesize
 \caption{The registered decision rule.}\label{tab:rule}
 \begin{tabular}{@{}l l@{}}
@@ -67,7 +67,8 @@ Slope test & slope $>0.5\,(\lambda-\lmiss)$, 10\,s bins\\
 Minimum window & 600\,s\\
 Recovered & hit $>0.8$ and outstanding $<20$, last 300\,s\\
 Hit metric & turns with cached/prompt $>0.5$\\
-Pass & each arm in $\ge2/3$ of $\ge3$ seeds\\
+Pass & $\ge2/3$ of $\ge3$ seeds with all three\\
+ & \quad arm conditions met in the seed\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -81,7 +82,7 @@ The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FIL
 \item \textbf{Cell and inputs.} Engine cell \texttt{sglang-fcfs-r1} (SGLang FCFS, waiting-prefix refresh on); committed copies of the Stage~C curve, the E0a calibration and the E0b bracket under \fpath{prereg/inputs/2026-10-23/}; protocol 8700\,s, burst of 200 within 60\,s at 1200\,s.
 \item \textbf{Measured.} $\mu(n)$ in sessions/s: 0.1756 ($n=16$), 0.2239 (20), 0.2333 (24), 0.1150 (32), 0.0489 (48), 0.0611 (96), 0.1078 (300). $\mu^*=0.2333$; $\ncap=20$ by the smallest-within-5\% rule (argmax 24; flagged ambiguous). $\lmiss=0.07167$ (sessions) and 0.07153 (turns-based, $=\lref$); all-miss rate 11,243 tokens/s; E0b largest all-stable multiple 2.0, first unstable 2.5, monotone; hardware A100 80GB PCIe.
 \item \textbf{Predicted boundaries.} Recovery threshold $\lref$ (not $\mu(300)$, which a synchronized start biases upward). Window $(0.0715,\,0.1431)$\sps{} $=(1.0,\,2.0)\,\lref$, upper edge from E0b. CAPPED drain must fit within 80\% of the 7200\,s available after the burst (5760\,s), which holds for $\lambda$ up to 2.64 $\lref$; predicted drain 1571\,s at 1.35 and 1889\,s at 1.65.
-\item \textbf{Rates.} 1.35 and 1.65 $\lref$ by the one-third/two-thirds rule, rounded to 0.05, inside the margin band $(1.1,\,1.8)$; seeds 0, 1, 2. The rule and the cap rule were written in the runbook and the state file on 2026-10-23, before E0b was read.
+\item \textbf{Rates.} 1.35 and 1.65 $\lref$ by the one-third/two-thirds rule, rounded to 0.05, inside the margin band $(1.1,\,1.8)$; seeds 0, 1, 2. The rate rule and the cap of 20 were committed to the runbook on 2026-10-22 (\texttt{288b801}, 13:13 CDT), before E0b was submitted; the registration's own text dates them 2026-10-23.
 \item \textbf{Predictions.} Inside the window: BURST trapped, NOBURST good through the run horizon, CAPPED recovered if the drain fits. Below $\lref$: BURST not trapped. Above the window: NOBURST may escape, so no such rate was registered.
 \item \textbf{Kill conditions.} NOBURST not good in at least one third of the seeds at a registered rate; BURST not trapped in two thirds of the seeds at every registered rate; CAPPED not recovering while BURST traps and the drain fits; a window that is empty or narrower than the noise.
 \item \textbf{Warnings recorded at filling.} $|\mu(300)/\lmiss-1|=0.507$ (a check only), and the ambiguous cap.
@@ -91,7 +92,7 @@ The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FIL
 
 \section{Blind-prediction timeline}\label{app:timeline}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering\footnotesize
 \caption{Order of events (times CDT). Commits are in the project repository; job IDs on Nova.}\label{tab:timeline}
 \begin{tabular}{@{}p{1.75cm} p{5.6cm}@{}}
@@ -100,6 +101,7 @@ When & Event\\
 \midrule
 10-21 & Stage 0 passes (17060165); Stage C submitted\\
 10-22 & Stage C results pulled; E0a jobs complete; simulator cost model fitted to Stage 0/C server logs (\texttt{4435c51})\\
+10-22 13:13 & rate rule and cap of 20 committed to the runbook (\texttt{288b801})\\
 10-23 14:32 & E0a results committed (\texttt{a76f5e5})\\
 10-23 $\sim$14:40 & E0b submitted (17084750--55); runs that afternoon\\
 10-24 03:13 & validation of the calibrated simulator committed (\texttt{813cfc1})\\
@@ -117,12 +119,12 @@ When & Event\\
 \end{tabular}
 \end{table}
 
-\noindent B3 (E2) and B4 (native pool) were committed before their experiments were submitted, so they are blind in time. B2 (E0b) was committed after E0b had finished on the cluster but before its results were pulled; the agents that made the predictions had no cluster access and were barred from real-result directories, and the order of the commits, the tag and the pull was checked from the repository's reflog and the push record. A scan of every line added between the base commit and the predictions found no use of withheld data, but a text scan cannot prove that nobody read it. B1 (E0a) is access-controlled only: E0a was committed before the predictions. The independent verifier had read the project state file, which mentions E0a, so it is independent but not blind. Two conditions of the verification failed and are disclosed: the strict containment of B3 passes within the B2 all-stable range, and the platform-specific test failures of the full suite.
+\noindent B3 (E2) and B4 (native pool) were committed before their experiments were submitted, so they are blind in time. B2 (E0b) was committed after E0b had finished on the cluster but before its results were pulled. The agents that made the predictions were instructed not to contact the cluster and not to open the E0a or E0b result directories or the main checkout; they could technically have done so, and we checked their session records afterwards and found no cluster command and no access to E0b before the tag was pushed. For B2 this instruction-level control, checked after the fact, is the only safeguard. The order of the commits, the tag and the pull was checked from the repository's reflog and the push record. A scan of every line added between the base commit and the predictions found no use of withheld data, but a text scan cannot prove that nobody read it. B1 (E0a) rests on the same instruction only: E0a was committed before the predictions. The independent verifier had read the project state file, which mentions E0a, so it is independent but not blind. Two conditions of the verification failed and are disclosed: the strict containment of B3 passes within the B2 all-stable range, and the platform-specific test failures of the full suite.
 
 \section{Provenance}\label{app:prov}
 Every number in the paper is listed with its source file and commit or job in \fpath{paper/NUMBERS.md}. Commits dated before 2026-10-22 predate a history rewrite and are mapped to current hashes in \fpath{provenance/commit-map.tsv}.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering\footnotesize
 \caption{Data behind each result (paths relative to the repository).}\label{tab:prov}
 \begin{tabular}{@{}p{1.6cm} p{5.75cm}@{}}
@@ -139,8 +141,11 @@ B1--B4 & \fpath{results/r6_predict_report/20261024-034707/}, \fpath{notes/PREDIC
 robustness & \fpath{results/r7_report/20261024-233554/} (\texttt{c653498}); \fpath{results/r7_traces_sim/r7_report/20261025-012451/}, \fpath{results/r7_traces_sim_adj/r7_report/20261025-012453/} (\texttt{b530e55})\\
 mechanisms & \fpath{results/prefix_meta_baselines_audit_summary/20261025-001850/} (\texttt{dc76032}); \fpath{results/prefix_meta_r4_curve/20261021-050856/}, \fpath{results/prefix_meta_r4/20261021-051550/} (\texttt{a1d485b})\\
 figures & \fpath{figures/paper/}, \fpath{paper/figs/README.md} (\texttt{e098e1c}, \texttt{c974070})\\
+derived & \fpath{paper/derived/}, \fpath{figures/paper/derived_numbers.py} (\texttt{38bf22b})\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Notes that support the text.} The math check of the model is \fpath{notes/MATHCHECK_thrashing_curve.md}; the verification of Stage~C (three-source hit check, eviction survival times, prompt continuity) is \fpath{notes/STAGEC_VERIFICATION.md}; the audit of the PEEK, Continuum and CONCUR rules against released code is \fpath{notes/BASELINES_AUDIT.md}; the audit of every citation, the scoop check and the reading of the SGLang and vLLM sources (read twice, through a page summariser, without verbatim code) are in \fpath{notes/lit/CITATION_AUDIT_2026-10-25.md}; the trace statistics are in \fpath{notes/lit/AGENT_TRACES.md}. Where the research log and a committed CSV differ in the last digit (three hit fractions and one backlog of the policy grid), the paper uses the CSV.
+\paragraph{Derived numbers.} The CAPPED drain times, the BURST backlog after the burst and over the window, the E0b hit fractions and the interval estimates for the E2 counts are computed from committed run data by \fpath{figures/paper/derived_numbers.py} and written to \fpath{paper/derived/}.
+
+\paragraph{Notes that support the text.} The math check of the model is \fpath{notes/MATHCHECK_thrashing_curve.md}; the verification of Stage~C (three-source hit check, eviction survival times, prompt continuity) is \fpath{notes/STAGEC_VERIFICATION.md}; the audit of the PEEK, Continuum and CONCUR rules against released code is \fpath{notes/BASELINES_AUDIT.md}; the audit of every citation, the scoop check and the reading of the SGLang and vLLM sources (read twice, through a page summariser, without verbatim code; the engine facts of \S\ref{sec:background} rest on it) are in \fpath{notes/lit/CITATION_AUDIT_2026-10-25.md}; the trace statistics are in \fpath{notes/lit/AGENT_TRACES.md}. Where the research log and a committed CSV differ in the last digit (three hit fractions and one backlog of the policy grid), the paper uses the CSV.
