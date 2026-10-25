@@ -283,7 +283,7 @@ Short names for the sources used most often:
 | 0.507 | B | same, as recorded at filling | REG (`fill_problems`) | d279b7b |
 | 31% | 8 | lambda_miss / peak at 300k | derived: 1 / 3.262 = 0.307 | - |
 | 150,000 s; 0.9, 1.0 | 8 | earlier simulator: FCFS recovers from congestion at <= 0.9 x lambda_miss, not at >= 1.0, over 150k s | LOG (round-3 entry, P1: "It PASSes at 150k s: 3/3 at <=0.9x and 0/3 at >=1.0x") | beb60dc |
-| 55% | 10 | cross-turn hit rate in production agent traces (abstract level, TODO cite) | CIT (scoop table: Copilot traces 2608.00101, 2605.26297: "about 55% across turn boundaries") | f0e2e19 |
+| 55% | 10 | cross-turn hit rate in production agent traces (cited: liu2026copilot) | CIT (scoop table), re-checked 2026-10-25 in the paper text of arXiv:2608.00101 (about 90% within a turn, about 55% across turn boundaries); 2605.26297 does not report it and is no longer cited here | f0e2e19 |
 | 925 ms (sd 3550 ms), 1923 ms | 9 | Continuum's mean tool times (SWE-Bench, BFCL); heavy tail for SWE-Bench only | CIT (Continuum row, Table 2: "925 ms (sd 3550) ... 1923 ms (sd 2133)") | f0e2e19 |
 | 77.7% at 32, 35.4% at 40 | 9 | CONCUR's reported SGLang hit rates | CIT (CONCUR row, Table 2) | f0e2e19 |
 | 7500 s, 30,000 s | 10 | horizons | REG; R7 | d279b7b, c653498 |
@@ -321,18 +321,19 @@ Short names for the sources used most often:
 | 1, 5.6, A (T3) | running: vLLM all-miss capacity (vLLM E0a) | 17100940 (running) |
 | 1, 5.6 | planned, not yet submitted: six vLLM BURST runs under an exploratory registration | not yet submitted |
 
-## References that are needed but not in `paper/refs.bib` (rendered as blue TODO)
+## References that were missing from `paper/refs.bib` (blue TODO markers; all resolved on 2026-10-25)
 
-| Where | Missing reference |
+No number in the text changed. Each entry below was checked on a primary page; the evidence class and URL are in the comment above its entry in `refs.bib` and in `notes/lit/CITATION_AUDIT_2026-10-25.md` (section "Paper references added 2026-10-25").
+
+| Where | Reference (bib key) |
 |---|---|
-| 6 | TraceLab (Zhu et al., arXiv:2606.30560), the trace source (see `notes/lit/AGENT_TRACES.md`) |
-| 6 | mini-SWE-agent (software) |
-| 1, 2, 7, 9 | NVIDIA Dynamo engineering post on session-aware admission (read in full in CIT, not in refs.bib) |
-| 2 | ALOHA bistability and network congestion collapse (classical analogues of the fluid picture) |
-| 2 | Courtois, "Decomposability, instabilities, and saturation in multiprogramming systems", CACM 18(7), 1975 (seen only through a web-search summary) |
-| 2, 8 | Multiprogramming-level load control: Denning et al., Acta Informatica 1976; Heiss and Wagner, VLDB 1991; Schroeder et al., ICDE 2006 (web-search summaries only) |
-| 3.2 | H = lambda G (Heyman and Stidham 1980; Brumelle 1971; from memory, unchecked) |
-| 6 | SWE-bench Verified release (jimenez2024swebench is the ICLR 2024 paper, which predates the Verified subset) |
-| 8 | KVSET (arXiv:2609.27746) and EfficientAgent (arXiv:2609.33762), abstract level in CIT |
-| 9 | Metronome (2607.02640), MISA-T (2608.11152), AgentServeSim (2606.09613), ServeTwin (2610.02732), abstract level in CIT |
-| 10 | Copilot traces (2608.00101) and Agentic AI Workload Characteristics (2605.26297), abstract level in CIT |
+| 6 | TraceLab (`zhu2026tracelab`); the text now says 52 pseudonymous users of release v0.0.2, because the paper itself describes an earlier snapshot |
+| 6 | mini-SWE-agent (`sweagent2026miniswe`, with `yang2024sweagent` as the README asks) and the SWE-bench Verified release (`openai2024swebenchverified`) |
+| 1, 2, 7, 9 | NVIDIA Dynamo post (`dhanani2026dynamo`) |
+| 2 | ALOHA bistability and network congestion collapse (`kleinrock1975aloha`, `fayolle1977stability`, `nagle1984congestion`, `jacobson1988congestion`) |
+| 2 | Courtois 1975 (`courtois1975decomposability`) |
+| 2, 8 | Multiprogramming-level load control (`denning1976optimal`, `heiss1991adaptive`, `schroeder2006mpl`) |
+| 3.2 | H = lambda G (`brumelle1971relation`, `heyman1980relation`) |
+| 8 | KVSET and EfficientAgent (`li2026kvset`, `shao2026efficientagent`) |
+| 9 | Metronome, MISA-T, AgentServeSim, ServeTwin (`meng2026metronome`, `hong2026misat`, `rajib2026agentservesim`, `park2026servetwin`); the ServeTwin clause now says only what its abstract says |
+| 10 | Copilot traces (`liu2026copilot`); arXiv:2605.26297 was dropped from the sentence because it reports controlled runs, not production traces, and no 55% figure |
