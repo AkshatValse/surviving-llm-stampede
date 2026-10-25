@@ -1,0 +1,90 @@
+{
+  "workload": "exp5",
+  "lambda_miss_turns": 0.07218695086154546,
+  "token_rate_miss": 11219.72185185185,
+  "by_mult": {
+    "1.35": {
+      "lam": 0.09745238366308638,
+      "need": 7,
+      "n_seeds": 10,
+      "per_size": {
+        "25": {
+          "trapped": 0,
+          "recovered": 10,
+          "indeterminate": 0,
+          "n": 10
+        },
+        "50": {
+          "trapped": 5,
+          "recovered": 4,
+          "indeterminate": 1,
+          "n": 10
+        },
+        "100": {
+          "trapped": 5,
+          "recovered": 0,
+          "indeterminate": 5,
+          "n": 10
+        },
+        "200": {
+          "trapped": 9,
+          "recovered": 0,
+          "indeterminate": 1,
+          "n": 10
+        },
+        "400": {
+          "trapped": 7,
+          "recovered": 0,
+          "indeterminate": 3,
+          "n": 10
+        }
+      },
+      "noburst_good": 10,
+      "noburst_trapped": 0,
+      "smallest_size_trapping_in_need": 200,
+      "smallest_size_from_which_all_larger_trap": 200
+    },
+    "1.65": {
+      "lam": 0.11910846892155,
+      "need": 7,
+      "n_seeds": 10,
+      "per_size": {
+        "25": {
+          "trapped": 0,
+          "recovered": 10,
+          "indeterminate": 0,
+          "n": 10
+        },
+        "50": {
+          "trapped": 6,
+          "recovered": 3,
+          "indeterminate": 1,
+          "n": 10
+        },
+        "100": {
+          "trapped": 8,
+          "recovered": 0,
+          "indeterminate": 2,
+          "n": 10
+        },
+        "200": {
+          "trapped": 9,
+          "recovered": 0,
+          "indeterminate": 1,
+          "n": 10
+        },
+        "400": {
+          "trapped": 8,
+          "recovered": 0,
+          "indeterminate": 2,
+          "n": 10
+        }
+      },
+      "noburst_good": 10,
+      "noburst_trapped": 0,
+      "smallest_size_trapping_in_need": 100,
+      "smallest_size_from_which_all_larger_trap": 100
+    }
+  },
+  "lambda_miss_dir": "results\\r7_lambda_miss\\20261024-232728"
+}

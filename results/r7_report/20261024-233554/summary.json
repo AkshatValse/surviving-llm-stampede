@@ -1,0 +1,237 @@
+{
+  "lambda_miss": {
+    "exp1": 0.07277659053663976,
+    "exp2": 0.0726511352866197,
+    "exp5": 0.07218695086154546,
+    "lognormal": 0.07296477341166986,
+    "bimodal": 0.07177294853647924
+  },
+  "peak_cap": {
+    "exp1": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.38177287133606014,
+      "cap_n": 20
+    },
+    "exp2": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.33210513785311635,
+      "cap_n": 20
+    },
+    "exp5": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.21439047675928924,
+      "cap_n": 20
+    },
+    "lognormal": {
+      "peak_n": 24,
+      "peak_mu_turns": 0.21770249535981892,
+      "cap_n": 20
+    },
+    "bimodal": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.2181666797848932,
+      "cap_n": 20
+    }
+  },
+  "window": {
+    "exp1": {
+      "hi": 3.0,
+      "points": [
+        1.65,
+        2.35
+      ],
+      "empty": false
+    },
+    "exp2": {
+      "hi": 2.5,
+      "points": [
+        1.5,
+        2.0
+      ],
+      "empty": false
+    },
+    "exp5": {
+      "hi": 2.0,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "empty": false
+    },
+    "lognormal": {
+      "hi": 2.0,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "empty": false
+    },
+    "bimodal": {
+      "hi": 2.0,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "empty": false
+    }
+  },
+  "pairs": {
+    "exp1": {
+      "1.65": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      },
+      "2.35": {
+        "burst_trapped": 10,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    },
+    "exp2": {
+      "1.5": {
+        "burst_trapped": 7,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      },
+      "2": {
+        "burst_trapped": 10,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    },
+    "exp5": {
+      "1.35": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      },
+      "1.65": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    },
+    "lognormal": {
+      "1.35": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      },
+      "1.65": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    },
+    "bimodal": {
+      "1.35": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      },
+      "1.65": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    }
+  },
+  "burst_sizes": {
+    "1.35": {
+      "smallest": 200,
+      "trapped_by_size": {
+        "25": 0,
+        "50": 5,
+        "100": 5,
+        "200": 9,
+        "400": 7
+      }
+    },
+    "1.65": {
+      "smallest": 100,
+      "trapped_by_size": {
+        "25": 0,
+        "50": 6,
+        "100": 8,
+        "200": 9,
+        "400": 8
+      }
+    }
+  },
+  "horizon": {
+    "1.35": {
+      "no_burst": {
+        "n": 10,
+        "n_collapsed": 0,
+        "n_trap_onset": 0,
+        "n_released": 0,
+        "trapped_in_[5000, 7500]": 0,
+        "recovered_in_[5000, 7500]": 10,
+        "trapped_in_[27500, 30000]": 0,
+        "recovered_in_[27500, 30000]": 10
+      },
+      "burst": {
+        "n": 10,
+        "n_collapsed": 10,
+        "n_trap_onset": 10,
+        "n_released": 0,
+        "trapped_in_[5000, 7500]": 6,
+        "recovered_in_[5000, 7500]": 0,
+        "trapped_in_[27500, 30000]": 4,
+        "recovered_in_[27500, 30000]": 0
+      }
+    },
+    "1.65": {
+      "no_burst": {
+        "n": 10,
+        "n_collapsed": 0,
+        "n_trap_onset": 0,
+        "n_released": 0,
+        "trapped_in_[5000, 7500]": 0,
+        "recovered_in_[5000, 7500]": 10,
+        "trapped_in_[27500, 30000]": 0,
+        "recovered_in_[27500, 30000]": 10
+      },
+      "burst": {
+        "n": 10,
+        "n_collapsed": 10,
+        "n_trap_onset": 10,
+        "n_released": 0,
+        "trapped_in_[5000, 7500]": 6,
+        "recovered_in_[5000, 7500]": 0,
+        "trapped_in_[27500, 30000]": 6,
+        "recovered_in_[27500, 30000]": 0
+      }
+    }
+  },
+  "lowlam": {
+    "classes": {
+      "TRAPPED": 17,
+      "RECOVERED": 0,
+      "INDETERMINATE": 3,
+      "OTHER": 0,
+      "BOTH": 0
+    },
+    "slope_threshold": 0.01263271640077046,
+    "slope_quantiles": {
+      "q000": 0.005996977460625457,
+      "q005": 0.0062752570452308115,
+      "q025": 0.01496818402244951,
+      "q050": 0.019488940941495017,
+      "q075": 0.023240466213240663,
+      "q095": 0.026246153114093382,
+      "q100": 0.028098461629588442
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "workload": "exp5",
+  "lambda_miss_turns": 0.07218695086154546,
+  "token_rate_miss": 11219.72185185185,
+  "by_mult": {
+    "1.35": {
+      "lam": 0.09745238366308638,
+      "no_burst": {
+        "n": 10,
+        "n_collapsed": 0,
+        "collapse_s": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "n_trap_onset": 0,
+        "n_released": 0,
+        "release_s": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "trapped_in_[5000, 7500]": 0,
+        "recovered_in_[5000, 7500]": 10,
+        "trapped_in_[27500, 30000]": 0,
+        "recovered_in_[27500, 30000]": 10
+      },
+      "burst": {
+        "n": 10,
+        "n_collapsed": 10,
+        "collapse_s": [
+          1400.0,
+          1300.0,
+          1400.0,
+          1400.0,
+          1300.0,
+          1400.0,
+          1300.0,
+          1400.0,
+          1400.0,
+          1300.0
+        ],
+        "n_trap_onset": 10,
+        "n_released": 0,
+        "release_s": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "trapped_in_[5000, 7500]": 6,
+        "recovered_in_[5000, 7500]": 0,
+        "trapped_in_[27500, 30000]": 4,
+        "recovered_in_[27500, 30000]": 0
+      }
+    },
+    "1.65": {
+      "lam": 0.11910846892155,
+      "no_burst": {
+        "n": 10,
+        "n_collapsed": 0,
+        "collapse_s": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "n_trap_onset": 0,
+        "n_released": 0,
+        "release_s": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "trapped_in_[5000, 7500]": 0,
+        "recovered_in_[5000, 7500]": 10,
+        "trapped_in_[27500, 30000]": 0,
+        "recovered_in_[27500, 30000]": 10
+      },
+      "burst": {
+        "n": 10,
+        "n_collapsed": 10,
+        "collapse_s": [
+          1300.0,
+          1400.0,
+          1300.0,
+          1300.0,
+          1300.0,
+          1400.0,
+          1300.0,
+          1400.0,
+          1400.0,
+          1400.0
+        ],
+        "n_trap_onset": 10,
+        "n_released": 0,
+        "release_s": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "trapped_in_[5000, 7500]": 6,
+        "recovered_in_[5000, 7500]": 0,
+        "trapped_in_[27500, 30000]": 6,
+        "recovered_in_[27500, 30000]": 0
+      }
+    }
+  },
+  "lambda_miss_dir": "results\\r7_lambda_miss\\20261024-232728"
+}

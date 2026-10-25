@@ -1,0 +1,520 @@
+........................................................................ [ 15%]
+........................................................................ [ 30%]
+..................F....................................FFFFFF........... [ 46%]
+.......................................................................F [ 61%]
+FFFFFFFFFFF............................................................. [ 76%]
+........................................................................ [ 92%]
+....................................                                     [100%]
+================================== FAILURES ===================================
+__ test_pre_full_run_table_marks_runs_before_and_after_the_amendment_commit ___
+
+tmp_path = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-35/test_pre_full_run_table_marks_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001BE5B899310>
+
+    def test_pre_full_run_table_marks_runs_before_and_after_the_amendment_commit(tmp_path, monkeypatch):
+        def mk_dir(name, stamp, commit, dirty, quick=True):
+            d = tmp_path / "results" / name / stamp
+            d.mkdir(parents=True)
+            (d / "meta.json").write_text(json.dumps({"experiment": name, "start_time": "2026-10-21T" + stamp,
+                                                     "git": {"commit": commit, "dirty": dirty}, "quick": quick, "n_runs": 3}))
+            return d
+>       a = mk_dir("prefix_meta_mech_quick", "01:35:12", "a8b2da7aaa", True)
+
+tests\test_mech_runner.py:825: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_mech_runner.py:821: in mk_dir
+    d.mkdir(parents=True)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/Akshat/AppData/Local/Temp/pytest-of-Akshat/pytest-35/test_pre_full_run_table_marks_0/results/prefix_meta_mech_quick/01:35:12')
+mode = 511, parents = True, exist_ok = False
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+>           os.mkdir(self, mode)
+E           OSError: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'C:\\Users\\Akshat\\AppData\\Local\\Temp\\pytest-of-Akshat\\pytest-35\\test_pre_full_run_table_marks_0\\results\\prefix_meta_mech_quick\\01:35:12'
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1311: OSError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[burst50_fcfs_lru_s2100_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'burst50_fcfs_lru_s2100_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_...ariant": "g"}' == '{"busy_frac_...ariant": "g"}'
+E         Skipping 1019 identical leading characters in diff, use -v to show
+E         Skipping 97 identical trailing characters in diff, use -v to show
+E         - 79780051929, "tail_busy_frac": 1.0, "tail_gate_mean": 0.0, "tail_hit_rate": 0.0, "tail_queue_max": 424.0, "tail_queue_mean": 360.8144265976531, "tail_queue_trend_rise": 104.34879780051929, "tail_s
+E         ?           ^                                                                                                                                                                               ^
+E         + 79780051924, "tail_busy_frac": 1.0, "tail_gate_mean": 0....
+E         
+E         ...Full output truncated (2 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[cap20_cold300_lpm_lru_s2201_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'cap20_cold300_lpm_lru_s2201_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_...ariant": "g"}' == '{"busy_frac_...ariant": "g"}'
+E         Skipping 1234 identical leading characters in diff, use -v to show
+E         Skipping 84 identical trailing characters in diff, use -v to show
+E         - 70624400899, "tail_s
+E         ?           ^
+E         + 70624400892, "tail_s
+E         ?           ^
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[cap28_cold300_fcfs_lru_s2200_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'cap28_cold300_fcfs_lru_s2200_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_...ariant": "g"}' == '{"busy_frac_...ariant": "g"}'
+E         Skipping 1016 identical leading characters in diff, use -v to show
+E         Skipping 97 identical trailing characters in diff, use -v to show
+E         - 074336770873, "tail_busy_frac": 0.889558146411931, "tail_gate_mean": 0.0, "tail_hit_rate": 0.9366949849273773, "tail_queue_max": 3.0, "tail_queue_mean": 0.01578048112169017, "tail_queue_trend_rise": -0.005964074336770873, "tail_s
+E         ?           ^^^                                                                                                                                                                                                       ...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_lru_n28_s2000_H35000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'closed_fcfs_lru_n28_s2000_H35000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_..."k=1.0|n=28"}' == '{"busy_frac_..."k=1.0|n=28"}'
+E         Skipping 1065 identical leading characters in diff, use -v to show
+E         - 54701070043, "tail_busy_frac": 0.9999952752597354, "tail_gate_mean": 0.0, "tail_hit_rate": 0.6596188621505077, "tail_queue_max": 19.0, "tail_queue_mean": 2.981832539717307, "tail_queue_trend_rise": 1.235854701070043, "tail_s": 5000.0, "tail_sessions_per_s": 0.0954, "tail_turns_per_s": 1.4371999999999998, "variant": "k=1.0|n=28"}
+E         ?           ^^                                                                                                                                                                    ...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_random_n32_s2000_H20000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'closed_fcfs_random_n32_s2000_H20000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_..."k=1.0|n=32"}' == '{"busy_frac_..."k=1.0|n=32"}'
+E         Skipping 1069 identical leading characters in diff, use -v to show
+E         - 77465536315, "tail_busy_frac": 1.0, "tail_gate_mean": 0.0, "tail_hit_rate": 0.42424242424242425, "tail_queue_max": 19.0, "tail_queue_mean": 4.832976861579953, "tail_queue_trend_rise": -3.694977465536315, "tail_s": 5000.0, "tail_sessions_per_s": 0.069, "tail_turns_per_s": 1.0292, "variant": "k=1.0|n=32"}
+E         ?           ^^                                                                                                                                                                                             ^...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_full_reserve_is_bit_identical_to_the_round4_engine[closed_lpm_lru_n24_s2001_H35000] _
+
+cfg4 = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...bda_dependence': {'lam_mults': [1.5, 2.0, 2.5], 'policy': 'fcfs_lru', 'sizes': [0, 5, 10, 15, 20, 25, ...]}, ...}, ...}
+cell = 'closed_lpm_lru_n24_s2001_H35000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_full_reserve_is_bit_identical_to_the_round4_engine(cfg4, cell):
+        """tests/data/r4_golden.json was generated from the UNMODIFIED round-4 engine (commit 8ab986f): closed FCFS-LRU / LPM-LRU /
+        FCFS-RANDOM cells, a burst cell and two capped cold-start cells. The default alloc_mode must reproduce summary, every window and the
+        queue trace bit for bit."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = _golden_specs(cfg4)[cell]
+        res = simulate(cfg4, rs)
+        summary = {k: v for k, v in res["summary"].items() if not k.startswith("wall")}
+>       assert json.dumps(summary, sort_keys=True, default=float) == json.dumps(gold["summary"], sort_keys=True, default=float)
+E       assert '{"busy_frac_..."k=1.0|n=24"}' == '{"busy_frac_..."k=1.0|n=24"}'
+E         Skipping 1066 identical leading characters in diff, use -v to show
+E         Skipping 94 identical trailing characters in diff, use -v to show
+E         - 84459014793, "tail_busy_frac": 0.9993974828356352, "tail_gate_mean": 0.0, "tail_hit_rate": 0.8740093805595989, "tail_queue_max": 15.0, "tail_queue_mean": 0.7665341448562955, "tail_queue_trend_rise": -0.5427684459014793, "tail_s
+E         ?           ^^                                                                                                                                                                                                          ...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests\test_r5_engine.py:373: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_aging10_cold100_s7413_H6000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_aging10_cold100_s7413_H6000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...8cb479fc41bc'} == {'n_windows':...8cb479fc41bc'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 1.000043878728965, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 1.000043878728965, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_burst60_lpm_s7412_H9000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_burst60_lpm_s7412_H9000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...f2a09d1d419e'} == {'n_windows':...f2a09d1d419e'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 0.9407499774293887, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 0.9407499774293887, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_closed_fcfs_n32_s7400_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_closed_fcfs_n32_s7400_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...debe6cb8b4fd'} == {'n_windows':...debe6cb8b4fd'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 0.9999909745076679, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 0.9999909745076679, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_nobatch_closed_fcfs_n32_s7415_H3000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_nobatch_closed_fcfs_n32_s7415_H3000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...3777340b2625'} == {'n_windows':...3777340b2625'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 1.000039898751868, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 1.000039898751868, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_ttl_cold60_s7414_H6000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'full_ttl_cold60_s7414_H6000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...c611e77072a5'} == {'n_windows':...c611e77072a5'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'busy_frac_total': 0.8053164845388313, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}} != {'summary': {'busy_frac_total': 0.8053164845388313, 'cap_final': -1, 'cap_max': -1, 'cap_min': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_cap20_cold300_lpm_s7411_H9000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ondemand_cap20_cold300_lpm_s7411_H9000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...096ea75c37a9'} == {'n_windows':...096ea75c37a9'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 11233250, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9294255233667128, 'cap_final': 20, ...}} != {'summary': {'admitted_prefill_tokens': 11233250, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9294255233667128, 'cap_final': 20, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_fcfs_n40_s7403_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ondemand_closed_fcfs_n40_s7403_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...f6c1982de9f2'} == {'n_windows':...f6c1982de9f2'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 57947660, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 1.0001020215578162, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 57947660, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 1.0001020215578162, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_lpm_n24_s7404_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ondemand_closed_lpm_n24_s7404_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...32c262e95a58'} == {'n_windows':...32c262e95a58'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 25651071, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9994568902962576, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 25651071, 'alloc_mode': 'ondemand_preempt', 'busy_frac_total': 0.9994568902962576, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_burst60_fcfs_s7410_H9000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_burst60_fcfs_s7410_H9000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...4299da9dfed2'} == {'n_windows':...4299da9dfed2'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 49381164, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9451188295019145, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 49381164, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9451188295019145, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_fcfs_n40_s7401_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_closed_fcfs_n40_s7401_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...f55356051399'} == {'n_windows':...f55356051399'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 58568593, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.000057492285469, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 58568593, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.000057492285469, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_lpm_n24_s7402_H8000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_closed_lpm_n24_s7402_H8000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...1b803cbbc459'} == {'n_windows':...1b803cbbc459'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 22210139, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9989861566749534, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 22210139, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 0.9989861566749534, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+_ test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_whole_victim_n40_s7405_H6000] _
+
+gcfg = {'ablation_skip_ahead': {'cold_sessions': 300, 'horizon_s': 10000.0, 'lam_mult': 2.0, 'policies': ['fcfs', 'lpm', 'lpm...'calibration': {'cache_enabled': False, 'horizon_s': 100000.0, 'policy': 'fcfs_lru', 'pool_sessions': 60000, ...}, ...}
+cell = 'ratio_closed_whole_victim_n40_s7405_H6000'
+
+    @pytest.mark.parametrize("cell", GOLDEN_CELLS)
+    def test_mixed_mode_is_bit_identical_to_the_engine_before_the_option(gcfg, cell):
+        """Summary (minus wall-clock), SHA-256 of every window and of the queue trace, bit for bit, with the default config AND with
+        ``batching: mixed`` spelled out together with (ignored) separate-mode cost keys."""
+        gold = json.loads(GOLDEN.read_text())["cells"][cell]
+        rs = golden_specs(gcfg)[cell]
+>       assert run_cell(gcfg, rs) == gold
+E       AssertionError: assert {'n_windows':...60235f49b0ac'} == {'n_windows':...60235f49b0ac'}
+E         Omitting 3 identical items, use -vv to show
+E         Differing items:
+E         {'summary': {'admitted_prefill_tokens': 43407296, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.0000028514441275, 'cap_final': -1, ...}} != {'summary': {'admitted_prefill_tokens': 43407296, 'alloc_mode': 'ratio_reserve', 'busy_frac_total': 1.0000028514441275, 'cap_final': -1, ...}}
+E         Use -v to get more diff
+
+tests\test_batching.py:159: AssertionError
+============================== warnings summary ===============================
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:64
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:85: 6 warnings
+tests/test_prefix_meta.py: 25 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    parse = parser.parseString(pattern)
+
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:89: 6 warnings
+tests/test_prefix_meta.py: 25 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    parser.resetCache()
+
+..\..\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:45
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+    ParserElement.enablePackrat()
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2010: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.space          = oneOf(self._space_widths)("space")
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2012: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.style_literal  = oneOf(
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2020: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    )("sym").leaveWhitespace()
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2024: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.start_group    = Optional(r"\math" + oneOf(self._fontnames)("font")) + "{"
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2027: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    p.delim          = oneOf(self._delims)
+
+tests/test_prefix_meta.py: 47 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:1984: PyparsingDeprecationWarning: 'setName' deprecated - use 'set_name'
+    val.setName(key)
+
+tests/test_prefix_meta.py: 44 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:1987: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    val.setParseAction(getattr(self, key))
+
+tests/test_prefix_meta.py: 16 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:1748: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+    return Empty().setParseAction(raise_error)
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2088: PyparsingDeprecationWarning: 'endQuoteChar' argument is deprecated, use 'end_quote_char'
+    p.text = cmd(r"\text", QuotedString('{', '\\', endQuoteChar="}"))
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2097: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+    + OneOrMore(oneOf(["_", "^"]) - p.placeable)("subsuper")
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2146: PyparsingDeprecationWarning: 'unquoteResults' argument is deprecated, use 'unquote_results'
+    p.math_string   = QuotedString('$', '\\', unquoteResults=False)
+
+tests/test_prefix_meta.py::test_pipeline_quick_e0_to_e4_writes_expected_files_and_never_overwrites
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2147: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+    p.non_math      = Regex(r"(?:(?:\\[$])|[^$])*").leaveWhitespace()
+
+tests/test_prefix_meta.py: 24 warnings
+tests/test_mech_runner.py: 54 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2170: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    result = self._expression.parseString(s)
+
+tests/test_prefix_meta.py: 30 warnings
+tests/test_mech_runner.py: 54 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2197: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+    return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+
+tests/test_prefix_meta.py: 30 warnings
+tests/test_mech_runner.py: 54 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\pyparsing\util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+    return fn(self, *args, **kwargs)
+
+tests/test_prefix_meta.py: 24 warnings
+tests/test_mech_runner.py: 54 warnings
+  C:\Users\Akshat\Desktop\Claude Code\.venvs\nova-research\Lib\site-packages\matplotlib\_mathtext.py:2178: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+    ParserElement.resetCache()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_mech_runner.py::test_pre_full_run_table_marks_runs_before_and_after_the_amendment_commit
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[burst50_fcfs_lru_s2100_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[cap20_cold300_lpm_lru_s2201_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[cap28_cold300_fcfs_lru_s2200_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_lru_n28_s2000_H35000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[closed_fcfs_random_n32_s2000_H20000]
+FAILED tests/test_r5_engine.py::test_full_reserve_is_bit_identical_to_the_round4_engine[closed_lpm_lru_n24_s2001_H35000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_aging10_cold100_s7413_H6000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_burst60_lpm_s7412_H9000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_closed_fcfs_n32_s7400_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_nobatch_closed_fcfs_n32_s7415_H3000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[full_ttl_cold60_s7414_H6000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_cap20_cold300_lpm_s7411_H9000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_fcfs_n40_s7403_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ondemand_closed_lpm_n24_s7404_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_burst60_fcfs_s7410_H9000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_fcfs_n40_s7401_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_lpm_n24_s7402_H8000]
+FAILED tests/test_batching.py::test_mixed_mode_is_bit_identical_to_the_engine_before_the_option[ratio_closed_whole_victim_n40_s7405_H6000]
+19 failed, 449 passed, 504 warnings in 127.52s (0:02:07)

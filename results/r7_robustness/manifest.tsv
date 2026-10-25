@@ -1,0 +1,8 @@
+stage	dir
+lambda_miss	results/r7_lambda_miss/20261024-232728
+curves	results/r7_curves/20261024-232744
+edge	results/r7_edge/20261024-232802
+pairs	results/r7_pairs/20261024-232827
+burst_sizes	results/r7_burst_sizes/20261024-232921
+horizon	results/r7_horizon/20261024-232936
+lowlam	results/r7_lowlam/20261024-232951
