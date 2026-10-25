@@ -1,0 +1,302 @@
+research_question: >-
+  In the prefix-cache serving simulator (src/prefixmeta), is the metastable congested state caused by
+  work-conserving admission (rather than queue ordering), and does bounding the resident KV working set
+  (static session cap at the length-biased working set, TTL pin that blocks admission, adaptive AIMD cap)
+  restore global stability at a small throughput price? How does the escape time from the good state scale with
+  system size, and is the bistable window robust across agent-workload variants?
+
+assumptions_note: >-
+  Round 2 of the prefix-cache metastability pilot. Engine, workload and metric constants are inherited from
+  `base_config` (ALL are assumptions, none a measurement). The mechanisms are simplified, documented re-implementations
+  (src/prefixmeta/mechanisms.py, engine.py header): TTL pin and queued-prefix protection are modelled on whole-session
+  KV, AIMD acts on the session gate (no mid-session pausing), program order is by session arrival. Predictions P1-P8
+  are in `preregistration_file`, committed before any round-2 run.
+
+base_config: configs/prefix_meta.yaml
+preregistration_file: configs/prefix_meta_mech_prereg.yaml
+
+calibration:
+  # base-workload lambda_miss (and the round-1 lambda_cap of LPM, used for reference only) from the round-1 E0 result.
+  e0_summary: results/prefix_meta_e0/20261021-005706/e0_summary.json
+
+metrics:
+  track_memory: true               # window columns reserved_mean / idle_mean / protected_mean (tokens)
+
+# ---------------------------------------------------------------- policies (merged with the base config's)
+# kind = ordering; the other keys are the round-2 modifiers (see mechanisms.py).
+policies:
+  peek:      {kind: fcfs, protect_queued: pin}      # PEEK-like, hard protection of queued sessions' KV (primary)
+  peek_rank: {kind: fcfs, protect_queued: rank}     # PEEK paper variant: ranking only, never a pin
+  peek_lpm:  {kind: lpm,  protect_queued: pin}      # protection composed with hit-first ordering
+  ttl5:   {kind: continuum, ttl_pin_s: 5}           # Continuum-like: pin tau s + pinned-first / program-order priority
+  ttl10:  {kind: continuum, ttl_pin_s: 10}
+  ttl20:  {kind: continuum, ttl_pin_s: 20}
+  ttlf5:  {kind: fcfs, ttl_pin_s: 5}                # same pins but plain FCFS order (isolates the pin from the order)
+  ttlf10: {kind: fcfs, ttl_pin_s: 10}
+  ttlf20: {kind: fcfs, ttl_pin_s: 20}
+  # Round-2 review finding 1: Continuum-faithful release of pins (scout spec Sec. 5.2, NOT verified against the paper or
+  # its code): the request under consideration that does not fit unpins other sessions, latest program arrival first.
+  # "eager" releases until it fits or no pin is left; "eager_fit" only releases if that makes it fit (sensitivity).
+  ttl10e:  {kind: continuum, ttl_pin_s: 10, ttl_unpin: eager}
+  ttl20e:  {kind: continuum, ttl_pin_s: 20, ttl_unpin: eager}
+  ttl10ef: {kind: continuum, ttl_pin_s: 10, ttl_unpin: eager_fit}
+  ttl20ef: {kind: continuum, ttl_pin_s: 20, ttl_unpin: eager_fit}
+  progfcfs: {kind: program_fcfs}                    # order by session arrival, no pins, work-conserving (control)
+  lb_cap:  {kind: fcfs, session_cap: lb}            # N_lb = floor(M / E_lb), from the workload config only
+  cap_1p3: {kind: fcfs, session_cap: {lb_mult: 1.3}}   # floor(1.3 N_lb)
+  aimd_cap:                                         # task fallback rule, start at N_lb
+    kind: fcfs
+    session_cap:
+      aimd: {rule: hit, interval_s: 10.0, start: lb, min_cap: 4, hit_threshold: 0.7, increase: 1, decrease: 0.7}
+  concur_cap:                                       # CONCUR Eq. 1 (U_low 0.2, U_high 0.5, H 0.2, +2, x0.5), W0 = N_lb
+    kind: fcfs
+    session_cap:
+      aimd: {rule: concur, interval_s: 10.0, start: lb, min_cap: 4, u_low: 0.2, u_high: 0.5, h_thresh: 0.2,
+             increase: 2, decrease: 0.5}
+
+# Display labels used by every report (round-2 review finding 1). The policy KEYS above are kept unchanged because they
+# are the join keys of the committed pre-registration, its amendments, the tests and the quick/smoke result dirs; only the
+# labels say what each policy actually is.
+labels:
+  fcfs: "FCFS"
+  lpm: "LPM"
+  peek: "queued-session protection, hard pin (non-work-conserving)"
+  peek_rank: "queued-session protection, ranking only (PEEK-like, work-conserving)"
+  peek_lpm: "queued-session hard pin + LPM order (= LPM here)"
+  ttl5: "blocking TTL pin 5 s + program priority (idle-only release)"
+  ttl10: "blocking TTL pin 10 s + program priority (idle-only release)"
+  ttl20: "blocking TTL pin 20 s + program priority (idle-only release)"
+  ttlf5: "blocking TTL pin 5 s + FCFS (idle-only release)"
+  ttlf10: "blocking TTL pin 10 s + FCFS (idle-only release)"
+  ttlf20: "blocking TTL pin 20 s + FCFS (idle-only release)"
+  ttl10e: "Continuum-like 10 s pin, eager unpin (scout spec, unverified)"
+  ttl20e: "Continuum-like 20 s pin, eager unpin (scout spec, unverified)"
+  ttl10ef: "Continuum-like 10 s pin, eager unpin only if it fits"
+  ttl20ef: "Continuum-like 20 s pin, eager unpin only if it fits"
+  progfcfs: "program-order FCFS (work-conserving, no pin)"
+  lb_cap: "LB-CAP (N_lb)"
+  cap_1p3: "CAP 1.3 N_lb"
+  aimd_cap: "AIMD-CAP (start N_lb)"
+  concur_cap: "CONCUR-cap (start N_lb)"
+
+# ---------------------------------------------------------------- phase: recovery from a cold start vs lambda
+phase:
+  cold_sessions: 300
+  lam_mults: [0.6, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 2.0, 2.5]     # multiples of lambda_miss (2.5 > round-1 lambda_cap = 2.44)
+  policies: [fcfs, lpm, peek_rank, peek]    # peek_rank = work-conserving PEEK-like (H1); peek = hard pin (amendment 2)
+  seeds: [0, 1, 2]
+  horizon_s: 30000.0                        # REGISTERED horizon (kept for the derived registered-horizon reading)
+  # Amendment 2 (round-2 review finding 7): recovery just below lambda_miss takes 12k-73k s, so runs at mult <=
+  # long_horizon_up_to_mult use long_horizon_s; recovered_registered_horizon re-judges them at horizon_s from the windows.
+  long_horizon_s: 150000.0
+  long_horizon_up_to_mult: 1.25
+  registered_tail_s: 5000.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  quick:
+    lam_mults: [0.8, 1.5]
+    policies: [fcfs, peek]
+    seeds: [0]
+    horizon_s: 3000.0
+    long_horizon_s: 5000.0
+
+# ---------------------------------------------------------------- mech: mechanisms vs the trap
+mech:
+  policies: [fcfs, lpm, peek, peek_rank, peek_lpm, ttl5, ttl10, ttl20, ttlf5, ttlf10, ttlf20, ttl10e, ttl20e, ttl10ef,
+             ttl20ef, progfcfs, lb_cap, cap_1p3, aimd_cap, concur_cap]
+  cold:
+    cold_sessions: 300
+    lam_mults: [1.5, 2.0]
+    seeds: [0, 1, 2]
+    horizon_s: 30000.0
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+  burst:
+    lam_mult: 2.0
+    seeds: [0, 1, 2, 3, 4]
+    warmup_s: 5000.0
+    burst_sessions: 200
+    burst_width_s: 60.0
+    after_s: 25000.0
+    hit_eval_from_s: 10000.0
+    trap_hit_below: 0.2
+    trap_min_s: 10000.0
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+  # SUPPLEMENTARY (H2 "static caps above N_lb fail sharply"): static CAP(c), c = floor(mult * N_lb), cold start.
+  cap_sweep:
+    mults_of_N_lb: [0.5, 0.75, 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75]
+    lam_mult: 2.0
+    cold_sessions: 300
+    seeds: [0, 1, 2]
+    horizon_s: 30000.0
+  # from-empty stable limit per policy by bracket + bisection (the E0 procedure with the policy swapped; stability
+  # judged on backlog = waiting queue + gate queue)
+  limit:
+    policies: [fcfs, lpm, peek, peek_rank, ttl5, ttl10, ttl20, ttlf5, ttlf10, ttlf20, ttl10e, ttl20e, ttl10ef, ttl20ef,
+               progfcfs, lb_cap, cap_1p3, aimd_cap, concur_cap]
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 20000.0
+    bracket_mults: [1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0]
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  # Amendment 2 (round-2 review finding 5): P6 is judged on the GOOD-STATE CAPACITY, not on the escape-limited stable
+  # limit above. Closed population of N sessions WITH the cache (a finished session is replaced at once), steady-state
+  # throughput after warmup; ceiling = max over N of the seed-mean sessions/s.
+  capacity:
+    policies: [lpm, fcfs, peek, peek_rank, ttl5, ttl10, ttl20, ttlf5, ttlf10, ttlf20, ttl10e, ttl20e, ttl10ef, ttl20ef,
+               progfcfs, lb_cap, cap_1p3, aimd_cap, concur_cap]
+    populations: [8, 16, 24, 28, 32, 40, 48, 64, 96, 150, 300]
+    seeds: [0, 1, 2]
+    horizon_s: 30000.0
+    warmup_s: 5000.0
+    pool_sessions: 30000
+  quick:
+    policies: [fcfs, peek, ttl10, ttl10e, lb_cap, aimd_cap]
+    capacity: {policies: [lpm, lb_cap], populations: [16, 64], seeds: [0], horizon_s: 3000.0, warmup_s: 500.0,
+               pool_sessions: 3000}
+    cold: {lam_mults: [2.0], seeds: [0], horizon_s: 3000.0}
+    burst: {seeds: [0], warmup_s: 1000.0, after_s: 3000.0, hit_eval_from_s: 1000.0, trap_min_s: 2000.0}
+    cap_sweep: {mults_of_N_lb: [1.0, 1.3], seeds: [0], horizon_s: 3000.0}
+    limit: {policies: [fcfs, lb_cap], seeds: [0], horizon_s: 3000.0, bracket_mults: [2.0, 4.0], max_bisect_steps: 2,
+            stable_trend_window_s: 1500.0}
+
+# ---------------------------------------------------------------- escape: time to collapse vs system size
+# REGISTERED design (sizes 0.25 / 0.5 / 1 at 2x and 2.25x). Round-2 review finding 2: the small sizes sit above their own
+# from-empty stability limit at these multiples, so a P7 verdict on this design does not test metastable escape scaling.
+# It is run unchanged and reported with the per-size lambda_cap(k); the in-window design below is the amended test.
+escape:
+  policy: fcfs
+  sizes: [0.25, 0.5, 1.0]                 # k
+  lam_mults: [2.0, 2.25]                  # multiples of lambda_miss(k)
+  scalings: [calibrated, fluid]           # calibrated: lambda = m lambda_miss(k) (primary); fluid: m k lambda_miss(1)
+  seeds: [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1016, 1017,
+          1018, 1019]
+  horizon_s: 200000.0
+  queue_factor: 4.0                       # collapse if waiting queue > queue_factor * M_k / E_lb
+  hit_below: 0.2                          # ... or hit rate < hit_below
+  hit_windows: 3                          # ... in this many consecutive complete 1000-s windows
+  calib:                                  # lambda_miss(k): closed population round(population_per_k * k), FCFS, no cache
+    population_per_k: 60
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 100000.0
+    warmup_s: 5000.0
+    pool_sessions: 60000
+  limit:                                  # from-empty stable limit of the FCFS policy at each size (E0 procedure)
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 20000.0
+    bracket_mults: [1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0]
+    lower_mults: [0.75, 0.5, 0.25]
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  quick:
+    sizes: [0.25, 0.5]
+    lam_mults: [2.25]
+    scalings: [calibrated]
+    seeds: [1000, 1001, 1002]
+    horizon_s: 4000.0
+    calib: {seeds: [0], horizon_s: 4000.0, warmup_s: 500.0, pool_sessions: 5000}
+    limit: {seeds: [0], horizon_s: 3000.0, bracket_mults: [2.0, 4.0], max_bisect_steps: 2, stable_trend_window_s: 1500.0}
+
+# AMENDED design (amendment 2): sizes inside the metastable window at every k, same policy / stop rules / event time.
+# Reported with lambda_cap(k) and lambda / lambda_cap(k) for every cell; P7-amended is judged at 2.25x, the other
+# multiples are secondary rows (all reported, none selected after the fact). Seeds are disjoint from the registered ones.
+escape_inwindow:
+  policy: fcfs
+  sizes: [1.0, 2.0, 4.0]
+  lam_mults: [2.25, 2.5, 2.75]
+  scalings: [calibrated, fluid]
+  seeds: [1100, 1101, 1102, 1103, 1104, 1105, 1106, 1107, 1108, 1109, 1110, 1111, 1112, 1113, 1114, 1115, 1116, 1117,
+          1118, 1119]
+  horizon_s: 400000.0
+  queue_factor: 4.0
+  hit_below: 0.2
+  hit_windows: 3
+  calib:
+    population_per_k: 60
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 100000.0
+    warmup_s: 5000.0
+    pool_sessions: 60000
+  limit:
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 20000.0
+    bracket_mults: [1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0]
+    lower_mults: [0.75, 0.5, 0.25]
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  quick:
+    sizes: [1.0, 2.0]
+    lam_mults: [2.5]
+    scalings: [calibrated, fluid]
+    seeds: [1100, 1101, 1102]
+    horizon_s: 4000.0
+    calib: {seeds: [0], horizon_s: 4000.0, warmup_s: 500.0, pool_sessions: 5000}
+    limit: {seeds: [0], horizon_s: 3000.0, bracket_mults: [2.0, 4.0], max_bisect_steps: 2, stable_trend_window_s: 1500.0}
+
+# ---------------------------------------------------------------- robust: workload variants (H4)
+robust:
+  variants:
+    - {name: base,           workload: {}}
+    - {name: ctx8k,          workload: {initial_context_tokens: 8000}}
+    - {name: ctx16k,         workload: {initial_context_tokens: 16000}}
+    - {name: tool_lognormal, workload: {tool_time_dist: lognormal, tool_time_cv: 1.5}}
+    - {name: tool_bimodal,   workload: {tool_time_dist: bimodal, tool_time_lo_s: 0.3, tool_time_hi_s: 20.0}}
+    - {name: turns5,         workload: {mean_turns: 5}}
+    - {name: turns30,        workload: {mean_turns: 30}}
+    - {name: decode400,      workload: {decode_tokens: 400}}
+  limit_policies: [lpm, fcfs]
+  burst_policy: fcfs
+  burst_lam_mult: 1.6                     # multiple of the variant's own lambda_miss
+  burst_sessions: 200
+  burst_width_s: 60.0
+  burst_seeds: [0, 1, 2, 3, 4]
+  warmup_s: 5000.0
+  after_s: 25000.0
+  hit_eval_from_s: 10000.0
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  calib:                                  # per-variant lambda_miss (E0 procedure)
+    population: 60
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 100000.0
+    warmup_s: 5000.0
+    pool_sessions: 60000
+  limit:
+    seeds: [0, 1, 2, 3, 4]
+    horizon_s: 20000.0
+    bracket_mults: [1.5, 2.0, 2.5, 3.0, 4.0, 6.0, 8.0, 12.0, 16.0]
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  holds_R_above: 1.5
+  holds_trap_min_seeds: 4
+  holds_variants_needed: 5
+  quick:
+    variants:
+      - {name: base,           workload: {}}
+      - {name: tool_bimodal,   workload: {tool_time_dist: bimodal, tool_time_lo_s: 0.3, tool_time_hi_s: 20.0}}
+    burst_seeds: [0]
+    warmup_s: 1000.0
+    after_s: 3000.0
+    hit_eval_from_s: 1000.0
+    trap_min_s: 2000.0
+    calib: {seeds: [0], horizon_s: 4000.0, warmup_s: 500.0, pool_sessions: 5000}
+    limit: {seeds: [0], horizon_s: 3000.0, bracket_mults: [2.0, 4.0], max_bisect_steps: 2, stable_trend_window_s: 1500.0}

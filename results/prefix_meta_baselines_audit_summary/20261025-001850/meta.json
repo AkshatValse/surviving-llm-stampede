@@ -1,0 +1,21 @@
+{
+  "script": "analysis/baselines_audit_tables.py",
+  "argv": [
+    "analysis/baselines_audit_tables.py"
+  ],
+  "git": {
+    "commit": "d80519c76b97a09e324fe51b092458b7356af425",
+    "branch": "r7/baselines",
+    "dirty": false
+  },
+  "lambda_miss": 0.047418947368421054,
+  "inputs": {
+    "curve_baselines_audit": "results/prefix_meta_probe_curve_baselines_audit/20261024-234546",
+    "curve_baselines_audit_s10": "results/prefix_meta_probe_curve_baselines_audit_s10/20261024-235557",
+    "curve_baselines_audit_deadkv": "results/prefix_meta_probe_curve_baselines_audit_deadkv/20261024-235728",
+    "cold": "results/prefix_meta_phase_baselines_audit_cold/20261024-234700",
+    "cold_hi": "results/prefix_meta_phase_baselines_audit_cold_hi/20261025-001340",
+    "cold_long": "results/prefix_meta_phase_baselines_audit_cold_long/20261025-001407",
+    "burst": "prefix_meta_probe_burst_baselines_audit_<policy> (newest timestamp each): prefix_meta_probe_burst_baselines_audit_fcfs/20261024-235358, prefix_meta_probe_burst_baselines_audit_peek_rank/20261024-235407, prefix_meta_probe_burst_baselines_audit_peek/20261024-235404, prefix_meta_probe_burst_baselines_audit_peek_order_audit/20261024-235410, prefix_meta_probe_burst_baselines_audit_peek_score_audit/20261024-235427, prefix_meta_probe_burst_baselines_audit_peek_singleton_audit/20261024-235430, prefix_meta_probe_burst_baselines_audit_lpm/20261024-235401, prefix_meta_probe_burst_baselines_audit_ttl5/20261024-235448, prefix_meta_probe_burst_baselines_audit_ttl5cw/20261024-235451, prefix_meta_probe_burst_baselines_audit_ttl5cwr/20261024-235455, prefix_meta_probe_burst_baselines_audit_ttl10/20261024-235458, prefix_meta_probe_burst_baselines_audit_ttl10e/20261024-235502, prefix_meta_probe_burst_baselines_audit_ttl10ef/20261024-235505, prefix_meta_probe_burst_baselines_audit_ttl10cw/20261024-235509, prefix_meta_probe_burst_baselines_audit_ttl10cwr/20261024-235512, prefix_meta_probe_burst_baselines_audit_ttl20/20261024-235516, prefix_meta_probe_burst_baselines_audit_ttl20e/20261024-235520, prefix_meta_probe_burst_baselines_audit_ttl20ef/20261024-235523, prefix_meta_probe_burst_baselines_audit_ttl20cw/20261024-235526, prefix_meta_probe_burst_baselines_audit_ttl20cwr/20261024-235531, prefix_meta_probe_burst_baselines_audit_concur_cap/20261024-235536, prefix_meta_probe_burst_baselines_audit_concur_lpm/20261024-235540, prefix_meta_probe_burst_baselines_audit_concur_i5/20261024-235543, prefix_meta_probe_burst_baselines_audit_concur_i20/20261024-235547, prefix_meta_probe_burst_baselines_audit_concur_s8/20261024-235551, prefix_meta_probe_burst_baselines_audit_concur_s56/20261024-235554"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "experiment": "probe_burst",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_probe_run.py",
+    "burst",
+    "--spec",
+    "configs/prefix_meta_baselines_audit.yaml",
+    "--workers",
+    "4",
+    "--tag",
+    "baselines_audit_peek",
+    "--set",
+    "probe.burst.policy=peek"
+  ],
+  "git": {
+    "commit": "d80519c76b97a09e324fe51b092458b7356af425",
+    "dirty": true,
+    "branch": "r7/baselines"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T23:54:04",
+  "end_time": "2026-10-24T23:54:06",
+  "wall_s": 1.9509589672088623,
+  "quick": false,
+  "workers": 4,
+  "overrides": [
+    "probe.burst.policy=peek"
+  ],
+  "tag": "baselines_audit_peek",
+  "n_runs": 5,
+  "timing": {
+    "total_sim_s": 150000.0,
+    "total_run_wall_s": 1.9238687999895774,
+    "wall_s_per_10k_sim_s": 0.12825791999930516,
+    "max_run_wall_s": 0.4018202000297606
+  },
+  "engine_effective": {
+    "iter_fixed_s": 0.002,
+    "iter_floor_s": 0.0095,
+    "per_token_s": 8.4e-05,
+    "decode_attn_s": 0.00071,
+    "attn_ctx_norm": 8192,
+    "prefill_attn_s": 3.5e-09,
+    "prefill_attn_ctx": "end",
+    "prefill_chunk_budget": 8192,
+    "max_running_seqs": 256,
+    "kv_memory_tokens": 300000,
+    "cache_enabled": true,
+    "skip_ahead": false,
+    "admission_limited_by_prefill_budget": true,
+    "batch_decode_iterations": true,
+    "free_kv_on_session_end": true
+  },
+  "workload_effective": {
+    "initial_context_tokens": 2000,
+    "new_prompt_tokens": 550,
+    "decode_tokens": 100,
+    "mean_turns": 15,
+    "max_turns": 60,
+    "tool_time_mean_s": 5.0,
+    "tool_time_dist": "exp",
+    "tool_time_cv": 1.5
+  },
+  "section_effective": {
+    "policy": "peek",
+    "lambda": null,
+    "lambda_miss": 0.047418947368421054,
+    "lam_mult": 2.0,
+    "burst_n": 200,
+    "burst_width_s": 60.0,
+    "warmup_s": 5000.0,
+    "after_s": 25000.0,
+    "cap": null,
+    "arms": {
+      "burst": {
+        "burst_n": 200
+      }
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "hit_eval_from_s": 10000.0,
+    "trap_hit_below": 0.2,
+    "trap_min_s": 10000.0,
+    "engine": {},
+    "workload": {}
+  },
+  "base_config": "configs/prefix_meta_mech.yaml",
+  "arms": {
+    "burst": {
+      "burst_n": 200,
+      "cap": null
+    }
+  },
+  "lambda": 0.09483789473684211,
+  "t_burst": 5000.0,
+  "horizon_s": 30000.0,
+  "common_random_numbers": "same seed -> same Poisson stream and sessions for every arm; the burst is an extra stream"
+}

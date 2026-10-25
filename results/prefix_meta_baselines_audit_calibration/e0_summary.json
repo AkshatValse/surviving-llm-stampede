@@ -1,0 +1,6 @@
+{
+  "lambda_miss": 0.047418947368421054,
+  "lambda_cap": 0.11558368421052631,
+  "R": 2.4375,
+  "_provenance": "subset of results/prefix_meta_e0/20261021-005706/e0_summary.json (round-1 E0, read-only copy of three fields); lambda_miss is the base-workload all-miss capacity used by every round-3 and probe config; lambda_cap and R are reference only"
+}
