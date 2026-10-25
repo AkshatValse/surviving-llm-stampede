@@ -1,0 +1,47 @@
+{
+  "experiment": "r7_report",
+  "status": "done",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\native-predict\\src\\prefixmeta\\r7_report.py",
+    "report",
+    "--spec",
+    "configs/r8_native_predict.yaml",
+    "--out-root",
+    "results/r8_native_separate",
+    "--set",
+    "engine.batching=separate_prefill_priority"
+  ],
+  "git": {
+    "commit": "0336c91d26ba591c8a790d363ff217ab23752f23",
+    "dirty": false,
+    "branch": "r8/native-predict"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T14:55:30",
+  "end_time": "2026-10-25T14:55:30",
+  "wall_s": 0.1253960132598877,
+  "quick": false,
+  "workers": 1,
+  "overrides": [
+    "engine.batching=separate_prefill_priority"
+  ],
+  "tag": null,
+  "stage": "report",
+  "stage_dirs": {
+    "lambda_miss": "results/r8_native_separate/r7_lambda_miss/20261025-145505",
+    "curves": "results/r8_native_separate/r7_curves/20261025-145507",
+    "edge": "results/r8_native_separate/r7_edge/20261025-145510",
+    "pairs": "results/r8_native_separate/r7_pairs/20261025-145515",
+    "burst_sizes": "results/r8_native_separate/r7_burst_sizes/20261025-145523"
+  }
+}

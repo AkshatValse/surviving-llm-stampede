@@ -1,0 +1,311 @@
+## Mode `mixed` (PRIMARY): engine.batching = `mixed`, KV pool 955,757 tokens
+
+### B1n. All-miss capacity lambda_miss (cache off, closed population, window [900, 2700) s)
+
+| workload | tool-time mean (s) | tool-time CV | lambda_miss (turns-based, sessions/s) | sd over seeds | lambda_miss (sessions/s) | all-miss token rate (tok/s) | GPU busy | POP 64 lambda_miss (turns) | POP 64 busy |
+|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 5 | 1 | 0.072036 | 0.0013124 | 0.069815 | 11239 | 0.99993 | 0.073718 | 1 |
+
+### B4n. Closed curve mu(n) and hit fraction (cache on, seeds 0,1,2, window [900, 2700) s)
+
+Cell = `mu turns-based (sessions/s) / hit fraction`, mean over the seeds, closed population, cache on:
+
+| n | Exp(5 s) (record) |
+|---|---|
+| 16 | 0.1759 / 0.93 |
+| 24 | 0.2541 / 0.93 |
+| 32 | 0.3249 / 0.93 |
+| 48 | 0.4375 / 0.93 |
+| 64 | 0.5122 / 0.93 |
+| 72 | 0.5373 / 0.93 |
+| 80 | 0.5088 / 0.92 |
+| 88 | 0.2693 / 0.79 |
+| 96 | 0.1431 / 0.42 |
+| 112 | 0.0736 / 0.00 |
+| 128 | 0.0768 / 0.00 |
+| 160 | 0.0838 / 0.00 |
+| 300 | 0.1114 / 0.00 |
+
+Landmarks (the cap n of the CAPPED arm is the turns-based one; the sessions-based columns are a labelled sensitivity):
+
+| workload | peak n | peak mu (turns-based sessions/s) | cap n (smallest within 5%) | mu(300) / peak | hit(300) | [sessions-based] peak n | [sessions-based] peak mu | [sessions-based] cap n |
+|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 72 | 0.5373 | 64 | 0.2073 | 0 | 72 | 0.5317 | 64 |
+
+Landmarks of the closed curve (r8 summary of the table above; hit crossing = n at which the hit fraction falls through the level):
+
+| landmark | value |
+|---|---|
+| peak n (first argmax of the turns-based mu) | 72 |
+| peak mu (turns-based sessions/s) | 0.5373 |
+| hit fraction at the peak n | 0.933 |
+| cap n (smallest grid n within 5% of the peak) | 64 |
+| [sessions-based] peak n / peak mu / cap n | 72 / 0.5317 / 64 |
+| n at which the seed-mean hit fraction falls through 0.5 (linear interpolation) | 94.19 |
+| n at which the seed-mean hit fraction falls through 0.9 (linear interpolation) | 81.2 |
+| n at which the seed-mean hit fraction falls through 0.2 (linear interpolation) | 104.3 |
+| largest grid n with seed-mean hit >= 0.9 | 80 |
+| per-seed n at which the hit fraction falls through 0.5 | seed 0: 97.4, seed 1: 100.3, seed 2: 90.7 |
+| mu(300) / peak mu | 0.2073 |
+
+Per-seed values (seed order 0, 1, 2; a spread across seeds marks a bistable cliff cell):
+
+| n | mu turns-based by seed | hit by seed | mu sessions-based by seed |
+|---|---|---|---|
+| 16 | 0.1735 / 0.1774 / 0.1766 | 0.93 / 0.93 / 0.94 | 0.1828 / 0.1811 / 0.1661 |
+| 24 | 0.2516 / 0.2554 / 0.2554 | 0.93 / 0.93 / 0.93 | 0.2544 / 0.2594 / 0.2467 |
+| 32 | 0.3236 / 0.3255 / 0.3257 | 0.93 / 0.93 / 0.93 | 0.3294 / 0.3161 / 0.3228 |
+| 48 | 0.4392 / 0.4363 / 0.4370 | 0.93 / 0.94 / 0.93 | 0.4383 / 0.4178 / 0.4294 |
+| 64 | 0.5154 / 0.5148 / 0.5064 | 0.93 / 0.93 / 0.93 | 0.5228 / 0.5011 / 0.4967 |
+| 72 | 0.5408 / 0.5396 / 0.5315 | 0.93 / 0.93 / 0.93 | 0.5394 / 0.5239 / 0.5317 |
+| 80 | 0.5428 / 0.5566 / 0.4271 | 0.93 / 0.93 / 0.90 | 0.5378 / 0.5433 / 0.4128 |
+| 88 | 0.2741 / 0.3027 / 0.2310 | 0.80 / 0.82 / 0.75 | 0.2750 / 0.3000 / 0.2394 |
+| 96 | 0.1560 / 0.2020 / 0.0712 | 0.55 / 0.68 / 0.01 | 0.1711 / 0.2050 / 0.0733 |
+| 112 | 0.0737 / 0.0738 / 0.0732 | 0.00 / 0.00 / 0.00 | 0.0778 / 0.0800 / 0.0700 |
+| 128 | 0.0755 / 0.0757 / 0.0790 | 0.00 / 0.00 / 0.00 | 0.0744 / 0.0806 / 0.0700 |
+| 160 | 0.0828 / 0.0838 / 0.0848 | 0.00 / 0.00 / 0.00 | 0.0789 / 0.0833 / 0.0800 |
+| 300 | 0.1129 / 0.1105 / 0.1108 | 0.00 / 0.00 / 0.00 | 0.1083 / 0.1039 / 0.1044 |
+
+### B2n. From-empty open-loop stability (cache on, B2 rule, 3000 s, 10 seeds)
+
+Stable runs per multiple of the workload's own lambda_miss (from empty, 3000 s, B2 rule), with Wilson 95% intervals:
+
+| workload | multiple of lambda_miss | lambda (sessions/s) | stable runs | all stable | final backlog mean | final backlog max | trend rise mean | tail hit mean | stopped early |
+|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 1.5 | 0.1081 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.0001151 | 0.9295 | 0 |
+| Exp(5 s) (record) | 2 | 0.1441 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.006281 | 0.9311 | 0 |
+| Exp(5 s) (record) | 2.5 | 0.1801 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.003856 | 0.9319 | 0 |
+| Exp(5 s) (record) | 3 | 0.2161 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.0008061 | 0.9325 | 0 |
+| Exp(5 s) (record) | 3.5 | 0.2521 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.005482 | 0.9324 | 0 |
+| Exp(5 s) (record) | 4 | 0.2881 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.006895 | 0.9316 | 0 |
+| Exp(5 s) (record) | 4.5 | 0.3242 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.004799 | 0.9314 | 0 |
+| Exp(5 s) (record) | 5 | 0.3602 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.0003752 | 0.9313 | 0 |
+| Exp(5 s) (record) | 5.5 | 0.3962 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.0007359 | 0.9315 | 0 |
+| Exp(5 s) (record) | 6 | 0.4322 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.01993 | 0.9318 | 0 |
+| Exp(5 s) (record) | 6.5 | 0.4682 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.006884 | 0.9317 | 0 |
+| Exp(5 s) (record) | 7 | 0.5043 | 7/10 (0.70) [0.40, 0.89] | False | 177.6 | 674 | 148.7 | 0.6514 | 0 |
+| Exp(5 s) (record) | 7.5 | 0.5403 | 2/10 (0.20) [0.06, 0.51] | False | 460.4 | 844 | 371.4 | 0.3729 | 0 |
+
+Measured metastability window and the paired-arm test points:
+
+| workload | lambda_miss (sessions/s) | hi (contiguous all-stable) | largest all-stable multiple | same | refinement grid run | window | test points (x lambda_miss) |
+|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 0.072036 | 6.5 | 6.5 | True | False | [1, 6.5] | 2.85, 4.65 |
+
+**Edge hi = 6.5 x lambda_miss = 0.4682 sessions/s** (contiguous all-stable rule; lambda_miss = 0.07204 sessions/s; largest all-stable multiple irrespective of contiguity: 6.5). Supplementary: the stable fraction falls through 0.95 at 6.58 x and through 0.5 at 7.2 x (linear interpolation between grid multiples; NaN = never).
+
+Stable fraction at exactly the real E0b grid (the same 10-seed runs, read at these multiples):
+
+| multiple of lambda_miss | lambda (sessions/s) | stable runs | stable fraction | final backlog mean | tail hit mean |
+|---|---|---|---|---|---|
+| 1.5 | 0.1081 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9295 |
+| 2.5 | 0.1801 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9319 |
+| 3.5 | 0.2521 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9324 |
+| 4.5 | 0.3242 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9314 |
+| 5.5 | 0.3962 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9315 |
+| 6.5 | 0.4682 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9317 |
+| pooled over the grid | n/a | 60/60 (1.00) [0.94, 1.00] | 1 | n/a | n/a |
+
+### B3n. Paired NOBURST / BURST / CAPPED test at lo + (hi - lo)/3 and lo + 2 (hi - lo)/3 (burst 200 sessions in 60 s at t = 1200 s, 10 seeds)
+
+Counts out of the seeds, with Wilson 95% intervals; PASS needs BURST trapped, NOBURST good and CAPPED recovered each in at least `need` seeds (the declared rules). The last column is a labelled post-hoc sensitivity, not part of the verdict: BURST runs whose hit rate over the evaluation window is below the indeterminate threshold, whatever their backlog slope (TRAPPED plus INDETERMINATE):
+
+| workload | x lambda_miss | lambda (sessions/s) | cap n | BURST trapped | NOBURST good | CAPPED recovered | PASS (need 7) | [sensitivity] BURST stuck (hit < 0.2) |
+|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 2.85 | 0.2053 | 64 | 9/10 (0.90) [0.60, 0.98] | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | PASS | 9/10 (0.90) [0.60, 0.98] |
+| Exp(5 s) (record) | 4.65 | 0.335 | 64 | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | PASS | 10/10 (1.00) [0.72, 1.00] |
+
+Per-seed classes in seed order (T trapped, R recovered, I indeterminate = hit < 0.2 but not trapped, O other) and diagnostics:
+
+| workload | x lambda_miss | BURST | NOBURST | CAPPED | BURST indeterminate | BURST recovered | NOBURST trapped | CAPPED trapped | NOBURST hit (mean) | NOBURST backlog (mean) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 2.85 | TRTTTTTTTT | RRRRRRRRRR | RRRRRRRRRR | 0 | 1 | 0 | 0 | 0.9316 | 0.03714 |
+| Exp(5 s) (record) | 4.65 | TTTTTTTTTT | RRRRRRRRRR | RRRRRRRRRR | 0 | 0 | 0 | 0 | 0.9323 | 0.0921 |
+
+### B3n sensitivity (NOT the registered burst): the same points with a burst of 400 sessions (10 seeds)
+
+**lambda = 2.85 x lambda_miss = 0.20530 sessions/s** (need 7 of 10 seeds): smallest burst trapping in >= 7/10 seeds (declared TRAPPED rule): **200**; smallest burst from which every larger burst also does: 200; [sensitivity] smallest burst with hit < 0.2 in >= 7/10 seeds (stuck, slope test ignored): 200
+
+| burst size | trapped | recovered (good) | indeterminate | [sensitivity] stuck (hit < 0.2) | classes by seed | hit (mean) |
+|---|---|---|---|---|---|---|
+| 0 (NOBURST) | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.932 |
+| 200 | 9/10 (0.90) [0.60, 0.98] | 1/10 (0.10) [0.02, 0.40] | 0 | 9/10 (0.90) [0.60, 0.98] | TRTTTTTTTT | 0.0935 |
+| 400 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+
+**lambda = 4.65 x lambda_miss = 0.33497 sessions/s** (need 7 of 10 seeds): smallest burst trapping in >= 7/10 seeds (declared TRAPPED rule): **200**; smallest burst from which every larger burst also does: 200; [sensitivity] smallest burst with hit < 0.2 in >= 7/10 seeds (stuck, slope test ignored): 200
+
+| burst size | trapped | recovered (good) | indeterminate | [sensitivity] stuck (hit < 0.2) | classes by seed | hit (mean) |
+|---|---|---|---|---|---|---|
+| 0 (NOBURST) | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.932 |
+| 200 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+| 400 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+
+Compact view (declared TRAPPED rule, INDETERMINATE = hit < 0.2 but not TRAPPED, RECOVERED = hit > 0.8 and backlog < 20):
+
+| x lambda_miss | burst size | trapped | indeterminate | recovered | stuck (hit < 0.2) | classes by seed | hit (mean) | backlog (mean) |
+|---|---|---|---|---|---|---|---|---|
+| 2.85 | 0 | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.9316 | 0.03714 |
+| 2.85 | 200 | 9/10 (0.90) [0.60, 0.98] | 0 | 1/10 (0.10) [0.02, 0.40] | 9/10 (0.90) [0.60, 0.98] | TRTTTTTTTT | 0.09352 | 529.7 |
+| 2.85 | 400 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 742 |
+| 4.65 | 0 | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.9323 | 0.0921 |
+| 4.65 | 200 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 1251 |
+| 4.65 | 400 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 1410 |
+
+Consistency of two code paths: the BURST (200 sessions) and NOBURST arms of the paired-arm stage against the same arms of this stage: 40 of 40 runs compared, largest absolute difference of hit / backlog / slope / token rate = 0 / 0 / 0 / 0, identical: **True**.
+
+## Mode `separate` (SECONDARY): engine.batching = `separate_prefill_priority`, KV pool 955,757 tokens
+
+### B1n. All-miss capacity lambda_miss (cache off, closed population, window [900, 2700) s)
+
+| workload | tool-time mean (s) | tool-time CV | lambda_miss (turns-based, sessions/s) | sd over seeds | lambda_miss (sessions/s) | all-miss token rate (tok/s) | GPU busy | POP 64 lambda_miss (turns) | POP 64 busy |
+|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 5 | 1 | 0.071371 | 0.00063128 | 0.07 | 11180 | 0.99941 | 0.073065 | 1 |
+
+### B4n. Closed curve mu(n) and hit fraction (cache on, seeds 0,1,2, window [900, 2700) s)
+
+Cell = `mu turns-based (sessions/s) / hit fraction`, mean over the seeds, closed population, cache on:
+
+| n | Exp(5 s) (record) |
+|---|---|
+| 16 | 0.1747 / 0.93 |
+| 24 | 0.2509 / 0.93 |
+| 32 | 0.3187 / 0.93 |
+| 48 | 0.4246 / 0.93 |
+| 64 | 0.4910 / 0.93 |
+| 72 | 0.5133 / 0.93 |
+| 80 | 0.4981 / 0.92 |
+| 88 | 0.2949 / 0.81 |
+| 96 | 0.1593 / 0.49 |
+| 112 | 0.0781 / 0.06 |
+| 128 | 0.0759 / 0.00 |
+| 160 | 0.0828 / 0.00 |
+| 300 | 0.1083 / 0.00 |
+
+Landmarks (the cap n of the CAPPED arm is the turns-based one; the sessions-based columns are a labelled sensitivity):
+
+| workload | peak n | peak mu (turns-based sessions/s) | cap n (smallest within 5%) | mu(300) / peak | hit(300) | [sessions-based] peak n | [sessions-based] peak mu | [sessions-based] cap n |
+|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 72 | 0.5133 | 64 | 0.211 | 0 | 72 | 0.5067 | 64 |
+
+Landmarks of the closed curve (r8 summary of the table above; hit crossing = n at which the hit fraction falls through the level):
+
+| landmark | value |
+|---|---|
+| peak n (first argmax of the turns-based mu) | 72 |
+| peak mu (turns-based sessions/s) | 0.5133 |
+| hit fraction at the peak n | 0.9331 |
+| cap n (smallest grid n within 5% of the peak) | 64 |
+| [sessions-based] peak n / peak mu / cap n | 72 / 0.5067 / 64 |
+| n at which the seed-mean hit fraction falls through 0.5 (linear interpolation) | 95.68 |
+| n at which the seed-mean hit fraction falls through 0.9 (linear interpolation) | 81.74 |
+| n at which the seed-mean hit fraction falls through 0.2 (linear interpolation) | 106.7 |
+| largest grid n with seed-mean hit >= 0.9 | 80 |
+| per-seed n at which the hit fraction falls through 0.5 | seed 0: 99.9, seed 1: 101.6, seed 2: 91.1 |
+| mu(300) / peak mu | 0.211 |
+
+Per-seed values (seed order 0, 1, 2; a spread across seeds marks a bistable cliff cell):
+
+| n | mu turns-based by seed | hit by seed | mu sessions-based by seed |
+|---|---|---|---|
+| 16 | 0.1724 / 0.1764 / 0.1754 | 0.93 / 0.93 / 0.94 | 0.1822 / 0.1800 / 0.1650 |
+| 24 | 0.2479 / 0.2524 / 0.2523 | 0.93 / 0.93 / 0.93 | 0.2478 / 0.2533 / 0.2433 |
+| 32 | 0.3181 / 0.3192 / 0.3187 | 0.93 / 0.93 / 0.93 | 0.3228 / 0.3100 / 0.3144 |
+| 48 | 0.4251 / 0.4237 / 0.4250 | 0.93 / 0.94 / 0.93 | 0.4261 / 0.4006 / 0.4167 |
+| 64 | 0.4948 / 0.4923 / 0.4857 | 0.93 / 0.93 / 0.93 | 0.4989 / 0.4739 / 0.4767 |
+| 72 | 0.5173 / 0.5156 / 0.5070 | 0.93 / 0.93 / 0.93 | 0.5233 / 0.5017 / 0.4950 |
+| 80 | 0.5270 / 0.5315 / 0.4359 | 0.93 / 0.93 / 0.91 | 0.5289 / 0.5150 / 0.4222 |
+| 88 | 0.3224 / 0.3238 / 0.2387 | 0.84 / 0.84 / 0.76 | 0.3194 / 0.3233 / 0.2428 |
+| 96 | 0.1898 / 0.2120 / 0.0761 | 0.66 / 0.71 / 0.10 | 0.1967 / 0.2128 / 0.0767 |
+| 112 | 0.0738 / 0.0846 / 0.0759 | 0.01 / 0.12 / 0.05 | 0.0756 / 0.0894 / 0.0694 |
+| 128 | 0.0732 / 0.0751 / 0.0793 | 0.00 / 0.00 / 0.01 | 0.0739 / 0.0772 / 0.0728 |
+| 160 | 0.0820 / 0.0830 / 0.0833 | 0.00 / 0.00 / 0.00 | 0.0800 / 0.0817 / 0.0761 |
+| 300 | 0.1099 / 0.1080 / 0.1071 | 0.00 / 0.00 / 0.00 | 0.1083 / 0.0983 / 0.1056 |
+
+### B2n. From-empty open-loop stability (cache on, B2 rule, 3000 s, 10 seeds)
+
+Stable runs per multiple of the workload's own lambda_miss (from empty, 3000 s, B2 rule), with Wilson 95% intervals:
+
+| workload | multiple of lambda_miss | lambda (sessions/s) | stable runs | all stable | final backlog mean | final backlog max | trend rise mean | tail hit mean | stopped early |
+|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 1.5 | 0.1071 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.0003958 | 0.9297 | 0 |
+| Exp(5 s) (record) | 2 | 0.1427 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.005458 | 0.931 | 0 |
+| Exp(5 s) (record) | 2.5 | 0.1784 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.003932 | 0.9318 | 0 |
+| Exp(5 s) (record) | 3 | 0.2141 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.001043 | 0.9325 | 0 |
+| Exp(5 s) (record) | 3.5 | 0.2498 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.003824 | 0.9324 | 0 |
+| Exp(5 s) (record) | 4 | 0.2855 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.004663 | 0.9317 | 0 |
+| Exp(5 s) (record) | 4.5 | 0.3212 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.00319 | 0.9313 | 0 |
+| Exp(5 s) (record) | 5 | 0.3569 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.001957 | 0.9314 | 0 |
+| Exp(5 s) (record) | 5.5 | 0.3925 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.007258 | 0.9315 | 0 |
+| Exp(5 s) (record) | 6 | 0.4282 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.007775 | 0.9318 | 0 |
+| Exp(5 s) (record) | 6.5 | 0.4639 | 8/10 (0.80) [0.49, 0.94] | False | 106.3 | 537 | 86.91 | 0.7452 | 0 |
+| Exp(5 s) (record) | 7 | 0.4996 | 3/10 (0.30) [0.11, 0.60] | False | 281.8 | 720 | 230.8 | 0.5208 | 0 |
+| Exp(5 s) (record) | 7.5 | 0.5353 | 0/10 (0.00) [0.00, 0.28] | False | 595.2 | 907 | 483.2 | 0.17 | 0 |
+
+Measured metastability window and the paired-arm test points:
+
+| workload | lambda_miss (sessions/s) | hi (contiguous all-stable) | largest all-stable multiple | same | refinement grid run | window | test points (x lambda_miss) |
+|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 0.071371 | 6 | 6 | True | False | [1, 6] | 2.65, 4.35 |
+
+**Edge hi = 6 x lambda_miss = 0.4282 sessions/s** (contiguous all-stable rule; lambda_miss = 0.07137 sessions/s; largest all-stable multiple irrespective of contiguity: 6). Supplementary: the stable fraction falls through 0.95 at 6.12 x and through 0.5 at 6.8 x (linear interpolation between grid multiples; NaN = never).
+
+Stable fraction at exactly the real E0b grid (the same 10-seed runs, read at these multiples):
+
+| multiple of lambda_miss | lambda (sessions/s) | stable runs | stable fraction | final backlog mean | tail hit mean |
+|---|---|---|---|---|---|
+| 1.5 | 0.1071 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9297 |
+| 2.5 | 0.1784 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9318 |
+| 3.5 | 0.2498 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9324 |
+| 4.5 | 0.3212 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9313 |
+| 5.5 | 0.3925 | 10/10 (1.00) [0.72, 1.00] | 1 | 0 | 0.9315 |
+| 6.5 | 0.4639 | 8/10 (0.80) [0.49, 0.94] | 0.8 | 106.3 | 0.7452 |
+| pooled over the grid | n/a | 58/60 (0.97) [0.89, 0.99] | 0.9667 | n/a | n/a |
+
+### B3n. Paired NOBURST / BURST / CAPPED test at lo + (hi - lo)/3 and lo + 2 (hi - lo)/3 (burst 200 sessions in 60 s at t = 1200 s, 10 seeds)
+
+Counts out of the seeds, with Wilson 95% intervals; PASS needs BURST trapped, NOBURST good and CAPPED recovered each in at least `need` seeds (the declared rules). The last column is a labelled post-hoc sensitivity, not part of the verdict: BURST runs whose hit rate over the evaluation window is below the indeterminate threshold, whatever their backlog slope (TRAPPED plus INDETERMINATE):
+
+| workload | x lambda_miss | lambda (sessions/s) | cap n | BURST trapped | NOBURST good | CAPPED recovered | PASS (need 7) | [sensitivity] BURST stuck (hit < 0.2) |
+|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 2.65 | 0.1891 | 64 | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | PASS | 10/10 (1.00) [0.72, 1.00] |
+| Exp(5 s) (record) | 4.35 | 0.3105 | 64 | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | 10/10 (1.00) [0.72, 1.00] | PASS | 10/10 (1.00) [0.72, 1.00] |
+
+Per-seed classes in seed order (T trapped, R recovered, I indeterminate = hit < 0.2 but not trapped, O other) and diagnostics:
+
+| workload | x lambda_miss | BURST | NOBURST | CAPPED | BURST indeterminate | BURST recovered | NOBURST trapped | CAPPED trapped | NOBURST hit (mean) | NOBURST backlog (mean) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 2.65 | TTTTTTTTTT | RRRRRRRRRR | RRRRRRRRRR | 0 | 0 | 0 | 0 | 0.9323 | 0.03205 |
+| Exp(5 s) (record) | 4.35 | TTTTTTTTTT | RRRRRRRRRR | RRRRRRRRRR | 0 | 0 | 0 | 0 | 0.9325 | 0.07431 |
+
+### B3n sensitivity (NOT the registered burst): the same points with a burst of 400 sessions (10 seeds)
+
+**lambda = 2.65 x lambda_miss = 0.18913 sessions/s** (need 7 of 10 seeds): smallest burst trapping in >= 7/10 seeds (declared TRAPPED rule): **200**; smallest burst from which every larger burst also does: 200; [sensitivity] smallest burst with hit < 0.2 in >= 7/10 seeds (stuck, slope test ignored): 200
+
+| burst size | trapped | recovered (good) | indeterminate | [sensitivity] stuck (hit < 0.2) | classes by seed | hit (mean) |
+|---|---|---|---|---|---|---|
+| 0 (NOBURST) | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.932 |
+| 200 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+| 400 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+
+**lambda = 4.35 x lambda_miss = 0.31047 sessions/s** (need 7 of 10 seeds): smallest burst trapping in >= 7/10 seeds (declared TRAPPED rule): **200**; smallest burst from which every larger burst also does: 200; [sensitivity] smallest burst with hit < 0.2 in >= 7/10 seeds (stuck, slope test ignored): 200
+
+| burst size | trapped | recovered (good) | indeterminate | [sensitivity] stuck (hit < 0.2) | classes by seed | hit (mean) |
+|---|---|---|---|---|---|---|
+| 0 (NOBURST) | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.932 |
+| 200 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+| 400 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 |
+
+Compact view (declared TRAPPED rule, INDETERMINATE = hit < 0.2 but not TRAPPED, RECOVERED = hit > 0.8 and backlog < 20):
+
+| x lambda_miss | burst size | trapped | indeterminate | recovered | stuck (hit < 0.2) | classes by seed | hit (mean) | backlog (mean) |
+|---|---|---|---|---|---|---|---|---|
+| 2.65 | 0 | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.9323 | 0.03205 |
+| 2.65 | 200 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 512.1 |
+| 2.65 | 400 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 668.5 |
+| 4.35 | 0 | 0/10 (0.00) [0.00, 0.28] | 0 | 10/10 (1.00) [0.72, 1.00] | 0/10 (0.00) [0.00, 0.28] | RRRRRRRRRR | 0.9325 | 0.07431 |
+| 4.35 | 200 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 1120 |
+| 4.35 | 400 | 10/10 (1.00) [0.72, 1.00] | 0 | 0/10 (0.00) [0.00, 0.28] | 10/10 (1.00) [0.72, 1.00] | TTTTTTTTTT | 0 | 1285 |
+
+Consistency of two code paths: the BURST (200 sessions) and NOBURST arms of the paired-arm stage against the same arms of this stage: 40 of 40 runs compared, largest absolute difference of hit / backlog / slope / token rate = 0 / 0 / 0 / 0, identical: **True**.
+
+result dir: results\r8_native_report\20261025-150146

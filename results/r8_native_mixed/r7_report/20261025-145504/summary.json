@@ -1,0 +1,54 @@
+{
+  "lambda_miss": {
+    "exp5": 0.07203640456152137
+  },
+  "peak_cap": {
+    "exp5": {
+      "peak_n": 72,
+      "peak_mu_turns": 0.5373122903109367,
+      "cap_n": 64
+    }
+  },
+  "window": {
+    "exp5": {
+      "hi": 6.5,
+      "points": [
+        2.85,
+        4.65
+      ],
+      "empty": false
+    }
+  },
+  "pairs": {
+    "exp5": {
+      "2.85": {
+        "burst_trapped": 9,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      },
+      "4.65": {
+        "burst_trapped": 10,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    }
+  },
+  "burst_sizes": {
+    "2.85": {
+      "smallest": 200,
+      "trapped_by_size": {
+        "200": 9,
+        "400": 10
+      }
+    },
+    "4.65": {
+      "smallest": 200,
+      "trapped_by_size": {
+        "200": 10,
+        "400": 10
+      }
+    }
+  }
+}

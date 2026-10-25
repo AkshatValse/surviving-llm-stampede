@@ -1,0 +1,45 @@
+{
+  "workloads": {
+    "exp5": {
+      "label": "Exp(5 s) (record)",
+      "lambda_miss_turns": 0.07203640456152137,
+      "token_rate_miss": 11239.009259259257,
+      "cap_n": 64,
+      "hi": 6.5,
+      "window_empty": false,
+      "points": {
+        "2.85": {
+          "lam": 0.2053037530003359,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 1,
+          "burst_indeterminate": 0,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "4.65": {
+          "lam": 0.3349692812110744,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 10,
+          "burst_recovered": 0,
+          "burst_indeterminate": 0,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    }
+  },
+  "dirs": {
+    "lambda_miss": "results\\r8_native_mixed\\r7_lambda_miss\\20261025-145439",
+    "curves": "results\\r8_native_mixed\\r7_curves\\20261025-145441",
+    "edge": "results\\r8_native_mixed\\r7_edge\\20261025-145445"
+  }
+}

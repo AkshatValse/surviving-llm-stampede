@@ -1,0 +1,54 @@
+{
+  "workload": "exp5",
+  "lambda_miss_turns": 0.07203640456152137,
+  "token_rate_miss": 11239.009259259257,
+  "by_mult": {
+    "2.85": {
+      "lam": 0.2053037530003359,
+      "need": 7,
+      "n_seeds": 10,
+      "per_size": {
+        "200": {
+          "trapped": 9,
+          "recovered": 1,
+          "indeterminate": 0,
+          "n": 10
+        },
+        "400": {
+          "trapped": 10,
+          "recovered": 0,
+          "indeterminate": 0,
+          "n": 10
+        }
+      },
+      "noburst_good": 10,
+      "noburst_trapped": 0,
+      "smallest_size_trapping_in_need": 200,
+      "smallest_size_from_which_all_larger_trap": 200
+    },
+    "4.65": {
+      "lam": 0.3349692812110744,
+      "need": 7,
+      "n_seeds": 10,
+      "per_size": {
+        "200": {
+          "trapped": 10,
+          "recovered": 0,
+          "indeterminate": 0,
+          "n": 10
+        },
+        "400": {
+          "trapped": 10,
+          "recovered": 0,
+          "indeterminate": 0,
+          "n": 10
+        }
+      },
+      "noburst_good": 10,
+      "noburst_trapped": 0,
+      "smallest_size_trapping_in_need": 200,
+      "smallest_size_from_which_all_larger_trap": 200
+    }
+  },
+  "lambda_miss_dir": "results\\r8_native_mixed\\r7_lambda_miss\\20261025-145439"
+}
