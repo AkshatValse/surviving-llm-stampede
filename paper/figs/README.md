@@ -7,7 +7,7 @@ Six vector PDFs, one script each under `figures/paper/`. Every script reads only
 PY="C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe" bash figures/paper/build_all.sh
 ```
 
-(`PYTHONPATH="src;."` is set by the script; only F1 imports repo code, `analysis.*`.) `FIG_SOURCES=1` makes a script print the files it read.
+(`PYTHONPATH="src;."` is set by the script; only F1 imports repo code, `analysis.*`.) `FIG_SOURCES=1` makes a script print the files it read. PDFs carry no timestamp, so a rebuild is byte-identical.
 Style (`_style.py`): matplotlib 3.9.2, STIXGeneral serif, 8-9 pt at final size, TrueType fonts embedded, no raster content;
 single column 3.4 in, double column 7.0 in. One Okabe-Ito palette. The same colour means the same thing everywhere:
 BURST vermillion, NOBURST blue, CAPPED green (a static session cap is also green); FCFS near-black, LPM purple, PEEK orange,

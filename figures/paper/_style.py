@@ -132,7 +132,7 @@ def src(rel: str) -> Path:
 def save(fig: plt.Figure, name: str) -> Path:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     p = OUT_DIR / f"{name}.pdf"
-    fig.savefig(p, format="pdf")
+    fig.savefig(p, format="pdf", metadata={"CreationDate": None, "Creator": "matplotlib", "Producer": "matplotlib"})  # no timestamp: rebuilds are byte-identical
     plt.close(fig)
     return p
 
