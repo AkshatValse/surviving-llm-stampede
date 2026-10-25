@@ -55,7 +55,7 @@ Earlier sources: `notes/lit/engine-sources-prefix-cache.md`, `notes/lit/kv-mecha
   - "Scheduling-induced thrashing" is PEEK's name for stock LPM breaking hit-length ties by arrival order, which interleaves cold prefix groups so that a cache holding one prompt reloads each group repeatedly; it is **not** the LPM-to-FCFS fallback. PEEK mentions the 128 fallback only as an existing exit (sec 3.3) and sets its "heavy" load so the queue reaches 128; it does not analyse the fallback as a failure. **[fixed: the earlier text said it "reports ... the 128 fallback empirically".]**
   - Tested on SGLang 0.5.9 and vLLM 0.19.1. Its one multi-turn workload (W4) replays a Mooncake conversation trace with 50 ms between turns, with no tool-time model; it is near parity with the baselines. **[added]**
   - No dynamics or hysteresis analysis.
-  - *Our sim:* PEEK-like protection does not escape the congested state (P2).
+  - *Our sim:* PEEK-like protection does not escape the congested state (P2). Audited against the released code (`notes/BASELINES_AUDIT.md`, xiexbing/peek @ 3aca72b): our original rows are an FCFS queued-session-protection ablation (1.01 x lambda_miss, bit-identical to FCFS); with the released warm-first two-lane ordering projected, PEEK behaves like LPM (about 1.17 x) and still does not recover above 1.1 x within 30,000 s. Do not write "PEEK equals FCFS". **[reconciled with the baseline audit, 2026-10-25]**
 - **Continuum (Li et al., arXiv 2511.02230, v7 Sep 2026; no venue)** [li2025continuum].
   - Mechanism: tool-call-aware TTL pinning, with tau chosen from the empirical CDF of tool durations (Exp(1) assumed at cold start).
   - No formal guarantees.
