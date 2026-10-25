@@ -1,0 +1,443 @@
+% refs.bib -- verified references only (citation audit of 2026-10-25).
+%
+% Every entry below was opened on a primary or near-primary page (arXiv abs page,
+% proceedings/publisher page, the paper's own text, Crossref, or the USENIX/PMLR page).
+% The evidence class and the audit row are in notes/lit/CITATION_AUDIT_2026-10-25.md.
+%   FULL     = the relevant text of the work was read and checked against our claim
+%   ABSTRACT = abstract / listing page read, body not checked against a specific claim
+%   META     = bibliographic metadata only (Crossref, publisher page, search-result page)
+% Fields that were not seen on a primary page are omitted rather than guessed
+% (e.g. DOIs, proceedings numbers, page ranges). Works NOT verified are listed only in the
+% audit file, not here.
+
+% ---------------------------------------------------------------- classical theory
+
+% FULL (text read; the working-set model is reviewed here and credited to denning1968working)
+@inproceedings{denning1968thrashing,
+  author    = {Denning, Peter J.},
+  title     = {Thrashing: Its Causes and Prevention},
+  booktitle = {Proceedings of the AFIPS Fall Joint Computer Conference},
+  year      = {1968},
+  pages     = {915--922},
+}
+
+% META (Crossref; also cited as reference 2 of denning1968thrashing)
+@article{denning1968working,
+  author  = {Denning, Peter J.},
+  title   = {The Working Set Model for Program Behavior},
+  journal = {Communications of the ACM},
+  volume  = {11},
+  number  = {5},
+  pages   = {323--333},
+  year    = {1968},
+  doi     = {10.1145/363095.363141},
+}
+
+% FULL
+@inproceedings{bronson2021metastable,
+  author    = {Bronson, Nathan and Aghayev, Abutalib and Charapko, Aleksey and Zhu, Timothy},
+  title     = {Metastable Failures in Distributed Systems},
+  booktitle = {Proceedings of the Workshop on Hot Topics in Operating Systems (HotOS '21)},
+  address   = {Ann Arbor, MI},
+  year      = {2021},
+  doi       = {10.1145/3458336.3465286},
+}
+
+% META (USENIX OSDI '22 presentation page via search; not named in the earlier notes, added)
+@inproceedings{huang2022metastable,
+  author    = {Huang, Lexiang and Magnusson, Matthew and Muralikrishna, Abishek Bangalore and Estyak, Salman and Isaacs, Rebecca and Aghayev, Abutalib and Zhu, Timothy and Charapko, Aleksey},
+  title     = {Metastable Failures in the Wild},
+  booktitle = {16th USENIX Symposium on Operating Systems Design and Implementation (OSDI 22)},
+  pages     = {73--90},
+  year      = {2022},
+}
+
+% FULL (text read); book/volume from the author's page and a Cambridge reference list
+@incollection{gibbens1990bistability,
+  author    = {Gibbens, R. J. and Hunt, P. J. and Kelly, F. P.},
+  title     = {Bistability in Communication Networks},
+  booktitle = {Disorder in Physical Systems},
+  editor    = {Grimmett, G. R. and Welsh, D. J. A.},
+  publisher = {Oxford University Press},
+  year      = {1990},
+  pages     = {113--127},
+}
+
+% ABSTRACT
+@misc{alvaro2025formal,
+  author       = {Alvaro, Peter and Isaacs, Rebecca and Majumdar, Rupak and Muniswamy-Reddy, Kiran-Kumar and Salamati, Mahmoud and Soudjani, Sadegh},
+  title        = {Formal Analysis of Metastable Failures in Software Systems},
+  year         = {2025},
+  howpublished = {arXiv:2510.03551},
+}
+
+% META (Crossref) + abstract-level
+@article{jiang2002lirs,
+  author  = {Jiang, Song and Zhang, Xiaodong},
+  title   = {{LIRS}: An Efficient Low Inter-reference Recency Set Replacement Policy to Improve Buffer Cache Performance},
+  journal = {ACM SIGMETRICS Performance Evaluation Review},
+  volume  = {30},
+  number  = {1},
+  pages   = {31--42},
+  year    = {2002},
+  doi     = {10.1145/511399.511340},
+}
+
+% META (Crossref) + abstract-level (search summary)
+@inproceedings{smaragdakis1999eelru,
+  author    = {Smaragdakis, Yannis and Kaplan, Scott and Wilson, Paul},
+  title     = {{EELRU}: Simple and Effective Adaptive Page Replacement},
+  booktitle = {Proceedings of the 1999 ACM SIGMETRICS International Conference on Measurement and Modeling of Computer Systems},
+  pages     = {122--133},
+  year      = {1999},
+  doi       = {10.1145/301453.301486},
+}
+
+% FULL (OCR text read; MRU recommended for looping reference patterns)
+@inproceedings{chou1985evaluation,
+  author    = {Chou, Hong-Tai and DeWitt, David J.},
+  title     = {An Evaluation of Buffer Management Strategies for Relational Database Systems},
+  booktitle = {Proceedings of VLDB 85},
+  address   = {Stockholm},
+  pages     = {127--141},
+  year      = {1985},
+}
+
+% FULL (scan resistance, not a looping-pattern fix)
+@inproceedings{megiddo2003arc,
+  author    = {Megiddo, Nimrod and Modha, Dharmendra S.},
+  title     = {{ARC}: A Self-Tuning, Low Overhead Replacement Cache},
+  booktitle = {Proceedings of the 2nd USENIX Conference on File and Storage Technologies (FAST '03)},
+  address   = {San Francisco, CA},
+  pages     = {115--130},
+  year      = {2003},
+}
+
+% META (search results; IBM Systems Journal 5(2))
+@article{belady1966study,
+  author  = {Belady, L. A.},
+  title   = {A Study of Replacement Algorithms for a Virtual-Storage Computer},
+  journal = {IBM Systems Journal},
+  volume  = {5},
+  number  = {2},
+  pages   = {78--101},
+  year    = {1966},
+}
+
+% META (Springer record via search)
+@book{freidlin2012random,
+  author    = {Freidlin, Mark I. and Wentzell, Alexander D.},
+  title     = {Random Perturbations of Dynamical Systems},
+  edition   = {3rd},
+  series    = {Grundlehren der mathematischen Wissenschaften},
+  number    = {260},
+  publisher = {Springer},
+  year      = {2012},
+  doi       = {10.1007/978-3-642-25847-3},
+}
+
+% ---------------------------------------------------------------- LLM-serving theory
+
+% FULL (arXiv v4, 13 Jun 2026; preprint, no venue found)
+@misc{ao2025wait,
+  author       = {Ao, Ruicheng and Luo, Gan and Simchi-Levi, David and Wang, Xinshang},
+  title        = {Optimizing {LLM} Inference: Fluid-Guided Online Scheduling with Memory Constraints},
+  year         = {2025},
+  howpublished = {arXiv:2504.11320 (v4, 13 June 2026)},
+}
+
+% FULL (arXiv v3, 20 Oct 2026; preprint, no venue found)
+@misc{ao2026service,
+  author       = {Ao, Ruicheng and Dong, Jing and Luo, Gan and Simchi-Levi, David},
+  title        = {Service-Induced Congestion in Memory-Constrained {LLM} Serving},
+  year         = {2026},
+  howpublished = {arXiv:2606.15555 (v3, 20 October 2026)},
+}
+
+% FULL (current author order; v1 listed Li, Dai, Peng)
+@misc{dai2025throughput,
+  author       = {Dai, J. G. and Deng, Tianze and Li, Yueying and Peng, Tianyi},
+  title        = {Throughput-Optimal Scheduling Algorithms for {LLM} Inference and {AI} Agents},
+  year         = {2025},
+  howpublished = {arXiv:2504.07347 (v3, 18 May 2026)},
+}
+
+% FULL for the claims checked; ICML 2026 acceptance is from the arXiv comments field only
+@misc{nie2026queueing,
+  author       = {Nie, Chengyi and Si, Nian and Zhou, Zijie},
+  title        = {A Queueing-Theoretic Framework for Stability Analysis of {LLM} Inference with {KV} Cache Memory Constraints},
+  year         = {2026},
+  howpublished = {arXiv:2605.04595; accepted at ICML 2026 per the arXiv comments}
+}
+
+% ABSTRACT
+@misc{dong2026flow,
+  author       = {Dong, Zhuolun and Cao, Junyu},
+  title        = {Flow-Controlled Scheduling for {LLM} Inference with Provable Stability Guarantees},
+  year         = {2026},
+  howpublished = {arXiv:2604.11001},
+}
+
+% ---------------------------------------------------------------- engines and agent KV systems
+
+% FULL
+@inproceedings{zheng2024sglang,
+  author    = {Zheng, Lianmin and Yin, Liangsheng and Xie, Zhiqiang and Sun, Chuyue and Huang, Jeff and Yu, Cody Hao and Cao, Shiyi and Kozyrakis, Christos and Stoica, Ion and Gonzalez, Joseph E. and Barrett, Clark and Sheng, Ying},
+  title     = {{SGLang}: Efficient Execution of Structured Language Model Programs},
+  booktitle = {Advances in Neural Information Processing Systems 37 (NeurIPS 2024)},
+  pages     = {62557--62583},
+  year      = {2024},
+}
+
+% ABSTRACT (SOSP 2023 from the arXiv comments field)
+@inproceedings{kwon2023vllm,
+  author    = {Kwon, Woosuk and Li, Zhuohan and Zhuang, Siyuan and Sheng, Ying and Zheng, Lianmin and Yu, Cody Hao and Gonzalez, Joseph E. and Zhang, Hao and Stoica, Ion},
+  title     = {Efficient Memory Management for Large Language Model Serving with {PagedAttention}},
+  booktitle = {Proceedings of the ACM Symposium on Operating Systems Principles (SOSP 2023)},
+  year      = {2023},
+}
+
+% FULL (arXiv v7, 8 Sep 2026; no venue)
+@misc{li2025continuum,
+  author       = {Li, Hanchen and He, Runyuan and Mang, Qiuyang and Zhang, Qizheng and Mao, Huanzhi and Chen, Xiaokun and Zhou, Hangrui and Zhang, Huanchen and Cheung, Alvin and Gonzalez, Joseph and Stoica, Ion},
+  title        = {Continuum: Efficient and Robust Multi-Turn {LLM} Agent Scheduling with {KV} Cache Time-to-Live},
+  year         = {2025},
+  howpublished = {arXiv:2511.02230 (v7, 8 September 2026)},
+}
+
+% FULL (arXiv v2, 12 Sep 2026; "Preprint, under review")
+@misc{xie2026peek,
+  author       = {Xie, Bing and Wang, Zhipeng and Tanaka, Masahiro and Zheng, Zhen},
+  title        = {{PEEK}: Predictive Queue-Informed {KV} Cache Management for {LLM} Serving},
+  year         = {2026},
+  howpublished = {arXiv:2607.02525 (v2, 12 September 2026; under review)},
+}
+
+% FULL (PMLR page and arXiv text)
+@inproceedings{chen2026concur,
+  author    = {Chen, Qiaoling and Ye, Zhisheng and Tang, Tian and Sun, Peng and Tian, Boyu and Wang, Guoteng and Li, Shenggui and Wen, Yonggang and Han, Zhenhua and Zhang, Tianwei},
+  title     = {{CONCUR}: High-Throughput Agentic Batch Inference of {LLM} via Congestion-Based Concurrency Control},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {306},
+  pages     = {17881--17891},
+  year      = {2026},
+  note      = {arXiv:2601.22705},
+}
+
+% FULL (submitted 19 Jun 2026, announced under id 2608.20370)
+@misc{wang2026xperf,
+  author       = {Wang, Michael and Yue, Yikang and Li, Shaobo and Zhou, Yirui Eric and Wang, Chen and Huang, Jian},
+  title        = {Benchmarking {LLM} Serving Systems for Agentic {AI} Workloads with {XPerf}},
+  year         = {2026},
+  howpublished = {arXiv:2608.20370},
+}
+
+% FULL for the claims checked
+@misc{tiwari2026cachewise,
+  author       = {Tiwari, Shubham and Chugh, Tapan and Rickert, Nash and Peter, Simon and Mahajan, Ratul and Shen, Haiying},
+  title        = {{CacheWise}: Understanding Workloads and Optimizing {KVCache} Management for Efficiently Serving {LLM} Coding Agents},
+  year         = {2026},
+  howpublished = {arXiv:2606.16824},
+}
+
+% ABSTRACT
+@misc{kang2026thunderagent,
+  author       = {Kang, Hao and Li, Ziyang and Xu, Weili and Yang, Xinyu and Chen, Yinfang and Wang, Junxiong and Chen, Beidi and Krishna, Tushar and Xu, Chenfeng and Arora, Simran},
+  title        = {{ThunderAgent}: A Simple, Fast and Program-Aware Agentic Inference System},
+  year         = {2026},
+  howpublished = {arXiv:2602.13692 (v3, 30 June 2026)},
+}
+
+% ABSTRACT + NeurIPS 2025 (proceedings page via search)
+@inproceedings{pan2025kvflow,
+  author    = {Pan, Zaifeng and Patel, Ajjkumar and Hu, Zhengding and Shen, Yipeng and Guan, Yue and Li, Wan-Lu and Qin, Lianhui and Wang, Yida and Ding, Yufei},
+  title     = {{KVFlow}: Efficient Prefix Caching for Accelerating {LLM}-Based Multi-Agent Workflows},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS 2025)},
+  year      = {2025},
+  note      = {arXiv:2507.07400},
+}
+
+% ABSTRACT
+@misc{xia2026mori,
+  author       = {Xia, Tian and Li, Hanchen and Li, Zhifei and Chen, Xiaokun and Kang, Hao and Qiao, Yifan and Xu, Yi and Stoica, Ion},
+  title        = {Idleness is Relative: Exploiting Tool-Call Idle Windows for Offloading in Agentic Systems with {MORI}},
+  year         = {2026},
+  howpublished = {arXiv:2606.00866},
+}
+
+% ABSTRACT + PMLR page (via search)
+@inproceedings{abhyankar2024infercept,
+  author    = {Abhyankar, Reyna and He, Zijian and Srivatsa, Vikranth and Zhang, Hao and Zhang, Yiying},
+  title     = {{InferCept}: Efficient Intercept Support for Augmented Large Language Model Inference},
+  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {235},
+  pages     = {81--95},
+  year      = {2024},
+}
+
+% ABSTRACT ("Accepted at EuroSys '27" in the arXiv comments; v5, 28 Sep 2026)
+@misc{bian2025tokencake,
+  author       = {Bian, Zhuohang and Wu, Feiyang and Li, Zhuoran and Ma, Teng and Zhuo, Youwei},
+  title        = {{TokenCake}: A {KV}-Cache-centric Serving Framework for {LLM}-based Multi-Agent Applications},
+  year         = {2025},
+  howpublished = {arXiv:2510.18586; accepted at EuroSys '27 per the arXiv comments},
+}
+
+% ABSTRACT (arXiv preprint; no venue found)
+@misc{cao2025dlpm,
+  author       = {Cao, Shiyi and Wang, Yichuan and Mao, Ziming and Hsu, Pin-Lun and Yin, Liangsheng and Xia, Tian and Li, Dacheng and Liu, Shu and Zhang, Yineng and Zhou, Yang and Sheng, Ying and Gonzalez, Joseph and Stoica, Ion},
+  title        = {Locality-aware Fair Scheduling in {LLM} Serving},
+  year         = {2025},
+  howpublished = {arXiv:2501.14312},
+}
+
+% FULL (arXiv v2, 2 Oct 2026; "Preprint. Under review.")
+@misc{pan2026rrevict,
+  author       = {Pan, Zaifeng and Wu, Chris and Hu, Zhengding and Qiang, Xinwei and Yu, Zhongkai and Ding, Yufei},
+  title        = {{RR-Evict}: Fine-Grained Prefix Cache Eviction beyond {LRU} for Agentic {LLM} Serving},
+  year         = {2026},
+  howpublished = {arXiv:2609.32278 (v2, 2 October 2026; under review)},
+}
+
+% FULL (ICLR 2026 printed on the paper)
+@inproceedings{wu2026randomization,
+  author    = {Wu, Fangzhou and Silwal, Sandeep and Zhang, Qiuyi (Richard)},
+  title     = {Randomization Boosts {KV} Caching, Learning Balances Query Load: A Joint Perspective},
+  booktitle = {International Conference on Learning Representations (ICLR 2026)},
+  year      = {2026},
+  note      = {arXiv:2601.18999},
+}
+
+% FULL for the claims checked
+@misc{liu2026fancy,
+  author       = {Liu, Yiyu and Yu, Minlan and Yang, Juncheng},
+  title        = {When Fancy Eviction Fails: Rethinking Cache Replacement For {LLM} Prefix Reuse},
+  year         = {2026},
+  howpublished = {arXiv:2609.28870 (v2, 1 October 2026)},
+}
+
+% ABSTRACT ("MLSys 2025 camera-ready version" in the arXiv comments)
+@inproceedings{pan2025marconi,
+  author    = {Pan, Rui and Wang, Zhuang and Jia, Zhen and Karakus, Can and Zancato, Luca and Dao, Tri and Wang, Yida and Netravali, Ravi},
+  title     = {Marconi: Prefix Caching for the Era of Hybrid {LLM}s},
+  booktitle = {Proceedings of Machine Learning and Systems (MLSys 2025)},
+  year      = {2025},
+  note      = {arXiv:2411.19379},
+}
+
+% ABSTRACT (USENIX ATC 2024 from the arXiv comments field)
+@inproceedings{gao2024cachedattention,
+  author    = {Gao, Bin and He, Zhuomin and Sharma, Puru and Kang, Qingxuan and Jevdjic, Djordje and Deng, Junbo and Yang, Xingkun and Yu, Zhou and Zuo, Pengfei},
+  title     = {Cost-Efficient Large Language Model Serving for Multi-turn Conversations with {CachedAttention}},
+  booktitle = {USENIX Annual Technical Conference (USENIX ATC 24)},
+  year      = {2024},
+  note      = {arXiv:2403.19708},
+}
+
+% META (FAST '25 presentation page via search; the arXiv v5 of 8 Oct 2026 carries a different title)
+@inproceedings{qin2025mooncake,
+  author    = {Qin, Ruoyu and Li, Zheming and He, Weiran and Cui, Jialei and Ren, Feng and Zhang, Mingxing and Wu, Yongwei and Zheng, Weimin and Xu, Xinran},
+  title     = {Mooncake: Trading More Storage for Less Computation --- A {KVCache}-centric Architecture for Serving {LLM} Chatbot},
+  booktitle = {23rd USENIX Conference on File and Storage Technologies (FAST 25)},
+  year      = {2025},
+  note      = {arXiv:2407.00079},
+}
+
+% ABSTRACT + EuroSys '25 (arXiv related-DOI field)
+@inproceedings{yu2025pensieve,
+  author    = {Yu, Lingfan and Lin, Jinkun and Li, Jinyang},
+  title     = {Stateful Large Language Model Serving with Pensieve},
+  booktitle = {Proceedings of the European Conference on Computer Systems (EuroSys '25)},
+  year      = {2025},
+  doi       = {10.1145/3689031.3696086},
+  note      = {arXiv:2312.05516},
+}
+
+% ABSTRACT ("To appear on USENIX OSDI 2024" in the arXiv comments)
+@inproceedings{lin2024parrot,
+  author    = {Lin, Chaofan and Han, Zhenhua and Zhang, Chengruidong and Yang, Yuqing and Yang, Fan and Chen, Chen and Qiu, Lili},
+  title     = {Parrot: Efficient Serving of {LLM}-based Applications with Semantic Variable},
+  booktitle = {USENIX Symposium on Operating Systems Design and Implementation (OSDI 24)},
+  year      = {2024},
+  note      = {arXiv:2405.19888},
+}
+
+% ABSTRACT; NSDI '26 presentation page via search (published as "Agentix"; the arXiv title is "Autellix")
+@inproceedings{luo2026agentix,
+  author    = {Luo, Michael and Shi, Xiaoxiang and Cai, Colin and Zhang, Tianjun and Wong, Justin and Wang, Yichuan and Wang, Chi and Huang, Yanping and Chen, Zhifeng and Gonzalez, Joseph E. and Stoica, Ion},
+  title     = {Agentix: An Efficient Serving Engine for {LLM} Agents as General Programs},
+  booktitle = {USENIX Symposium on Networked Systems Design and Implementation (NSDI '26)},
+  year      = {2026},
+  note      = {arXiv:2502.13965 under the name Autellix; author list is the arXiv one}
+}
+
+% ABSTRACT (arXiv; ICML 2026 listing seen via search only)
+@misc{pan2026scalesim,
+  author       = {Pan, Zaifeng and Shen, Yipeng and Hu, Zhengding and Wang, Zhuang and Manocha, Aninda and Wang, Zheng and Yu, Zhongkai and Guan, Yue and Ding, Yufei},
+  title        = {{ScaleSim}: Serving Large-Scale Multi-Agent Simulation with Invocation Distance-Based Memory Management},
+  year         = {2026},
+  howpublished = {arXiv:2601.21473},
+}
+
+% ABSTRACT (the system is called CacheScout in the abstract)
+@misc{zhang2026cachescout,
+  author       = {Zhang, Rui and Kim, Chaeeun and Feng, Shaoting and Du, Kuntai and Liu, Yuhan and Zhong, Yi and Ching, Cheng-Wei and Jiang, Junchen and Hu, Liting},
+  title        = {Learning Agent Execution for {KV}-Cache Management in Agentic Serving},
+  year         = {2026},
+  howpublished = {arXiv:2608.14624},
+}
+
+% ABSTRACT
+@misc{liu2026askthetool,
+  author       = {Liu, Yipeng and Zhang, Yingqiang and Li, Feifei and Zhang, Huanchen},
+  title        = {Ask the Tool, Don't Guess: Agent Tool Calls Hold Their Progress, and the Serving System Should Read It},
+  year         = {2026},
+  howpublished = {arXiv:2609.18849},
+}
+
+% META (USENIX OSDI '22 presentation page via search; not named in the earlier notes, added)
+@inproceedings{yu2022orca,
+  author    = {Yu, Gyeong-In and Jeong, Joo Seong and Kim, Geon-Woo and Kim, Soojeong and Chun, Byung-Gon},
+  title     = {Orca: A Distributed Serving System for Transformer-Based Generative Models},
+  booktitle = {16th USENIX Symposium on Operating Systems Design and Implementation (OSDI 22)},
+  year      = {2022},
+}
+
+% ---------------------------------------------------------------- benchmarks, models
+
+% ABSTRACT
+@misc{chen2026autotunebench,
+  author       = {Chen, Li},
+  title        = {{AutoTuneBench}: Trustworthy Measurement for Agent Auto-Tuning of {LLM} Serving Engines},
+  year         = {2026},
+  howpublished = {arXiv:2609.18123},
+}
+
+% ABSTRACT (ICLR 2024 from the arXiv comments field)
+@inproceedings{jimenez2024swebench,
+  author    = {Jimenez, Carlos E. and Yang, John and Wettig, Alexander and Yao, Shunyu and Pei, Kexin and Press, Ofir and Narasimhan, Karthik},
+  title     = {{SWE-bench}: Can Language Models Resolve Real-World {GitHub} Issues?},
+  booktitle = {International Conference on Learning Representations (ICLR 2024)},
+  year      = {2024},
+}
+
+% META (PMLR v267 page via search)
+@inproceedings{patil2025bfcl,
+  author    = {Patil, Shishir G. and Mao, Huanzhi and Yan, Fanjia and Ji, Charlie Cheng-Jie and Suresh, Vishnu and Stoica, Ion and Gonzalez, Joseph E.},
+  title     = {The {B}erkeley Function Calling Leaderboard ({BFCL}): From Tool Use to Agentic Evaluation of Large Language Models},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {267},
+  pages     = {48371--48392},
+  year      = {2025},
+}
+
+% ABSTRACT (42 listed authors, first An Yang)
+@misc{qwen2024qwen25,
+  author       = {{Qwen Team}},
+  title        = {Qwen2.5 Technical Report},
+  year         = {2024},
+  howpublished = {arXiv:2412.15115},
+}
