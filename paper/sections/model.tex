@@ -1,0 +1,48 @@
+\section{Model}\label{sec:model}
+
+\subsection{Workload and notation}\label{sec:notation}
+A session has $T\sim\min(\mathrm{Geometric}(1/15),60)$ turns, so $E[T]=14.761$. Turn $k$ sends a prompt of $L_k=L_0+(k-1)(\Delta+d)$ tokens: a first prompt of $L_0=2000$ tokens, $\Delta=550$ tokens of tool output and $d=100$ decoded tokens per turn. Between turns the session waits for a tool for a time $Z$, independent across turns, exponential with mean 5\,s in the workload of record. A turn \emph{hits} if more than half of its prompt is served from cache; on the real engine a hit reuses everything but the 550 new tokens and the last decoded token, so it prefills 551 tokens. First turns always miss, so the hit fraction is at most $1-1/E[T]\approx0.93$. With every turn missing, a session's prefill work is $W(T)=2000\,T+325\,T(T-1)$ tokens with $E[W]=154{,}529$; with every follow-up hitting it is $2000+551(T-1)$, about 9,600 in expectation.
+
+The engine has a KV pool of $M$ tokens. In the \emph{closed} system $n$ sessions are present and a finished session is replaced at once. The thrashing curve $\mu(n)$ is the long-run session completion rate (sessions/s); $\mu^*=\max_n\mu(n)$ is attained at $n^*$, and $\muinf=\lim_{n\to\infty}\mu(n)$ is the \emph{congested service rate}. The all-miss capacity $\lmiss$ is the throughput of the saturated engine with prefix caching disabled. In the \emph{open} system sessions arrive as a Poisson process of rate $\lambda$, and $N(t)$ counts sessions in the system (waiting, running or in a tool call). A session rate is estimated either as sessions completed per second or, with much lower variance because session work is heavy-tailed in $T$, as turns per second divided by $E[T]$ (``turns-based'').
+
+\subsection{The thrashing curve for agent sessions}\label{sec:theory-curve}
+Let $\Elb$ be the time-averaged KV footprint of a session over its lifetime, a length-biased mean in which long sessions and late turns weigh more (during the tool call after turn $k$ a session holds $L_k+d$ tokens). By the $H=\lambda G$ relation, the mean KV demand of $n$ present sessions is $n\Elb$. For our workload $\Elb$ is about 10.6k tokens, so a 300k pool holds $\Nlb=M/\Elb\approx28.4$ sessions on average. While $n\Elb$ is well below $M$, idle KV survives the tool call and $\mu(n)$ rises with $n$ through batching. Beyond it, admitting a waiting turn evicts idle KV, which belongs to sessions in tool calls; they miss when they return. The peak $n^*$ lies below $\Nlb$ because resident demand fluctuates around its mean.
+
+\subsection{The open system as a quasi-static approximation}\label{sec:fluid}
+Replacing the departure rate of the open system by its closed-system value at the current population gives
+\begin{equation}\label{eq:fluid}
+\dot n=\lambda-\mu(n).
+\end{equation}
+Let $\mu$ rise to $\mu^*$ and fall to $\muinf<\mu^*$. If $\lambda<\muinf$ (and $\mu>\lambda$ above the lower crossing), Eq.~\eqref{eq:fluid} has one attracting fixed point. If $\muinf<\lambda<\mu^*$, it has a stable fixed point $n_1<n^*$ and an unstable one $n_2>n^*$, and from any $n>n_2$, $n\to\infty$: the good state is metastable. If $\lambda>\mu^*$ there is no good state. From a congested state $x_0$ the system recovers if and only if $\lambda<\min_{[n_1,x_0]}\mu$, which tends to $\muinf$ for deep congestion; $\muinf$ is the \emph{recovery threshold}.
+
+In a finite system fluctuations can carry $N$ past $n_2$ without a burst, and an experiment sees only escapes within its horizon. We therefore use a measured \emph{from-empty edge} $\ledge$, the largest rate at which runs started from an empty engine stay stable over a stated horizon, and define the window
+\begin{equation}\label{eq:window}
+\mathcal W=\big(\muinf,\ \min(\mu^*,\ledge)\big).
+\end{equation}
+Inside $\mathcal W$ the good state exists from empty, and a burst that crosses the basin boundary leaves the system in a regime whose service rate is below the arrival rate. That regime is transient (the backlog grows), not a second stationary state, so we say metastable rather than bistable.
+
+Eq.~\eqref{eq:fluid} assumes that the internal state (turn-index mix, cache contents, queue order) relaxes quickly compared with changes in $n$. A math check (Appendix~\ref{app:prov}) found this reasonable at fixed points and in deep congestion, where $\mu$ is flat, but not near the cliff. We therefore use it for the window and the recovery threshold, not for burst sizes: in an earlier simulator (\S\ref{sec:sim}) the fluid critical burst $n_2-n_1$ at $2\lmiss$ was 20.5 sessions against an empirical 40, because burst sessions are fresh and small.
+
+\subsection{Two results}\label{sec:props}
+
+\begin{proposition}[FCFS-type orders, any eviction rule]\label{prop:A}
+Assume (A1) every resident context has at least $L_{\min}>0$ tokens; (A2) every follow-up request waits in the queue at least $w_n$, with $w_n\to\infty$ in probability as $n\to\infty$; (A3) a miss in congestion costs the same as in the cache-disabled reference. Then the rate of hit turns is at most $M/(L_{\min}w_n)\to0$, and $\mu(n)\to\lmiss$.
+\end{proposition}
+\begin{proof}
+A hit at turn $t+1$ needs at least $L_{\min}$ tokens of the session's KV to stay resident from the end of turn $t$ until turn $t+1$ is admitted, at least $w_n$ later. Resident token-time accrues at rate at most $M$, so (hit rate)$\cdot L_{\min}w_n\le M$; with a vanishing hit fraction, (A3) gives the all-miss rate.
+\end{proof}
+
+(A2) holds for FCFS and program-level FCFS: turn throughput is bounded, so by Little's law the cycle time grows without bound in $n$. The bound holds for every eviction rule, even Belady's~\citep{belady1966study}, and for protection of queued prefixes that keeps FCFS order. A resident-first order such as LPM violates (A2): a returning session whose KV is still resident does not wait.
+
+\begin{remark}[resident-first orders; a conjecture]
+Under LPM in congestion we expect the follow-up hit fraction to tend to $P(Z<R_\infty)$, with $R_\infty$ the congested lifetime of idle KV, so $\muinf^{\mathrm{LPM}}$ exceeds $\lmiss$ through tool calls shorter than $R_\infty$; the simulator agrees (\S\ref{sec:mech}), but we have no proof.
+\end{remark}
+
+\begin{proposition}[cap identity]\label{prop:cap}
+Let a FIFO gate admit at most $N$ sessions, each holding its slot from admission to the end of its last turn, tool calls included. In the closed system with $n\ge N$ sessions the admitted sessions evolve exactly as a closed system of $N$, so $\mu_{\mathrm{cap}}(n)=\mu(\min(n,N))$ in law.
+\end{proposition}
+\begin{proof}
+When an admitted session finishes, the gate admits its head at once and the replacement joins the gate.
+\end{proof}
+
+With $N\le n^*$, $\mu_{\mathrm{cap}}$ is non-decreasing, so under Eq.~\eqref{eq:fluid} the capped system has one attracting state if and only if $\lambda<\mu(N)$, and drains a burst of $b$ sessions in about $b/(\mu(N)-\lambda)$: 1571\,s at 1.35 and 1889\,s at 1.65 $\lref$ for the registered test. The stochastic counterpart (positive recurrence for $\lambda<\mu(N)$) should follow from standard arguments; we have not written them out. A cap $N>n^*$ raises the congested level to $\mu(N)$ but leaves the window $(\mu(N),\mu^*)$ open.

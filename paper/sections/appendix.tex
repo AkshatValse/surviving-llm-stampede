@@ -1,0 +1,146 @@
+\section{Protocol details}\label{app:protocol}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Real-engine stages (SLURM job IDs on Nova).}\label{tab:stages}
+\begin{tabular}{@{}l l p{3.6cm}@{}}
+\toprule
+Stage & Jobs & What it measures\\
+\midrule
+Stage 0 & 17060165 & smoke test\\
+Stage C & 17062103--05 & closed $\mu(n)$, 300k pool; FCFS $n\in\{16,20,24,32,48,96,300\}$, LPM $n\in\{48,300\}$\\
+E0a & 17072634--37 & $\lmiss$, cache off\\
+E0b & 17084750--55 & from-empty stability\\
+E2 & 17093387--404 & registered test, 2 rates $\times$ 3 seeds $\times$ 3 arms\\
+native C & 17096856--57 & $\mu(n)$, native pool, $n\in\{24,48,64,80,96,128,300\}$\\
+native E0a & 17096858 & $\lmiss$, native pool\\
+grid & 17097086--103 & BURST arm, 3 policy cells\\
+vLLM & 17097972--74 & install, GPU check, smoke\\
+\midrule
+native E0b & 17100938--39 & \pending{running}\\
+vLLM E0a & 17100940 & \pending{running}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Workload and engine of the real-engine runs.}\label{tab:workload}
+\begin{tabular}{@{}l l@{}}
+\toprule
+First prompt $L_0$ & 2000 tokens\\
+Tool output per turn $\Delta$ & 550 tokens\\
+Output per turn $d$ & 100 tokens, greedy, \texttt{ignore\_eos}\\
+Turns $T$ & $\min(\mathrm{Geometric}(1/15),60)$, $E[T]=14.761$\\
+Tool time $Z$ & exponential, mean 5\,s\\
+Prompt at turn $k$ & $2000+650(k-1)$ tokens\\
+Output feedback & server-returned token ids\\
+\midrule
+Engine & SGLang 0.5.22, FlashInfer\\
+Scheduling & FCFS, waiting-prefix refresh on\\
+Batching & chunked prefill 8192, $\le256$ running\\
+KV pool & 300,000 tokens; native 955,757\\
+Context limit & 49,152 tokens\\
+Model & Qwen2.5-7B-Instruct, rev.\ a09a3545\\
+GPU & A100 80GB PCIe, 81,920\,MiB, driver 580.178.04\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Stage 0.} The smoke test (job 17060165) verified that every engine flag exists; that cached tokens are reported (a repeated 64-token prompt had 63 tokens cached); that the server returns output token ids; that contexts up to 40,350 tokens are accepted; that the KV pool is exactly 300,000 tokens; that client and server agree on prompt length (0 mismatches over 3191 requests); and that the flush empties the cache (canary 1023 cached tokens before, 0 after).
+
+\paragraph{Stage C and E0a.} Closed population; all sessions start at $t=0$ and a finished session is replaced at once; 900\,s warmup and an 1800\,s measured window; one run per $n$ (seed 0); flush and canary check between runs. E0a disables the radix cache and runs 32 sessions with seeds 0, 1 and 2, plus 64 sessions with seed 0 as a saturation check. Its per-run values over the window were (sessions/s, turns-based sessions/s, uncached tokens/s): seed 0, 0.0567, 0.0643, 11,076; seed 1, 0.0817, 0.0773, 11,342; seed 2, 0.0767, 0.0730, 11,312; 64 sessions, 0.0544, 0.0676, 11,431. The spread comes from in-flight composition: the mean turn index of the requests in the window was 15.9, 13.2 and 14.1 for seeds 0, 1 and 2.
+
+\paragraph{E0b.} Poisson session arrivals from an empty cache and queue at 1.25, 1.5, 1.75, 2.0, 2.5 and 3.0 $\lref$; one 3000\,s run per rate; stable if the final queue is below 50 and the fitted rise of the queue over the last 1500\,s is at most 10.
+
+\paragraph{E2.} One arm per 8700\,s job, each on a fresh server; burst of 200 fresh sessions within 60\,s at $t_b=1200$\,s for BURST and CAPPED; CAPPED gate $\ncap=20$; evaluation window $[t_b+4500,\,8700]$\,s. The registered rule (Table~\ref{tab:rule}) was applied by the analysis tool frozen at the registration commit, with the same parameter overrides that the jobs themselves used.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{The registered decision rule.}\label{tab:rule}
+\begin{tabular}{@{}l l@{}}
+\toprule
+Rate estimator & uncached prefill tokens/s\\
+Reference rate & E0a all-miss, 11,243 tokens/s\\
+Rate tolerance & $\pm0.15$\\
+Slope test & slope $>0.5\,(\lambda-\lmiss)$, 10\,s bins\\
+Minimum window & 600\,s\\
+Recovered & hit $>0.8$ and outstanding $<20$, last 300\,s\\
+Hit metric & turns with cached/prompt $>0.5$\\
+Pass & each arm in $\ge2/3$ of $\ge3$ seeds\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Backlog definitions.} The figures and Table~\ref{tab:e2} report the backlog as sessions in the system (arrived minus ended), which includes sessions asleep in tool calls (8--12 in the good state). The registered RECOVERED test uses the outstanding backlog (requests in flight plus sessions held at the gate). The simulator's predictions count waiting requests plus the gate queue.
+
+\section{The registration}\label{app:prereg}
+The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FILLED, committed in \texttt{d279b7b} (2026-10-24, 15:09 CDT) before the first E2 job, SHA-256 \texttt{2a6d680a9615bba962a5673d6db6b3e4\allowbreak ca5102bf778ca974cea46147f5cc0ac6}. Its fields:
+
+\begin{itemize}
+\item \textbf{Cell and inputs.} Engine cell \texttt{sglang-fcfs-r1} (SGLang FCFS, waiting-prefix refresh on); committed copies of the Stage~C curve, the E0a calibration and the E0b bracket under \fpath{prereg/inputs/2026-10-23/}; protocol 8700\,s, burst of 200 within 60\,s at 1200\,s.
+\item \textbf{Measured.} $\mu(n)$ in sessions/s: 0.1756 ($n=16$), 0.2239 (20), 0.2333 (24), 0.1150 (32), 0.0489 (48), 0.0611 (96), 0.1078 (300). $\mu^*=0.2333$; $\ncap=20$ by the smallest-within-5\% rule (argmax 24; flagged ambiguous). $\lmiss=0.07167$ (sessions) and 0.07153 (turns-based, $=\lref$); all-miss rate 11,243 tokens/s; E0b largest all-stable multiple 2.0, first unstable 2.5, monotone; hardware A100 80GB PCIe.
+\item \textbf{Predicted boundaries.} Recovery threshold $\lref$ (not $\mu(300)$, which a synchronized start biases upward). Window $(0.0715,\,0.1431)$\sps{} $=(1.0,\,2.0)\,\lref$, upper edge from E0b. CAPPED drain must fit within 80\% of the 7200\,s available after the burst (5760\,s), which holds for $\lambda$ up to 2.64 $\lref$; predicted drain 1571\,s at 1.35 and 1889\,s at 1.65.
+\item \textbf{Rates.} 1.35 and 1.65 $\lref$ by the one-third/two-thirds rule, rounded to 0.05, inside the margin band $(1.1,\,1.8)$; seeds 0, 1, 2. The rule and the cap rule were written in the runbook and the state file on 2026-10-23, before E0b was read.
+\item \textbf{Predictions.} Inside the window: BURST trapped, NOBURST good through the run horizon, CAPPED recovered if the drain fits. Below $\lref$: BURST not trapped. Above the window: NOBURST may escape, so no such rate was registered.
+\item \textbf{Kill conditions.} NOBURST not good in at least one third of the seeds at a registered rate; BURST not trapped in two thirds of the seeds at every registered rate; CAPPED not recovering while BURST traps and the drain fits; a window that is empty or narrower than the noise.
+\item \textbf{Warnings recorded at filling.} $|\mu(300)/\lmiss-1|=0.507$ (a check only), and the ambiguous cap.
+\end{itemize}
+
+\noindent The verdict is in \fpath{results/agentload_analysis_burst2/20261025-144012/} inside the E2 data directory: pre-registered, decisive pass at 1.35 and 1.65 $\lref$. The three grid cells have their own derived registrations, \fpath{configs/agentload_prereg_2026-10-24_grid_<cell>.yaml} for the cells \texttt{sglang-fcfs-r0}, \texttt{sglang-lpm-r1} and \texttt{sglang-lpm-r0}, with status EXPLORATORY; the analysis never calls them decisive.
+
+\section{Blind-prediction timeline}\label{app:timeline}
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Order of events (times CDT). Commits are in the project repository; job IDs on Nova.}\label{tab:timeline}
+\begin{tabular}{@{}p{1.75cm} p{5.6cm}@{}}
+\toprule
+When & Event\\
+\midrule
+10-21 & Stage 0 passes (17060165); Stage C submitted\\
+10-22 & Stage C results pulled; E0a jobs complete; simulator cost model fitted to Stage 0/C server logs (\texttt{4435c51})\\
+10-23 14:32 & E0a results committed (\texttt{a76f5e5})\\
+10-23 $\sim$14:40 & E0b submitted (17084750--55); runs that afternoon\\
+10-24 03:13 & validation of the calibrated simulator committed (\texttt{813cfc1})\\
+10-24 03:23 & prediction spec and code committed before any prediction run (\texttt{630ab9e})\\
+10-24 03:49 & predictions B1--B4 committed (\texttt{64bc4e3})\\
+10-24 04:05 & independent verification recorded (\texttt{877b936})\\
+10-24 14:52 & tag \texttt{r6-predictions-frozen}; pushed 14:53\\
+10-24 15:06 & E0b results pulled (committed \texttt{cfbc702})\\
+10-24 15:09 & registration committed (\texttt{d279b7b})\\
+10-24 15:13 & E2 submitted (17093387--404)\\
+10-24 15:38 to 10-25 $\sim$02:40 & E2 runs\\
+10-25 02:28 & native-pool Stage C and E0a start (17096856--58)\\
+10-25 14:40 & registered E2 verdict computed (data \texttt{49fbc7b})\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent B3 (E2) and B4 (native pool) were committed before their experiments were submitted, so they are blind in time. B2 (E0b) was committed after E0b had finished on the cluster but before its results were pulled; the agents that made the predictions had no cluster access and were barred from real-result directories, and the order of the commits, the tag and the pull was checked from the repository's reflog and the push record. A scan of every line added between the base commit and the predictions found no use of withheld data, but a text scan cannot prove that nobody read it. B1 (E0a) is access-controlled only: E0a was committed before the predictions. The independent verifier had read the project state file, which mentions E0a, so it is independent but not blind. Two conditions of the verification failed and are disclosed: the strict containment of B3 passes within the B2 all-stable range, and the platform-specific test failures of the full suite.
+
+\section{Provenance}\label{app:prov}
+Every number in the paper is listed with its source file and commit or job in \fpath{paper/NUMBERS.md}. Commits dated before 2026-10-22 predate a history rewrite and are mapped to current hashes in \fpath{provenance/commit-map.tsv}.
+
+\begin{table}[h]
+\centering\footnotesize
+\caption{Data behind each result (paths relative to the repository).}\label{tab:prov}
+\begin{tabular}{@{}p{1.6cm} p{5.75cm}@{}}
+\toprule
+Result & Directory (commit)\\
+\midrule
+Stage 0, C & \fpath{results/nova/s0_smoke_17060165_pulled_20261021-152347/}, \fpath{results/nova/stageC_1706210x_pulled_20261022-125454/} (\texttt{d0235a7})\\
+E0a & \fpath{results/nova/e0a_1707263x_pulled_20261023-142037/} (\texttt{a76f5e5})\\
+E0b & \fpath{results/nova/e0b_1708475x_pulled_20261024-150639/} (\texttt{cfbc702})\\
+E2 & \fpath{results/nova/e2_170933xx_pulled_20261025-144558/} (\texttt{49fbc7b})\\
+native, grid, vLLM & \fpath{results/nova/r7_native_grid_vllm_pulled_20261025-145126/} (\texttt{fa265c2})\\
+validation & \fpath{results/r6_validate_stagec/20261024-025222/} (\texttt{813cfc1})\\
+B1--B4 & \fpath{results/r6_predict_report/20261024-034707/}, \fpath{notes/PREDICTIONS.md} (\texttt{64bc4e3})\\
+robustness & \fpath{results/r7_report/20261024-233554/} (\texttt{c653498}); \fpath{results/r7_traces_sim/r7_report/20261025-012451/}, \fpath{results/r7_traces_sim_adj/r7_report/20261025-012453/} (\texttt{b530e55})\\
+mechanisms & \fpath{results/prefix_meta_baselines_audit_summary/20261025-001850/} (\texttt{dc76032}); \fpath{results/prefix_meta_r4_curve/20261021-050856/}, \fpath{results/prefix_meta_r4/20261021-051550/} (\texttt{a1d485b})\\
+figures & \fpath{figures/paper/}, \fpath{paper/figs/README.md} (\texttt{e098e1c}, \texttt{c974070})\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Notes that support the text.} The math check of the model is \fpath{notes/MATHCHECK_thrashing_curve.md}; the verification of Stage~C (three-source hit check, eviction survival times, prompt continuity) is \fpath{notes/STAGEC_VERIFICATION.md}; the audit of the PEEK, Continuum and CONCUR rules against released code is \fpath{notes/BASELINES_AUDIT.md}; the audit of every citation, the scoop check and the reading of the SGLang and vLLM sources (read twice, through a page summariser, without verbatim code) are in \fpath{notes/lit/CITATION_AUDIT_2026-10-25.md}; the trace statistics are in \fpath{notes/lit/AGENT_TRACES.md}. Where the research log and a committed CSV differ in the last digit (three hit fractions and one backlog of the policy grid), the paper uses the CSV.

@@ -1,0 +1,73 @@
+% Thrashing Returns: Metastable Failures in Prefix-Cached Agent Serving
+% Build (from paper/): pdflatex main && bibtex main && pdflatex main && pdflatex main
+% Every number in the text is listed with its source in paper/NUMBERS.md.
+\documentclass[10pt,twocolumn]{article}
+
+\usepackage[letterpaper,margin=0.75in,columnsep=0.25in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsthm}
+\usepackage{newtxtext,newtxmath}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage[shortlabels]{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\setlist{itemsep=1pt,topsep=3pt,parsep=0pt,leftmargin=*}
+
+% Repository paths, breakable at / - _ .
+\def\UrlBreaks{\do\/\do\-\do\_\do\.}
+\newcommand{\fpath}[1]{\nolinkurl{#1}}
+
+% Results that are still running render as red text, never as numbers.
+\newcommand{\pending}[1]{\textcolor{red}{[pending: #1]}}
+% A reference that is needed but not (yet) in the verified refs.bib.
+\newcommand{\todo}[1]{\textcolor{blue}{[TODO: #1]}}
+
+% Notation
+\newcommand{\lmiss}{\lambda_{\mathrm{miss}}}
+\newcommand{\lref}{\lambda_{\mathrm{ref}}}
+\newcommand{\ledge}{\lambda_{\mathrm{e}}}
+\newcommand{\muinf}{\mu_{\infty}}
+\newcommand{\Elb}{E_{\mathrm{lb}}}
+\newcommand{\Nlb}{N_{\mathrm{lb}}}
+\newcommand{\ncap}{n_{\mathrm{cap}}}
+\newcommand{\sps}{\,sessions/s}
+
+\newtheorem{proposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{Thrashing Returns: Metastable Failures in Prefix-Cached Agent Serving}
+\author{Akshat Valse \qquad Ali Jannesari\\Iowa State University}
+\date{Draft, 25 October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+LLM agents send a serving engine multi-turn sessions whose turns are separated by tool calls. Prefix caching keeps a session's KV state between turns, so a follow-up turn that hits the cache prefills only its new tokens. We show that this makes the engine's good, high-hit state metastable. On SGLang 0.5.22 serving Qwen2.5-7B-Instruct on one A100 80GB GPU with a 300,000-token KV pool, the closed-population throughput $\mu(n)$ peaks at 0.233\sps{} near $n=20$--24 sessions and falls to an all-miss regime by $n=48$, while an empty server stays in the good state at arrival rates up to at least twice the all-miss capacity $\lmiss=0.0715$\sps. In a pre-registered paired test at 1.35 and 1.65 $\lmiss$, a burst of 200 sessions left the server at zero cache hits with a growing backlog for the remaining 7500\,s in all 6 runs (5 of 6 met the registered trap rule; the sixth fell below its slope threshold), the same arrivals without the burst stayed good in 6 of 6, and a client-side cap of 20 sessions recovered in 6 of 6. A simulator whose cost model was fitted only to server-log timing predicted these outcomes before they were read. With SGLang's native pool the cliff of $\mu(n)$ moves out about threefold and $\lmiss$ does not change. We state a quasi-static model of the window, prove that FCFS-type ordering cannot raise the congested service rate above $\lmiss$, compare deployed mechanisms by how far they raise it, and give a pre-deployment diagnostic: measure $\mu(n)$ for the actual workload and set a session cap from it.
+\end{abstract}
+
+\input{sections/intro}
+\input{sections/background}
+\input{sections/model}
+\input{sections/method}
+\input{sections/results}
+\input{sections/robustness}
+\input{sections/mechanisms}
+\input{sections/diagnostic}
+\input{sections/related}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\clearpage
+\appendix
+\input{sections/appendix}
+
+\end{document}

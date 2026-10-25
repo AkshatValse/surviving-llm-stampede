@@ -1,0 +1,97 @@
+\section{Results on the real engine}\label{sec:results}
+
+\subsection{The thrashing curve, with a capped and a native pool}\label{sec:curve}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figs/fig2_thrashing_curve.pdf}
+\caption{Closed-population thrashing curve, real engine (black, filled; one run per $n$) against the calibrated simulator (gray, open, dashed). Top: $\mu(n)$ in completed sessions/s (plus signs: turns-based estimate); bottom: hit fraction. Left: 300k-token pool, simulator mean of 3 seeds $\pm$1 s.e. Right: native pool (955,757 tokens), simulator = blind prediction B4 at 900k tokens (seed 0). Dotted: $\lmiss$. Green dashed: the registered cap $n=20$.}\label{fig:curve}
+\end{figure*}
+
+With the 300k pool (Fig.~\ref{fig:curve}, left), $\mu(n)$ rises from 0.176\sps{} at $n=16$ to 0.224 at 20 and 0.233 at 24, with hit fractions 0.93, 0.93 and 0.89. The run at $n=32$ mixes two regimes: degraded from about 450 to 2400\,s, then recovered to 0.80, for a hit fraction of 0.51. At $n=48$ none of the 20.0M prompt tokens in the window was served from cache: evictable tokens survive about 6.3\,s before eviction while a session returns after 30.6\,s on average (2.9\,s against 66\,s at $n=96$). The cliff is where memory predicts ($\Nlb=28.4$; the hit fraction crosses 0.5 at $n=32.2$). The rising tail, $\mu(48)=0.049<\mu(96)=0.061<\mu(300)=0.108$\sps, is a transient of the synchronized start, whose young sessions have short prompts (71\% of the stationary length in flight at $n=300$); the all-miss level implied by token throughput is roughly flat at 0.072--0.081\sps, so the collapse from the peak is about threefold. Stock LPM keeps 39\% of turns hitting at $n=48$ (rising from 0.28 to 0.44 through the window); at $n=300$ its queue of 269 exceeds 128, so SGLang falls back to FCFS and no turn hits.
+
+With the native pool (Fig.~\ref{fig:curve}, right), SGLang sized the KV pool at 955,757 tokens, 3.19 times the cap. $\mu$ peaks at 0.479\sps{} at $n=64$ (0.477 at 80) with 92--93\% of turns hitting, then falls to 0.123 at $n=96$ (hit fraction 0.42), 0.067 at 128 (0.007) and 0.101 at 300. The hit fraction crosses 0.5 near $n=93$, 2.9 times the 300k crossing. The all-miss capacity does not move: 0.0718\sps{} turns-based against 0.0715, and 11,282 against 11,243 all-miss tokens/s. The 300k cap did not create the cliff; it moved it. The ratio $\mu^*/\lmiss$ is 6.7 with the native pool and 3.26 at 300k.
+
+\subsection{The all-miss capacity and the from-empty edge}\label{sec:edge}
+E0a gives $\lmiss=0.0715\pm0.0038$\sps{} turns-based (standard error over three seeds), $0.0717\pm0.0076$ in completed sessions, and $11{,}243\pm84$ all-miss prefill tokens/s. The token rate varies by $\pm1.2\%$ across seeds and the session rate by $\pm17\%$: the engine is bound by prefill tokens, and the sessions completed in 1800\,s are a small sample of a heavy-tailed quantity. The token rate divided by $E[W]$ gives 0.0728\sps, within 2\% of the turns-based value.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig3_from_empty_stability.pdf}
+\caption{From-empty stability, 300k pool. Real engine (E0b): one 3000\,s run per rate (1 = stable, 0 = unstable). Gray: blind prediction B2, fraction of simulated runs stable (3 seeds dashed, 20 dotted). Top axis: multiples of $\lref$ (the simulator's own $\lmiss$ is 0.0722).}\label{fig:edge}
+\end{figure}
+
+From an empty cache and queue (Fig.~\ref{fig:edge}) the engine stayed stable at 1.25, 1.5, 1.75 and 2.0 $\lref$, ending each run with an empty queue, and was unstable at 2.5 $\lref$ (final queue 127, rising by 146 over the last 1500\,s) and 3.0 (289 and 196). The edge lies between 2.0 and 2.5 $\lref$, well below $\mu^*/\lref=3.26$, so the from-empty edge, not the peak, bounds the window. The registered window was $(1,\,2.0)\,\lref=(0.0715,\,0.143)$\sps. Each rate is one 3000\,s run; a longer horizon could find a lower edge.
+
+\subsection{The registered paired test}\label{sec:e2}
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{The registered test (E2). States for seeds 0, 1, 2: T trapped, I indeterminate, G good, R recovered. Hit fraction, uncached prefill rate in multiples of the all-miss rate, mean backlog (sessions in the system) and its slope (sessions/s) over the evaluation window; ranges over seeds. Slope thresholds: 0.0125 at 1.35 and 0.0232 at 1.65 $\lref$.}\label{tab:e2}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}c l c c c c c@{}}
+\toprule
+$\lambda/\lref$ & arm & states & hit & tokens & backlog & slope\\
+\midrule
+1.35 & BURST   & T I T & 0.000 & 1.009--1.025 & 200--232 & 0.0036--0.0222\\
+     & NOBURST & G G G & 0.930--0.934 & 0.08--0.09 & 7.9--9.7 & ${<}0.001$\\
+     & CAPPED  & R R R & 0.930--0.934 & 0.08--0.09 & 7.9--9.7 & ${<}0.001$\\
+\addlinespace
+1.65 & BURST   & T T T & 0.000 & 1.025--1.029 & 283--332 & 0.0277--0.0362\\
+     & NOBURST & G G G & 0.921--0.934 & 0.10--0.13 & 10.9--11.8 & ${<}0.002$\\
+     & CAPPED  & R R R & 0.929--0.934 & 0.10--0.11 & 10.9--11.7 & ${<}0.002$\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The registered analysis, run on all 18 runs with the code frozen at the registration commit, reports a pre-registered, decisive pass at both rates (Table~\ref{tab:e2}). Every BURST run had a hit fraction of 0.000 over the evaluation window, an uncached prefill rate of 1.009--1.029 times the all-miss rate and a mean backlog of 200--332 sessions. One (1.35 $\lref$, seed 1) is stuck in the same way, but its slope, 0.0036\sps, is below the threshold, so the rule calls it indeterminate. Every NOBURST and CAPPED run is good (hit fractions 0.921--0.934, backlogs of 8--12 sessions, most asleep in tool calls); in the window CAPPED cannot be told apart from NOBURST, because the gate had drained the burst.
+
+In Fig.~\ref{fig:e2}, every BURST run is at zero hits from the window starting at 1300\,s to the end, with its backlog still growing (206--369 sessions over the last 300\,s). Outside the registered criteria, the CAPPED arm's hit fraction dips while the gate drains the burst: its lowest 100\,s window is 0.48--0.77 in four of six runs, against 0.82--0.89 for NOBURST. So at loads that the engine carries indefinitely from empty, 200 sessions arriving within a minute, an order of magnitude more than the 8--12 present in the good state, moved it into an all-miss state that it did not leave within 7500\,s, and a cap at the measured peak of $\mu(n)$ prevented that.
+
+\subsection{Blind predictions against outcomes}\label{sec:blind}
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Blind predictions (calibrated simulator, mixed batching) against outcomes; rates in sessions/s. B1 is not blind in time (Appendix~\ref{app:timeline}).}\label{tab:blind}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & predicted & real\\
+\midrule
+B1 & $\lmiss$ 0.0722 (turns) & 0.0715 ($+0.9\%$)\\
+   & 11,220 tokens/s & 11,243 ($-0.2\%$)\\
+   & $\lmiss$ 0.0694 (sessions) & 0.0717 ($-3.2\%$)\\
+\addlinespace
+B2 & all-stable edge 0.14 (3 seeds), 0.15 (20) & in $[0.143,\,0.179)$\\
+   & at 0.18: 2/3 stable (15/20) & 0.179 unstable\\
+\addlinespace
+B3 & PASS at all rates 0.09--0.16 & PASS at 0.0966, 0.1180\\
+   & trapped token ratio 0.999--1.065 & 1.009--1.029\\
+   & trapped backlog 171--523 requests & 194--325 requests\\
+   & good-arm hit 0.929--0.937 & 0.921--0.934\\
+   & low end fragile (0.09: 14/20 trapped) & 1 of 3 indeterminate\\
+\addlinespace
+B4 & peak $n=64$, $\mu$ 0.514 (900k, 5 seeds) & $n=64$, 0.479 ($-7\%$)\\
+   & 0.5-hit crossing $\approx$80 & $\approx$93\\
+   & $\mu(96)=0.085$, $\mu(300)=0.108$ & 0.123, 0.101\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+B1 matched within 3.2\% (Table~\ref{tab:blind}). B2's edge, 0.14--0.15\sps, is consistent with the real edge in $[0.143,\,0.179)$; near 0.179 the model keeps 2 of 3 runs stable (15 of 20 with more seeds), so one unstable run there is no contradiction. B3 predicted a pass at every tested rate in both batching modes, trapped token rates and good-arm hit fractions within the observed ranges, and fragility at the low end, where the slope margin $0.5(\lambda-\lmiss)$ is small; the indeterminate real run is that failure mode. (Backlogs compare only roughly: the simulator counts waiting requests, the engine runs outstanding ones.) B4 got the peak's position and the outward shift of the cliff, with the peak 7\% high and the cliff slightly early (at $n=96$ the engine still hit 42\% of turns), partly because the real pool is 6\% larger than the simulated 900k. Two qualifications: the verifier's strict check that every B3 pass lies inside the B2 all-stable range failed (B3 asks for 2 of 3 seeds over a longer run), and B2 is blind by access control and commit order, not by event order: E0b had finished on the cluster before the predictions were committed, and was pulled 13 minutes after they were pushed.
+
+\subsection{Exploratory policy grid}\label{sec:grid}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig6_policy_grid.pdf}
+\caption{Exploratory policy grid, BURST arm only, 300k pool. Rows: FCFS with the waiting-prefix refresh (the registered runs), FCFS without, LPM with, LPM without. Columns: 1.35 and 1.65 $\lref$ by seed. Colour: state over the evaluation window; numbers: hit fraction and mean sessions in the system.}\label{fig:grid}
+\end{figure}
+
+Three other engine cells ran the BURST arm at the registered rates and seeds (Fig.~\ref{fig:grid}) under exploratory registrations derived from E2's, with no control arms. The refresh does not matter for FCFS: all six runs without it have the registered runs' states, hit fraction 0.000 and backlogs within a few percent (200--231 sessions at 1.35 $\lref$, 282--328 at 1.65), as the source predicts: the refresh moves waiting prefixes up the LRU order but does not pin them.
+
+LPM partly helps. At 1.35 $\lref$ it recovered or was draining in 5 of 6 runs (with the refresh: recovered at hit fractions 0.71 and 0.81, draining at 0.51; without: recovered at 0.80 and 0.93, trapped once). At 1.65 $\lref$ it was trapped in 4 of 6, indeterminate in one (hit 0.44) and recovered in one (0.82). Stock LPM's recovery threshold on this engine is therefore between about 1.35 and 1.65 $\lmiss$, above our simulator's LPM (congested service rate about 1.17 $\lmiss$, cold-start recovery only up to about 1.1; \S\ref{sec:mech}). The simulator understates LPM on the real engine, and we do not claim that LPM fails. We have not isolated why; candidates are partial prefix hits, which the simulator omits, and the 128-request fallback switching off once the queue shrinks. Seed 0 at 1.35 $\lref$ recovered with the refresh and was trapped without it, so single runs near LPM's threshold are sensitive to small differences.
+
+\subsection{Still running}\label{sec:pending}
+With the native pool $\mu^*/\lmiss$ is 6.7, so its window may be much wider; its from-empty edge is \pending{native E0b, jobs 17100938--39} and its kill test \pending{native blind prediction, registration and E2}. vLLM 0.32.0 passed its smoke test on the same GPU type (token ids and cached-token counts returned, flush verified); its all-miss capacity is \pending{vLLM E0a, job 17100940} and its BURST runs \pending{six vLLM BURST runs, exploratory registration}.
