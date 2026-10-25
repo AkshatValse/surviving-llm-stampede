@@ -74,7 +74,7 @@ URL pattern: `https://github.com/vllm-project/vllm/blob/v0.32.0/<path>#L<line>` 
 
 | Item | Status | Source |
 |---|---|---|
-| `GET /health` -> 200 (503 if the engine died); the API server listens only after the engine is up | verified, unchanged | `vllm/entrypoints/serve/instrumentator/health.py#L22-L33` |
+| `GET /health` -> 200 (503 if the engine died). The port is bound before the engine starts ("bind the port before the engine is set up"), but requests are answered only once the engine is ready, so `/health` polls during start-up time out (`HEALTH_CURL_MAX_S`, 10 s) instead of being refused | verified, unchanged | `vllm/entrypoints/serve/instrumentator/health.py#L22-L33`; `vllm/entrypoints/launchers/launcher.py#L391` |
 | `GET /v1/models` lists the model id (`Qwen/Qwen2.5-7B-Instruct`) | verified | `vllm/entrypoints/openai/models/api_router.py#L20` |
 | `GET /metrics` always on (Prometheus text) | verified; the access-log filter keeps `/metrics` and `/health` out of the log | `vllm/entrypoints/serve/instrumentator/metrics.py` |
 | `POST /v1/completions`, `prompt` = list of token ids; `ignore_eos`, `repetition_penalty`, `top_p` are request fields | verified | `vllm/entrypoints/openai/completion/protocol.py#L51-L56`, `#L72`, `#L79`, `#L84` |
@@ -188,7 +188,7 @@ Checks before moving on, as for SGLang: seeds agree within about 5%; population 
 
 ### Step 5: derived EXPLORATORY registration (local, no GPU)
 
-The tool is on `main` (`analysis/prereg.py`, `derive-exploratory`; `notes/E2_RUNBOOK.md` Stage 5). From a checkout that contains the committed parent `configs/agentload_prereg_2026-10-24.yaml`:
+The tool is on `main` (`analysis/prereg.py`, `derive-exploratory`; `notes/E2_RUNBOOK.md` Stage 5). From a checkout that contains the committed parent `configs/agentload_prereg_2026-10-24.yaml` (on the PC `PYTHONPATH` entries are `;`-separated: `src;.`):
 
 ```bash
 D=2026-10-NN                                     # date of the vLLM E0a pull
