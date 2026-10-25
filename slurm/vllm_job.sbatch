@@ -10,25 +10,35 @@
 #SBATCH --time=04:00:00
 #SBATCH --output=logs/%x-%j.out
 #
-# DRAFT -- NEVER SUBMITTED. Needs Akshat's approval; run a short test job first (see notes/NOVA_PLAN_prefix_meta.md).
+# DRAFT -- NEVER SUBMITTED. Needs Akshat's approval; run a short test job first (MODE=smoke; see notes/VLLM_RUNBOOK.md).
 # One A100-80GB: launch vLLM v0.32.0 (`vllm serve ... --enable-prefix-caching`), wait for health, run the generator,
 # collect logs, run the light analysis. Same parameters as slurm/sglang_job.sbatch (POLICY/REFRESH/LPM_INF do not apply;
-# vLLM v0.32.0 has FCFS only, per notes/lit/engine-sources-prefix-cache.md).
+# vLLM v0.32.0 has FCFS only, per notes/lit/engine-sources-prefix-cache.md). Every flag, env var, endpoint and metric name
+# the launcher relies on was checked against the v0.32.0 source: see the header of slurm/engine_vllm.sh and section 3 of
+# notes/VLLM_RUNBOOK.md. The environment is built by slurm/setup_vllm_env.sbatch (torch 2.13.0, CUDA 13.0 wheel).
 #
 # Before sbatch:  env | grep ^SBATCH_   (must print nothing, or only correct values: they override the #SBATCH lines)
 #                 mkdir -p logs        (logs/.gitkeep is committed, so a fresh clone has logs/)
 # MODE = smoke | miss | closed | cap | burst, as in slurm/sglang_job.sbatch (N_LIST, ARMS, N_CAP/CAP_FILE, KV_TOKENS=native
 # work the same way); node-class pin (--exclude) explained there.
 #   sbatch --export=ALL,MODE=smoke slurm/vllm_job.sbatch
-#   sbatch --export=ALL,MODE=miss,OUTPUT_FEEDBACK=server,SEEDS="0 1 2",ENGINE_LABEL=vllm-nocache slurm/vllm_job.sbatch
+#   sbatch --export=ALL,MODE=miss,OUTPUT_FEEDBACK=server,SEEDS="0 1 2" slurm/vllm_job.sbatch             # E0a: label vllm-nocache
 #   sbatch --export=ALL,MODE=closed,OUTPUT_FEEDBACK=server,N_LIST="16 20 24 32" slurm/vllm_job.sbatch      # Stage C (optional for vLLM)
-#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,MULTS="1.6",SEEDS="0",ARMS=burst,CALIB_FILE=...,PREREG_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
+#   sbatch --export=ALL,MODE=burst,OUTPUT_FEEDBACK=server,MULTS="1.35",SEEDS="0",ARMS=burst,CALIB_FILE=...,PREREG_FILE=...,ENGINE_LABEL=vllm-fcfs slurm/vllm_job.sbatch
 #   (MODE=burst needs a committed PREREG_FILE whose registered cell is this ENGINE_LABEL: the registered kill-test cell is
-#    SGLang FCFS; a vLLM grid cell needs its own Stage-C curve and its own pre-registration, see the plan)
+#    SGLang FCFS; the vLLM cell uses a derived EXPLORATORY registration (python -m analysis.prereg derive-exploratory ... --arms burst)
+#    built from vLLM's own E0a calibration.json; see notes/VLLM_RUNBOOK.md)
 # OUTPUT_FEEDBACK (server|synthetic) is required for everything but smoke and must equal the SGLang cells' value; server is the
-# REQUIRED setting (see sglang_job.sbatch).
+# REQUIRED setting (see sglang_job.sbatch). vLLM returns output ids with "return_token_ids": true (choices[0].token_ids), which the
+# job sets when OUTPUT_FEEDBACK=server.
 #
-#  ENV_VLLM / ENV_GEN / HF_HOME: PLACEHOLDERS (notes/NOVA_ENV_PLAN.md says vLLM needs its own env: it pins its own torch).
+#  vLLM-only parameters (defaults in slurm/engine_vllm.sh):
+#   ENV_VLLM      env prefix built by slurm/setup_vllm_env.sbatch (/work/classtmp/avalse/swapp/envs/vllm); ENV_GEN / HF_HOME as in the SGLang job
+#   XDG_CACHE_HOME  class-storage cache root: vLLM's torch.compile cache (VLLM_CACHE_ROOT) and Triton's cache live under it
+#   BLOCK_SIZE    KV block size in tokens (default 16); the pool cap is --num-gpu-blocks-override KV_TOKENS/BLOCK_SIZE
+#   EXPECTED_VLLM_VERSION  default 0.32.0; the flag check refuses any other installed version
+#   ENFORCE_EAGER=1  smoke-only diagnostic (no torch.compile / CUDA graphs); refused for every other MODE
+#   POLICY / REFRESH / LPM_INF do not alter vLLM (FCFS only); SGLang's CUDA_HOME_SHIM / ATTN_BACKEND are not used.
 
 # ---- BILLING GUARD (identical in all .sbatch files; keep it before anything else) ----------------------------
 # SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is the
