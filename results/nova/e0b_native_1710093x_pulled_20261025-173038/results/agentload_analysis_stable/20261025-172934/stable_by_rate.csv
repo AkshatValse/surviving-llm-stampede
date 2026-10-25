@@ -1,0 +1,7 @@
+label,rate_mult,n_stable,n_runs
+sglang-fcfs-r1-native,1.5,1,1
+sglang-fcfs-r1-native,2.5,1,1
+sglang-fcfs-r1-native,3.5,1,1
+sglang-fcfs-r1-native,4.5,1,1
+sglang-fcfs-r1-native,5.5,1,1
+sglang-fcfs-r1-native,6.5,0,1
