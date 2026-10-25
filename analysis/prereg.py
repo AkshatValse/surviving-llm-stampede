@@ -24,8 +24,9 @@ Predictions (sessions/s unless noted; lambda = rate_mult * lambda_ref, lambda_re
                           ``drain_fit_frac``; lambdas above the resulting limit are refused (review finding 6).
 CLI:  python -m analysis.prereg fill --template T --mu-curve M --calibration C --e0b-bracket B --out NEWFILE
                                      [--lambda-mults ...] [--rule TEXT] [--engine-cell-label L] [--e2-config F]
+      python -m analysis.prereg derive-exploratory --from FILLED --engine-cell-label L [--calibration C] --out NEWFILE
       python -m analysis.prereg validate FILE
-      python -m analysis.prereg check-job FILE --label L --mults "..." [--n-cap N] [--calib F] [--hardware HW] ...
+      python -m analysis.prereg check-job FILE --label L --mults "..." --arms "..." [--n-cap N] [--calib F] [--hardware HW] ...
 """
 from __future__ import annotations
 
@@ -33,6 +34,7 @@ import argparse
 import copy
 import hashlib
 import json
+import math
 import subprocess
 import sys
 from pathlib import Path
@@ -80,8 +82,11 @@ def _close(a: Any, b: Any, rel: float = REL_TOL) -> bool:
 def window_of(pr: Dict[str, Any]) -> Dict[str, Optional[float]]:
     """Registered window in sessions/s and in multiples of lambda_ref (None where unfilled)."""
     w = ((pr.get("predicted_boundaries") or {}).get("metastable_window") or {})
+    # An exploratory engine may have its own reference rate; these boundaries still describe the parent's measurement.
+    lam_ref = ((pr.get("exploratory") or {}).get("inherited_window_lambda_ref")
+               if pr.get("status") == "EXPLORATORY" else (pr.get("measured") or {}).get("lambda_ref"))
     return {"lo": w.get("lo"), "hi": w.get("hi"), "lo_mult": w.get("lo_mult"), "hi_mult": w.get("hi_mult"),
-            "lambda_ref": (pr.get("measured") or {}).get("lambda_ref")}
+            "lambda_ref": lam_ref}
 
 
 def lambda_in_window(pr: Dict[str, Any], lam: float) -> Optional[bool]:
@@ -137,8 +142,15 @@ def _unfilled(d: Any, prefix: str = "") -> List[str]:
     return out
 
 
-def validate(pr: Dict[str, Any], p: Optional[AnalysisParams] = None, fcfs_substr: Optional[str] = None) -> List[Dict[str, str]]:
+def validate(pr: Dict[str, Any], p: Optional[AnalysisParams] = None, fcfs_substr: Optional[str] = None, *,
+             prereg_path: Optional[str | Path] = None) -> List[Dict[str, str]]:
     """Problems with a pre-registration file: {severity, code, message}. 'error' means it must not be used as filled."""
+    if pr.get("status") == "EXPLORATORY" or "exploratory" in pr:
+        # Reuse every existing rule check, but separately enforce derivation and the EXPLORATORY status.
+        base = {k: v for k, v in pr.items() if k != "exploratory"}
+        base["status"] = "FILLED"
+        return (_validate_exploratory(pr, p, fcfs_substr, prereg_path)
+                + validate(base, p, fcfs_substr))
     probs: List[Dict[str, str]] = []
 
     def add(sev: str, code: str, msg: str) -> None:
@@ -356,6 +368,152 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
     return pr
 
 
+# ---------------------------------------------------------------- exploratory derivation (never a new kill test)
+def _repo_root(path: Path) -> Path:
+    result = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=path if path.is_dir() else path.parent,
+                            capture_output=True, text=True, timeout=30)
+    if result.returncode:
+        raise ValueError(f"not inside a git repository: {path}")
+    return Path(result.stdout.strip()).resolve()
+
+
+def _reference_path(path: str, prereg_path: Optional[str | Path]) -> Path:
+    """Stored relative references are repository-relative, independent of the caller's working directory."""
+    ref = Path(path)
+    if ref.is_absolute():
+        return ref.resolve()
+    return _repo_root(Path(prereg_path).resolve() if prereg_path else Path.cwd()) / ref
+
+
+def _record_path(path: Path, root: Path) -> str:
+    try:
+        return path.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return path.resolve().as_posix()
+
+
+def _committed_sha256(path: Path) -> str:
+    """Hash the HEAD blob itself: a clean status alone can conceal filters or assume-unchanged files."""
+    root = _repo_root(path)
+    relative = path.resolve().relative_to(root).as_posix()
+    blob = subprocess.run(["git", "show", f"HEAD:{relative}"], cwd=root, capture_output=True, timeout=30)
+    if blob.returncode:
+        raise ValueError(f"no committed file at {relative}")
+    return hashlib.sha256(blob.stdout).hexdigest()
+
+
+def _exploratory_payload(parent: Dict[str, Any], label: str, metadata: Dict[str, Any],
+                         calibration: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    parent_label = parent["inputs"]["engine_cell_label"]
+    if not isinstance(label, str) or not label or label in (parent_label, "sglang-fcfs-r1"):
+        raise ValueError("an exploratory registration must not use the registered label")
+    arms = metadata.get("allowed_arms")
+    if not isinstance(arms, list) or not arms or any(a not in ("burst", "noburst", "capped") for a in arms):
+        raise ValueError("allowed_arms must be a nonempty list of burst, noburst or capped")
+    if len(set(arms)) != len(arms):
+        raise ValueError("allowed_arms must not contain duplicates")
+    if label.split("-", 1)[0] != parent_label.split("-", 1)[0] and calibration is None:
+        raise ValueError("a different engine requires its own --calibration")
+    pr = copy.deepcopy(parent)
+    pr["status"] = "EXPLORATORY"
+    pr["inputs"]["engine_cell_label"] = label
+    pr["exploratory"] = copy.deepcopy(metadata)
+    pr["assumptions_note"] = ("EXPLORATORY only; never a decisive kill test. The parent's measurements, predictions, "
+                              "window and lambda multiples are inherited, not measured for this engine cell. "
+                              "Only the allowed arms may run; any calibration override supplies this cell's reference "
+                              "rates, without rescaling or re-measuring the inherited window.")
+    pr["frozen"]["rule"] = "Commit this EXPLORATORY file before submitting grid jobs; changes require a new file."
+    if calibration is not None:
+        labels = calibration.get("labels")
+        if labels is not None and (not isinstance(labels, list) or not labels or any(
+                not isinstance(lab, str) or lab.split("-", 1)[0] != label.split("-", 1)[0] for lab in labels)):
+            raise ValueError("calibration labels must belong to this engine's own E0a")
+        if calibration.get("hardware") != parent["measured"]["hardware"]:
+            raise ValueError("calibration hardware must equal the registered hardware")
+        for key, target in ((parent["inputs"]["lambda_ref_key"], "lambda_ref"),
+                            (parent["inputs"]["uncached_tokens_ref_key"], "all_miss_uncached_tokens_per_s")):
+            value = calibration.get(key)
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+                raise ValueError(f"calibration reference {key} must be finite and positive")
+            pr["measured"][target] = float(value)
+        pr["inputs"]["calibration_json"] = metadata["calibration_override"]["path"]
+    return pr
+
+
+def derive_exploratory(parent_path: str | Path, *, engine_cell_label: str,
+                       calibration_path: Optional[str | Path] = None, arms: Sequence[str] = ("burst",),
+                       p: Optional[AnalysisParams] = None) -> Dict[str, Any]:
+    """Copy a valid committed FILLED registration with an immutable parent binding and exploratory scope."""
+    path = Path(parent_path).resolve()
+    parent, prov = load_prereg(path), file_provenance(path)
+    if parent.get("status") != "FILLED" or "exploratory" in parent:
+        raise ValueError("parent must be a FILLED registration, not an exploratory derivation")
+    problems = validate(parent, p)
+    if any(x["severity"] == "error" for x in problems):
+        raise ValueError(f"parent is not valid: {problems}")
+    if not prov["committed_clean"]:
+        raise ValueError("parent must be committed and unmodified")
+    if prov["sha256"] != _committed_sha256(path):
+        raise ValueError("parent bytes must match the committed parent sha256")
+    root = _repo_root(path)
+    metadata = {"parent": {"path": _record_path(path, root), "sha256": prov["sha256"]},
+                "allowed_arms": list(arms), "inherited_from_engine_cell_label": parent["inputs"]["engine_cell_label"],
+                "inherited_window_lambda_ref": parent["measured"]["lambda_ref"],
+                "boundary_note": "Window, lambda multiples, protocol and trap rule are inherited from "
+                                 f"{parent['inputs']['engine_cell_label']}; the window and lambda multiples are not "
+                                 "measured for this engine cell. Parent predictions are context only, never decisive."}
+    calibration = None
+    if calibration_path is not None:
+        cal_path = Path(calibration_path).resolve()
+        metadata["calibration_override"] = {"path": _record_path(cal_path, root),
+                                            "sha256": hashlib.sha256(cal_path.read_bytes()).hexdigest()}
+        calibration = json.loads(cal_path.read_text())
+    return _exploratory_payload(parent, engine_cell_label, metadata, calibration)
+
+
+def _validate_exploratory(pr: Dict[str, Any], p: Optional[AnalysisParams], fcfs_substr: Optional[str],
+                          prereg_path: Optional[str | Path]) -> List[Dict[str, str]]:
+    probs: List[Dict[str, str]] = []
+
+    def error(code: str, message: str) -> None:
+        probs.append({"severity": "error", "code": code, "message": message})
+
+    if pr.get("status") != "EXPLORATORY":
+        error("exploratory_status", "a derived registration must have status EXPLORATORY, never FILLED")
+    try:
+        meta = pr["exploratory"]
+        if not isinstance(meta, dict):
+            raise ValueError("exploratory metadata must be a mapping")
+        parent_path = _reference_path(meta["parent"]["path"], prereg_path)
+        parent = load_prereg(parent_path)
+        prov = file_provenance(parent_path)
+        if not prov["committed_clean"]:
+            error("parent_uncommitted", "parent must be committed and unmodified")
+        if prov["sha256"] != meta["parent"]["sha256"] or _committed_sha256(parent_path) != meta["parent"]["sha256"]:
+            error("parent_sha_mismatch", "parent sha256 does not match the committed parent")
+        if parent.get("status") != "FILLED" or "exploratory" in parent:
+            raise ValueError("parent must be FILLED and must not itself be derived")
+        probs.extend(x for x in validate(parent, p, fcfs_substr) if x["severity"] == "error")
+        if meta.get("inherited_from_engine_cell_label") != parent["inputs"]["engine_cell_label"] or not meta.get("boundary_note"):
+            error("inheritance_metadata", "the inherited cell label and boundary note must identify the parent")
+        if meta.get("inherited_window_lambda_ref") != parent["measured"]["lambda_ref"]:
+            error("inheritance_metadata", "the inherited window reference rate must equal the parent's lambda_ref")
+        calibration = None
+        if "calibration_override" in meta:
+            cal_ref = meta["calibration_override"]
+            cal_path = _reference_path(cal_ref["path"], prereg_path)
+            if hashlib.sha256(cal_path.read_bytes()).hexdigest() != cal_ref["sha256"]:
+                error("calibration_sha_mismatch", "calibration sha256 does not match the recorded file")
+            calibration = json.loads(cal_path.read_text())
+        expected = _exploratory_payload(parent, pr["inputs"]["engine_cell_label"], meta, calibration)
+        for section in expected:
+            if section not in ("status", "exploratory") and pr.get(section) != expected[section]:
+                error("inheritance_mismatch", f"{section} differs from the parent-derived values")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        error("invalid_derivation", str(exc))
+    return probs
+
+
 # ---------------------------------------------------------------- binding of runs / jobs to the registration
 def run_blockers(pr: Dict[str, Any], prov: Dict[str, Any], run: Any) -> List[str]:
     """Reasons why ``run`` cannot count towards a DECISIVE verdict under registration ``pr`` (empty = bound). ``run`` is an
@@ -377,6 +535,8 @@ def run_blockers(pr: Dict[str, Any], prov: Dict[str, Any], run: Any) -> List[str
     if proto.get("t_burst_s") is not None and (run.t_burst_ref is None or not _close(run.t_burst_ref, proto["t_burst_s"])):
         out.append(f"burst time {run.t_burst_ref} != registered {proto['t_burst_s']}")
     arm = run.arm or run.arm_derived
+    if pr.get("status") == "EXPLORATORY" and arm not in (pr.get("exploratory") or {}).get("allowed_arms", []):
+        out.append(f"arm {arm!r} is not allowed by this exploratory registration")
     bcfg = (run.cfg.get("arrivals") or {}).get("burst")
     if arm in ("burst", "capped"):
         if not bcfg or not _close(bcfg.get("n"), proto.get("burst_n")) or not _close(bcfg.get("width_s"), proto.get("burst_width_s")):
@@ -400,13 +560,35 @@ def run_blockers(pr: Dict[str, Any], prov: Dict[str, Any], run: Any) -> List[str
 def check_job(pr: Dict[str, Any], prov: Dict[str, Any], p: AnalysisParams, *, label: str, mults: Sequence[float],
               n_cap: Optional[int] = None, calibration: Optional[Dict[str, Any]] = None, hardware: Optional[str] = None,
               e2_cfg: Optional[Dict[str, Any]] = None, fcfs_substr: Optional[str] = None,
+              arms: Optional[Sequence[str]] = None, calibration_path: Optional[str | Path] = None,
               allow_uncommitted: bool = False, allow_hw_mismatch: bool = False) -> List[str]:
     """Problems with launching an E2 job under registration ``pr`` (what the job script will pass); empty = go."""
-    out = [f"[{x['code']}] {x['message']}" for x in validate(pr, p, fcfs_substr) if x["severity"] == "error"]
+    out = [f"[{x['code']}] {x['message']}" for x in validate(pr, p, fcfs_substr, prereg_path=prov.get("path"))
+           if x["severity"] == "error"]
     inp, m, proto = pr.get("inputs") or {}, pr.get("measured") or {}, pr.get("protocol") or {}
-    if not allow_uncommitted:
+    exploratory = pr.get("status") == "EXPLORATORY" or "exploratory" in pr
+    if not allow_uncommitted or exploratory:
         if not prov["committed_clean"]:
             out.append("pre-registration file is not committed and unmodified (commit the filled file BEFORE submitting E2 jobs)")
+    if exploratory:
+        meta = pr.get("exploratory") if isinstance(pr.get("exploratory"), dict) else {}
+        allowed = meta.get("allowed_arms", [])
+        try:
+            if _committed_sha256(Path(prov["path"])) != prov["sha256"]:
+                out.append("exploratory file bytes do not match the committed sha256")
+        except (OSError, ValueError, KeyError) as exc:
+            out.append(f"exploratory file must be committed: {exc}")
+        if not arms:
+            out.append("exploratory jobs require explicit ARMS")
+        for arm in arms or []:
+            if arm not in allowed:
+                out.append(f"job arm {arm!r} not in allowed_arms {allowed}")
+        if calibration is None:
+            out.append("exploratory jobs require CALIB_FILE reference rates")
+        override = meta.get("calibration_override")
+        if override and calibration_path is not None:
+            if hashlib.sha256(Path(calibration_path).read_bytes()).hexdigest() != override.get("sha256"):
+                out.append("CALIB_FILE sha256 does not match the exploratory calibration")
     if label != inp.get("engine_cell_label"):
         out.append(f"job ENGINE_LABEL {label!r} != registered cell {inp.get('engine_cell_label')!r}")
     for mu in mults:
@@ -418,7 +600,7 @@ def check_job(pr: Dict[str, Any], prov: Dict[str, Any], p: AnalysisParams, *, la
         for k, reg in ((inp.get("lambda_ref_key"), m.get("lambda_ref")), (inp.get("uncached_tokens_ref_key"), m.get("all_miss_uncached_tokens_per_s"))):
             if k not in calibration or not _close(calibration[k], reg):
                 out.append(f"CALIB_FILE {k}={calibration.get(k)} != registered {reg}")
-    if hardware is not None and not allow_hw_mismatch and m.get("hardware") is not None and str(hardware) != str(m["hardware"]):
+    if hardware is not None and (not allow_hw_mismatch or exploratory) and m.get("hardware") is not None and str(hardware) != str(m["hardware"]):
         out.append(f"job hardware {hardware!r} != registered {m['hardware']!r}")
     if e2_cfg is not None:
         arr, run_c = e2_cfg.get("arrivals") or {}, e2_cfg.get("run") or {}
@@ -450,6 +632,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                    help="how the CAPPED arm's cap is chosen from mu(n) (recorded in measured.n_cap_rule)")
     f.add_argument("--params", default="configs/agentload_analysis.yaml")
     f.add_argument("--set", action="append", default=[], help="override an analysis param (as summarize --set)")
+    d = sub.add_parser("derive-exploratory", help="derive a NEW exploratory cell file from a committed FILLED parent")
+    d.add_argument("--from", dest="parent", required=True)
+    d.add_argument("--engine-cell-label", required=True)
+    d.add_argument("--calibration", default=None, help="this engine's E0a calibration (required for a different engine)")
+    d.add_argument("--arms", nargs="+", default=["burst"], choices=["burst", "noburst", "capped"])
+    d.add_argument("--out", required=True, help="new file in the parent's repository (refuses to overwrite)")
+    d.add_argument("--params", default="configs/agentload_analysis.yaml")
+    d.add_argument("--set", action="append", default=[])
     v = sub.add_parser("validate", help="exit 1 if the file has error-severity problems")
     v.add_argument("file")
     v.add_argument("--params", default="configs/agentload_analysis.yaml")
@@ -459,6 +649,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     c.add_argument("file")
     c.add_argument("--label", required=True)
     c.add_argument("--mults", required=True, help="space-separated list")
+    c.add_argument("--arms", default=None, help="space-separated job arms; required for exploratory registrations")
     c.add_argument("--n-cap", type=int, default=None)
     c.add_argument("--calib", default=None)
     c.add_argument("--hardware", default=None)
@@ -472,6 +663,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     c.add_argument("--allow-hw-mismatch", action="store_true")
     args = ap.parse_args(argv)
     p = load_params(args.params, args.set)
+    if args.cmd == "derive-exploratory":
+        out = Path(args.out)
+        if out.exists():
+            print(f"refusing to overwrite {out}", file=sys.stderr)
+            return 2
+        try:
+            if _repo_root(out.resolve()) != _repo_root(Path(args.parent).resolve()):
+                raise ValueError("output must be in the parent's repository")
+            pr = derive_exploratory(args.parent, engine_cell_label=args.engine_cell_label,
+                                    calibration_path=args.calibration, arms=args.arms, p=p)
+            with out.open("x", encoding="utf-8", newline="\n") as stream:
+                yaml.safe_dump(pr, stream, sort_keys=False)
+        except (OSError, ValueError) as exc:
+            print(f"cannot derive exploratory registration: {exc}", file=sys.stderr)
+            return 2
+        print(f"wrote {out} status=EXPLORATORY")
+        return 0
     if args.cmd == "fill":
         out = Path(args.out)
         if out.exists():
@@ -488,7 +696,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(f"  [{x['severity']}] {x['code']}: {x['message']}")
         return 0 if pr["status"] == "FILLED" else 1
     if args.cmd == "validate":
-        probs = validate(load_prereg(args.file), p, args.fcfs_substr)
+        probs = validate(load_prereg(args.file), p, args.fcfs_substr, prereg_path=args.file)
         for x in probs:
             print(f"[{x['severity']}] {x['code']}: {x['message']}")
         return 1 if any(x["severity"] == "error" for x in probs) else 0
@@ -503,6 +711,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             e2.setdefault("arrivals", {})["analysis_t_burst_s"] = args.t_burst_s
     probs = check_job(pr, prov, p, label=args.label, mults=[float(x) for x in args.mults.split()], n_cap=args.n_cap,
                       calibration=calib, hardware=args.hardware, e2_cfg=e2, fcfs_substr=args.fcfs_substr,
+                      arms=args.arms.split() if args.arms is not None else None, calibration_path=args.calib,
                       allow_uncommitted=args.allow_uncommitted, allow_hw_mismatch=args.allow_hw_mismatch)
     for x in probs:
         print(f"PREREG PROBLEM: {x}")

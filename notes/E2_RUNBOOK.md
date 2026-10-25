@@ -107,6 +107,44 @@ The three arms for one (m, seed) share arrivals and session specs. That is the c
 
 **Concurrency.** 18 jobs at 1 GPU each. The per-user cap is 11 GPUs, shared with the COMS 6720 project, so this means about 2 waves, roughly 6 h wall plus queue time.
 
+## Stage 5: exploratory grid
+
+Use the same two multiples (1.35 and 1.65) and seeds (0, 1, 2), with **one BURST arm per job**. Each cell has its own committed, clean `EXPLORATORY` registration derived from `configs/agentload_prereg_2026-10-24.yaml`; its parent hash, protocol, window, lambda multiples and trap rule are bound to that file. These cells report per-run TRAPPED / RECOVERED / neither and never enter the registered cell's decisive verdict.
+
+Derive and validate the three stock SGLang registrations locally, then commit them before any jobs:
+```bash
+for cell in sglang-fcfs-r0 sglang-lpm-r1 sglang-lpm-r0; do
+  PRE=configs/agentload_prereg_2026-10-24_grid_$cell.yaml
+  python -m analysis.prereg derive-exploratory --from configs/agentload_prereg_2026-10-24.yaml --engine-cell-label "$cell" --out "$PRE"
+  python -m analysis.prereg validate "$PRE"
+done
+```
+The derivation refuses to overwrite an existing file. After committing, `check-job` also verifies the exact committed parent bytes and the allowed job arms; for example:
+```bash
+python -m analysis.prereg check-job configs/agentload_prereg_2026-10-24_grid_sglang-lpm-r1.yaml --label sglang-lpm-r1 --arms burst --mults "1.35 1.65" --calib prereg/inputs/2026-10-23/calibration.json --hardware "NVIDIA A100 80GB PCIe, 81920 MiB"
+```
+After syncing the commits to Nova and completing the preceding stages, use the shared `COMMON` exports above:
+```bash
+CAL=prereg/inputs/2026-10-23/calibration.json
+for m in 1.35 1.65; do for s in 0 1 2; do
+  sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,MODE=burst,POLICY=fcfs,REFRESH=0,LPM_INF=0,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$CAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_sglang-fcfs-r0.yaml,ENGINE_LABEL=sglang-fcfs-r0" slurm/sglang_job.sbatch
+  sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,MODE=burst,POLICY=lpm,REFRESH=1,LPM_INF=0,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$CAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_sglang-lpm-r1.yaml,ENGINE_LABEL=sglang-lpm-r1" slurm/sglang_job.sbatch
+  sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,MODE=burst,POLICY=lpm,REFRESH=0,LPM_INF=0,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$CAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_sglang-lpm-r0.yaml,ENGINE_LABEL=sglang-lpm-r0" slurm/sglang_job.sbatch
+done; done
+```
+
+**Pending cells:** do not submit the following until their environments and registrations exist and have been validated and committed. `sglang-lpminf` requires the separate patched `ENV_SGLANG_PATCHED` environment (`WAITING_QUEUE_PREFIX_MATCH_MAX` raised as in plan O3), `POLICY=lpm`, `REFRESH=1`, `LPM_INF=1`, and the same SGLang calibration. `vllm-fcfs` requires `ENV_VLLM` and its **own E0a** `calibration.json`; derive its registration with `--calibration "$VCAL"` and pass that exact file to `CALIB_FILE`. Its reference rates come from vLLM, but the inherited SGLang window and lambda multiples are not measured vLLM boundaries. Neither pending registration is included yet.
+
+After those prerequisites are ready, set `PATCHED_ENV`, `VLLM_ENV` and `VCAL` to their actual paths, derive and commit the corresponding files, and use:
+```bash
+CAL=prereg/inputs/2026-10-23/calibration.json
+for m in 1.35 1.65; do for s in 0 1 2; do
+  sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,ENV_SGLANG_PATCHED=$PATCHED_ENV,MODE=burst,POLICY=lpm,REFRESH=1,LPM_INF=1,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$CAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_sglang-lpminf.yaml,ENGINE_LABEL=sglang-lpminf" slurm/sglang_job.sbatch
+  sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,ENV_VLLM=$VLLM_ENV,MODE=burst,POLICY=fcfs,REFRESH=0,LPM_INF=0,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$VCAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml,ENGINE_LABEL=vllm-fcfs" slurm/vllm_job.sbatch
+done; done
+```
+`POLICY`, `REFRESH` and `LPM_INF` do not alter vLLM; they are set explicitly to avoid inherited SGLang settings. Summarize each cell with `python -m analysis.summarize burst2 --run-dirs <cell run dirs> --prereg <cell's derived file>`.
+
 ## GPU-hour summary
 These use the plan's formula: 0.25 h startup + runs + 180 s gaps + 150 s per-run overhead + 0.05 h teardown.
 

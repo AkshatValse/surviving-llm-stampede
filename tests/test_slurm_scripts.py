@@ -446,6 +446,25 @@ def test_burst_refuses_to_start_without_a_valid_prereg(tmp_path):
     assert r.returncode != 0 and "does not authorise this E2 job" in r.stdout + r.stderr
 
 
+@pytest.mark.parametrize("arms", ["burst", "burst noburst"])
+def test_burst_passes_requested_arms_to_the_prelaunch_registration_check(tmp_path, arms):
+    prereg = tmp_path / "prereg.yaml"
+    calib = tmp_path / "calibration.json"
+    prereg.write_text("{}")
+    calib.write_text("{}")
+    code = '''
+gen_python() { printf '<%s>\\n' "$@"; echo "PREREG_SHA256=checked"; }
+validate_mode_inputs
+'''
+    r = bash_fn(code, env={"MODE": "burst", "ARMS": arms, "ENGINE_LABEL": "sglang-lpm-r1", "MULTS": "1.35",
+                           "PREREG_FILE": str(prereg), "CALIB_FILE": str(calib), "HW": "test hardware",
+                           "BURST_RUN_S": "8700", "T_BURST": "1200", "HIT_EVAL_FROM_S": "3000"})
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "<analysis.prereg>\n<check-job>" in r.stdout
+    assert f"<--arms>\n<{arms}>\n" in r.stdout
+    assert "PREREG_SHA256=checked" in r.stdout
+
+
 def test_a_flush_that_answers_200_but_does_not_empty_the_cache_is_caught(tmp_path):
     r = _smoke("cap", tmp_path / "strict", 18107, MOCK_EXTRA="--set flush_is_noop=true")
     assert r.returncode != 0 and "start-state check did not pass" in r.stderr
