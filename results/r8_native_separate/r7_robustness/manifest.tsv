@@ -1,0 +1,6 @@
+stage	dir
+lambda_miss	results/r8_native_separate/r7_lambda_miss/20261025-145505
+curves	results/r8_native_separate/r7_curves/20261025-145507
+edge	results/r8_native_separate/r7_edge/20261025-145510
+pairs	results/r8_native_separate/r7_pairs/20261025-145515
+burst_sizes	results/r8_native_separate/r7_burst_sizes/20261025-145523

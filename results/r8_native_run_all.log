@@ -1,0 +1,43 @@
+[14:54:38] START mixed lambda_miss
+[lambda_miss] exp5: 0.07204 sessions/s (turns-based), token rate 11239, busy 1.000
+[14:54:40] DONE  mixed lambda_miss
+[14:54:40] START mixed curves
+[curves] exp5: peak n=72 mu_turns=0.53731, cap n=64 (sessions-based: peak 72, cap 64)
+[14:54:44] DONE  mixed curves
+[14:54:44] START mixed edge
+[edge] exp5: hi=6.5 (largest all-stable 6.5), refined=False, points=[2.85, 4.65]
+[14:54:49] DONE  mixed edge
+[14:54:49] START mixed pairs
+[pairs] exp5 x2.85: trapped 9/10 noburst good 10 cap recovered 10 -> PASS
+[pairs] exp5 x4.65: trapped 10/10 noburst good 10 cap recovered 10 -> PASS
+[14:54:56] DONE  mixed pairs
+[14:54:57] mixed B3n test points (multiples of lambda_miss): [2.85, 4.65]
+[14:54:57] START mixed burst_sizes
+[burst_sizes] x2.85: 200:9/10, 400:10/10 -> smallest 200
+[burst_sizes] x4.65: 200:10/10, 400:10/10 -> smallest 200
+[14:55:03] DONE  mixed burst_sizes
+[14:55:03] START mixed r7 report
+[14:55:04] DONE  mixed r7 report
+[14:55:04] START separate lambda_miss
+[lambda_miss] exp5: 0.07137 sessions/s (turns-based), token rate 11180, busy 0.999
+[14:55:06] DONE  separate lambda_miss
+[14:55:06] START separate curves
+[curves] exp5: peak n=72 mu_turns=0.51330, cap n=64 (sessions-based: peak 72, cap 64)
+[14:55:09] DONE  separate curves
+[14:55:09] START separate edge
+[edge] exp5: hi=6 (largest all-stable 6), refined=False, points=[2.65, 4.35]
+[14:55:14] DONE  separate edge
+[14:55:14] START separate pairs
+[pairs] exp5 x2.65: trapped 10/10 noburst good 10 cap recovered 10 -> PASS
+[pairs] exp5 x4.35: trapped 10/10 noburst good 10 cap recovered 10 -> PASS
+[14:55:21] DONE  separate pairs
+[14:55:22] separate B3n test points (multiples of lambda_miss): [2.65, 4.35]
+[14:55:22] START separate burst_sizes
+[burst_sizes] x2.65: 200:10/10, 400:10/10 -> smallest 200
+[burst_sizes] x4.35: 200:10/10, 400:10/10 -> smallest 200
+[14:55:29] DONE  separate burst_sizes
+[14:55:29] START separate r7 report
+[14:55:30] DONE  separate r7 report
+[14:55:30] START r8 report
+[14:55:31] ALL DONE modes=mixed separate
+exit=0

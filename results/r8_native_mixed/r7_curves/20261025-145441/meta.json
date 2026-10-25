@@ -1,0 +1,43 @@
+{
+  "experiment": "r7_curves",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "curves",
+    "--spec",
+    "configs/r8_native_predict.yaml",
+    "--workers",
+    "6",
+    "--out-root",
+    "results/r8_native_mixed"
+  ],
+  "git": {
+    "commit": "0336c91d26ba591c8a790d363ff217ab23752f23",
+    "dirty": false,
+    "branch": "r8/native-predict"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T14:54:41",
+  "end_time": "2026-10-25T14:54:43",
+  "wall_s": 2.113755702972412,
+  "quick": false,
+  "workers": 6,
+  "overrides": [],
+  "tag": null,
+  "stage": "curves",
+  "only": null
+}

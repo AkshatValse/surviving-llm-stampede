@@ -1,0 +1,166 @@
+# Round 8, BLIND simulator predictions for the real-engine NATIVE-KV-POOL experiments (no KV cap: SGLang sizes its own pool).
+#
+# Written and committed BEFORE any run that uses it (the git commit in every meta.json is that commit or a later one that did not change this file).
+# The predictions are committed and timestamped before anyone reads the real outcomes; nothing under results/nova/ is read except the 300k-pool Stage C and
+# Stage 0 dirs, and the real native-pool runs are not read at all.
+#
+# THE ONE REAL FACT used: with no KV cap, SGLang sized its own pool at max_total_num_tokens = 955,757 tokens on this hardware (A100 80GB PCIe, Qwen2.5-7B, the
+# record workload's 49,152-token context). Everything else is the calibrated simulator, unchanged: the engine block of configs/r7_robustness.yaml (= configs/r6_predict.yaml
+# `engine:`, calibration/round6_server_log_fit/calibration.yaml cost constants, full_reserve, finished-session KV freed at once) with ONE edit, kv_memory_tokens
+# 300000 -> 955757. Workload = the record workload (Stage C). Stages, rules, declarations, seeds of the lambda_miss / closed curve / from-empty edge / paired-arm
+# stages are those of configs/r7_robustness.yaml (the driver src/prefixmeta/r7_robustness.py and the report src/prefixmeta/r7_report.py are used UNCHANGED, through
+# this spec: `r7.stages` and `r7.title` are the existing opt-in keys); the differences are exactly the ones declared in the task and listed here:
+#   * the KV pool (above); a single workload, the record workload (r7.workloads has only `exp5`);
+#   * lambda_miss: POP 32 and the labelled POP 64 check, 3 seeds, 900 s warm-up + 1800 s window (as r7);
+#   * curve n grid [16, 24, 32, 48, 64, 72, 80, 88, 96, 112, 128, 160, 300], 3 seeds, 900 s warm-up + 1800 s window, synchronized start (as r7);
+#   * edge multiples 1.5, 2.0, ..., 7.5 of the batching mode's own turns-based lambda_miss (13 multiples), 10 seeds, 3000 s, the B2 operational rule (as r7). The
+#     real E0b grid {1.5, 2.5, 3.5, 4.5, 5.5, 6.5} is a subset of the multiples, so the stable fraction there is read off the same runs (r8.e0b_grid);
+#   * pairs: points lo + (hi - lo)/3 and lo + 2 (hi - lo)/3 of [1, hi] rounded to 0.05, hi = the contiguous all-stable edge of the edge stage; burst 200 sessions in
+#     60 s at t = 1200 s, 7500 s after the burst, cap = smallest grid n within 5% of the turns-based argmax of the curve, 10 seeds, PASS by >= 7/10 on all three arms;
+#   * burst_sizes (SENSITIVITY, not the registered burst): the same two multiples with a burst of 400 sessions (and 200, which is bit-identical to the pairs BURST arm);
+#     the driver experiments/r8_native_predict_run.sh sets r7.burst_sizes.multiples from the edge stage's points with --set (recorded in meta.json).
+#
+# Batching: PRIMARY `mixed` (the mode the round-6 validation picked), SECONDARY `separate_prefill_priority`, selected with `--set engine.batching=separate_prefill_priority`
+# and a separate --out-root (results/r8_native_mixed, results/r8_native_separate) by the driver. The horizon / low-lambda stages of round 7 are not part of this spec.
+research_question: >-
+  Blind predictions of the calibrated simulator for the real-engine native-KV-pool experiments (KV pool 955,757 tokens): B1n all-miss capacity lambda_miss, B4n closed
+  curve mu(n) and hit fraction, B2n from-empty stability edge and the stable fraction at the E0b grid, B3n paired NOBURST / BURST / CAPPED test with a burst-size sensitivity.
+
+base_config: configs/prefix_meta_r5.yaml        # r5 -> prefix_meta.yaml; fcfs_lru = FCFS with LRU eviction
+
+engine:                                          # configs/r7_robustness.yaml `engine:` verbatim, except kv_memory_tokens (the one real fact)
+  iter_fixed_s: 0.00924
+  iter_floor_s: 0.00126
+  per_token_s: 6.26e-05
+  decode_attn_s: 0.00031
+  attn_ctx_norm: 8192
+  prefill_attn_s: 2.24e-09
+  prefill_attn_ctx: mid
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 955757                       # SGLang max_total_num_tokens with no KV cap (A100 80GB PCIe, Qwen2.5-7B, 49,152-token context)
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+  batching: mixed                                # PRIMARY; the secondary run overrides it with --set engine.batching=separate_prefill_priority
+
+workload:                                        # the record workload (identical to configs/r7_robustness.yaml `workload:`)
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5            # unused for exp
+
+metrics:
+  window_s: 100.0              # 100 s windows tile every measurement window used below
+  fine_window_s: 100.0
+  tail_window_s: 2500.0        # only the `tail_*` summary columns of the runs (the last 2500 s); does not touch the dynamics
+
+parallel:
+  max_workers: 6               # hard cap (at most 6 worker processes)
+
+# ------------------------------------------------------------------------------------------------------------------------------ r7 declarations
+# (read by src/prefixmeta/r7_robustness.py and r7_report.py; fixed before any run)
+r7:
+  title: "Round 8: blind native-pool predictions of the simulator (r7 stages: lambda_miss, closed curve, from-empty edge, paired arms, burst-size sensitivity)"
+  stages: [lambda_miss, curves, edge, pairs, burst_sizes]
+  policy: fcfs_lru
+  expected_turns: 14.761       # E[min(Geom(1/15), 60)]
+  wilson_z: 1.96               # EVERY fraction in the report carries a Wilson 95% interval
+
+  workloads:
+    exp5:                                        # the RECORD workload: Exp(5 s) tool times
+      label: "Exp(5 s) (record)"
+      workload: {tool_time_dist: exp, tool_time_mean_s: 5.0}
+  record_workload: exp5
+
+  # ---- B1n lambda_miss: cache DISABLED, closed population, synchronized start at t = 0, replacement at once, measured window [900, 2700) s
+  lambda_miss:
+    population: 32
+    seeds: [0, 1, 2]
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000
+    # lambda_miss := 3-seed mean of (completed turns / s) / E[T]   (turns-based; sessions/s is reported next to it)
+    # token_rate_miss := 3-seed mean of the mean per-window prefill_tok_per_s over the measured window (all uncached when the cache is off)
+    check_populations: [64]      # labelled sensitivity (not used downstream): the same estimator at POP 64, seeds above
+
+  # ---- B4n closed curve mu(n), cache ON, same protocol (synchronized start, replacement at once, measured window [900, 2700) s)
+  curve:
+    n_grid: [16, 24, 32, 48, 64, 72, 80, 88, 96, 112, 128, 160, 300]
+    seeds: [0, 1, 2]
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000
+    # mu(n) used for the argmax and the cap := turns-based sessions/s (completed turns / s / E[T]) averaged over the seeds; the session-based mu is reported next to it
+    # (labelled sensitivity; never used for the CAPPED arm).
+    peak_rule: "first argmax of the seed-mean mu over the grid (ties -> smallest n)"
+    cap_rule: "smallest grid n with seed-mean mu(n) >= 0.95 * mu(peak_n)"
+
+  # ---- B2n from-empty stability edge (B2's operational rule), cache ON, open-loop Poisson at lambda = multiple x lambda_miss (turns-based, of the same batching mode)
+  edge:
+    multiples: [1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5]
+    # conditional refinement (unchanged from r7, declared): if the lowest multiple is NOT all-stable, additionally run these multiples (same seeds, same rule)
+    refine_if_lowest_unstable: [1.05, 1.10, 1.15, 1.20]
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    horizon_s: 3000.0
+    stable_final_backlog_below: 50.0      # backlog = waiting queue + gate (no gate here)
+    stable_trend_window_s: 1500.0         # OLS rise of the fine backlog series over the last 1500 s ...
+    stable_trend_max_rise: 10.0           # ... must be <= 10 requests
+    unstable_backlog_stop: 3000           # an early-stopped run (backlog > 3000) is unstable
+    # all-stable := every seed stable.  hi := the largest multiple m such that EVERY grid multiple <= m is all-stable (B2's contiguous edge rule). If every grid multiple
+    # (up to 7.5) is all-stable the edge is CENSORED at the grid top: it is then reported as ">= 7.5" and 7.5 is what the pairs stage uses (the rule is not changed).
+
+  # ---- measured metastability window and the paired-arm test points (r7 rule)
+  window:
+    lo: 1.0
+    point_fractions: [0.3333333333333333, 0.6666666666666666]    # points lo + (hi - lo) * f, each rounded to the nearest 0.05 (np.round(x / 0.05) * 0.05)
+    round_to: 0.05
+    empty_if_hi_at_most: 1.1
+
+  # ---- B3n paired arms: NOBURST, BURST, CAPPED on the same seeds (common random numbers)
+  pairs:
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    burst_n: 200
+    burst_width_s: 60.0
+    warmup_s: 1200.0                      # t_burst
+    after_s: 7500.0                       # horizon = 8700 s
+    # CAPPED = BURST + a static session cap = cap_n (FIFO gate: a session enters only while fewer than cap sessions are in the system)
+
+  # ---- classification (r7 / round-6 B3 rules, unchanged)
+  classify:
+    eval_window_rel_to_burst_s: [5000.0, 7500.0]      # the last 2500 s of the standard run = [6200, 8700) s; NOBURST uses the same absolute window
+    trapped_token_rate_rel_tol: 0.15      # TRAPPED := |token_rate_E / token_rate_miss - 1| <= 0.15 AND backlog slope_E > trapped_slope_frac * (lambda - lambda_miss)
+    trapped_slope_frac: 0.5
+    recovered_hit_above: 0.8              # RECOVERED := hit_E > 0.8 AND mean backlog_E < 20 ;  NOBURST "good" := the same RECOVERED test on the NOBURST arm
+    recovered_backlog_below: 20.0
+    pass_min_frac: 0.6666666666666666     # a condition holds at a point if it holds in >= ceil(2/3 * n_seeds - 1e-9) seeds (7 of 10); PASS needs all three:
+    #                                       BURST trapped AND NOBURST good AND CAPPED recovered
+    indeterminate_hit_below: 0.2          # INDETERMINATE := hit_E < 0.2 AND NOT TRAPPED
+
+  # ---- SENSITIVITY (not the registered burst): the same two test points with a burst of 400 sessions (the larger pool may need a larger burst to cross the cliff).
+  # `multiples` is set by the driver from the edge stage's `points` with --set (r7.burst_sizes.multiples=[p1,p2]); null here so that a run without the driver fails loudly.
+  burst_sizes:
+    multiples: null
+    sizes: [200, 400]                     # 200 = the registered burst (bit-identical to the pairs BURST arm, a consistency check); 400 = the sensitivity
+    burst_width_s: 60.0
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    warmup_s: 1200.0
+    after_s: 7500.0
+
+# ------------------------------------------------------------------------------------------------------------------------------ r8 declarations
+# (read by src/prefixmeta/r8_native_report.py; fixed before any run)
+r8:
+  kv_pool_tokens: 955757
+  modes:                                  # key -> (engine.batching, --out-root); PRIMARY first
+    mixed: {batching: mixed, out_root: results/r8_native_mixed}
+    separate: {batching: separate_prefill_priority, out_root: results/r8_native_separate}
+  e0b_grid: [1.5, 2.5, 3.5, 4.5, 5.5, 6.5]          # multiples of lambda_miss that the real E0b uses; stable fraction read off the 10-seed edge runs (subset of r7.edge.multiples)
+  hit_crossing_level: 0.5                 # n at which the seed-mean hit fraction falls through this level (linear interpolation; r6_validate.crossing)
+  hit_crossing_extra_levels: [0.9, 0.2]   # labelled landmarks next to it
+  burst_sensitivity_size: 400

@@ -1,0 +1,54 @@
+{
+  "experiment": "r7_pairs",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "pairs",
+    "--spec",
+    "configs/r8_native_predict.yaml",
+    "--workers",
+    "6",
+    "--out-root",
+    "results/r8_native_separate",
+    "--set",
+    "engine.batching=separate_prefill_priority"
+  ],
+  "git": {
+    "commit": "0336c91d26ba591c8a790d363ff217ab23752f23",
+    "dirty": false,
+    "branch": "r8/native-predict"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T14:55:15",
+  "end_time": "2026-10-25T14:55:21",
+  "wall_s": 5.707903861999512,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "engine.batching=separate_prefill_priority"
+  ],
+  "tag": null,
+  "stage": "pairs",
+  "only": null
+}
