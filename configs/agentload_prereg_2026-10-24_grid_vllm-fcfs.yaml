@@ -1,0 +1,194 @@
+research_question: 'Pre-registration of the E2 kill-test predictions for SGLang FCFS,
+  to be filled from the measured real-engine closed curve mu(n) (Stage C), the all-miss
+  capacity lambda_miss and all-miss prefill-token rate (E0a) and the from-empty stability
+  edge (E0b) BEFORE any E2 run: at which arrival rates lambda should a 200-session
+  burst trap the engine, and where should the no-burst and capped arms stay good?'
+assumptions_note: EXPLORATORY only; never a decisive kill test. The parent's measurements,
+  predictions, window and lambda multiples are inherited, not measured for this engine
+  cell. Only the allowed arms may run; any calibration override supplies this cell's
+  reference rates, without rescaling or re-measuring the inherited window.
+status: EXPLORATORY
+frozen:
+  rule: Commit this EXPLORATORY file before submitting grid jobs; changes require
+    a new file.
+  committed_in: null
+  date: null
+inputs:
+  engine_cell_label: vllm-fcfs
+  mu_curve_json: prereg/inputs/2026-10-23/mu_curve.json
+  calibration_json: prereg/inputs/2026-10-25-vllm/calibration.json
+  e0b_bracket_json: prereg/inputs/2026-10-23/lambda_cap_bracket.json
+  e2_config: configs/agentload_e2_burst.yaml
+  mu_estimator: sessions
+  lambda_ref_key: lambda_miss_turns_based
+  uncached_tokens_ref_key: all_miss_uncached_tokens_per_s
+  fcfs_substr: fcfs
+protocol:
+  duration_s: 8700
+  t_burst_s: 1200
+  burst_n: 200
+  burst_width_s: 60
+measured:
+  mu_by_n:
+    16: 0.17555431268395913
+    20: 0.2238868137457633
+    24: 0.23333225457194676
+    32: 0.1149991290057621
+    48: 0.048888419706965586
+    96: 0.06111055917973561
+    300: 0.10777649390658053
+  mu_300: 0.10777649390658053
+  mu_max: 0.23333225457194676
+  n_cap: 20
+  mu_n_cap: 0.2238868137457633
+  n_cap_rule: smallest n with mu(n) >= (1 - 0.05) * mu_max (closed.argmax_margin_warn)
+  n_cap_argmax: 24
+  n_cap_ambiguous: true
+  complete_grid: true
+  lambda_miss: 0.07166610543394326
+  lambda_miss_turns_based: 0.07153402100919228
+  lambda_ref: 0.06566287289032151
+  all_miss_uncached_tokens_per_s: 10348.97253582688
+  lambda_cap_e0b:
+    largest_all_stable_mult: 2.0
+    first_unstable_mult_above: 2.5
+    monotone: true
+  hardware: NVIDIA A100 80GB PCIe, 81920 MiB
+predicted_boundaries:
+  recovery_threshold:
+    rule: 'lambda_ref (FCFS mu(infinity) = lambda_miss; simulator R4: 0.989). NOT
+      mu(300): see checks'
+    sessions_per_s: 0.07153402100919228
+    mult_of_lambda_ref: 1.0
+  metastable_window:
+    rule: open interval (lambda_ref, min(mu_max, lambda_cap_e0b)), lambda_cap_e0b
+      = largest E0b all-stable multiple x lambda_ref
+    lo: 0.07153402100919228
+    hi: 0.14306804201838455
+    lo_mult: 1.0
+    hi_mult: 2.0
+    hi_source: lambda_cap_e0b
+  trapped_completion_rate:
+    rule: 'lambda_ref, INFORMATIONAL only: in a trap with a growing backlog the SESSION
+      completion rate runs above lambda_miss (young sessions have short prompts; simulator
+      1.14-1.46 x), so it is not the criterion'
+    value: 0.07153402100919228
+  trapped_uncached_token_rate:
+    rule: 'E0a''s all-miss uncached prefill tokens/s: criterion (a) compares the post-burst
+      prefill-token rate with it, +- rate_tolerance (simulator traps: 1.03-1.08 x)'
+    value: 11243.179816372982
+  capped_drain:
+    burst_n: 200.0
+    mu_n_cap: 0.2238868137457633
+    post_burst_available_s: 7200.0
+    drain_fit_frac: 0.8
+    max_drain_s: 5760.0
+    max_lambda: 0.1891645915235411
+    max_lambda_mult: 2.644400368591513
+    predicted_drain_s_by_mult:
+      '1.35': 1570.895881513852
+      '1.65': 1889.3648572952297
+    rule: burst_n / (mu_n_cap - lambda) <= drain_fit_frac * (duration_s - t_burst_s
+      - end_window_s)
+  consistency:
+    mu_300_vs_lambda_miss_rel_dev: 0.5066466610723732
+    window_nonempty: true
+lambda_selection:
+  rule: 'Window (lo, hi) = (1, 2.0) x lambda_ref: hi is E0b''s largest all-stable
+    multiple (2.0, below mu_max/lambda_ref = 3.26). m1 = lo + (hi - lo)/3 and m2 =
+    lo + 2(hi - lo)/3, rounded to the nearest 0.05 (1.35 and 1.65), both inside the
+    boundary_margin_rel = 0.1 band (1.1, 1.8). This rule and the cap rule (smallest_within_margin,
+    n_cap = 20) were written in notes/E2_RUNBOOK.md Stage 3 and notes/STATE.md on
+    2026-10-23, before E0b''s results were read.'
+  lambda_mults:
+  - 1.35
+  - 1.65
+  boundary_margin_rel: 0.1
+  drain_fit_frac: 0.8
+  seeds:
+  - 0
+  - 1
+  - 2
+  native_pool_lambda_mult: null
+predictions:
+  lambda_below_recovery_threshold:
+    burst: 'not trapped: draining or recovered'
+    noburst: good
+    capped: recovered
+  lambda_inside_window:
+    burst: 'trapped: uncached prefill rate within +-rate_tolerance of E0a''s all-miss
+      rate, backlog slope > slope_frac*(lambda-lambda_miss)'
+    noburst: 'good through the run horizon (duration_s). HORIZON-DEPENDENT: the guarantee
+      is E0b''s finite-horizon from-empty stability; the simulator shows noise-driven
+      escapes (no-burst runs trapped) at 2 x and 2.5 x within 65,000 s, so a prediction
+      of ''good'' only holds for the horizon E0b was run at (3000 s) and the 8700
+      s runs here, and only below E0b''s edge'
+    capped: recovered by the end of the run IF the gate queue drains in time (capped_drain);
+      a cap at n_cap keeps the closed system on the rising branch of mu(n)
+  lambda_above_window:
+    burst: trapped
+    noburst: 'may escape spontaneously (E0b edge) or has no good state (mu_max): NOT
+      a prediction of ''good''; such lambdas are not registered'
+    capped: NOT recovered (cap at n_cap serves at most mu_n_cap)
+pass_rule:
+  statement: 'PASS per lambda iff, in >= pass_fraction_min of the seeds (>= min_seeds
+    seeds), the BURST arm is TRAPPED and the NOBURST arm is good and the CAPPED arm
+    is RECOVERED. The kill test passes iff some registered lambda of the registered
+    cell passes (decisive: see assumptions_note).'
+  rate_estimator: uncached_tokens
+  rate_tolerance: 0.15
+  slope_frac: 0.5
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  recovered_backlog_metric: outstanding
+  end_window_s: 300.0
+  eval_from_s: 4500.0
+  min_eval_s: 600.0
+  slope_dt_s: 10.0
+  pass_fraction_min: 0.6666666666666666
+  min_seeds: 3
+  hit_metric: frac_turns_cached_gt50
+  cached_frac_threshold: 0.5
+  attribute_by: complete
+kill_conditions:
+- 'the NOBURST arm is not good in >= 1/3 of the seeds at some REGISTERED lambda inside
+  the window (whose upper edge is already capped by E0b''s from-empty stability edge:
+  the good state does not exist there over this horizon)'
+- the BURST arm is not trapped in >= 2/3 of the seeds at EVERY registered lambda (nothing
+  traps)
+- 'the CAPPED arm does not recover while the BURST arm traps AND the predicted gate
+  drain time fits the run (capped_drain): the cap does not rescue, the mechanism is
+  not session count'
+- the window (lambda_miss, min(mu_max, E0b edge)) is empty or narrower than the noise
+  of mu(n) and of E0b's bracket
+checks:
+  mu_300_is_a_check_only:
+    value: 0.10777649390658053
+    rel_dev_vs_lambda_miss: 0.5066466610723732
+    note: all n sessions start at t=0; mu(300) over the measured window is transient-biased,
+      so it does not set the window
+fill_problems:
+- severity: warn
+  code: mu300_far_from_lambda_miss
+  message: '|mu(300)/lambda_miss - 1| = 0.507: only a check (all n sessions start
+    together, so mu(300) in the 1800 s window is transient-biased: simulator +65%);
+    the registered recovery threshold is lambda_miss'
+- severity: warn
+  code: n_cap_ambiguous
+  message: 'n_cap=20: the runner-up n=20 is within 0.04048064783632819 (one run per
+    n; mu(n) near its peak is bistable and transient-biased in the Stage-C window):
+    the CAPPED arm''s cap is a noisy choice'
+exploratory:
+  parent:
+    path: configs/agentload_prereg_2026-10-24.yaml
+    sha256: 2a6d680a9615bba962a5673d6db6b3e4ca5102bf778ca974cea46147f5cc0ac6
+  allowed_arms:
+  - burst
+  inherited_from_engine_cell_label: sglang-fcfs-r1
+  inherited_window_lambda_ref: 0.07153402100919228
+  boundary_note: Window, lambda multiples, protocol and trap rule are inherited from
+    sglang-fcfs-r1; the window and lambda multiples are not measured for this engine
+    cell. Parent predictions are context only, never decisive.
+  calibration_override:
+    path: prereg/inputs/2026-10-25-vllm/calibration.json
+    sha256: d27db7bd05fd6a618e0ff574d3ce9d240ca5ed822377ac89008ccda3caf0eb9f
