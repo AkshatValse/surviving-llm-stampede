@@ -63,6 +63,10 @@ def main() -> None:
         if os.path.exists(p):
             with open(p, "rb") as f:
                 meta["normalised_rows"][n] = sum(1 for _ in f) - 1
+    info = os.path.join(norm, "dataset_info.json")
+    if os.path.exists(info):
+        with open(info, encoding="utf-8") as fi:
+            meta["dataset_info"] = json.load(fi)
     out = os.path.join(src["summary_dir"], "meta.json")
     os.makedirs(src["summary_dir"], exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:

@@ -48,6 +48,9 @@ def ts_ms(s: str | None) -> float | None:
 def main(path: str, outdir: str) -> None:
     os.makedirs(outdir, exist_ok=True)
     sessions: dict[str, list[dict]] = defaultdict(list)
+    users: set = set()
+    models: dict[str, int] = defaultdict(int)
+    t_min = t_max = None
     n_lines = 0
     bad = 0
     with gzip.open(path, "rt", encoding="utf-8") as f:
@@ -62,6 +65,13 @@ def main(path: str, outdir: str) -> None:
                 bad += 1
                 continue
             evs = r.get("timing_events") or []
+            users.add(r.get("user"))
+            models[f"{r.get('provider')}:{r.get('model')}"] += 1
+            for e in evs[:1] + evs[-1:]:
+                tt = ts_ms(e.get("timestamp"))
+                if tt is not None:
+                    t_min = tt if t_min is None else min(t_min, tt)
+                    t_max = tt if t_max is None else max(t_max, tt)
             inp = [ts_ms(e.get("timestamp")) for e in evs if e.get("event_type") in INPUT_EVENTS]
             out = [ts_ms(e.get("timestamp")) for e in evs if e.get("event_type") in OUTPUT_EVENTS]
             # input events that precede the first output event (the ones this round is waiting for)
@@ -105,6 +115,12 @@ def main(path: str, outdir: str) -> None:
                 "n_user": r.get("current_user_message_count"),
             })
     print(f"read {n_lines} rounds, {bad} unparseable, {len(sessions)} sessions", file=sys.stderr)
+    info = {"n_rounds": n_lines, "n_unparseable": bad, "n_sessions": len(sessions), "n_users": len(users),
+            "first_event_utc": datetime.fromtimestamp(t_min / 1000.0).astimezone().isoformat() if t_min else None,
+            "last_event_utc": datetime.fromtimestamp(t_max / 1000.0).astimezone().isoformat() if t_max else None,
+            "rounds_by_model": dict(sorted(models.items(), key=lambda kv: -kv[1]))}
+    with open(os.path.join(outdir, "dataset_info.json"), "w", encoding="utf-8") as fi:
+        json.dump(info, fi, indent=1)
 
     f_calls = open(os.path.join(outdir, "calls.csv"), "w", newline="", encoding="utf-8")
     f_rounds = open(os.path.join(outdir, "rounds.csv"), "w", newline="", encoding="utf-8")
