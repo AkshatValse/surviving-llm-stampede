@@ -164,7 +164,7 @@ Closed population 32 for 1800 s, prefix caching on, `OUTPUT_FEEDBACK=auto` (defa
 | b | `probe.txt` | request 1 `cached_tokens` 0, request 2 **48**, `prompt_tokens` 64 |
 | c | `probe.txt` request 3, `PROBE_SUMMARY` | `return_token_ids_http` 200, `output_ids_present` true. **Decision: if true, pin `OUTPUT_FEEDBACK=server` for every vLLM job (the SGLang cells use server).** If false, stop: both engines must use the same source (D5) and the lead decides |
 | d | `metrics_first.txt` | the six names of section 3, plus `vllm:cache_config_info` with `block_size="16"`, `num_gpu_blocks="18750"` |
-| e | `server.log`, `meta.json` | requests above 32,768 tokens served (36 in the SGLang smoke), no `illegal memory access`, no NaN or CUDA error, (the exact log wording for `hf_overrides` is not verified; look for the override in the startup config echo) |
+| e | `server.log`, `meta.json` | requests above 32,768 tokens served (36 in the SGLang smoke), no `illegal memory access`, no NaN or CUDA error (the log wording for the `hf_overrides` echo is not verified: look for `max_position_embeddings` in the startup config lines) |
 | f | `server.log` | "GPU KV cache size: 300,000 tokens" and "Overriding num_gpu_blocks=N with num_gpu_blocks_override=18750": **N x 16 is the native pool**, needed only if the native-pool replicate is ever run |
 | g | run `meta.json` | `prompt_tokens_mismatch` 0 |
 | h | `job_events.log`, `canary_1_*.json` | `flush HTTP 200 success=true`; canary prime cached about 1008, check cached 0; `reset_and_verify: verified=true` |
