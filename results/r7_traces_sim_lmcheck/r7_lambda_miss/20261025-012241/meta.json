@@ -1,0 +1,56 @@
+{
+  "experiment": "r7_lambda_miss",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "lambda_miss",
+    "--spec",
+    "configs/r7_traces_sim.yaml",
+    "--out-root",
+    "results/r7_traces_sim_lmcheck",
+    "--workers",
+    "6",
+    "--only",
+    "exp5",
+    "mini_full",
+    "--set",
+    "r7.lambda_miss.warmup_s=18000.0",
+    "--set",
+    "r7.lambda_miss.horizon_s=54000.0"
+  ],
+  "git": {
+    "commit": "85f7398374356e2e4538004c55a3080067b7a182",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T01:22:41",
+  "end_time": "2026-10-25T01:22:44",
+  "wall_s": 3.2724010944366455,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "r7.lambda_miss.warmup_s=18000.0",
+    "r7.lambda_miss.horizon_s=54000.0"
+  ],
+  "tag": null,
+  "stage": "lambda_miss",
+  "only": [
+    "exp5",
+    "mini_full"
+  ]
+}

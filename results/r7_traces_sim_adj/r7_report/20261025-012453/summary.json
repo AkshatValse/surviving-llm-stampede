@@ -1,0 +1,59 @@
+{
+  "lambda_miss": {
+    "exp5": 0.07268187182287461,
+    "mini_full": 0.014093277815908384
+  },
+  "peak_cap": {
+    "exp5": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.21439047675928924,
+      "cap_n": 20
+    },
+    "tl_turn": {
+      "peak_n": 32,
+      "peak_mu_turns": 0.21782795060983903,
+      "cap_n": 32
+    },
+    "tl_idle": {
+      "peak_n": 40,
+      "peak_mu_turns": 0.16935204200208587,
+      "cap_n": 40
+    },
+    "mini_tool": {
+      "peak_n": 24,
+      "peak_mu_turns": 0.3913325613875891,
+      "cap_n": 20
+    },
+    "mini_full": {
+      "peak_n": 12,
+      "peak_mu_turns": 0.050349105379943145,
+      "cap_n": 12
+    }
+  },
+  "window": {
+    "mini_full": {
+      "hi": 1.5,
+      "points": [
+        1.15,
+        1.35
+      ],
+      "empty": false
+    }
+  },
+  "pairs": {
+    "mini_full": {
+      "1.15": {
+        "burst_trapped": 3,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": false
+      },
+      "1.35": {
+        "burst_trapped": 7,
+        "noburst_good": 10,
+        "cap_recovered": 10,
+        "PASS": true
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "experiment": "r7_report",
+  "status": "done",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\robustness\\src\\prefixmeta\\r7_report.py",
+    "report",
+    "--spec",
+    "configs/r7_traces_sim.yaml",
+    "--out-root",
+    "results/r7_traces_sim_ext",
+    "--set",
+    "r7.pairs.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]"
+  ],
+  "git": {
+    "commit": "2a25e69f932ffb10b73c79e07979b6f8ee916d55",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T01:24:52",
+  "end_time": "2026-10-25T01:24:52",
+  "wall_s": 0.16909432411193848,
+  "quick": false,
+  "workers": 1,
+  "overrides": [
+    "r7.pairs.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]"
+  ],
+  "tag": null,
+  "stage": "report",
+  "stage_dirs": {
+    "lambda_miss": "results/r7_traces_sim/r7_lambda_miss/20261025-011208",
+    "curves": "results/r7_traces_sim/r7_curves/20261025-011214",
+    "edge": "results/r7_traces_sim/r7_edge/20261025-011223",
+    "pairs": "results/r7_traces_sim_ext/r7_pairs/20261025-011657"
+  }
+}

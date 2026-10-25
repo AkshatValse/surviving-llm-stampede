@@ -1,0 +1,64 @@
+{
+  "experiment": "r7_pairs",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "pairs",
+    "--spec",
+    "configs/r7_traces_sim.yaml",
+    "--out-root",
+    "results/r7_traces_sim_ext",
+    "--workers",
+    "6",
+    "--set",
+    "r7.pairs.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]"
+  ],
+  "git": {
+    "commit": "a83bdde4fb30410cab54a012d84799be3797cea0",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T01:16:57",
+  "end_time": "2026-10-25T01:17:26",
+  "wall_s": 28.80552053451538,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "r7.pairs.seeds=[100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]"
+  ],
+  "tag": null,
+  "stage": "pairs",
+  "only": null
+}

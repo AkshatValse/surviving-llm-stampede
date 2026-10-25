@@ -1,0 +1,43 @@
+{
+  "experiment": "r7_curves",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "curves",
+    "--spec",
+    "configs/r7_traces_sim.yaml",
+    "--out-root",
+    "results/r7_traces_sim",
+    "--workers",
+    "6"
+  ],
+  "git": {
+    "commit": "c515f0c1e40f4a74da4ddd0943f33eb58208ebad",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T01:12:14",
+  "end_time": "2026-10-25T01:12:22",
+  "wall_s": 7.50716757774353,
+  "quick": false,
+  "workers": 6,
+  "overrides": [],
+  "tag": null,
+  "stage": "curves",
+  "only": null
+}
