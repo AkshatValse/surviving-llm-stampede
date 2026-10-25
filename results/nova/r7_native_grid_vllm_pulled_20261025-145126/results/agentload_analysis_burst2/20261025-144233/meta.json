@@ -1,0 +1,224 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst2",
+    "--run-dirs",
+    "results/agentload_e2_burst/20261025-051901",
+    "results/agentload_e2_burst/20261025-061332",
+    "results/agentload_e2_burst/20261025-081311",
+    "results/agentload_e2_burst/20261025-084258",
+    "results/agentload_e2_burst/20261025-101756",
+    "results/agentload_e2_burst/20261025-105152",
+    "--out-root",
+    "results",
+    "--set",
+    "burst.trap_min_s=3000",
+    "--set",
+    "burst.hit_eval_from_s=4500",
+    "--set",
+    "trap_v2.eval_from_s=4500",
+    "--prereg",
+    "configs/agentload_prereg_2026-10-24_grid_sglang-lpm-r1.yaml"
+  ],
+  "git": {
+    "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+    "dirty": false,
+    "branch": "main",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    0,
+    1,
+    1,
+    2,
+    2
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova-login-1",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-25T14:42:33",
+  "end_time": "2026-10-25T14:42:35",
+  "wall_s": 2.537482,
+  "slurm_env": {},
+  "inputs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-051901",
+      "label": "sglang-lpm-r1",
+      "seed": 0,
+      "run_git": {
+        "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-25T05:19:01",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17097087",
+        "SLURM_JOB_NAME": "pm-grid",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-2",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-061332",
+      "label": "sglang-lpm-r1",
+      "seed": 0,
+      "run_git": {
+        "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-25T06:13:32",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17097090",
+        "SLURM_JOB_NAME": "pm-grid",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-081311",
+      "label": "sglang-lpm-r1",
+      "seed": 1,
+      "run_git": {
+        "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-25T08:13:11",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17097093",
+        "SLURM_JOB_NAME": "pm-grid",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-2",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-084258",
+      "label": "sglang-lpm-r1",
+      "seed": 1,
+      "run_git": {
+        "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-25T08:42:58",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17097096",
+        "SLURM_JOB_NAME": "pm-grid",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-101756",
+      "label": "sglang-lpm-r1",
+      "seed": 2,
+      "run_git": {
+        "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-25T10:17:56",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17097099",
+        "SLURM_JOB_NAME": "pm-grid",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-2",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-105152",
+      "label": "sglang-lpm-r1",
+      "seed": 2,
+      "run_git": {
+        "commit": "6d0dad7d984c9577de6c89fef09e30564cf71e64",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-25T10:51:52",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17097102",
+        "SLURM_JOB_NAME": "pm-grid",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-1",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "n_runs": 6,
+  "kill_verdict_v2": {
+    "pre_registered": false,
+    "kill_test_pass_rule_only": null,
+    "kill_test_pass_decisive": null,
+    "fcfs_cells_meeting_rule": [],
+    "decisive_cells": [],
+    "pairing_problems": {}
+  },
+  "guard_problems": []
+}

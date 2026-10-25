@@ -1,0 +1,100 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "sglang-fcfs-r1-native": {
+      "n": [
+        96,
+        128,
+        300
+      ],
+      "n_runs": [
+        1,
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.12277682534296862,
+        0.06666603263804945,
+        0.10055443611787156
+      ],
+      "mu_turns_based": [
+        0.11599502434321002,
+        0.0730142611081087,
+        0.10737595311290543
+      ],
+      "turns_per_s": [
+        1.7122089398508111,
+        1.0777675276484662,
+        1.5849823549408153
+      ],
+      "hit_frac_turns": [
+        0.4188838416612589,
+        0.007216494845360825,
+        0.0
+      ],
+      "hit_frac_followup": [
+        0.450453593859037,
+        0.007705008255365988,
+        0.0
+      ],
+      "cached_frac_tokens": [
+        0.3893938956612522,
+        0.004297642934848302,
+        8.8780970686743e-08
+      ],
+      "queue_mean": [
+        12.647222222222222,
+        43.74166666666667,
+        226.7111111111111
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 96,
+        "turns_based": 96
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 96,
+      "mu_max": 0.12277682534296862,
+      "argmax_margin_rel": 0.18099823939102794,
+      "runner_up_n": 300,
+      "argmax_ambiguous": false,
+      "n_inf": 300,
+      "mu_n_inf": 0.10055443611787156,
+      "missing_n": [
+        16,
+        20,
+        24,
+        32,
+        48
+      ],
+      "complete_grid": false,
+      "extra_n": [
+        128
+      ],
+      "mu_by_n": {
+        "96": 0.12277682534296862,
+        "128": 0.06666603263804945,
+        "300": 0.10055443611787156
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "sglang-fcfs-r1-native",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 96,
+  "mu_300": 0.10055443611787156,
+  "mu_max": 0.12277682534296862,
+  "notes": [
+    "primary cell sglang-fcfs-r1-native: n grid incomplete, missing [16, 20, 24, 32, 48]; n_cap is the argmax over the points that exist"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

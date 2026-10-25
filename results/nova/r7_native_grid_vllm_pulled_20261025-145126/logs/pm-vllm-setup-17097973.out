@@ -1,0 +1,100 @@
+hostname: nova22-gpu-1  date: 2026-10-25T02:12:14-05:00  job: 17097973  git: 6d0dad7d984c9577de6c89fef09e30564cf71e64
+SWAPP_ROOT=/work/classtmp/avalse/swapp PHASE=check VLLM_SPEC=vllm==0.32.0 VLLM_PYTHON=3.12 ENV_VLLM=/work/classtmp/avalse/swapp/envs/vllm EXPECT_TORCH=2.13.0 EXPECT_CUDA_MAJOR=13
+caches: PIP_CACHE_DIR=/work/classtmp/avalse/swapp/cache/pip XDG_CACHE_HOME=/work/classtmp/avalse/swapp/cache CONDA_PKGS_DIRS=/work/classtmp/avalse/swapp/mamba-pkgs
+=== nvidia-smi
+Sun Oct 25 02:12:14 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100 80GB PCIe          On  |   00000000:C5:00.0 Off |                    0 |
+| N/A   30C    P0             55W /  300W |       0MiB /  81920MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+NVIDIA A100 80GB PCIe, 81920 MiB, 580.178.04
+	[4mGPU0	NIC0	CPU Affinity	NUMA Affinity	GPU NUMA ID[0m
+GPU0	 X 	NODE	28-31,76-79	1		N/A
+NIC0	NODE	 X 				
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+NIC Legend:
+
+  NIC0: mlx5_0
+
+=== versions
+  vllm==0.32.0
+  torch==2.13.0
+  torchvision==0.28.0
+  torchaudio==2.11.0
+  triton==3.7.1
+  flashinfer-python==0.7.0.post1
+  transformers==5.19.0
+  huggingface-hub==2.3.0
+  tokenizers==0.23.3
+  numpy==2.3.5
+  numba==0.65.0
+  xgrammar==0.2.8
+  cuda-toolkit==13.0.3.0
+  nvidia-cudnn-cu13==9.20.0.48
+  nvidia-nccl-cu13==2.29.7
+  nvidia-cutlass-dsl==4.8.0
+  torch.version.cuda = 13.0 | torch.cuda.is_available() = True
+VERSIONS_OK
+=== torch CUDA, bf16 matmul, vLLM compiled kernels and flash-attn module
+FlashInfer kernels are disabled: flashinfer-cubin is not installed and nvcc (CUDA_HOME, CUDA_PATH, PATH or /usr/local/cuda) or ninja (PATH) is missing. Set CUDA_HOME to a CUDA toolkit and put ninja on PATH, or run `vllm download-kernels`.
+device: NVIDIA A100 80GB PCIe capability (8, 0)
+bf16 4096x4096 matmul ok, mean|y| = 51.058448791503906 in 0.126 s
+import vllm ok: 0.32.0
+vllm platform: NvmlCudaPlatform cuda
+import ok: vllm._custom_ops
+import ok: vllm.vllm_flash_attn
+=== the job-time flag / env-var / version check (slurm/engine_vllm.sh check_engine_flags = vllm serve --help=all)
+flag ok:      --enable-prefix-caching
+flag ok:      --no-enable-prefix-caching
+flag ok:      --block-size
+flag ok:      --num-gpu-blocks-override
+flag ok:      --gpu-memory-utilization
+flag ok:      --max-num-seqs
+flag ok:      --max-num-batched-tokens
+flag ok:      --enable-chunked-prefill
+flag ok:      --scheduling-policy
+flag ok:      --max-model-len
+flag ok:      --hf-overrides
+flag ok:      --enable-prompt-tokens-details
+flag ok:      --host
+flag ok:      --port
+optional flag ok:      --generation-config
+vllm version ok: 0.32.0
+torch 2.13.0+cu130 cuda build 13.0 cuda available True NVIDIA A100 80GB PCIe
+env var ok:      VLLM_ALLOW_LONG_MAX_MODEL_LEN
+env var ok:      VLLM_SERVER_DEV_MODE
+env var ok:      VLLM_USE_FLASHINFER_SAMPLER
+env var ok:      VLLM_NO_USAGE_STATS
+env var ok:      VLLM_USE_RUST_FRONTEND
+env var ok:      VLLM_CACHE_ROOT
+toolchain ok:  gcc gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
+toolchain ok:  g++ g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
+toolchain ok:  cc cc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
+saved: /work/classtmp/avalse/swapp/envs/vllm_serve_help_0.32.0.txt (2393 lines)
+CHECK_DONE
+SETUP_DONE check 2026-10-25T02:12:53-05:00
