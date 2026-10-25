@@ -160,7 +160,7 @@ def test_every_stage_and_the_report_run_end_to_end_on_a_tiny_config(tmp_path):
     d = RP.main(["report", "--spec", str(spec), "--out-root", out], repo_dir=REPO)
     assert (Path(d) / "tables.md").exists() and (Path(d) / "summary.json").exists()
     text = (Path(d) / "tables.md").read_text()
-    for needle in ("lambda_miss", "Wilson", "burst size", "Horizon", "Low-lambda"):
+    for needle in ("lambda_miss", "Wilson", "burst size", "Horizon", "Low-lambda", "Binomial"):
         assert needle.lower() in text.lower(), needle
 
 

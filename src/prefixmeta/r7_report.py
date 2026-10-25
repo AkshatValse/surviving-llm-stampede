@@ -247,6 +247,42 @@ def t_lowlam(S: Stages, r7: dict, z: float) -> str:
     return head + "Quantiles over the runs:\n\n" + df_md(q, "{:.4g}") + "\n\nClasses:\n\n" + df_md(cls) + "\n\nPer run, sorted by slope:\n\n" + df_md(detail, "{:.4g}")
 
 
+def t_detection(S: Stages, r7: dict, z: float) -> str:
+    """Post-hoc pooling of every BURST run (200 sessions) of this round: how often the declared slope rule labels a run that is stuck at (near) zero hits TRAPPED."""
+    hit_lo = float(r7["classify"]["indeterminate_hit_below"])
+    srcs = []
+    if S.ok("pairs"):
+        c = S.csv("pairs", "classified_runs.csv")
+        b = c[c["arm"] == "burst"]
+        srcs.append(("pairs, all test points (5 workloads x 2 points, seeds 0-9)", b))
+        srcs.append(("pairs, record workload only (1.35 and 1.65 x, seeds 0-9)", b[b["workload"] == r7["record_workload"]]))
+    if S.ok("burst_sizes"):
+        c = S.csv("burst_sizes", "classified_runs.csv")
+        srcs.append(("burst_sizes, 200 sessions (bit-identical to the record-workload rows of pairs)", c[c["arm"] == "burst_200"]))
+    if S.ok("horizon"):
+        c = S.csv("horizon", "classified_runs.csv")
+        for wk in sorted(c["eval_window"].unique()):
+            srcs.append((f"horizon, window {wk} of the 31200 s runs (new realisations, seeds 0-9)", c[(c["arm"] == "burst") & (c["eval_window"] == wk)]))
+    if S.ok("lowlam"):
+        srcs.append(("lowlam, 1.35 x, seeds 100-119", S.csv("lowlam", "classified_runs.csv")))
+    rows = []
+    for name, g in srcs:
+        n = len(g)
+        row = {"source": name, "BURST runs": n}
+        for lab in ("TRAPPED", "INDETERMINATE", "RECOVERED", "OTHER"):
+            row[lab] = fs(int((g["label"] == lab).sum()), n, z)
+        row[f"hit < {hit_lo:g}"] = fs(int((g["hit"] < hit_lo).sum()), n, z)
+        rows.append(row)
+    from math import comb
+    need = 7
+    pt = pd.DataFrame([{"true per-run probability that the declared rule labels a stuck run TRAPPED": q,
+                        "P(at least 7 of 10 seeds TRAPPED)": sum(comb(10, i) * q ** i * (1 - q) ** (10 - i) for i in range(need, 11))} for q in (0.6, 0.7, 0.8, 0.9, 0.95, 1.0)])
+    return ("Every BURST run (200 sessions) of the round, by source and evaluation window. TRAPPED = the declared rule (token rate within 15% of all-miss AND backlog slope "
+            "above 0.5 (lambda - lambda_miss)); INDETERMINATE = hit < 0.2 but not TRAPPED:\n\n" + df_md(pd.DataFrame(rows)) +
+            "\n\nBinomial: the chance that a 10-seed point reaches the 7-of-10 requirement for BURST trapped, if each run is independently labelled TRAPPED with the probability in the "
+            "first column (exact arithmetic, not a simulation):\n\n" + df_md(pt, "{:.3f}"))
+
+
 # ======================================================================= provenance
 def sha256_of(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()
@@ -286,7 +322,8 @@ def build_tables(S: Stages, r7: dict) -> str:
                 ("pairs", "4. Paired-arm test at the two window points (10 seeds)", lambda: t_pairs(S, r7, z)),
                 ("burst_sizes", "5. Burst-size sweep (record workload, 10 seeds)", lambda: t_burst_sizes(S, r7, z)),
                 ("horizon", "6. Horizon: 30000 s after the burst (record workload, 10 seeds)", lambda: t_horizon(S, r7, z)),
-                ("lowlam", "7. Low-lambda fragility (record workload, 1.35 x lambda_miss, 20 seeds, BURST)", lambda: t_lowlam(S, r7, z)))
+                ("lowlam", "7. Low-lambda fragility (record workload, 1.35 x lambda_miss, 20 seeds, BURST)", lambda: t_lowlam(S, r7, z)),
+                ("pairs", "8. Post-hoc: how often the declared slope rule labels a stuck BURST run TRAPPED", lambda: t_detection(S, r7, z)))
     for stage, title, fn in sections:
         parts.append(f"### {title}\n")
         parts.append(fn() + "\n" if S.ok(stage) else f"**stage `{stage}` NOT RUN**\n")
