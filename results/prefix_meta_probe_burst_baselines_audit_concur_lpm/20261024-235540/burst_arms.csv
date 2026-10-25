@@ -1,0 +1,2 @@
+arm,burst_n,cap,n_runs,n_trapped,n_burst_recovered,hit_eval_mean,hit_eval_min,hit_eval_max,tail_backlog_mean,n_not_burst_recovered,n_recovered,n_recovered_queue_only,tail_hit_mean,tail_queue_mean,tail_gate_mean,tail_sessions_per_s,n_stopped_early
+burst,200,-1,5,0,5,0.9324207348986407,0.9307476678461468,0.9343905040107572,0.014753988792558376,0,5,5,0.9322288760835956,0.014753988792558376,0.0,0.09604,0

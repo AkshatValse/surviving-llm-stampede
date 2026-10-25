@@ -1,0 +1,1290 @@
+research_question: In the prefix-cache serving simulator (src/prefixmeta), is the
+  metastable congested state caused by work-conserving admission (rather than queue
+  ordering), and does bounding the resident KV working set (static session cap at
+  the length-biased working set, TTL pin that blocks admission, adaptive AIMD cap)
+  restore global stability at a small throughput price? How does the escape time from
+  the good state scale with system size, and is the bistable window robust across
+  agent-workload variants?
+assumptions_note: 'Round 2 of the prefix-cache metastability pilot. Engine, workload
+  and metric constants are inherited from `base_config` (ALL are assumptions, none
+  a measurement). The mechanisms are simplified, documented re-implementations (src/prefixmeta/mechanisms.py,
+  engine.py header): TTL pin and queued-prefix protection are modelled on whole-session
+  KV, AIMD acts on the session gate (no mid-session pausing), program order is by
+  session arrival. Predictions P1-P8 are in `preregistration_file`, committed before
+  any round-2 run.'
+preregistration:
+  date: 2026-10-21
+  expected_verdict: REFRAME
+  why: Memory-gated admission is work-conserving over misses, so under a long queue
+    every freed token becomes a new reservation and idle KV is ~0; a session's KV
+    is evicted during its tool call, before its next turn is queued. LPM then has
+    almost no resident waiting requests to promote, so it cannot leave the congested
+    state.
+  predictions:
+  - 'E1 (cold=300, lambda in {1.25,1.5,2}x lambda_miss): LPM and FCFS both recover
+    0/3; LPM-128 == FCFS bit-identical (queue 300 > 128 on the first pass).'
+  - 'E1 cold-size sweep: FCFS and LPM recovery counts are identical in every (cold,
+    lambda) cell; small cold starts (<=~50) recover 3/3, large (>=~100) 0/3.'
+  - 'E1 FCFS-CAP: with the spec N*=45 it does not recover; with the length-biased
+    N*~28 (and caps <=27) it recovers 3/3. Admission control is the only recovering
+    family.'
+  - 'E2 (burst 200 at 2x): LPM hit rate over [t_b+10k, t_b+25k] is above 0.8 in <=1/5
+    seeds; LPM-128 ~ FCFS trapped.'
+  - 'E3 spec ramp (peak 0.9 lambda_cap): hysteresis area ~0 and FCFS == LPM; E3 above-cap
+    ramp (peak 1.3 lambda_cap): area > 0 with FCFS ~ LPM.'
+  - 'Decision rule: GO is unreachable; verdict REFRAME (not KILL, since LPM-128 is
+    trapped in E2 by the spec''s hit<0.2 for >=10k s criterion).'
+  not_claimed: 'That ''LPM-128 inherits the trap'' is a finding: with queues > 128
+    at the first pass LPM-128 is FCFS by construction. lambda_cap is a finite-horizon
+    stability (lifetime) boundary, not a memory-time capacity.'
+engine:
+  iter_fixed_s: 0.002
+  iter_floor_s: 0.0095
+  per_token_s: 8.4e-05
+  decode_attn_s: 0.00071
+  attn_ctx_norm: 8192
+  prefill_attn_s: 3.5e-09
+  prefill_attn_ctx: end
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 300000
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+workload:
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5
+policies:
+  fcfs:
+    kind: fcfs
+  lpm:
+    kind: lpm
+  lpm128:
+    kind: lpm_fallback
+    threshold: 128
+  aging10:
+    kind: aging_lpm
+    w_max_s: 10.0
+  aging30:
+    kind: aging_lpm
+    w_max_s: 30.0
+  fcfs_cap:
+    kind: fcfs
+    session_cap: auto
+  fcfs_cap_lb:
+    kind: fcfs
+    session_cap: auto_lb
+  peek:
+    kind: fcfs
+    protect_queued: pin
+  peek_rank:
+    kind: fcfs
+    protect_queued: rank
+  peek_lpm:
+    kind: lpm
+    protect_queued: pin
+  ttl5:
+    kind: continuum
+    ttl_pin_s: 5
+  ttl10:
+    kind: continuum
+    ttl_pin_s: 10
+  ttl20:
+    kind: continuum
+    ttl_pin_s: 20
+  ttlf5:
+    kind: fcfs
+    ttl_pin_s: 5
+  ttlf10:
+    kind: fcfs
+    ttl_pin_s: 10
+  ttlf20:
+    kind: fcfs
+    ttl_pin_s: 20
+  ttl10e:
+    kind: continuum
+    ttl_pin_s: 10
+    ttl_unpin: eager
+  ttl20e:
+    kind: continuum
+    ttl_pin_s: 20
+    ttl_unpin: eager
+  ttl10ef:
+    kind: continuum
+    ttl_pin_s: 10
+    ttl_unpin: eager_fit
+  ttl20ef:
+    kind: continuum
+    ttl_pin_s: 20
+    ttl_unpin: eager_fit
+  progfcfs:
+    kind: program_fcfs
+  lb_cap:
+    kind: fcfs
+    session_cap: lb
+  cap_1p3:
+    kind: fcfs
+    session_cap:
+      lb_mult: 1.3
+  aimd_cap:
+    kind: fcfs
+    session_cap:
+      aimd:
+        rule: hit
+        interval_s: 10.0
+        start: lb
+        min_cap: 4
+        hit_threshold: 0.7
+        increase: 1
+        decrease: 0.7
+  concur_cap:
+    kind: fcfs
+    session_cap:
+      aimd:
+        rule: concur
+        interval_s: 10.0
+        start: lb
+        min_cap: 4
+        u_low: 0.2
+        u_high: 0.5
+        h_thresh: 0.2
+        increase: 2
+        decrease: 0.5
+  peek_order_audit:
+    kind: peek_singleton
+    protect_queued: rank
+  peek_score_audit:
+    kind: fcfs
+    protect_queued: rank_length
+  peek_singleton_audit:
+    kind: peek_singleton
+    protect_queued: rank_length
+  ttl5cw:
+    kind: continuum
+    ttl_pin_s: 5
+    ttl_unpin: continuum_waiting
+  ttl10cw:
+    kind: continuum
+    ttl_pin_s: 10
+    ttl_unpin: continuum_waiting
+  ttl20cw:
+    kind: continuum
+    ttl_pin_s: 20
+    ttl_unpin: continuum_waiting
+  ttl5cwr:
+    kind: continuum
+    ttl_pin_s: 5
+    ttl_unpin: continuum_waiting
+    ttl_refresh_lru_on_unpin: true
+  ttl10cwr:
+    kind: continuum
+    ttl_pin_s: 10
+    ttl_unpin: continuum_waiting
+    ttl_refresh_lru_on_unpin: true
+  ttl20cwr:
+    kind: continuum
+    ttl_pin_s: 20
+    ttl_unpin: continuum_waiting
+    ttl_refresh_lru_on_unpin: true
+  concur_lpm:
+    kind: lpm
+    session_cap:
+      aimd:
+        rule: concur
+        interval_s: 10.0
+        start: lb
+        min_cap: 4
+        u_low: 0.2
+        u_high: 0.5
+        h_thresh: 0.2
+        increase: 2
+        decrease: 0.5
+  concur_i5:
+    kind: fcfs
+    session_cap:
+      aimd:
+        rule: concur
+        interval_s: 5.0
+        start: lb
+        min_cap: 4
+        u_low: 0.2
+        u_high: 0.5
+        h_thresh: 0.2
+        increase: 2
+        decrease: 0.5
+  concur_i20:
+    kind: fcfs
+    session_cap:
+      aimd:
+        rule: concur
+        interval_s: 20.0
+        start: lb
+        min_cap: 4
+        u_low: 0.2
+        u_high: 0.5
+        h_thresh: 0.2
+        increase: 2
+        decrease: 0.5
+  concur_s8:
+    kind: fcfs
+    session_cap:
+      aimd:
+        rule: concur
+        interval_s: 10.0
+        start: 8
+        min_cap: 4
+        u_low: 0.2
+        u_high: 0.5
+        h_thresh: 0.2
+        increase: 2
+        decrease: 0.5
+  concur_s56:
+    kind: fcfs
+    session_cap:
+      aimd:
+        rule: concur
+        interval_s: 10.0
+        start: 56
+        min_cap: 4
+        u_low: 0.2
+        u_high: 0.5
+        h_thresh: 0.2
+        increase: 2
+        decrease: 0.5
+policy_order:
+- fcfs
+- lpm
+- lpm128
+- aging10
+- aging30
+- fcfs_cap
+- fcfs_cap_lb
+metrics:
+  window_s: 1000.0
+  fine_window_s: 100.0
+  tail_window_s: 5000.0
+  track_memory: true
+parallel:
+  max_workers: 4
+output:
+  root: results
+  git_add_small_files_below_bytes: 400000
+e0:
+  miss_closed_population: 60
+  miss_population_check:
+  - 30
+  - 120
+  miss_pool_sessions: 60000
+  miss_horizon_s: 100000.0
+  miss_warmup_s: 5000.0
+  miss_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  cap_horizon_s: 20000.0
+  cap_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  cap_bracket_mults:
+  - 1.5
+  - 2.0
+  - 2.5
+  - 3.0
+  - 4.0
+  - 6.0
+  - 8.0
+  - 12.0
+  - 16.0
+  cap_rel_tol: 0.02
+  cap_max_bisect_steps: 10
+  cap_hazard:
+    policies:
+    - lpm
+    - fcfs
+    mults:
+    - 1.5
+    - 2.0
+    - 2.25
+    - 2.5
+    - 2.75
+    - 3.0
+    seeds:
+    - 100
+    - 101
+    - 102
+    - 103
+    - 104
+    - 105
+    - 106
+    - 107
+    - 108
+    - 109
+    - 110
+    - 111
+    - 112
+    - 113
+    - 114
+    - 115
+    - 116
+    - 117
+    - 118
+    - 119
+    horizon_s: 20000.0
+    escape_queue_above: 128
+  stable_final_queue_below: 50
+  stable_trend_window_s: 5000.0
+  stable_trend_max_rise: 10.0
+  unstable_queue_stop: 3000
+  quick:
+    miss_population_check: []
+    miss_pool_sessions: 5000
+    miss_horizon_s: 4000.0
+    miss_warmup_s: 500.0
+    miss_seeds:
+    - 0
+    cap_horizon_s: 3000.0
+    cap_seeds:
+    - 0
+    cap_bracket_mults:
+    - 2.0
+    - 4.0
+    cap_max_bisect_steps: 2
+    cap_hazard:
+      policies:
+      - lpm
+      mults:
+      - 2.0
+      seeds:
+      - 100
+      - 101
+      horizon_s: 2000.0
+      escape_queue_above: 128
+e1:
+  cold_sessions: 300
+  lam_mults:
+  - 1.25
+  - 1.5
+  - 2.0
+  - 3.0
+  - 4.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  horizon_s: 30000.0
+  recovered_queue_below: 20.0
+  recovered_hit_above: 0.8
+  robust_policies:
+  - fcfs
+  - lpm
+  robust_seeds:
+  - 0
+  robust_cv: 1.5
+  cold_sweep:
+    cold_sessions:
+    - 25
+    - 50
+    - 75
+    - 100
+    - 125
+    - 150
+    - 200
+    lam_mults:
+    - 1.25
+    - 1.5
+    - 2.0
+    policies: all
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  cap_sweep:
+    caps:
+    - 10
+    - 15
+    - 20
+    - 24
+    - 28
+    - 32
+    - 35
+    - 40
+    - 45
+    lam_mults:
+    - 1.25
+    - 1.5
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    - 2
+  quick:
+    lam_mults:
+    - 2.0
+    policies:
+    - fcfs
+    - lpm
+    - lpm128
+    seeds:
+    - 0
+    horizon_s: 3000.0
+    robust_policies:
+    - fcfs
+    cold_sweep:
+      cold_sessions:
+      - 25
+      lam_mults:
+      - 2.0
+      policies:
+      - fcfs
+      - lpm
+      seeds:
+      - 0
+    cap_sweep:
+      caps:
+      - 20
+      lam_mults:
+      - 2.0
+      seeds:
+      - 0
+e2:
+  lam_mult: 2.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  warmup_s: 5000.0
+  burst_sessions: 200
+  burst_width_s: 60.0
+  after_s: 25000.0
+  hit_eval_from_s: 10000.0
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_queue_below: 20.0
+  burst_sweep:
+    burst_sessions:
+    - 25
+    - 50
+    - 100
+    - 125
+    - 150
+    policies: all
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  quick:
+    policies:
+    - fcfs
+    - lpm128
+    seeds:
+    - 0
+    burst_sweep:
+      burst_sessions:
+      - 25
+      policies:
+      - fcfs
+      - lpm
+      seeds:
+      - 0
+    warmup_s: 1000.0
+    after_s: 3000.0
+    hit_eval_from_s: 1000.0
+e3:
+  lo_mult_of_lambda_miss: 0.5
+  hi_mult_of_lambda_cap: 0.9
+  leg_s: 30000.0
+  policies: all
+  seeds:
+  - 0
+  - 1
+  - 2
+  grid_points: 40
+  ramps:
+  - name: spec
+    hi_mult_of_lambda_cap: 0.9
+    seeds:
+    - 0
+    - 1
+    - 2
+  - name: above_cap
+    hi_mult_of_lambda_cap: 1.3
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+  escape_queue_above: 128
+  reentry_queue_below: 20
+  reentry_bins: 5
+  quick:
+    leg_s: 3000.0
+    policies:
+    - fcfs
+    - lpm
+    ramps:
+    - name: spec
+      hi_mult_of_lambda_cap: 0.9
+      seeds:
+      - 0
+    - name: above_cap
+      hi_mult_of_lambda_cap: 1.3
+      seeds:
+      - 0
+    seeds:
+    - 0
+e4:
+  lam_mults:
+  - 2.0
+  - 3.0
+  policies:
+  - lpm128
+  seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  horizon_s: 50000.0
+  escape_queue_above: 128
+  good_state_onset_queue_below: 20
+  escaped_by_s:
+  - 10000
+  - 25000
+  - 50000
+  quick:
+    lam_mults:
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    horizon_s: 3000.0
+ablation_skip_ahead:
+  lam_mult: 2.0
+  cold_sessions: 300
+  policies:
+  - fcfs
+  - lpm
+  - lpm128
+  seeds:
+  - 0
+  - 1
+  horizon_s: 10000.0
+  quick:
+    policies:
+    - fcfs
+    - lpm
+    seeds:
+    - 0
+    horizon_s: 2000.0
+decision:
+  go_R_min: 2.0
+  kill_R_below: 1.5
+  lam_mult_min: 1.5
+  lpm_recover_min: 3
+  fcfs_recover_max: 0
+  lpm128_recover_max: 1
+  burst_lpm128_trapped_min: 3
+  burst_lpm_recover_min: 4
+  aging30_fraction_of_lpm_lambda: 0.7
+calibration:
+  e0_summary: results/prefix_meta_e0/20261021-005706/e0_summary.json
+labels:
+  fcfs: FCFS
+  lpm: LPM
+  peek: queued-session protection, hard pin (non-work-conserving)
+  peek_rank: queued-session protection, ranking only (PEEK-like, work-conserving)
+  peek_lpm: queued-session hard pin + LPM order (= LPM here)
+  ttl5: blocking TTL pin 5 s + program priority (idle-only release)
+  ttl10: blocking TTL pin 10 s + program priority (idle-only release)
+  ttl20: blocking TTL pin 20 s + program priority (idle-only release)
+  ttlf5: blocking TTL pin 5 s + FCFS (idle-only release)
+  ttlf10: blocking TTL pin 10 s + FCFS (idle-only release)
+  ttlf20: blocking TTL pin 20 s + FCFS (idle-only release)
+  ttl10e: Continuum-like 10 s pin, eager unpin (scout spec, unverified)
+  ttl20e: Continuum-like 20 s pin, eager unpin (scout spec, unverified)
+  ttl10ef: Continuum-like 10 s pin, eager unpin only if it fits
+  ttl20ef: Continuum-like 20 s pin, eager unpin only if it fits
+  progfcfs: program-order FCFS (work-conserving, no pin)
+  lb_cap: LB-CAP (N_lb)
+  cap_1p3: CAP 1.3 N_lb
+  aimd_cap: AIMD-CAP (start N_lb)
+  concur_cap: CONCUR-cap (start N_lb)
+phase:
+  cold_sessions: 300
+  lam_mults:
+  - 0.6
+  - 0.8
+  - 0.9
+  - 1.0
+  - 1.1
+  - 1.25
+  - 1.5
+  - 2.0
+  - 2.5
+  policies:
+  - fcfs
+  - lpm
+  - peek_rank
+  - peek
+  seeds:
+  - 0
+  - 1
+  - 2
+  horizon_s: 30000.0
+  long_horizon_s: 150000.0
+  long_horizon_up_to_mult: 1.25
+  registered_tail_s: 5000.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  quick:
+    lam_mults:
+    - 0.8
+    - 1.5
+    policies:
+    - fcfs
+    - peek
+    seeds:
+    - 0
+    horizon_s: 3000.0
+    long_horizon_s: 5000.0
+mech:
+  policies:
+  - fcfs
+  - lpm
+  - peek
+  - peek_rank
+  - peek_lpm
+  - ttl5
+  - ttl10
+  - ttl20
+  - ttlf5
+  - ttlf10
+  - ttlf20
+  - ttl10e
+  - ttl20e
+  - ttl10ef
+  - ttl20ef
+  - progfcfs
+  - lb_cap
+  - cap_1p3
+  - aimd_cap
+  - concur_cap
+  cold:
+    cold_sessions: 300
+    lam_mults:
+    - 1.5
+    - 2.0
+    seeds:
+    - 0
+    - 1
+    - 2
+    horizon_s: 30000.0
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+  burst:
+    lam_mult: 2.0
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    warmup_s: 5000.0
+    burst_sessions: 200
+    burst_width_s: 60.0
+    after_s: 25000.0
+    hit_eval_from_s: 10000.0
+    trap_hit_below: 0.2
+    trap_min_s: 10000.0
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+  cap_sweep:
+    mults_of_N_lb:
+    - 0.5
+    - 0.75
+    - 0.9
+    - 1.0
+    - 1.1
+    - 1.2
+    - 1.3
+    - 1.5
+    - 1.75
+    lam_mult: 2.0
+    cold_sessions: 300
+    seeds:
+    - 0
+    - 1
+    - 2
+    horizon_s: 30000.0
+  limit:
+    policies:
+    - fcfs
+    - lpm
+    - peek
+    - peek_rank
+    - ttl5
+    - ttl10
+    - ttl20
+    - ttlf5
+    - ttlf10
+    - ttlf20
+    - ttl10e
+    - ttl20e
+    - ttl10ef
+    - ttl20ef
+    - progfcfs
+    - lb_cap
+    - cap_1p3
+    - aimd_cap
+    - concur_cap
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 20000.0
+    bracket_mults:
+    - 1.5
+    - 2.0
+    - 2.5
+    - 3.0
+    - 4.0
+    - 6.0
+    - 8.0
+    - 12.0
+    - 16.0
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  capacity:
+    policies:
+    - lpm
+    - fcfs
+    - peek
+    - peek_rank
+    - ttl5
+    - ttl10
+    - ttl20
+    - ttlf5
+    - ttlf10
+    - ttlf20
+    - ttl10e
+    - ttl20e
+    - ttl10ef
+    - ttl20ef
+    - progfcfs
+    - lb_cap
+    - cap_1p3
+    - aimd_cap
+    - concur_cap
+    populations:
+    - 8
+    - 16
+    - 24
+    - 28
+    - 32
+    - 40
+    - 48
+    - 64
+    - 96
+    - 150
+    - 300
+    seeds:
+    - 0
+    - 1
+    - 2
+    horizon_s: 30000.0
+    warmup_s: 5000.0
+    pool_sessions: 30000
+  quick:
+    policies:
+    - fcfs
+    - peek
+    - ttl10
+    - ttl10e
+    - lb_cap
+    - aimd_cap
+    capacity:
+      policies:
+      - lpm
+      - lb_cap
+      populations:
+      - 16
+      - 64
+      seeds:
+      - 0
+      horizon_s: 3000.0
+      warmup_s: 500.0
+      pool_sessions: 3000
+    cold:
+      lam_mults:
+      - 2.0
+      seeds:
+      - 0
+      horizon_s: 3000.0
+    burst:
+      seeds:
+      - 0
+      warmup_s: 1000.0
+      after_s: 3000.0
+      hit_eval_from_s: 1000.0
+      trap_min_s: 2000.0
+    cap_sweep:
+      mults_of_N_lb:
+      - 1.0
+      - 1.3
+      seeds:
+      - 0
+      horizon_s: 3000.0
+    limit:
+      policies:
+      - fcfs
+      - lb_cap
+      seeds:
+      - 0
+      horizon_s: 3000.0
+      bracket_mults:
+      - 2.0
+      - 4.0
+      max_bisect_steps: 2
+      stable_trend_window_s: 1500.0
+escape:
+  policy: fcfs
+  sizes:
+  - 0.25
+  - 0.5
+  - 1.0
+  lam_mults:
+  - 2.0
+  - 2.25
+  scalings:
+  - calibrated
+  - fluid
+  seeds:
+  - 1000
+  - 1001
+  - 1002
+  - 1003
+  - 1004
+  - 1005
+  - 1006
+  - 1007
+  - 1008
+  - 1009
+  - 1010
+  - 1011
+  - 1012
+  - 1013
+  - 1014
+  - 1015
+  - 1016
+  - 1017
+  - 1018
+  - 1019
+  horizon_s: 200000.0
+  queue_factor: 4.0
+  hit_below: 0.2
+  hit_windows: 3
+  calib:
+    population_per_k: 60
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 100000.0
+    warmup_s: 5000.0
+    pool_sessions: 60000
+  limit:
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 20000.0
+    bracket_mults:
+    - 1.5
+    - 2.0
+    - 2.5
+    - 3.0
+    - 4.0
+    - 6.0
+    - 8.0
+    - 12.0
+    - 16.0
+    lower_mults:
+    - 0.75
+    - 0.5
+    - 0.25
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  quick:
+    sizes:
+    - 0.25
+    - 0.5
+    lam_mults:
+    - 2.25
+    scalings:
+    - calibrated
+    seeds:
+    - 1000
+    - 1001
+    - 1002
+    horizon_s: 4000.0
+    calib:
+      seeds:
+      - 0
+      horizon_s: 4000.0
+      warmup_s: 500.0
+      pool_sessions: 5000
+    limit:
+      seeds:
+      - 0
+      horizon_s: 3000.0
+      bracket_mults:
+      - 2.0
+      - 4.0
+      max_bisect_steps: 2
+      stable_trend_window_s: 1500.0
+escape_inwindow:
+  policy: fcfs
+  sizes:
+  - 1.0
+  - 2.0
+  - 4.0
+  lam_mults:
+  - 2.25
+  - 2.5
+  - 2.75
+  scalings:
+  - calibrated
+  - fluid
+  seeds:
+  - 1100
+  - 1101
+  - 1102
+  - 1103
+  - 1104
+  - 1105
+  - 1106
+  - 1107
+  - 1108
+  - 1109
+  - 1110
+  - 1111
+  - 1112
+  - 1113
+  - 1114
+  - 1115
+  - 1116
+  - 1117
+  - 1118
+  - 1119
+  horizon_s: 400000.0
+  queue_factor: 4.0
+  hit_below: 0.2
+  hit_windows: 3
+  calib:
+    population_per_k: 60
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 100000.0
+    warmup_s: 5000.0
+    pool_sessions: 60000
+  limit:
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 20000.0
+    bracket_mults:
+    - 1.5
+    - 2.0
+    - 2.5
+    - 3.0
+    - 4.0
+    - 6.0
+    - 8.0
+    - 12.0
+    - 16.0
+    lower_mults:
+    - 0.75
+    - 0.5
+    - 0.25
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  quick:
+    sizes:
+    - 1.0
+    - 2.0
+    lam_mults:
+    - 2.5
+    scalings:
+    - calibrated
+    - fluid
+    seeds:
+    - 1100
+    - 1101
+    - 1102
+    horizon_s: 4000.0
+    calib:
+      seeds:
+      - 0
+      horizon_s: 4000.0
+      warmup_s: 500.0
+      pool_sessions: 5000
+    limit:
+      seeds:
+      - 0
+      horizon_s: 3000.0
+      bracket_mults:
+      - 2.0
+      - 4.0
+      max_bisect_steps: 2
+      stable_trend_window_s: 1500.0
+robust:
+  variants:
+  - name: base
+    workload: {}
+  - name: ctx8k
+    workload:
+      initial_context_tokens: 8000
+  - name: ctx16k
+    workload:
+      initial_context_tokens: 16000
+  - name: tool_lognormal
+    workload:
+      tool_time_dist: lognormal
+      tool_time_cv: 1.5
+  - name: tool_bimodal
+    workload:
+      tool_time_dist: bimodal
+      tool_time_lo_s: 0.3
+      tool_time_hi_s: 20.0
+  - name: turns5
+    workload:
+      mean_turns: 5
+  - name: turns30
+    workload:
+      mean_turns: 30
+  - name: decode400
+    workload:
+      decode_tokens: 400
+  limit_policies:
+  - lpm
+  - fcfs
+  burst_policy: fcfs
+  burst_lam_mult: 1.6
+  burst_sessions: 200
+  burst_width_s: 60.0
+  burst_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  warmup_s: 5000.0
+  after_s: 25000.0
+  hit_eval_from_s: 10000.0
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  calib:
+    population: 60
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 100000.0
+    warmup_s: 5000.0
+    pool_sessions: 60000
+  limit:
+    seeds:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    horizon_s: 20000.0
+    bracket_mults:
+    - 1.5
+    - 2.0
+    - 2.5
+    - 3.0
+    - 4.0
+    - 6.0
+    - 8.0
+    - 12.0
+    - 16.0
+    rel_tol: 0.02
+    max_bisect_steps: 10
+    unstable_backlog_stop: 3000
+    stable_final_backlog_below: 50
+    stable_trend_window_s: 5000.0
+    stable_trend_max_rise: 10.0
+  holds_R_above: 1.5
+  holds_trap_min_seeds: 4
+  holds_variants_needed: 5
+  quick:
+    variants:
+    - name: base
+      workload: {}
+    - name: tool_bimodal
+      workload:
+        tool_time_dist: bimodal
+        tool_time_lo_s: 0.3
+        tool_time_hi_s: 20.0
+    burst_seeds:
+    - 0
+    warmup_s: 1000.0
+    after_s: 3000.0
+    hit_eval_from_s: 1000.0
+    trap_min_s: 2000.0
+    calib:
+      seeds:
+      - 0
+      horizon_s: 4000.0
+      warmup_s: 500.0
+      pool_sessions: 5000
+    limit:
+      seeds:
+      - 0
+      horizon_s: 3000.0
+      bracket_mults:
+      - 2.0
+      - 4.0
+      max_bisect_steps: 2
+      stable_trend_window_s: 1500.0
+probe:
+  curve:
+    policies:
+    - fcfs
+    - lpm
+    - peek
+    - peek_rank
+    - peek_order_audit
+    - peek_score_audit
+    - peek_singleton_audit
+    - ttl5
+    - ttl5cw
+    - ttl5cwr
+    - ttl10
+    - ttl10e
+    - ttl10ef
+    - ttl10cw
+    - ttl10cwr
+    - ttl20
+    - ttl20e
+    - ttl20ef
+    - ttl20cw
+    - ttl20cwr
+    - concur_cap
+    - concur_lpm
+    - concur_i5
+    - concur_i20
+    - concur_s8
+    - concur_s56
+    n_grid:
+    - 300
+    seeds:
+    - 0
+    - 1
+    - 2
+    horizon_s: 30000.0
+    warmup_s: 5000.0
+    pool_sessions: 30000
+    cache_enabled: true
+  burst:
+    policy: peek_singleton_audit
+    lambda_miss: 0.047418947368421054
+    lam_mult: 2.0
+    warmup_s: 5000.0
+    after_s: 25000.0
+    burst_n: 200
+    burst_width_s: 60.0
+    arms: &id001
+      burst:
+        burst_n: 200
+    seeds: &id002
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    recovered_hit_above: 0.8
+    recovered_backlog_below: 20.0
+    hit_eval_from_s: 10000.0
+    trap_hit_below: 0.2
+    trap_min_s: 10000.0
+_base_config: configs/prefix_meta_mech.yaml
+section_effective:
+  policy: peek_singleton_audit
+  lambda: null
+  lambda_miss: 0.047418947368421054
+  lam_mult: 2.0
+  burst_n: 200
+  burst_width_s: 60.0
+  warmup_s: 5000.0
+  after_s: 25000.0
+  cap: null
+  arms: *id001
+  seeds: *id002
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  hit_eval_from_s: 10000.0
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  engine: {}
+  workload: {}

@@ -335,9 +335,17 @@ class Engine:
         self.stop_reason = ""
         self.debug = debug
         self.mech = mech if mech is not None else Mechanisms()
-        self._peek = self.mech.protect_queued          # None | "pin" | "rank"
+        self._peek = self.mech.protect_queued          # None | "pin" | "rank" | "rank_length"
         self._ttl = self.mech.ttl_s
         self._unpin = self.mech.ttl_unpin               # "idle" | "eager" | "eager_fit" (see mechanisms.py)
+        self._ttl_refresh_lru = self.mech.ttl_refresh_lru_on_unpin
+        if self._unpin == "continuum_waiting":
+            if self._ttl is None:
+                raise ValueError("continuum_waiting requires ttl_pin_s")
+            if self._peek is not None:
+                raise ValueError("continuum_waiting cannot be combined with protect_queued")
+            if params.skip_ahead:
+                raise ValueError("continuum_waiting requires skip_ahead=False")
         self.aimd = self.mech.aimd
         self._evict_mode = self.mech.eviction            # "lru" (rounds 1-3 code path) | "random" | "mru_idle" (eviction.py)
         self._evict_rng = evict_rng
@@ -510,6 +518,10 @@ class Engine:
                 out.append(r)
         return out
 
+    def cached_prefix(self, sid: int) -> int:
+        """Cached private prefix length for an admission-order snapshot."""
+        return self.idle.get(sid, 0)
+
     def resident_waiting(self, skip_marked: bool = False) -> List[Request]:
         pid = self.pass_id
         waiting = self._waiting
@@ -588,6 +600,8 @@ class Engine:
         if sid in self._waiting:
             return                      # next request already queued: the pin persists until it is admitted
         del self._pin[sid]
+        if self._ttl_refresh_lru:
+            self.idle.move_to_end(sid)
         self.n_pin_expired += 1
         self._refresh_prot(sid)
         if self.n_wait > 0:
@@ -606,7 +620,9 @@ class Engine:
                 break
             if sid == own:
                 continue
-            self._pin.pop(sid, None)
+            ttl_pin = self._pin.pop(sid, None)
+            if ttl_pin is not None and self._ttl_refresh_lru:
+                self.idle.move_to_end(sid)
             if self._peek == "pin" and sid in self._waiting:
                 self._released.add(sid)
             self._refresh_prot(sid)
@@ -637,11 +653,32 @@ class Engine:
             if sid == own:
                 continue
             del self._pin[sid]
+            if self._ttl_refresh_lru:
+                self.idle.move_to_end(sid)
             self._refresh_prot(sid)
             released += 1
         if released:
             self.n_eager_unpins += released
         return released > 0
+
+    def _continuum_waiting_unpin(self) -> bool:
+        """Released Continuum preview: one latest-expiry pin on an idle waiting-allocation failure.
+
+        scheduler.py at 316a58794a6ff86b216e579b74fd56ed0c5a911f, lines 178-190 and 570-581.
+        Every pin is eligible, including the head's own pin. Equal expiries retain pin insertion order.
+        Freeing a reference makes cached KV evictable; it need not destroy that KV.
+        """
+        if not self._pin:
+            return False
+        sid = max(self._pin, key=lambda s: (self._pin[s][0], -self._pin[s][1]))
+        del self._pin[sid]
+        if self._ttl_refresh_lru:
+            self.idle.move_to_end(sid)
+        self._refresh_prot(sid)
+        self.n_stall_breaks += 1
+        self.n_released += 1
+        self.dirty = True
+        return True
 
     def _evict(self, need: int) -> None:
         """Free at least ``need`` tokens of idle KV: unprotected LRU-first, then soft-protected LRU-first. Hard
@@ -672,7 +709,12 @@ class Engine:
             if got >= need:
                 break
         if got < need:
-            for sid2 in idle:
+            # PEEK plain score: demand * cached prefix depth. There is one queued request per private
+            # session here, so positive demand is one. Stable sorting preserves LRU ties. See upstream
+            # peek 3aca72b63c1dd6433193c0857b965acecdbfbb8a, online/eviction.py:267-282.
+            soft_order = (sorted((sid for sid in idle if sid in soft), key=idle.__getitem__)
+                          if self._peek == "rank_length" else idle)
+            for sid2 in soft_order:
                 if sid2 in soft:
                     victims.append(sid2)
                     got += idle[sid2]
@@ -989,13 +1031,15 @@ class Engine:
             if self._hard_sum:
                 # hard-protected idle KV of OTHER sessions cannot be evicted to make room
                 need_ok = self.reserved + req.end + self._hard_sum - self._hard.get(req.sid, 0) <= M
-                if not need_ok and self._unpin != "idle" and self._pin and self._eager_unpin(req):
+                if not need_ok and self._unpin in ("eager", "eager_fit") and self._pin and self._eager_unpin(req):
                     need_ok = (self.reserved + req.end + self._hard_sum - self._hard.get(req.sid, 0) <= M)
             else:
                 need_ok = self.reserved + req.end <= M
             if not need_ok:
                 if self._first_blocked is None:
                     self._first_blocked = req
+                if self._unpin == "continuum_waiting" and n_run == 0 and self._continuum_waiting_unpin():
+                    break                       # one release per pass, matching the released waiting branch
                 if skip:
                     continue
                 break
@@ -1193,6 +1237,10 @@ class Engine:
                     break
             if self.n_D == 0 and not self.prefill:
                 if self.n_wait > 0:
+                    if self._unpin == "continuum_waiting" and self.dirty:
+                        # An empty scheduling retry has no GPU-time cost in this simulator. Do not jump
+                        # to the next TTL expiry after releasing a pin for the blocked waiting head.
+                        continue
                     if not self._hard:
                         raise RuntimeError("engine idle with waiting requests and no admissible request (deadlock)")
                     if self._pin_next_time() == INF:        # nothing can free memory by waiting
