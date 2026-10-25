@@ -1,0 +1,69 @@
+{
+ "source": "mini_swe_v2",
+ "written_utc": "2026-10-25T05:02:22Z",
+ "git_commit": "e1a4e3e80d78bca67e58a177596a73862b4a9629",
+ "scripts_or_config_uncommitted_changes": false,
+ "python": "3.12.10",
+ "analysis_config": {
+  "seed": 0,
+  "cap_s": 600.0,
+  "floor_s": 0.01,
+  "exp_ref_mean_s": 5.0,
+  "max_turns_workload_of_record": 60
+ },
+ "source_config": {
+  "description": "mini-SWE-agent v2.0.0 trajectories, SWE-bench Verified 'bash-only' leaderboard runs (Feb 2026); seeded sample",
+  "repo": "https://github.com/SWE-bench/experiments",
+  "s3_bucket": "s3://swe-bench-submissions/bash-only/",
+  "runs": [
+   "20260217_mini-v2.0.0_claude-4-5-sonnet-high",
+   "20260217_mini-v2.0.0_gpt-5-2-high",
+   "20260217_mini-v2.0.0_kimi-k2-5-high",
+   "20260217_mini-v2.0.0_claude-4-5-opus-high",
+   "20260217_mini-v2.0.0_gpt-5-mini"
+  ],
+  "n_instances_per_run": 100,
+  "sample_seed": 20261024,
+  "licence": "no licence file in SWE-bench/experiments; mini-swe-agent software is MIT; trajectories are published for reproducibility",
+  "raw_dir": "results/traces_raw/mini_swe_v2",
+  "norm_dir": "results/traces_norm/mini_swe_v2",
+  "summary_dir": "results/traces_summary/mini_swe_v2"
+ },
+ "input_files": [
+  {
+   "run": "20260217_mini-v2.0.0_claude-4-5-sonnet-high",
+   "n_files": 100,
+   "bytes": 59943587,
+   "sha256_of_name_and_content_stream": "f50450afef26ad055c227478f2a38826e5f369e75cac500d67935746cbb66e06"
+  },
+  {
+   "run": "20260217_mini-v2.0.0_gpt-5-2-high",
+   "n_files": 100,
+   "bytes": 26452802,
+   "sha256_of_name_and_content_stream": "ac8a0762663e74dce43ec87356092b77233e8aabb75fb0de729207e7c2d37176"
+  },
+  {
+   "run": "20260217_mini-v2.0.0_kimi-k2-5-high",
+   "n_files": 100,
+   "bytes": 37623178,
+   "sha256_of_name_and_content_stream": "5ef3ff44d161d918573bba9f09362ffc041740859a6c5e601a1103dda666df80"
+  },
+  {
+   "run": "20260217_mini-v2.0.0_claude-4-5-opus-high",
+   "n_files": 100,
+   "bytes": 43591802,
+   "sha256_of_name_and_content_stream": "e6fbd8503cb69cee88bae08738b6ec2cf5e1199b8be7e2ef2db2e4644f8be204"
+  },
+  {
+   "run": "20260217_mini-v2.0.0_gpt-5-mini",
+   "n_files": 100,
+   "bytes": 20814508,
+   "sha256_of_name_and_content_stream": "33a159a81099765aee3ecc4effd0306c6594459cfa704724c53c51827cc292ea"
+  }
+ ],
+ "normalised_rows": {
+  "calls": 17963,
+  "rounds": 18463,
+  "episodes": 500
+ }
+}
