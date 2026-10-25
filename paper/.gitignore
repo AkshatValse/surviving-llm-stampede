@@ -1,0 +1,8 @@
+# LaTeX build by-products (the PDF itself is tracked)
+*.aux
+*.log
+*.out
+*.blg
+*.bbl
+*.toc
+*.synctex.gz

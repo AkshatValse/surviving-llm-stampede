@@ -1,0 +1,7 @@
+rate_mult,seed,run_dir,gate_empty_after_burst_s,predicted_drain_s,ratio_to_predicted,max_gate_wait_s
+1.35,0,results/agentload_e2_burst/20261024-155130,1846.73,1570.9,1.17559,852.756
+1.35,1,results/agentload_e2_burst/20261024-182448,1546.69,1570.9,0.984592,854.196
+1.35,2,results/agentload_e2_burst/20261024-213121,1904.12,1570.9,1.21212,964.557
+1.65,0,results/agentload_e2_burst/20261024-161207,2693.2,1889.36,1.42545,871.976
+1.65,1,results/agentload_e2_burst/20261024-184758,2020.56,1889.36,1.06944,879.309
+1.65,2,results/agentload_e2_burst/20261025-000819,2127.07,1889.36,1.12581,985.188
