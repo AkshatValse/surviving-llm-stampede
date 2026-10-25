@@ -161,6 +161,8 @@ def test_setup_stops_before_building_anything_when_pypi_is_unreachable(tmp_path)
 
 
 def test_setup_needs_the_micromamba_module_after_the_internet_check(tmp_path):
+    if shutil.which("micromamba"):
+        pytest.skip("micromamba is on PATH here, so the script would not need the module")
     b = _fake_bin(tmp_path, curl='echo "HTTP/2 200"\n')
     r = _run_setup(tmp_path, PATH=f"{b}{os.pathsep}{os.environ['PATH']}")
     assert r.returncode == 4 and "module load" in r.stdout
@@ -550,3 +552,86 @@ def test_runbook_gpu_hours_follow_the_plan_formula():
     t = RUNBOOK.read_text()
     for needle in ("0.84", "3.62", "16.85", "21.31"):
         assert needle in t
+
+
+# ------------------------------------------------------------ setup_vllm_env.sbatch, install phase with fake tools
+FAKE_ENV_PYTHON = r"""#!/bin/sh
+# fake env python: pip is simulated (the "install" writes a dist-info for $FAKE_PIP_VERSION); everything else runs the real python,
+# which sees a fake torch and the fake vllm metadata through PYTHONPATH
+if [ "$1" = "-m" ] && [ "$2" = "pip" ]; then
+  echo "pip $3 $4 $5" >> "$FAKE_LOG"
+  case "$3" in
+    install) case "$*" in *vllm==*) mkdir -p "$FAKE_SITE/vllm-$FAKE_PIP_VERSION.dist-info"
+             printf 'Metadata-Version: 2.1\nName: vllm\nVersion: %s\n' "$FAKE_PIP_VERSION" > "$FAKE_SITE/vllm-$FAKE_PIP_VERSION.dist-info/METADATA";; esac;;
+    check) echo "No broken requirements found.";;
+    freeze) echo "vllm==$FAKE_PIP_VERSION"; echo "torch==2.13.0";;
+    index) echo "vllm (0.32.0)";;
+  esac
+  exit 0
+fi
+[ "$1" = "--version" ] && { echo "Python 3.12.0"; exit 0; }
+exec "$REAL_PY" "$@"
+"""
+
+FAKE_MICROMAMBA = r"""case "$1" in
+  --version) echo 1.4.2;;
+  create) prefix=; while [ $# -gt 0 ]; do [ "$1" = "-p" ] && prefix="$2"; shift; done
+          mkdir -p "$prefix/bin"; cp "$FAKE_ENV_PY" "$prefix/bin/python"; chmod +x "$prefix/bin/python"; echo "created $prefix" >> "$FAKE_LOG";;
+  env) echo "name: fake";;
+esac
+"""
+
+
+def _install_env(tmp_path, pip_version="0.32.0", torch_cuda="13.0", **extra):
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    site = tmp_path / "site"
+    (site / "torch").mkdir(parents=True, exist_ok=True)
+    (site / "torch" / "__init__.py").write_text(
+        "import os, types\n__version__ = '2.13.0+cu130'\nversion = types.SimpleNamespace(cuda=os.environ['FAKE_TORCH_CUDA'])\n"
+        "cuda = types.SimpleNamespace(is_available=lambda: False)\n")
+    envpy = tmp_path / "fake_env_python"
+    envpy.write_text(FAKE_ENV_PYTHON)
+    b = _fake_bin(tmp_path, curl='echo "HTTP/2 200"\n', micromamba=FAKE_MICROMAMBA)
+    log = tmp_path / "fake.log"
+    return dict(PATH=f"{b}{os.pathsep}{os.environ['PATH']}", FAKE_SITE=str(site), PYTHONPATH=str(site), FAKE_ENV_PY=str(envpy),
+                FAKE_LOG=str(log), FAKE_PIP_VERSION=pip_version, FAKE_TORCH_CUDA=torch_cuda, REAL_PY=sys.executable, **extra), log
+
+
+def test_setup_install_phase_builds_verifies_and_records_the_env(tmp_path):
+    env, log = _install_env(tmp_path)
+    r = _run_setup(tmp_path, **env)
+    assert r.returncode == 0, r.stdout[-2500:] + r.stderr[-1500:]
+    for needle in ("pypi: HTTP/2 200", "=== 3. pip install vllm==0.32.0", "VERSIONS_OK", "SETUP_DONE install"):
+        assert needle in r.stdout, needle
+    swapp = tmp_path / "swapp"
+    assert (swapp / "envs" / "vllm" / "bin" / "python").exists()
+    assert "vllm==0.32.0" in (swapp / "envs" / "vllm.lock.txt").read_text() and (swapp / "envs" / "vllm.micromamba.yml").exists()
+    calls = log.read_text()
+    assert "created" in calls and "pip install --upgrade pip" in calls and "pip install vllm==0.32.0" in calls and "pip check" in calls
+    assert "PIP_CACHE_DIR=" in r.stdout and "/cache/pip" in r.stdout.replace("\\", "/")              # caches on class storage
+    # second run: the pinned release is already there, so nothing is installed again
+    before = log.read_text().count("pip install vllm==")
+    r2 = _run_setup(tmp_path, **env)
+    assert r2.returncode == 0 and "already installed; re-verifying only" in r2.stdout
+    assert log.read_text().count("pip install vllm==") == before
+
+
+def test_setup_install_phase_fails_loudly_on_the_wrong_release_or_a_cuda_12_torch(tmp_path):
+    env, _ = _install_env(tmp_path / "a", pip_version="0.31.0")
+    r = _run_setup(tmp_path / "a", **env)
+    assert r.returncode == 6 and "VERSIONS_BAD" in r.stdout and "vllm 0.31.0 != 0.32.0" in r.stdout
+    env, _ = _install_env(tmp_path / "b", torch_cuda="12.9")
+    r = _run_setup(tmp_path / "b", **env)
+    assert r.returncode == 6 and "expected a CUDA 13.x build" in r.stdout
+    assert not (tmp_path / "b" / "swapp" / "envs" / "vllm.lock.txt").exists()          # no lock file for a rejected env
+
+
+def test_python_heredocs_of_the_setup_script_are_valid_python():
+    """The GPU check phase cannot run off Nova; at least every embedded Python block must parse."""
+    import ast
+    text = SETUP.read_text()
+    blocks = re.findall(r"<<'PY'[^\n]*\n(.*?)\nPY\n", text, re.S)
+    assert len(blocks) == 3                                    # report_versions, assert_versions, the GPU import check
+    for b in blocks:
+        ast.parse(b)
+    assert "torch.cuda.is_available()" in blocks[2] and "vllm._custom_ops" in blocks[2] and "bf16" in blocks[2]

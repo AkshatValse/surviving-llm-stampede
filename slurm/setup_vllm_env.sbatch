@@ -100,11 +100,13 @@ phase_install() {
   case "$pypi" in *200*) ;; *) echo "FATAL: no outbound internet from $(hostname); build on the login node (nice) instead"; exit 3 ;; esac
 
   echo "=== 2. micromamba env $ENV_VLLM (python $VLLM_PYTHON)"
-  if ! type module >/dev/null 2>&1; then
-    local f
-    for f in /etc/profile.d/lmod.sh /etc/profile.d/z00_lmod.sh /usr/share/lmod/lmod/init/bash /etc/profile.d/modules.sh; do [ -f "$f" ] && . "$f" && break; done
+  if ! command -v micromamba >/dev/null 2>&1; then      # already on PATH (login node, earlier module load): no module needed
+    if ! type module >/dev/null 2>&1; then
+      local f
+      for f in /etc/profile.d/lmod.sh /etc/profile.d/z00_lmod.sh /usr/share/lmod/lmod/init/bash /etc/profile.d/modules.sh; do [ -f "$f" ] && . "$f" && break; done
+    fi
+    module load "$MICROMAMBA_MODULE" || { echo "FATAL: module load $MICROMAMBA_MODULE failed"; exit 4; }
   fi
-  module load "$MICROMAMBA_MODULE" || { echo "FATAL: module load $MICROMAMBA_MODULE failed"; exit 4; }
   command -v micromamba >/dev/null || { echo "FATAL: micromamba not on PATH after module load"; exit 4; }
   micromamba --version
   if [ ! -x "$ENV_VLLM/bin/python" ]; then
