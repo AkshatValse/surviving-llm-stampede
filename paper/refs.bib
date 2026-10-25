@@ -451,3 +451,217 @@
   year         = {2024},
   howpublished = {arXiv:2412.15115},
 }
+
+% ---------------------------------------------------------------- added 2026-10-25 (resolution of the \todo markers in the draft)
+
+% verified 2026-10-25 at https://www.lk.cs.ucla.edu/data/files/Kleinrock/Packet%20Switching%20in%20a%20Multiaccess%20Broadcast%20Channel.pdf (author-hosted scan of the journal article; pages 1, 6 and 7 read as images): FULL (slotted ALOHA "often exhibits unstable behavior"; fluid approximation, equilibrium contour, stable and unstable channels with stable and unstable equilibrium points). DOI and pages 410--423 from Crossref (api.crossref.org/works?query.bibliographic=...).
+@article{kleinrock1975aloha,
+  author  = {Kleinrock, Leonard and Lam, Simon S.},
+  title   = {Packet Switching in a Multiaccess Broadcast Channel: Performance Evaluation},
+  journal = {IEEE Transactions on Communications},
+  volume  = {23},
+  number  = {4},
+  pages   = {410--423},
+  year    = {1975},
+  doi     = {10.1109/TCOM.1975.1092814},
+}
+
+% verified 2026-10-25 at https://projects.csail.mit.edu/jacm/Authors/fayolleguy.html (JACM author index; no DOI listed there) and Crossref (api.crossref.org/works?query.bibliographic=...): META (abstract not read; title and venue only)
+@article{fayolle1977stability,
+  author  = {Fayolle, Guy and Gelenbe, Erol and Labetoulle, Jacques},
+  title   = {Stability and Optimal Control of the Packet Switching Broadcast Channel},
+  journal = {Journal of the ACM},
+  volume  = {24},
+  number  = {3},
+  pages   = {375--386},
+  year    = {1977},
+  doi     = {10.1145/322017.322019},
+}
+
+% verified 2026-10-25 at https://www.rfc-editor.org/rfc/rfc896: FULL (page read through the page summariser: congestion collapse described as a stable failure state in which hosts retransmit packets that are still in the network)
+@misc{nagle1984congestion,
+  author       = {Nagle, John},
+  title        = {Congestion Control in {IP/TCP} Internetworks},
+  year         = {1984},
+  howpublished = {RFC 896, 6 January 1984; \url{https://www.rfc-editor.org/rfc/rfc896}},
+}
+
+% verified 2026-10-25 at https://ee.lbl.gov/papers/congavoid.pdf (text extracted locally) and Crossref (api.crossref.org/works/10.1145/52324.52356): FULL for the claim (the introduction reports the 1986 "congestion collapses"; a footnote defines the phrase as a positive-feedback instability due to poor retransmit timers). The text read is the slightly revised November 1988 version (it adds M. J. Karels and says to cite the SIGCOMM '88 paper); authors, pages and DOI are those of the SIGCOMM '88 record.
+@inproceedings{jacobson1988congestion,
+  author    = {Jacobson, Van},
+  title     = {Congestion Avoidance and Control},
+  booktitle = {Symposium Proceedings on Communications Architectures and Protocols (ACM SIGCOMM '88)},
+  pages     = {314--329},
+  year      = {1988},
+  doi       = {10.1145/52324.52356},
+}
+
+% verified 2026-10-25 at https://api.crossref.org/works/10.1145/360881.360887 (the ACM page returned 403) and the cacm.acm.org research page through a search-result summary: META (abstract only through the search summary: aggregation and nearly decomposable systems used to find unstable operating regimes and critical loads of multiprogrammed paging systems, and when thrashing can begin)
+@article{courtois1975decomposability,
+  author  = {Courtois, P. J.},
+  title   = {Decomposability, Instabilities, and Saturation in Multiprogramming Systems},
+  journal = {Communications of the ACM},
+  volume  = {18},
+  number  = {7},
+  pages   = {371--377},
+  year    = {1975},
+  doi     = {10.1145/360881.360887},
+}
+
+% verified 2026-10-25 at https://link.springer.com/article/10.1007/BF00265771: ABSTRACT (abstract read: three heuristics for setting the multiprogramming load; the knee, L=S and 50% criteria compared on queueing networks); issue number from Crossref
+@article{denning1976optimal,
+  author  = {Denning, Peter J. and Kahn, Kevin C. and Leroudier, Jacques and Potier, Dominique and Suri, Rajan},
+  title   = {Optimal Multiprogramming},
+  journal = {Acta Informatica},
+  volume  = {7},
+  number  = {2},
+  pages   = {197--216},
+  year    = {1976},
+  doi     = {10.1007/BF00265771},
+}
+
+% verified 2026-10-25 at https://www.vldb.org/conf/1991/P047.PDF (page 1 of the scan read as an image: abstract and introduction) and the VLDB DBLP record https://www.vldb.org/dblp/db/conf/vldb/HeissW91.html (pages, publisher): ABSTRACT (thrashing is prevented by bounding the number of concurrent transactions; two algorithms adapt the bound)
+@inproceedings{heiss1991adaptive,
+  author    = {Heiss, Hans-Ulrich and Wagner, Roger},
+  title     = {Adaptive Load Control in Transaction Processing Systems},
+  booktitle = {Proceedings of the 17th International Conference on Very Large Data Bases (VLDB '91)},
+  address   = {Barcelona},
+  publisher = {Morgan Kaufmann},
+  pages     = {47--54},
+  year      = {1991},
+}
+
+% verified 2026-10-25 at https://www.cs.cmu.edu/~harchol/Papers/icde06.pdf (author-hosted paper, text extracted locally) and Crossref (api.crossref.org/works/10.1109/ICDE.2006.78): FULL for the claim (the MPL limits the number of transactions in the DBMS; too low an MPL costs throughput; a feedback controller with queueing models sets it); pages from Crossref
+@inproceedings{schroeder2006mpl,
+  author    = {Schroeder, Bianca and Harchol-Balter, Mor and Iyengar, Arun and Nahum, Erich and Wierman, Adam},
+  title     = {How to Determine a Good Multi-Programming Level for External Scheduling},
+  booktitle = {Proceedings of the 22nd International Conference on Data Engineering (ICDE '06)},
+  pages     = {60},
+  year      = {2006},
+  doi       = {10.1109/ICDE.2006.78},
+}
+
+% verified 2026-10-25 at https://ideas.repec.org/a/inm/oropre/v28y1980i4p983-994.html (INFORMS abstract: extends L = lambda W to H = lambda G; Stidham's sample-path proof carries over) and Crossref: ABSTRACT
+@article{heyman1980relation,
+  author  = {Heyman, Daniel P. and Stidham, Jr., Shaler},
+  title   = {The Relation between Customer and Time Averages in Queues},
+  journal = {Operations Research},
+  volume  = {28},
+  number  = {4},
+  pages   = {983--994},
+  year    = {1980},
+  doi     = {10.1287/opre.28.4.983},
+}
+
+% verified 2026-10-25 at https://www.cambridge.org/core/product/identifier/S0021900200035592/type/journal_article (Cambridge page, extract only; the article is paywalled) and Crossref (api.crossref.org/works?query.bibliographic=...): META (that Brumelle generalised L = lambda W to H = lambda G is stated in the abstract of heyman1980relation)
+@article{brumelle1971relation,
+  author  = {Brumelle, Shelby L.},
+  title   = {On the Relation between Customer and Time Averages in Queues},
+  journal = {Journal of Applied Probability},
+  volume  = {8},
+  number  = {3},
+  pages   = {508--520},
+  year    = {1971},
+  doi     = {10.2307/3212174},
+}
+
+% ---------------------------------------------------------------- agent serving and traces (added 2026-10-25)
+
+% verified 2026-10-25 at https://pytorch.org/blog/session-aware-agentic-inference-with-nvidia-dynamo/ (post read in full; "Last updated: 2026-10-08") and https://pytorch.org/blog/ (byline and date): FULL (ThunderAgent scheduler ported into Dynamo; pauses ACTING programs at tool boundaries; utilization 0.95 pause, 0.80 target, 0.85 resume; goal to "avoid thrashing" when HBM and DRAM "can't hold every agent's working set at once"; roughly 12-16% throughput over KV-aware routing on SWE-bench). A vendor blog post, not peer reviewed.
+@misc{dhanani2026dynamo,
+  author       = {Dhanani, Ishan and Li, Jamie and Chung, Karen},
+  title        = {Session-Aware Agentic Inference with {NVIDIA} {Dynamo}},
+  year         = {2026},
+  howpublished = {PyTorch Blog, 8 October 2026; \url{https://pytorch.org/blog/session-aware-agentic-inference-with-nvidia-dynamo/}},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2609.27746: ABSTRACT (v1, 23 Sep 2026, "9 pages, 4 figures"; the KV working set is the smallest capacity for a target hit rate, estimated online with the Mattson stack algorithm)
+@misc{li2026kvset,
+  author       = {Li, Luchang and Wang, Shuaishuai and Ruan, Zhao and Li, Dongfang and Gong, Bozhao},
+  title        = {The {KV} Cache Working Set: Online Capacity Planning for {LLM} Inference Systems},
+  year         = {2026},
+  howpublished = {arXiv:2609.27746 (v1, 23 September 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2609.33762: ABSTRACT (v1, 27 Sep 2026; a stack-distance model sizes the host KV tier for the reuse working set of the agent pool)
+@misc{shao2026efficientagent,
+  author       = {Shao, Kunming and Chen, Jierun and Yu, Jiangnan and Li, Xiao-Hui and Tao, Chaofan and Wang, Yanli and Lin, Huanxin and Cheng, Kwang-Ting and Tsui, Chi Ying and Bai, Haoli},
+  title        = {{EfficientAgent}: What Makes {KV} Cache Offloading Work for Concurrent Agents?},
+  year         = {2026},
+  howpublished = {arXiv:2609.33762 (v1, 27 September 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2608.00101 and the paper text (https://arxiv.org/pdf/2608.00101, extracted locally): FULL for the claim (sampled GitHub Copilot traces of June 2026; KV hit rate about 90% within a turn and about 55% across turn boundaries; minutes-long user idle periods at turn boundaries); v1, 30 Jul 2026, no venue listed
+@misc{liu2026copilot,
+  author       = {Liu, Banruo and Qiu, Haoran and Goiri, {\'I}{\~n}igo and Fonseca, Rodrigo and Bianchini, Ricardo and Choukse, Esha},
+  title        = {Agentic Coding in the Wild: Characterizing {GitHub} {Copilot} Traces at Production Scale},
+  year         = {2026},
+  howpublished = {arXiv:2608.00101 (v1, 30 July 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2607.02640 and the paper text (https://arxiv.org/pdf/2607.02640, extracted locally): FULL for the claim ("The collapse is metastable"; session KV grows and stays pinned for the whole conversation until it exhausts the KV pool; real-time audio interaction models); v1, 2 Jul 2026, no venue listed
+@misc{meng2026metronome,
+  author       = {Meng, Jiaying and Li, Bojie},
+  title        = {Metronome: Bound the Cache, Keep the Beat for Real-Time Interaction Model Serving},
+  year         = {2026},
+  howpublished = {arXiv:2607.02640 (v1, 2 July 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2608.11152 and the paper text (https://arxiv.org/pdf/2608.11152, extracted locally): FULL for the claim (a routing-layer policy that derives "an adaptive admission cap for new sessions from observed KV demand and overload pressure"; the system is called MISA-T and the paper title is the one given here); v1, 11 Aug 2026, no venue listed
+@misc{hong2026misat,
+  author       = {Hong, Zetao and Yuan, Song and Ding, Yuanhao and Zhu, Yibo and Jiang, Daxin and Wang, Zhibin and Tian, Chen},
+  title        = {Scheduling Mixed {RL} Rollouts Beyond Prefix Locality},
+  year         = {2026},
+  howpublished = {arXiv:2608.11152 (v1, 11 August 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2606.09613: ABSTRACT (v3, 5 Sep 2026, "Preprint"; a Retention Plane governs KV state across tool gaps; validated against vLLM). The title is that of v3; ServeTwin's reference list cites v1 as "AgentServeSim: A Hardware-aware Simulator for Multi-Turn LLM Agent Serving".
+@misc{rajib2026agentservesim,
+  author       = {Rajib, Rakibul Hasan and Zheng, Mengxin and Lou, Qian},
+  title        = {{AgentServeSim}: Serving-System Simulation and Policy Search for {LLM} Agent Programs},
+  year         = {2026},
+  howpublished = {arXiv:2606.09613 (v3, 5 September 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2610.02732: ABSTRACT (v1, 2 Oct 2026; a closed-loop simulator with a stateful serving loop that covers multi-turn agent workloads and KV-cache evolution). The paper text, read in part, models multi-turn sessions with optional tool-execution delays and a prefix cache across rounds, but the abstract does not say that KV is retained across tool gaps, so the draft cites only what the abstract says.
+@misc{park2026servetwin,
+  author       = {Park, Sungjoon and Jung, Changue and Joo, Kyungno and Kang, Mincheol and Ahn, Jaehyung and Lee, Sehwan and Kim, Sangjoon},
+  title        = {{ServeTwin}: A Benchmark-Validated Simulator for Distributed {LLM} Architecture Exploration},
+  year         = {2026},
+  howpublished = {arXiv:2610.02732 (v1, 2 October 2026)},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2606.30560, the paper text (https://arxiv.org/pdf/2606.30560, v2, extracted locally), https://github.com/uw-syfi/TraceLab, https://github.com/uw-syfi/TraceLab/releases/tag/v0.0.2 and https://tracelab.cs.washington.edu/: FULL for the claim (Claude Code and Codex sessions; the paper analyses an earlier release of 43 developers and about 4,300 sessions; release v0.0.2 of 24 July 2026 has 52 pseudonymous users, 8,058 sessions, 665,453 agent steps and 743,819 tool calls, and is the release the tool-time tables here come from)
+@misc{zhu2026tracelab,
+  author       = {Zhu, Kan and Jacob, Mathew and Ma, Chenxi and Pan, Yi and Wang, Stephanie and Krishnamurthy, Arvind and Kasikci, Baris},
+  title        = {{TraceLab}: Characterizing Coding Agent Workloads for {LLM} Serving},
+  year         = {2026},
+  howpublished = {arXiv:2606.30560 (v2, 30 June 2026)},
+  note         = {Trace release v0.0.2, 24 July 2026: \url{https://github.com/uw-syfi/TraceLab}},
+}
+
+% ---------------------------------------------------------------- benchmarks and harnesses (added 2026-10-25)
+
+% verified 2026-10-25 at https://www.swebench.com/verified.html, https://github.com/SWE-bench/SWE-bench (README news entry of 13 Aug 2024), https://huggingface.co/datasets/princeton-nlp/SWE-bench_Verified and a search-result summary of the OpenAI page (openai.com returned 403 to the fetch tool): META (500 human-validated instances, made in collaboration with OpenAI; the post is dated 13 August 2024 in the search listing and the README; the byline was not visible, so the corporate author is given)
+@misc{openai2024swebenchverified,
+  author       = {{OpenAI}},
+  title        = {Introducing {SWE-bench Verified}},
+  year         = {2024},
+  howpublished = {OpenAI blog post, 13 August 2024; \url{https://openai.com/index/introducing-swe-bench-verified/}},
+}
+
+% verified 2026-10-25 at https://github.com/SWE-agent/mini-swe-agent and https://github.com/SWE-agent/mini-swe-agent/releases/tag/v2.0.0 (release published 2026-02-11 per api.github.com): ABSTRACT (README: a minimal bash-only agent, MIT licence, "built by the Princeton & Stanford team behind SWE-bench, SWE-agent"; v2.0.0 is the first full v2 release; the README asks users to cite yang2024sweagent)
+@misc{sweagent2026miniswe,
+  author       = {{SWE-agent}},
+  title        = {mini-{SWE-agent}},
+  year         = {2026},
+  howpublished = {GitHub repository, release v2.0.0 (11 February 2026); \url{https://github.com/SWE-agent/mini-swe-agent}},
+}
+
+% verified 2026-10-25 at https://arxiv.org/abs/2405.15793: ABSTRACT (title, authors and versions read; v3 of 11 Nov 2024; the arXiv page lists no venue; the mini-SWE-agent README gives NeurIPS 2024 and asks users to cite this paper)
+@misc{yang2024sweagent,
+  author       = {Yang, John and Jimenez, Carlos E. and Wettig, Alexander and Lieret, Kilian and Yao, Shunyu and Narasimhan, Karthik and Press, Ofir},
+  title        = {{SWE}-agent: Agent-Computer Interfaces Enable Automated Software Engineering},
+  year         = {2024},
+  howpublished = {arXiv:2405.15793 (v3, 11 November 2024)},
+}
