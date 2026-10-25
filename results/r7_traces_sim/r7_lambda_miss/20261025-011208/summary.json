@@ -1,0 +1,104 @@
+{
+  "workloads": {
+    "exp5": {
+      "label": "Exp(5 s) (record, control)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.07218695086154546,
+      "lambda_miss_turns_sd": 0.0018897159026692865,
+      "lambda_miss_sessions": 0.06944444444444443,
+      "lambda_miss_sessions_sd": 0.011479987955428792,
+      "token_rate": 11219.72185185185,
+      "busy": 1.0,
+      "E_T": 14.761055049953429,
+      "tool_time_mean_s": 5.0,
+      "tool_time_cv": 1.0,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07198622246151336,
+        "token_rate": 11350.604444444443,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "tl_turn": {
+      "label": "TraceLab per-turn (empirical)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.07315295628669995,
+      "lambda_miss_turns_sd": 0.0036178779693365076,
+      "lambda_miss_sessions": 0.07037037037037037,
+      "lambda_miss_sessions_sd": 0.012426740051709345,
+      "token_rate": 11248.20814814815,
+      "busy": 1.0,
+      "E_T": 14.761055049953429,
+      "tool_time_mean_s": 8.509908528000004,
+      "tool_time_cv": 4.653272751307955,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07326586601171801,
+        "token_rate": 11394.33037037037,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "tl_idle": {
+      "label": "TraceLab idle gap (empirical, upper bound)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.07158476566144914,
+      "lambda_miss_turns_sd": 0.0020638437239768087,
+      "lambda_miss_sessions": 0.06833333333333333,
+      "lambda_miss_sessions_sd": 0.010815512407739878,
+      "token_rate": 11018.463333333333,
+      "busy": 0.9999727549214311,
+      "E_T": 14.761055049953429,
+      "tool_time_mean_s": 14.522720763500011,
+      "tool_time_cv": 3.529568777104011,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07373005043679226,
+        "token_rate": 11413.677777777775,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "mini_tool": {
+      "label": "mini-SWE-agent v2 tool time (empirical)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.07293968236166586,
+      "lambda_miss_turns_sd": 0.0014784037586997342,
+      "lambda_miss_sessions": 0.07055555555555555,
+      "lambda_miss_sessions_sd": 0.011479987955428789,
+      "token_rate": 11291.754814814814,
+      "busy": 1.0,
+      "E_T": 14.761055049953429,
+      "tool_time_mean_s": 1.3981581901000006,
+      "tool_time_cv": 4.292253065198479,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07226222401155749,
+        "token_rate": 11349.558148148148,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "mini_full": {
+      "label": "mini-SWE-agent v2 full workload (empirical)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.011961772022492307,
+      "lambda_miss_turns_sd": 0.00022186681954211278,
+      "lambda_miss_sessions": 0.008888888888888889,
+      "lambda_miss_sessions_sd": 0.0014698618394803284,
+      "token_rate": 8894.113333333333,
+      "busy": 1.0,
+      "E_T": 34.786744834183175,
+      "tool_time_mean_s": 1.3981581901000006,
+      "tool_time_cv": 4.292253065198479,
+      "check_pop64": {
+        "lambda_miss_turns": 0.0165878422884228,
+        "token_rate": 9569.886296296298,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    }
+  }
+}

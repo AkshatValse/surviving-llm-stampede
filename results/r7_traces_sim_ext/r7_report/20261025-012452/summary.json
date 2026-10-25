@@ -1,0 +1,150 @@
+{
+  "lambda_miss": {
+    "exp5": 0.07218695086154546,
+    "tl_turn": 0.07315295628669995,
+    "tl_idle": 0.07158476566144914,
+    "mini_tool": 0.07293968236166586,
+    "mini_full": 0.011961772022492307
+  },
+  "peak_cap": {
+    "exp5": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.21439047675928924,
+      "cap_n": 20
+    },
+    "tl_turn": {
+      "peak_n": 32,
+      "peak_mu_turns": 0.21782795060983903,
+      "cap_n": 32
+    },
+    "tl_idle": {
+      "peak_n": 40,
+      "peak_mu_turns": 0.16935204200208587,
+      "cap_n": 40
+    },
+    "mini_tool": {
+      "peak_n": 24,
+      "peak_mu_turns": 0.3913325613875891,
+      "cap_n": 20
+    },
+    "mini_full": {
+      "peak_n": 12,
+      "peak_mu_turns": 0.050349105379943145,
+      "cap_n": 12
+    }
+  },
+  "window": {
+    "exp5": {
+      "hi": 2.0,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "empty": false
+    },
+    "tl_turn": {
+      "hi": 2.25,
+      "points": [
+        1.4,
+        1.85
+      ],
+      "empty": false
+    },
+    "tl_idle": {
+      "hi": 2.0,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "empty": false
+    },
+    "mini_tool": {
+      "hi": 3.0,
+      "points": [
+        1.65,
+        2.35
+      ],
+      "empty": false
+    },
+    "mini_full": {
+      "hi": 3.0,
+      "points": [
+        1.65,
+        2.35
+      ],
+      "empty": false
+    }
+  },
+  "pairs": {
+    "exp5": {
+      "1.35": {
+        "burst_trapped": 17,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      },
+      "1.65": {
+        "burst_trapped": 18,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      }
+    },
+    "tl_turn": {
+      "1.4": {
+        "burst_trapped": 17,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      },
+      "1.85": {
+        "burst_trapped": 19,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      }
+    },
+    "tl_idle": {
+      "1.35": {
+        "burst_trapped": 17,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      },
+      "1.65": {
+        "burst_trapped": 16,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      }
+    },
+    "mini_tool": {
+      "1.65": {
+        "burst_trapped": 19,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      },
+      "2.35": {
+        "burst_trapped": 20,
+        "noburst_good": 20,
+        "cap_recovered": 20,
+        "PASS": true
+      }
+    },
+    "mini_full": {
+      "1.65": {
+        "burst_trapped": 19,
+        "noburst_good": 20,
+        "cap_recovered": 14,
+        "PASS": true
+      },
+      "2.35": {
+        "burst_trapped": 19,
+        "noburst_good": 18,
+        "cap_recovered": 2,
+        "PASS": false
+      }
+    }
+  }
+}

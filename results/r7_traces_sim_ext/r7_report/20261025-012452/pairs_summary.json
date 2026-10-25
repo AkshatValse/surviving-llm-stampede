@@ -1,0 +1,189 @@
+{
+  "workloads": {
+    "exp5": {
+      "label": "Exp(5 s) (record, control)",
+      "lambda_miss_turns": 0.07218695086154546,
+      "token_rate_miss": 11219.72185185185,
+      "cap_n": 20,
+      "hi": 2.0,
+      "window_empty": false,
+      "points": {
+        "1.35": {
+          "lam": 0.09745238366308638,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 17,
+          "burst_recovered": 0,
+          "burst_indeterminate": 3,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "1.65": {
+          "lam": 0.11910846892155,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 18,
+          "burst_recovered": 0,
+          "burst_indeterminate": 2,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "tl_turn": {
+      "label": "TraceLab per-turn (empirical)",
+      "lambda_miss_turns": 0.07315295628669995,
+      "token_rate_miss": 11248.20814814815,
+      "cap_n": 32,
+      "hi": 2.25,
+      "window_empty": false,
+      "points": {
+        "1.4": {
+          "lam": 0.10241413880137992,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 17,
+          "burst_recovered": 0,
+          "burst_indeterminate": 3,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "1.85": {
+          "lam": 0.13533296913039491,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 19,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "tl_idle": {
+      "label": "TraceLab idle gap (empirical, upper bound)",
+      "lambda_miss_turns": 0.07158476566144914,
+      "token_rate_miss": 11018.463333333333,
+      "cap_n": 40,
+      "hi": 2.0,
+      "window_empty": false,
+      "points": {
+        "1.35": {
+          "lam": 0.09663943364295635,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 17,
+          "burst_recovered": 0,
+          "burst_indeterminate": 3,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "1.65": {
+          "lam": 0.11811486334139107,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 16,
+          "burst_recovered": 0,
+          "burst_indeterminate": 4,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "mini_tool": {
+      "label": "mini-SWE-agent v2 tool time (empirical)",
+      "lambda_miss_turns": 0.07293968236166586,
+      "token_rate_miss": 11291.754814814814,
+      "cap_n": 20,
+      "hi": 3.0,
+      "window_empty": false,
+      "points": {
+        "1.65": {
+          "lam": 0.12035047589674866,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 19,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "2.35": {
+          "lam": 0.17140825354991476,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 20,
+          "burst_recovered": 0,
+          "burst_indeterminate": 0,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 20,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "mini_full": {
+      "label": "mini-SWE-agent v2 full workload (empirical)",
+      "lambda_miss_turns": 0.011961772022492307,
+      "token_rate_miss": 8894.113333333333,
+      "cap_n": 12,
+      "hi": 3.0,
+      "window_empty": false,
+      "points": {
+        "1.65": {
+          "lam": 0.019736923837112307,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 19,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 20,
+          "noburst_trapped": 0,
+          "cap_recovered": 14,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "2.35": {
+          "lam": 0.028110164252856923,
+          "n_seeds": 20,
+          "need": 14,
+          "burst_trapped": 19,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 18,
+          "noburst_trapped": 1,
+          "cap_recovered": 2,
+          "cap_trapped": 0,
+          "PASS": false
+        }
+      }
+    }
+  },
+  "dirs": {
+    "lambda_miss": "results\\r7_traces_sim\\r7_lambda_miss\\20261025-011208",
+    "curves": "results\\r7_traces_sim\\r7_curves\\20261025-011214",
+    "edge": "results\\r7_traces_sim\\r7_edge\\20261025-011223"
+  }
+}

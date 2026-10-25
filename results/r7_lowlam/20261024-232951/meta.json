@@ -1,0 +1,58 @@
+{
+  "experiment": "r7_lowlam",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "lowlam",
+    "--spec",
+    "configs/r7_robustness.yaml",
+    "--workers",
+    "6"
+  ],
+  "git": {
+    "commit": "1140104d1365ac5fa4426cc07e3acd5dc68303b1",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T23:29:51",
+  "end_time": "2026-10-24T23:29:55",
+  "wall_s": 3.5173420906066895,
+  "quick": false,
+  "workers": 6,
+  "overrides": [],
+  "tag": null,
+  "stage": "lowlam",
+  "only": null
+}

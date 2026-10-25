@@ -1,0 +1,43 @@
+{
+  "experiment": "r7_report",
+  "status": "done",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\robustness\\src\\prefixmeta\\r7_report.py",
+    "report",
+    "--spec",
+    "configs/r7_robustness.yaml"
+  ],
+  "git": {
+    "commit": "270d8e1fa39c027f85621aa9259f9e655aa17d63",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T23:35:54",
+  "end_time": "2026-10-24T23:35:54",
+  "wall_s": 0.21015024185180664,
+  "quick": false,
+  "workers": 1,
+  "overrides": [],
+  "tag": null,
+  "stage": "report",
+  "stage_dirs": {
+    "lambda_miss": "results/r7_lambda_miss/20261024-232728",
+    "curves": "results/r7_curves/20261024-232744",
+    "edge": "results/r7_edge/20261024-232802",
+    "pairs": "results/r7_pairs/20261024-232827",
+    "burst_sizes": "results/r7_burst_sizes/20261024-232921",
+    "horizon": "results/r7_horizon/20261024-232936",
+    "lowlam": "results/r7_lowlam/20261024-232951"
+  }
+}

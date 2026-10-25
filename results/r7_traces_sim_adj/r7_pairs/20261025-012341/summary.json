@@ -1,0 +1,45 @@
+{
+  "workloads": {
+    "mini_full": {
+      "label": "mini-SWE-agent v2 full workload (empirical)",
+      "lambda_miss_turns": 0.014093277815908384,
+      "token_rate_miss": 8958.752851851852,
+      "cap_n": 12,
+      "hi": 1.5,
+      "window_empty": false,
+      "points": {
+        "1.15": {
+          "lam": 0.01620726948829464,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 3,
+          "burst_recovered": 0,
+          "burst_indeterminate": 7,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": false
+        },
+        "1.35": {
+          "lam": 0.01902592505147632,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 7,
+          "burst_recovered": 0,
+          "burst_indeterminate": 3,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    }
+  },
+  "dirs": {
+    "lambda_miss": "results\\r7_traces_sim_lmcheck\\r7_lambda_miss\\20261025-012241",
+    "curves": "results\\r7_traces_sim\\r7_curves\\20261025-011214",
+    "edge": "results\\r7_traces_sim_adj\\r7_edge\\20261025-012331"
+  }
+}

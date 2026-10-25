@@ -16,7 +16,7 @@ order*, never inside the engine, so the same seed gives the same workload under 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -33,6 +33,24 @@ class WorkloadParams:
     tool_time_cv: float
     tool_time_lo_s: float = 0.3      # bimodal: short mode (s)
     tool_time_hi_s: float = 20.0     # bimodal: long mode (s); P(hi) is set so the mean equals tool_time_mean_s
+    # --- opt-in (round 7); every default below leaves the generated workload bit-identical to the earlier rounds
+    tool_time_p_hi: Optional[float] = None                       # bimodal: explicit P(hi) in (0, 1); then tool_time_mean_s is NOT used
+    tool_time_quantiles: Optional[Tuple[float, ...]] = None      # empirical: tool times (s) at the quantile levels below
+    tool_time_quantile_levels: Optional[Tuple[float, ...]] = None  # empirical: levels, strictly increasing from 0.0 to 1.0; None = equally spaced
+
+    def __post_init__(self) -> None:
+        for name in ("tool_time_quantiles", "tool_time_quantile_levels"):
+            v = getattr(self, name)
+            if v is not None:
+                object.__setattr__(self, name, tuple(float(x) for x in v))      # YAML lists -> tuples (hashable, immutable)
+        if self.tool_time_p_hi is not None and self.tool_time_dist != "bimodal":
+            raise ValueError("tool_time_p_hi only applies to tool_time_dist 'bimodal'")
+        if (self.tool_time_quantiles is not None or self.tool_time_quantile_levels is not None) and self.tool_time_dist != "empirical":
+            raise ValueError("tool_time_quantiles / tool_time_quantile_levels only apply to tool_time_dist 'empirical'")
+        if self.tool_time_dist == "empirical":
+            empirical_table(self.tool_time_quantiles, self.tool_time_quantile_levels)       # validates
+        if self.tool_time_p_hi is not None and not (0.0 < self.tool_time_p_hi < 1.0):
+            raise ValueError(f"tool_time_p_hi must be in (0, 1), got {self.tool_time_p_hi}")
 
     @classmethod
     def from_dict(cls, d: dict) -> "WorkloadParams":
@@ -107,10 +125,60 @@ def bimodal_p_hi(mean: float, lo: float, hi: float) -> float:
     return (mean - lo) / (hi - lo)
 
 
+def empirical_table(quantiles: Optional[Sequence[float]], levels: Optional[Sequence[float]] = None) -> Tuple[np.ndarray, np.ndarray]:
+    """(levels, values) of an empirical quantile table, validated. ``quantiles`` are tool times (s) at ``levels``; ``levels`` default to
+    equally spaced points 0, 1/(K-1), ..., 1 (so the first value is the minimum and the last the maximum); explicit levels must be strictly
+    increasing, start at 0 and end at 1 (the inverse CDF is then defined on all of (0, 1) with no clamped point masses). Values must be finite,
+    non-negative and non-decreasing."""
+    if quantiles is None:
+        raise ValueError("tool_time_dist 'empirical' needs tool_time_quantiles")
+    v = np.asarray(quantiles, dtype=float)
+    if v.ndim != 1 or v.shape[0] < 2:
+        raise ValueError("tool_time_quantiles needs at least 2 values")
+    if not np.all(np.isfinite(v)) or np.any(v < 0.0) or np.any(np.diff(v) < 0.0):
+        raise ValueError("tool_time_quantiles must be finite, non-negative and non-decreasing")
+    lv = np.linspace(0.0, 1.0, v.shape[0]) if levels is None else np.asarray(levels, dtype=float)
+    if lv.shape != v.shape:
+        raise ValueError("tool_time_quantile_levels must have the same length as tool_time_quantiles")
+    if lv[0] != 0.0 or lv[-1] != 1.0 or np.any(np.diff(lv) <= 0.0):
+        raise ValueError("tool_time_quantile_levels must be strictly increasing from 0.0 to 1.0")
+    return lv, v
+
+
+def empirical_moments(quantiles: Sequence[float], levels: Optional[Sequence[float]] = None) -> Tuple[float, float]:
+    """(mean, CV) of the distribution whose inverse CDF is the piecewise-linear interpolation of the table (exact integrals of F^-1 and F^-2)."""
+    lv, v = empirical_table(quantiles, levels)
+    d = np.diff(lv)
+    m1 = float(np.sum(d * (v[:-1] + v[1:]) / 2.0))
+    m2 = float(np.sum(d * (v[:-1] ** 2 + v[:-1] * v[1:] + v[1:] ** 2) / 3.0))
+    var = max(m2 - m1 * m1, 0.0)
+    return m1, (float(np.sqrt(var)) / m1 if m1 > 0 else float("nan"))
+
+
+def tool_time_moments(wl: "WorkloadParams") -> Tuple[float, float]:
+    """(mean, CV) of the tool-time distribution of ``wl`` (exact for every supported distribution)."""
+    d = wl.tool_time_dist
+    if d == "exp":
+        return float(wl.tool_time_mean_s), 1.0
+    if d == "lognormal":
+        return float(wl.tool_time_mean_s), float(wl.tool_time_cv)
+    if d == "bimodal":
+        p = bimodal_p_hi(wl.tool_time_mean_s, wl.tool_time_lo_s, wl.tool_time_hi_s) if wl.tool_time_p_hi is None else float(wl.tool_time_p_hi)
+        lo, hi = wl.tool_time_lo_s, wl.tool_time_hi_s
+        mean = lo + p * (hi - lo)
+        return float(mean), float(np.sqrt(p * (1.0 - p)) * (hi - lo) / mean)
+    if d == "empirical":
+        return empirical_moments(wl.tool_time_quantiles, wl.tool_time_quantile_levels)
+    raise ValueError(f"unknown tool_time_dist {d!r}")
+
+
 def tool_times(rng: np.random.Generator, n: int, dist: str, mean: float, cv: float,
-               lo: float = 0.3, hi: float = 20.0) -> np.ndarray:
-    """Tool-call durations: exponential(mean), lognormal with the given mean and CV, or bimodal: ``lo`` or ``hi``
-    seconds with P(hi) = (mean - lo) / (hi - lo) so the mean is preserved."""
+               lo: float = 0.3, hi: float = 20.0, p_hi: Optional[float] = None,
+               quantiles: Optional[Sequence[float]] = None, levels: Optional[Sequence[float]] = None) -> np.ndarray:
+    """Tool-call durations: exponential(mean), lognormal with the given mean and CV, bimodal: ``lo`` or ``hi`` seconds with
+    P(hi) = (mean - lo) / (hi - lo) so the mean is preserved (or with the explicit ``p_hi``, in which case ``mean`` is unused), or
+    empirical: inverse-CDF sampling of the piecewise-linear quantile table (``quantiles`` at ``levels``; see ``empirical_table``; ``mean`` and
+    ``cv`` are unused). The first three consume the generator exactly as in the earlier rounds."""
     if n == 0:
         return np.zeros(0)
     if dist == "exp":
@@ -119,7 +187,11 @@ def tool_times(rng: np.random.Generator, n: int, dist: str, mean: float, cv: flo
         s2 = np.log1p(cv * cv)
         return rng.lognormal(np.log(mean) - 0.5 * s2, np.sqrt(s2), size=n)
     if dist == "bimodal":
-        return np.where(rng.random(n) < bimodal_p_hi(mean, lo, hi), hi, lo).astype(float)
+        p = bimodal_p_hi(mean, lo, hi) if p_hi is None else float(p_hi)
+        return np.where(rng.random(n) < p, hi, lo).astype(float)
+    if dist == "empirical":
+        lv, v = empirical_table(quantiles, levels)
+        return np.interp(rng.random(n), lv, v)
     raise ValueError(f"unknown tool_time_dist {dist!r}")
 
 
@@ -149,7 +221,7 @@ def _make_block(arrivals: np.ndarray, turn_rng: np.random.Generator, tool_rng: n
     n = arrivals.shape[0]
     nt = turn_counts(turn_rng, n, wl.mean_turns, wl.max_turns)
     flat = tool_times(tool_rng, int(np.sum(nt - 1)), wl.tool_time_dist, wl.tool_time_mean_s, wl.tool_time_cv,
-                      wl.tool_time_lo_s, wl.tool_time_hi_s)
+                      wl.tool_time_lo_s, wl.tool_time_hi_s, wl.tool_time_p_hi, wl.tool_time_quantiles, wl.tool_time_quantile_levels)
     off = np.concatenate([[0], np.cumsum(nt - 1)[:-1]]).astype(np.int64) if n else np.zeros(0, np.int64)
     return arrivals.astype(float), nt, off, flat
 

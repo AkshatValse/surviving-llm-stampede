@@ -1,0 +1,189 @@
+{
+  "workloads": {
+    "exp1": {
+      "label": "Exp(1 s)",
+      "lambda_miss_turns": 0.07277659053663976,
+      "token_rate_miss": 11288.171111111113,
+      "cap_n": 20,
+      "hi": 3.0,
+      "window_empty": false,
+      "points": {
+        "1.65": {
+          "lam": 0.1200813743854556,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "2.35": {
+          "lam": 0.17102498776110345,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 10,
+          "burst_recovered": 0,
+          "burst_indeterminate": 0,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "exp2": {
+      "label": "Exp(2 s)",
+      "lambda_miss_turns": 0.0726511352866197,
+      "token_rate_miss": 11278.875185185187,
+      "cap_n": 20,
+      "hi": 2.5,
+      "window_empty": false,
+      "points": {
+        "1.5": {
+          "lam": 0.10897670292992956,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 7,
+          "burst_recovered": 0,
+          "burst_indeterminate": 3,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "2": {
+          "lam": 0.1453022705732394,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 10,
+          "burst_recovered": 0,
+          "burst_indeterminate": 0,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "exp5": {
+      "label": "Exp(5 s) (record)",
+      "lambda_miss_turns": 0.07218695086154546,
+      "token_rate_miss": 11219.72185185185,
+      "cap_n": 20,
+      "hi": 2.0,
+      "window_empty": false,
+      "points": {
+        "1.35": {
+          "lam": 0.09745238366308638,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "1.65": {
+          "lam": 0.11910846892155,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "lognormal": {
+      "label": "lognormal(mean 5 s, CV 2)",
+      "lambda_miss_turns": 0.07296477341166986,
+      "token_rate_miss": 11249.784444444444,
+      "cap_n": 20,
+      "hi": 2.0,
+      "window_empty": false,
+      "points": {
+        "1.35": {
+          "lam": 0.09850244410575432,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "1.65": {
+          "lam": 0.12039187612925527,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    },
+    "bimodal": {
+      "label": "bimodal (80% 1 s, 20% 20 s; mean 4.8 s)",
+      "lambda_miss_turns": 0.07177294853647924,
+      "token_rate_miss": 11198.59111111111,
+      "cap_n": 20,
+      "hi": 2.0,
+      "window_empty": false,
+      "points": {
+        "1.35": {
+          "lam": 0.09689348052424698,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        },
+        "1.65": {
+          "lam": 0.11842536508519073,
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "burst_recovered": 0,
+          "burst_indeterminate": 1,
+          "noburst_good": 10,
+          "noburst_trapped": 0,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "PASS": true
+        }
+      }
+    }
+  },
+  "dirs": {
+    "lambda_miss": "results\\r7_lambda_miss\\20261024-232728",
+    "curves": "results\\r7_curves\\20261024-232744",
+    "edge": "results\\r7_edge\\20261024-232802"
+  }
+}

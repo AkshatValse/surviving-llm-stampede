@@ -1,0 +1,44 @@
+{
+  "workloads": {
+    "exp5": {
+      "label": "Exp(5 s) (record, control)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.07268187182287461,
+      "lambda_miss_turns_sd": 0.0010672673592829894,
+      "lambda_miss_sessions": 0.07272222222222223,
+      "lambda_miss_sessions_sd": 0.002891958838905896,
+      "token_rate": 11207.828462962963,
+      "busy": 0.9999791136487586,
+      "E_T": 14.761055049953429,
+      "tool_time_mean_s": 5.0,
+      "tool_time_cv": 1.0,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07310591056794243,
+        "token_rate": 11275.225925925928,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "mini_full": {
+      "label": "mini-SWE-agent v2 full workload (empirical)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.014093277815908384,
+      "lambda_miss_turns_sd": 0.0002063176823190934,
+      "lambda_miss_sessions": 0.013990740740740741,
+      "lambda_miss_sessions_sd": 0.000643301988617843,
+      "token_rate": 8958.752851851852,
+      "busy": 1.0,
+      "E_T": 34.786744834183175,
+      "tool_time_mean_s": 1.3981581901000006,
+      "tool_time_cv": 4.292253065198479,
+      "check_pop64": {
+        "lambda_miss_turns": 0.014059740137340647,
+        "token_rate": 8954.230518518518,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    }
+  }
+}

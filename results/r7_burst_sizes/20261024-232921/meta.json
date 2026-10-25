@@ -1,0 +1,48 @@
+{
+  "experiment": "r7_burst_sizes",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "burst_sizes",
+    "--spec",
+    "configs/r7_robustness.yaml",
+    "--workers",
+    "6"
+  ],
+  "git": {
+    "commit": "1140104d1365ac5fa4426cc07e3acd5dc68303b1",
+    "dirty": false,
+    "branch": "r7/robustness"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T23:29:21",
+  "end_time": "2026-10-24T23:29:34",
+  "wall_s": 12.77399754524231,
+  "quick": false,
+  "workers": 6,
+  "overrides": [],
+  "tag": null,
+  "stage": "burst_sizes",
+  "only": null
+}

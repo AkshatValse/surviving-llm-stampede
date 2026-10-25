@@ -1,0 +1,5 @@
+stage	dir
+lambda_miss	results/r7_traces_sim/r7_lambda_miss/20261025-011208
+curves	results/r7_traces_sim/r7_curves/20261025-011214
+edge	results/r7_traces_sim/r7_edge/20261025-011223
+pairs	results/r7_traces_sim_ext/r7_pairs/20261025-011657

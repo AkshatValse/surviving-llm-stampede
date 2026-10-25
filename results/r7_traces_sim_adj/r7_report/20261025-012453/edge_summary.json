@@ -1,0 +1,29 @@
+{
+  "workloads": {
+    "mini_full": {
+      "label": "mini-SWE-agent v2 full workload (empirical)",
+      "lambda_miss_turns": 0.014093277815908384,
+      "hi": 1.5,
+      "hi_largest_all_stable": 1.5,
+      "contiguous_equals_largest": true,
+      "refined": false,
+      "window_empty": false,
+      "points": [
+        1.15,
+        1.35
+      ],
+      "n_seeds": 10,
+      "n_stable_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 9,
+        "2": 8,
+        "2.25": 9,
+        "2.5": 4,
+        "3": 3,
+        "3.5": 0
+      }
+    }
+  },
+  "lambda_miss_dir": "results\\r7_traces_sim_lmcheck\\r7_lambda_miss\\20261025-012241"
+}
