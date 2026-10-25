@@ -115,26 +115,27 @@ def run_tracelab(norm: str, seed: int, max_turns: int) -> dict:
     series = {}
     for prov in ("all", "claude", "codex"):
         sel = (lambda df: df) if prov == "all" else (lambda df, p=prov: df[df.provider == p])
-        series[f"call_best_nohuman|{prov}"] = sel(nohuman)["best_s"].dropna().to_numpy()
         series[f"call_wall_nohuman|{prov}"] = sel(nohuman)["wall_s"].dropna().to_numpy()
         series[f"call_internal_nohuman|{prov}"] = sel(nohuman)["internal_s"].dropna().to_numpy()
-        series[f"call_best_exec_only|{prov}"] = sel(execonly)["best_s"].dropna().to_numpy()
-        series[f"call_best_shell|{prov}"] = sel(calls[calls.cls == "shell"])["best_s"].dropna().to_numpy()
-        series[f"call_best_all_logged|{prov}"] = sel(calls)["best_s"].dropna().to_numpy()
+        series[f"call_best_nohuman|{prov}"] = sel(nohuman)["best_s"].dropna().to_numpy()
+        series[f"call_wall_exec_only|{prov}"] = sel(execonly)["wall_s"].dropna().to_numpy()
+        series[f"call_wall_shell|{prov}"] = sel(calls[calls.cls == "shell"])["wall_s"].dropna().to_numpy()
+        series[f"call_wall_all_logged|{prov}"] = sel(calls)["wall_s"].dropna().to_numpy()
         rt = rounds[(rounds.n_tools > 0) & (~rounds.classes.fillna("").str.contains("human"))]
         series[f"round_z_nohuman|{prov}"] = sel(rt)["z_round_s"].dropna().to_numpy()
         series[f"round_gap_next_nohuman|{prov}"] = sel(rt)["gap_next_s"].dropna().to_numpy()
     # per tool class (all providers), best_s
     for cls in ("shell", "file", "web", "poll", "deleg", "book", "other", "human"):
-        series[f"class_{cls}|all"] = calls[calls.cls == cls]["best_s"].dropna().to_numpy()
-    headline = {"call_best_nohuman|all", "call_best_nohuman|claude", "call_best_nohuman|codex", "call_best_exec_only|all", "call_best_shell|all",
-                "round_z_nohuman|all", "call_best_all_logged|all", "call_wall_nohuman|all", "call_internal_nohuman|codex"}
+        series[f"class_{cls}|all"] = calls[calls.cls == cls]["wall_s"].dropna().to_numpy()
+    headline = {"call_wall_nohuman|all", "call_wall_nohuman|claude", "call_wall_nohuman|codex", "call_wall_exec_only|all", "call_wall_shell|all",
+                "call_wall_all_logged|all", "round_z_nohuman|all", "round_z_nohuman|claude", "round_z_nohuman|codex",
+                "call_internal_nohuman|all", "call_internal_nohuman|codex", "call_best_nohuman|all"}
     res["series"] = {}
     for name, x in series.items():
         res["series"][name] = series_stats(x, floor, seed, fit=name in headline)
     # per-tool breakdown for the dominant tools
     top = calls.groupby(["provider", "tool"]).size().sort_values(ascending=False).head(14).index
-    res["per_tool"] = {f"{p}:{t}": dist_summary(calls[(calls.provider == p) & (calls.tool == t)]["best_s"]) for p, t in top}
+    res["per_tool"] = {f"{p}:{t}": dist_summary(calls[(calls.provider == p) & (calls.tool == t)]["wall_s"]) for p, t in top}
     # wall vs internal on the rows where both exist
     both = calls.dropna(subset=["wall_s", "internal_s"])
     res["wall_minus_internal"] = {p: dist_summary((g.wall_s - g.internal_s)) for p, g in both.groupby("provider")}
@@ -170,7 +171,7 @@ def run_mini(norm: str, seed: int, max_turns: int) -> dict:
         series[f"phase_wall_single_cmd|{m}"] = c[c.n_parallel == 1]["wall_s"].dropna().to_numpy()
         r = rounds if m == "all" else rounds[rounds.model == m]
         series[f"llm_latency|{m}"] = r["llm_s"].dropna().to_numpy()
-    headline = {"phase_wall|all", "phase_wall_uncensored|all", "phase_wall_single_cmd|all"}
+    headline = {"phase_wall_uncensored|all", "phase_wall_single_cmd|all"} | {f"phase_wall|{m}" for m in ["all"] + models}
     res["series"] = {}
     for name, x in series.items():
         res["series"][name] = series_stats(x, floor, seed, fit=name in headline)
