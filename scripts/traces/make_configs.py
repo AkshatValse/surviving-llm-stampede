@@ -57,6 +57,9 @@ HEAD = {
                  "series_desc": "per-turn idle interval (last tool result - last tool request of the model call), tool calls of all kinds except "
                                 "human-interaction tools (AskUserQuestion, ExitPlanMode, ...), wall clock as logged",
                  "load": lambda norm: tracelab_series(norm, "z_round_s"),
+                 "notes": ["CONTEXT SIZE: TraceLab sessions are long. The prompt of an average call is {allcall_mean:,.0f} tokens (median {allcall_median:,.0f}) and the first call of an agentic",
+                           "episode already carries {ep_first_mean:,.0f} tokens on average (the conversation so far); initial_context_tokens below is the first call of a SESSION ({L0:,.0f}), so",
+                           "this section is indicative for tool times, tokens appended per call and turns, not for the context size (compare the 300k-token KV pool)."],
                  "alt": {"series": "round_gap_next_nohuman|all",
                          "name": "workload_empirical_idle_gap",
                          "desc": "inter-request idle time = next request ready minus the end of this call's model output (tool time plus output-to-tool-call "
@@ -64,7 +67,8 @@ HEAD = {
                          "load": lambda norm: tracelab_series(norm, "gap_next_s")}},
     "mini_swe_v2": {"series": "phase_wall|all", "group": "all", "label": "mini-SWE-agent v2.0.0 on SWE-bench Verified (5 models, 100 paired instances each)",
                     "series_desc": "per-step shell command wall time in the SWE-bench docker container (60 s harness timeout, censored)",
-                    "load": lambda norm: mini_series(norm, "wall_s"), "alt": None},
+                    "load": lambda norm: mini_series(norm, "wall_s"), "alt": None,
+                    "notes": ["CONTEXT SIZE: the prompt of an average call is {allcall_mean:,.0f} tokens (median {allcall_median:,.0f}); the context grows over the trajectory, first call {L0:,.0f} tokens."]},
 }
 
 
@@ -146,6 +150,10 @@ def main() -> None:
     w(f"# mean_turns = geometric parameter reproducing the observed mean calls per agentic episode (capped at max_turns = {M}):")
     w(f"# observed mean {geo['target_mean_capped']:.2f} capped, median {trn['episode_rounds_agentic']['median']:.0f}, p90 {trn['episode_rounds_agentic']['p90']:.0f}, p99 {trn['episode_rounds_agentic']['p99']:.0f}.")
     w("# NOTE the trace turn counts are not geometric (see AGENT_TRACES.md); this only matches the mean.")
+    ac = tok["input_total_all_rounds"]
+    for line in h["notes"]:
+        w("# " + line.format(allcall_mean=ac["mean"], allcall_median=ac["median"], L0=L0,
+                             ep_first_mean=tok["first_round_input_total_per_episode"]["mean"]))
     w("#")
     c1, c2 = mixp["components"]
     w(f"# Two-component lognormal mixture (no simulator counterpart, not a section): EM fit on the positive part (>= {cfg['analysis']['floor_s']:.2g} s) of the capped series, KS {mixp['ks']:.3f};")
