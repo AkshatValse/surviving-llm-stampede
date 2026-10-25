@@ -36,6 +36,14 @@ def fs(k: int, n: int, z: float = 1.96) -> str:
     return f"{int(k)}/{int(n)} ({k / n:.2f}) [{lo:.2f}, {hi:.2f}]"
 
 
+def seed_range(seeds: List[int]) -> str:
+    """'0-2' for a contiguous list of seeds, else the comma-separated list."""
+    s = [int(x) for x in seeds]
+    if len(s) == 1:
+        return str(s[0])
+    return f"{s[0]}-{s[-1]}" if s == list(range(s[0], s[-1] + 1)) else ",".join(str(x) for x in s)
+
+
 def fnum(x: Any, fmt: str = "{:.4g}") -> str:
     return "never" if x is None or (isinstance(x, float) and not np.isfinite(x)) else fmt.format(x)
 
@@ -126,7 +134,8 @@ def t_edge(S: Stages, r7: dict, z: float) -> str:
         win.append({"workload": w["label"], "lambda_miss (sessions/s)": w["lambda_miss_turns"], "hi (contiguous all-stable)": w["hi"],
                     "largest all-stable multiple": w["hi_largest_all_stable"], "same": w["contiguous_equals_largest"], "refinement grid run": w["refined"],
                     "window": "EMPTY (hi <= 1.1)" if w["window_empty"] else f"[1, {w['hi']:g}]", "test points (x lambda_miss)": ", ".join(f"{p:g}" for p in w["points"]) or "none"})
-    return ("Stable runs per multiple of the workload's own lambda_miss (from empty, 3000 s, B2 rule), with Wilson 95% intervals:\n\n" + df_md(pd.DataFrame(rows), "{:.4g}") +
+    return ("Stable runs per multiple of the workload's own lambda_miss (from empty, %g s, B2 rule), with Wilson 95%% intervals:\n\n" % float(r7["edge"]["horizon_s"]) +
+            df_md(pd.DataFrame(rows), "{:.4g}") +
             "\n\nMeasured metastability window and the paired-arm test points:\n\n" + df_md(pd.DataFrame(win), "{:.5g}"))
 
 
@@ -323,8 +332,10 @@ def provenance(S: Stages, spec_path: Path) -> str:
 def build_tables(S: Stages, r7: dict) -> str:
     z = float(r7["wilson_z"])
     parts = []
-    sections = (("lambda_miss", "Workloads and lambda_miss (B1: cache off, closed POP 32, window [900, 2700) s)", lambda: t_workloads(S, r7)),
-                ("curves", "Closed curve mu(n) (cache on, seeds 0-2) and the cap", lambda: t_curves(S, r7)),
+    lmb, cvb = r7["lambda_miss"], r7["curve"]
+    sections = (("lambda_miss", "Workloads and lambda_miss (B1: cache off, closed POP %d, window [%g, %g) s)" % (int(lmb["population"]), float(lmb["warmup_s"]), float(lmb["horizon_s"])),
+                 lambda: t_workloads(S, r7)),
+                ("curves", "Closed curve mu(n) (cache on, seeds %s) and the cap" % seed_range(cvb["seeds"]), lambda: t_curves(S, r7)),
                 ("edge", "From-empty stability edge and the measured window", lambda: t_edge(S, r7, z)),
                 ("pairs", "Paired-arm test at the two window points (%d seeds)" % len(r7["pairs"]["seeds"]), lambda: t_pairs(S, r7, z)),
                 ("burst_sizes", "Burst-size sweep (record workload, 10 seeds)", lambda: t_burst_sizes(S, r7, z)),
