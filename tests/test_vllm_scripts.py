@@ -193,7 +193,8 @@ def _launch(tmp_path, kv_tokens="300000", mode="burst", help_text="", **extra):
     envdir, marker, envfile = _fake_env(tmp_path)
     (tmp_path / "jd" / "engine_help.txt").write_text(help_text)
     e = {"ENV_VLLM": str(envdir), "JOB_DIR": str(tmp_path / "jd"), "SERVER_LOG": str(tmp_path / "server.log"), "PORT": "1",
-         "MODE": mode, "KV_TOKENS": kv_tokens, "HF_HOME": str(tmp_path), "XDG_CACHE_HOME": str(tmp_path / "xdg")}
+         "MODE": mode, "KV_TOKENS": kv_tokens, "HF_HOME": str(tmp_path), "XDG_CACHE_HOME": str(tmp_path / "xdg"),
+         "VLLM_CACHE_ROOT": "", "TRITON_CACHE_DIR": ""}
     e.update(extra)
     r = engine_fn("launch_engine\nwait", env=e)
     return r, (marker.read_text().splitlines() if marker.exists() else None), (envfile.read_text() if envfile.exists() else "")
@@ -434,3 +435,118 @@ def test_request_body_fields_are_vllm_completion_request_fields():
     client = (REPO / "src" / "agentload" / "client.py").read_text()
     assert 'body["return_token_ids"] = True' in client
     assert "usage.prompt_tokens_details" in (REPO / "src" / "agentload" / "parse.py").read_text()
+
+
+def test_cache_roots_can_be_redirected_to_a_job_local_directory(tmp_path):
+    _, _, environ = _launch(tmp_path, VLLM_CACHE_ROOT=str(tmp_path / "local-cc"), TRITON_CACHE_DIR=str(tmp_path / "local-tr"))
+    env = dict(l.split("=", 1) for l in environ.splitlines() if "=" in l)
+    assert env["VLLM_CACHE_ROOT"].replace("\\", "/") == (tmp_path / "local-cc").as_posix()
+    assert env["TRITON_CACHE_DIR"].replace("\\", "/") == (tmp_path / "local-tr").as_posix()
+
+
+# ------------------------------------------------------------ the whole job against a vLLM-like server
+import socket
+import sys
+
+
+def _free_port():
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+def _job_env_with_fake_vllm(tmp_path, port, mode="smoke", **extra):
+    """Environment for `source common.sh; source engine_vllm.sh; job_main` with a fake `vllm` that serves the mock engine."""
+    env = _check_env(tmp_path / "eng", FULL_HELP, MODE=mode)
+    vllm_bin = Path(env["ENV_VLLM"]) / "bin" / "vllm"
+    vllm_bin.write_text('#!/bin/sh\n[ "$1 $2" = "serve --help=all" ] && { cat "$HELP_FILE"; exit 0; }\n'
+                        'exec "$FAKE_PY" "$HELPER" "$@"\n')
+    vllm_bin.chmod(0o755)
+    env.update(FAKE_PY=sys.executable, HELPER=str(REPO / "tests" / "helpers_vllm_server.py"), FAKE_VLLM_LIFETIME_S="150",
+               ENV_GEN=sys.prefix, RESULTS_ROOT=str(tmp_path / "res"), PORT=str(port), MODE=mode,
+               ENGINE_LABEL="vllm-smoke", SEEDS="0", OUTPUT_FEEDBACK="server", KV_TOKENS="300000", GAP_S="1",
+               HEALTH_TIMEOUT_S="60", POP="4", SMOKE_RUN_S="8", STRICT_FLUSH="1", HF_REVISION="",
+               GEN_EXTRA="--set workload.initial_context_tokens=200 --set workload.new_prompt_tokens=55 --set workload.decode_tokens=10 "
+                         "--set workload.mean_turns=4 --set workload.max_turns=12 --set workload.tool_time_mean_s=0.3 "
+                         "--set run.preflight_wait_s=10 --set metrics.interval_s=1",
+               ANALYSIS_EXTRA="--set windows.window_s=3 --set windows.fine_window_s=1")
+    env.update(extra)
+    return env
+
+
+def run_job(env, timeout):
+    """job_main with REPO_DIR set the way slurm/local_smoke.sh sets it (a POSIX path, so PYTHONPATH converts on Windows too)."""
+    return engine_fn(f'REPO_DIR="$(cd "{REPO.as_posix()}" && pwd)"; export REPO_DIR\njob_main', env=env, timeout=timeout)
+
+
+def test_smoke_job_runs_end_to_end_through_the_real_vllm_launcher(tmp_path):
+    """job_main with the real engine_vllm.sh: flag/version check, launch (fake vllm), /health, /v1/models, probe, the overridden
+    flush_cache inside reset_and_verify (STRICT_FLUSH=1: the canary must prove the cache was emptied), one closed run, analysis."""
+    env = _job_env_with_fake_vllm(tmp_path, _free_port())
+    r = run_job(env, 240)
+    assert r.returncode == 0, r.stdout[-3000:] + r.stderr[-3000:]
+    assert "0 failed" in r.stdout and "vllm version ok: 0.32.0" in r.stdout and "CANARY_RESULT" in r.stdout
+    logs = list((tmp_path / "res" / "nova_job_logs").iterdir())
+    assert len(logs) == 1
+    ev = (logs[0] / "job_events.log").read_text()
+    assert "flush HTTP 200 success=true" in ev and "reset_and_verify: verified=true" in ev
+    banner = (logs[0] / "banner.txt").read_text()
+    assert "ENGINE=vllm" in banner and "MODE=smoke" in banner and "KV_TOKENS=300000" in banner
+    probe = (logs[0] / "probe.txt").read_text()
+    assert "PROBE_SUMMARY" in probe and "vllm:num_requests_waiting" in probe
+    assert "vllm version ok" in (logs[0] / "flag_check.txt").read_text()
+    run_dir = Path((logs[0] / "run_dirs_smoke.txt").read_text().split()[0])
+    assert (run_dir / "meta.json").exists()
+
+
+def test_job_stops_before_launching_when_the_installed_vllm_is_not_the_verified_release(tmp_path):
+    env = _job_env_with_fake_vllm(tmp_path, _free_port(), FAKE_VER="0.31.0")
+    r = run_job(env, 120)
+    assert r.returncode != 0 and "vllm version MISMATCH" in r.stdout and "flag/env-var check failed" in r.stderr
+    assert not (tmp_path / "res" / "nova_job_logs").exists() or not list((tmp_path / "res" / "nova_job_logs").glob("*/server.log"))
+
+
+def test_a_flush_that_keeps_answering_success_false_aborts_the_job_under_strict_flush(tmp_path):
+    env = _job_env_with_fake_vllm(tmp_path, _free_port(), FLUSH_TRIES="2", FLUSH_RETRY_S="0", FAKE_VLLM_RESET="fail")
+    r = run_job(env, 120)
+    assert r.returncode != 0 and "STRICT_FLUSH=1 and flush failed" in r.stderr
+    ev = list((tmp_path / "res" / "nova_job_logs").glob("*/job_events.log"))[0].read_text()
+    assert "flush FAILED" in ev and "success" in ev
+
+
+# ------------------------------------------------------------------------------------------ the runbook
+RUNBOOK = REPO / "notes" / "VLLM_RUNBOOK.md"
+
+
+def test_runbook_lines_agree_with_the_scripts_and_the_registration():
+    t = RUNBOOK.read_text()
+    reg = yaml.safe_load((REPO / "configs" / "agentload_prereg_2026-10-24.yaml").read_text())
+    mults = reg["lambda_selection"]["lambda_mults"]
+    assert "for m in " + " ".join(str(m) for m in mults) in t                  # the two registered multiples, nothing else
+    assert reg["measured"]["hardware"] in t
+    for rel in set(re.findall(r"slurm/[A-Za-z0-9_]+\.(?:sbatch|sh)", t)):
+        assert (REPO / rel).exists(), rel
+    sbatch_lines = [l.strip() for l in t.splitlines() if l.strip().startswith("sbatch ")]
+    assert len(sbatch_lines) == 5                                                  # install, check, smoke, E0a, the burst loop
+    for l in sbatch_lines:
+        assert "$SLURMOPT" in l, l                                                # account, partition and QoS on every submission
+        assert l.rstrip().endswith(".sbatch"), l
+    assert "--account=f2026.coms.6250.02" in t and "f2026.coms.6720" not in t
+    assert 'SLURMOPT="--account=f2026.coms.6250.02 --partition=instruction --qos=instruction"' in t
+    assert "ENGINE_LABEL=vllm-fcfs" in t and "ARMS=burst" in t and "MODE=miss" in t and "MODE=smoke" in t
+    assert re.search(r"derive-exploratory --from configs/agentload_prereg_2026-10-24\.yaml", t)
+    for line in t.splitlines():
+        if line.strip().startswith(("ssh ", "scp ", "squeue", "sacct")):
+            raise AssertionError(line)
+
+
+def test_runbook_gpu_hours_follow_the_plan_formula():
+    """0.25 h startup + k x (run_s + 150)/3600 + g x 180/3600 + 0.05 h teardown, as in analysis/plan_budget.py."""
+    def job(k, run_s, gaps):
+        return 0.25 + k * (run_s + 150) / 3600 + gaps * 180 / 3600 + 0.05
+    smoke, e0a, burst = job(1, 1800, 0), job(4, 2700, 3), job(1, 8700, 1)
+    assert (round(smoke, 2), round(e0a, 2), round(6 * burst, 2)) == (0.84, 3.62, 16.85)
+    assert round(smoke + e0a + 6 * burst, 2) == 21.31
+    t = RUNBOOK.read_text()
+    for needle in ("0.84", "3.62", "16.85", "21.31"):
+        assert needle in t

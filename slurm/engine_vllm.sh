@@ -26,8 +26,10 @@
 #     vllm:prompt_tokens_total, vllm:prompt_tokens_cached_total.
 # STILL UNVERIFIED until the first vLLM smoke job on Nova (runtime behaviour, not names): that vllm serve starts with a CUDA-13 torch
 # 2.13.0 on driver 580.178.04, that torch.compile/Triton find a C compiler on the compute node, that the server log prints
-# "GPU KV cache size: 299,984 tokens" with the cap (the null block takes one of the 18750 blocks), that the probe's repeated
-# 64-token prompt reports 48 cached tokens (block aligned, hit length capped at prompt-1), and that offline HF loading works.
+# "GPU KV cache size: 300,000 tokens ... 6.10x" with the cap (kv_cache_utils.update_kv_cache_capacity counts all 18750 blocks, the
+# null block included: the usable pool is 18749 blocks = 299,984 tokens; /metrics vllm:cache_config_info carries num_gpu_blocks and
+# kv_cache_size_tokens as labels), that the probe's repeated 64-token prompt reports 48 cached tokens (block aligned, hit length
+# capped at prompt-1), and that offline HF loading works.
 # Optional flags (used only if present in --help): --generation-config, --revision (HF_REVISION pin).
 
 ENGINE=vllm
@@ -60,8 +62,8 @@ engine_required_vars() { echo "ENV_VLLM HF_HOME"; }
 # environment (the COMMON exports of the runbook); without it the caches fall back to $HOME/.cache.
 setup_vllm_env() {
   export PATH="$ENV_VLLM/bin:$PATH"
-  export VLLM_CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/vllm"
-  export TRITON_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/triton"
+  export VLLM_CACHE_ROOT="${VLLM_CACHE_ROOT:-${XDG_CACHE_HOME:-$HOME/.cache}/vllm}"        # preset it to a job-local dir if parallel cold starts race
+  export TRITON_CACHE_DIR="${TRITON_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/triton}"
 }
 
 # Prints one line per check; returns 1 if STRICT_FLAGS=1 (default) and a required flag / env var / version is missing.

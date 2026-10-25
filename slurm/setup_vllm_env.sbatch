@@ -19,7 +19,7 @@
 #                            module, and the same flag / env-var / version check that every job runs (slurm/engine_vllm.sh
 #                            check_engine_flags, i.e. `vllm serve --help=all`). Override the resources on the command line:
 #                              --gres=gpu:a100:1 --exclude=nova22-amp-7 --time=00:20:00
-# Submit from the repo root (see notes/VLLM_RUNBOOK.md section 5 for the exact lines):
+# Submit from the repo root (see notes/VLLM_RUNBOOK.md section 4, steps 1 and 2, for the exact lines):
 #   sbatch --export=ALL,SWAPP_ROOT=/work/classtmp/avalse/swapp slurm/setup_vllm_env.sbatch
 #   sbatch --gres=gpu:a100:1 --exclude=nova22-amp-7 --time=00:20:00 --export=ALL,SWAPP_ROOT=/work/classtmp/avalse/swapp,PHASE=check slurm/setup_vllm_env.sbatch
 # Parameters: SWAPP_ROOT (required), PHASE, VLLM_SPEC (default vllm==0.32.0), VLLM_PYTHON (default 3.12), EXPECT_TORCH (2.13.0),
