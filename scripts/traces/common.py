@@ -199,3 +199,45 @@ def geometric_mean_param(target_mean: float, max_turns: int) -> float:
     if target_mean >= max_turns:
         return float("inf")
     return float(brentq(f, 1.0 + 1e-9, hi))
+
+
+# ---------------------------------------------------------------- simulator-facing helpers (tool_time_dist: empirical / bimodal)
+def quantile_levels(step: float = 0.005, tail_start: float = 0.01, ratio: float = 2 ** 0.25) -> list[float]:
+    """Levels of the empirical quantile table written into the proposed configs: strictly increasing from 0.0 to 1.0
+    (what WorkloadParams.tool_time_quantile_levels requires). Steps of `step` up to 1 - tail_start, then 1 - u shrinking by `ratio`
+    per point down to 2e-6, and 1.0. A plain 1%-grid underestimates a heavy tail: the piecewise-linear inverse CDF built from the
+    1st..99th percentiles alone overstates the mean of the SyFI series by 8% (the slowest 1% of the capped series holds 39% of its total time), this grid by 0.4%."""
+    g = [0.0, step / 4.0] + [i * step for i in range(1, int(round((1.0 - tail_start) / step)) + 1) if i * step < 1.0 - tail_start - 1e-12]
+    t = tail_start
+    while t > 2e-6:
+        g.append(1.0 - t)
+        t /= ratio
+    g.append(1.0)
+    out = sorted(set(round(x, 7) for x in g))
+    assert out[0] == 0.0 and out[-1] == 1.0 and all(b > a for a, b in zip(out[:-1], out[1:]))
+    return out
+
+
+def empirical_moments(levels, values) -> tuple[float, float]:
+    """(mean, CV) of the distribution whose inverse CDF is the piecewise-linear interpolation of the table (exact integrals of
+    F^-1 and F^-2). Same formula as prefixmeta.workload.empirical_moments (branch r7/robustness, commit 8c08883), which the
+    simulator reports as the 'exact moments' of an empirical tool-time law."""
+    lv = np.asarray(levels, dtype=float)
+    v = np.asarray(values, dtype=float)
+    d = np.diff(lv)
+    m1 = float(np.sum(d * (v[:-1] + v[1:]) / 2.0))
+    m2 = float(np.sum(d * (v[:-1] ** 2 + v[:-1] * v[1:] + v[1:] ** 2) / 3.0))
+    var = max(m2 - m1 * m1, 0.0)
+    return m1, (float(np.sqrt(var)) / m1 if m1 > 0 else float("nan"))
+
+
+def two_point_match(mean: float, cv: float, lo: float) -> dict:
+    """Two-point law on {lo, hi} with P(hi) = p that has exactly the given mean and CV (3 unknowns lo, hi, p; `lo` is chosen, the
+    mean and the variance fix hi and p): with a = mean - lo, hi - lo = a + var / a and p = a / (hi - lo)."""
+    a = mean - lo
+    if not (0.0 < lo < mean):
+        raise ValueError("need 0 < lo < mean")
+    var = (cv * mean) ** 2
+    d = a + var / a
+    p = a / d
+    return {"lo": float(lo), "hi": float(lo + d), "p_hi": float(p), "mean": float(lo + p * d), "cv": float(np.sqrt(p * (1 - p)) * d / (lo + p * d))}
