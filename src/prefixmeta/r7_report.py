@@ -127,6 +127,7 @@ def t_edge(S: Stages, r7: dict, z: float) -> str:
 
 
 def t_pairs(S: Stages, r7: dict, z: float) -> str:
+    hit_lo = float(r7["classify"]["indeterminate_hit_below"])
     sm = S.summary("pairs")["workloads"]
     cl = S.csv("pairs", "classified_runs.csv")
     rows, strs, empty = [], [], []
@@ -137,9 +138,11 @@ def t_pairs(S: Stages, r7: dict, z: float) -> str:
         for mult, p in w["points"].items():
             n = p["n_seeds"]
             g = cl[(cl["workload"] == name) & (np.isclose(cl["mult"], float(mult)))]
+            gb = g[g["arm"] == "burst"]
             rows.append({"workload": w["label"], "x lambda_miss": float(mult), "lambda (sessions/s)": p["lam"], "cap n": w["cap_n"],
                          "BURST trapped": fs(p["burst_trapped"], n, z), "NOBURST good": fs(p["noburst_good"], n, z), "CAPPED recovered": fs(p["cap_recovered"], n, z),
-                         "PASS (need %d)" % p["need"]: "PASS" if p["PASS"] else "FAIL"})
+                         "PASS (need %d)" % p["need"]: "PASS" if p["PASS"] else "FAIL",
+                         "[sensitivity] BURST stuck (hit < %g)" % hit_lo: fs(int((gb["hit"] < hit_lo).sum()), n, z)})
             row = {"workload": w["label"], "x lambda_miss": float(mult)}
             for arm, lab in (("burst", "BURST"), ("no_burst", "NOBURST"), ("burst_cap", "CAPPED")):
                 row[lab] = letters(g[g["arm"] == arm])
@@ -150,7 +153,9 @@ def t_pairs(S: Stages, r7: dict, z: float) -> str:
             row["NOBURST hit (mean)"] = g[g["arm"] == "no_burst"]["hit"].mean()
             row["NOBURST backlog (mean)"] = g[g["arm"] == "no_burst"]["backlog"].mean()
             strs.append(row)
-    out = "Counts out of the seeds, with Wilson 95% intervals; PASS needs BURST trapped, NOBURST good and CAPPED recovered each in at least `need` seeds:\n\n"
+    out = ("Counts out of the seeds, with Wilson 95% intervals; PASS needs BURST trapped, NOBURST good and CAPPED recovered each in at least `need` seeds "
+           "(the declared rules). The last column is a labelled post-hoc sensitivity, not part of the verdict: BURST runs whose hit rate over the evaluation window "
+           "is below the indeterminate threshold, whatever their backlog slope (TRAPPED plus INDETERMINATE):\n\n")
     out += (df_md(pd.DataFrame(rows)) if rows else "(no point was tested)") + "\n\n"
     if empty:
         out += "\n".join(empty) + "\n\n"
@@ -161,6 +166,7 @@ def t_pairs(S: Stages, r7: dict, z: float) -> str:
 
 
 def t_burst_sizes(S: Stages, r7: dict, z: float) -> str:
+    hit_lo = float(r7["classify"]["indeterminate_hit_below"])
     sm = S.summary("burst_sizes")
     cl = S.csv("burst_sizes", "classified_runs.csv")
     out = []
@@ -168,15 +174,20 @@ def t_burst_sizes(S: Stages, r7: dict, z: float) -> str:
         rows = []
         n = m["n_seeds"]
         g0 = cl[(np.isclose(cl["mult"], float(mult))) & (cl["arm"] == "no_burst")]
+        stuck_ok = []
         rows.append({"burst size": "0 (NOBURST)", "trapped": fs(m["noburst_trapped"], n, z), "recovered (good)": fs(m["noburst_good"], n, z), "indeterminate": 0,
-                     "classes by seed": letters(g0), "hit (mean)": g0["hit"].mean()})
+                     "[sensitivity] stuck (hit < %g)" % hit_lo: fs(int((g0["hit"] < hit_lo).sum()), n, z), "classes by seed": letters(g0), "hit (mean)": g0["hit"].mean()})
         for b, p in m["per_size"].items():
             g = cl[(np.isclose(cl["mult"], float(mult))) & (cl["arm"] == f"burst_{b}")]
+            k_stuck = int((g["hit"] < hit_lo).sum())
+            stuck_ok.append((int(b), k_stuck >= m["need"]))
             rows.append({"burst size": int(b), "trapped": fs(p["trapped"], n, z), "recovered (good)": fs(p["recovered"], n, z), "indeterminate": p["indeterminate"],
-                         "classes by seed": letters(g), "hit (mean)": g["hit"].mean()})
-        out.append(f"**lambda = {mult} x lambda_miss = {m['lam']:.5f} sessions/s** (need {m['need']} of {n} seeds): smallest burst trapping in >= {m['need']}/{n} seeds: "
-                   f"**{fnum(m['smallest_size_trapping_in_need'], '{}')}**; smallest burst from which every larger burst also does: {fnum(m['smallest_size_from_which_all_larger_trap'], '{}')}\n\n"
-                   + df_md(pd.DataFrame(rows), "{:.3g}"))
+                         "[sensitivity] stuck (hit < %g)" % hit_lo: fs(k_stuck, n, z), "classes by seed": letters(g), "hit (mean)": g["hit"].mean()})
+        smallest_stuck = next((b for b, ok in stuck_ok if ok), None)
+        out.append(f"**lambda = {mult} x lambda_miss = {m['lam']:.5f} sessions/s** (need {m['need']} of {n} seeds): smallest burst trapping in >= {m['need']}/{n} seeds "
+                   f"(declared TRAPPED rule): **{fnum(m['smallest_size_trapping_in_need'], '{}')}**; smallest burst from which every larger burst also does: "
+                   f"{fnum(m['smallest_size_from_which_all_larger_trap'], '{}')}; [sensitivity] smallest burst with hit < {hit_lo:g} in >= {m['need']}/{n} seeds "
+                   f"(stuck, slope test ignored): {fnum(smallest_stuck, '{}')}\n\n" + df_md(pd.DataFrame(rows), "{:.3g}"))
     return "\n\n".join(out)
 
 
@@ -189,8 +200,10 @@ def t_horizon(S: Stages, r7: dict, z: float) -> str:
         rows = []
         for arm in ("no_burst", "burst"):
             a = info[arm]
+            ea = ev[(np.isclose(ev["mult"], float(mult))) & (ev["arm"] == arm)]
             row = {"arm": arm.upper().replace("_", ""), "runs": a["n"], "backlog > 50 at some window (collapse)": fs(a["n_collapsed"], a["n"], z),
-                   "hit < 0.2 after the burst (trap onset)": fs(a["n_trap_onset"], a["n"], z), "released (hit > 0.5 after onset)": fs(a["n_released"], a["n"], z)}
+                   "hit < 0.2 after the burst (trap onset)": fs(a["n_trap_onset"], a["n"], z), "released (hit > 0.5 after onset)": fs(a["n_released"], a["n"], z),
+                   "last window: backlog > 50": fs(int((ea["final_backlog"] > 50).sum()), a["n"], z), "last window: hit < 0.2": fs(int((ea["final_hit"] < 0.2).sum()), a["n"], z)}
             for k, v in a.items():
                 if k.startswith("trapped_in_"):
                     row["TRAPPED in " + k.replace("trapped_in_", "")] = fs(v, a["n"], z)
@@ -222,11 +235,12 @@ def t_lowlam(S: Stages, r7: dict, z: float) -> str:
     thr = sm["slope_threshold"]
     q = pd.DataFrame([{"quantity": "backlog slope over the last 2500 s (requests/s)", **{k: v for k, v in sm["slope_quantiles"].items()}},
                       {"quantity": "slope / threshold", **{k: v for k, v in sm["slope_over_threshold_quantiles"].items()}},
+                      {"quantity": "slope / (lambda - lambda_miss)", **{k: 0.5 * v for k, v in sm["slope_over_threshold_quantiles"].items()}},
                       {"quantity": "uncached-token rate / all-miss rate", **{k: v for k, v in sm["token_ratio_quantiles"].items()}},
                       {"quantity": "hit rate over the last 2500 s", **{k: v for k, v in sm["hit_quantiles"].items()}}])
     cls = pd.DataFrame([{"class": k, "runs": fs(v, n, z)} for k, v in sm["classes"].items() if v or k in ("TRAPPED", "INDETERMINATE")])
-    detail = cl[["seed", "hit", "token_ratio", "slope", "slope_threshold", "rate_ok", "slope_ok", "label"]].copy()
-    detail.insert(4, "slope / threshold", detail["slope"] / detail["slope_threshold"])
+    detail = cl[["seed", "hit", "backlog", "token_ratio", "slope", "slope_threshold", "rate_ok", "slope_ok", "label"]].copy()
+    detail.insert(5, "slope / threshold", detail["slope"] / detail["slope_threshold"])
     head = (f"lambda = {sm['mult']} x lambda_miss = {sm['lam']:.5f} sessions/s; threshold 0.5 (lambda - lambda_miss) = {thr:.5f} requests/s; {n} BURST runs.\n\n"
             f"Slope exceeds the threshold in {fs(sm['n_slope_above_threshold'], n, z)}; token rate within 15% of all-miss in {fs(sm['n_rate_ok'], n, z)}; hit < 0.05 in "
             f"{fs(sm['n_hit_below_0.05'], n, z)}.\n\n")
