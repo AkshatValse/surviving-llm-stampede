@@ -15,6 +15,7 @@ Policies only use this narrow view of the engine::
                                       sorted by (matched prefix length desc, queue time asc); each
                                       returned request is stamped ``req.mark = view.pass_id``; with
                                       skip_marked=True requests already stamped in this pass are omitted
+    view.cached_prefix(sid)         -> current private cached prefix length (zero if absent)
     view.pass_id                   -> int, unique id of the current pass
     view.waiting_by_program()      -> live waiting requests in ascending program (session) arrival order; only
                                       available to policies with ``needs_program_order = True``
@@ -69,6 +70,61 @@ class Lpm(Policy):
     def candidates(self, view, now: float) -> Iterator:
         yield from view.resident_waiting()
         yield from _fifo_unmarked(view)
+
+
+class PeekSingleton(Policy):
+    """Released PEEK group-major cLPM reduced to private prefixes and one waiter per session.
+
+    At peek commit 3aca72b63c1dd6433193c0857b965acecdbfbb8a, online/lpm_integration.py:358-381,
+    456-554, both lanes order singleton groups by warm/cold section then arrival. A prefix longer than
+    32 tokens is warm. Lane B breaks equal-arrival ties by matched prefix length; lane A preserves FIFO.
+    Every request is a singleton, so raw fairness share clamps to .6 and its EMA starts at .3.
+    This projection does not implement shared-prefix clusters or the host engine's allocation policy.
+    """
+    name = "peek_singleton"
+
+    def __init__(self):
+        self._fair_share = 0.3
+
+    def candidates(self, view, now: float) -> Iterator:
+        requests = list(view.fifo_iter())
+        if not requests:
+            return
+        lengths = [view.cached_prefix(r.sid) for r in requests]
+        sections = [0 if h > 32 else 1 for h in lengths]
+        arrivals = [int(r.qtime * 1e9) for r in requests]
+        indices = list(range(len(requests)))
+        lane_a = sorted(indices, key=lambda i: (sections[i], arrivals[i]))
+        lane_b = sorted(indices, key=lambda i: (sections[i], arrivals[i], -lengths[i]))
+        self._fair_share = 0.7 * self._fair_share + 0.3 * 0.6
+        a_stride = 1.0 / (1.0 - self._fair_share)
+        b_stride = 1.0 / self._fair_share
+        a_clock, b_clock = a_stride, b_stride
+        a_pos = b_pos = 0
+        chosen = set()
+        order = []
+        while len(order) < len(requests):
+            if a_clock <= b_clock:
+                while a_pos < len(lane_a) and lane_a[a_pos] in chosen:
+                    a_pos += 1
+                if a_pos == len(lane_a):
+                    a_clock = math.inf
+                    continue
+                index = lane_a[a_pos]
+                a_pos += 1
+                a_clock += a_stride
+            else:
+                while b_pos < len(lane_b) and lane_b[b_pos] in chosen:
+                    b_pos += 1
+                if b_pos == len(lane_b):
+                    b_clock = math.inf
+                    continue
+                index = lane_b[b_pos]
+                b_pos += 1
+                b_clock += b_stride
+            chosen.add(index)
+            order.append(requests[index])
+        yield from order
 
 
 class LpmFallback(Policy):
@@ -156,6 +212,8 @@ def make_policy(spec: dict) -> Policy:
         return Fcfs()
     if kind == "lpm":
         return Lpm()
+    if kind == "peek_singleton":
+        return PeekSingleton()
     if kind == "lpm_fallback":
         return LpmFallback(spec["threshold"])
     if kind == "aging_lpm":

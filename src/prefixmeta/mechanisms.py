@@ -9,6 +9,9 @@ An *ordering* policy (``policies.py``) decides the order in which waiting reques
       fit, protection is released in latest-program-arrival order until it fits.
     * ``"rank"`` : ranking only (the PEEK paper: "protection is a ranking, not a pin"). Queued KV is evicted
       after every unprotected idle block, but it can still be evicted; admission never waits for it.
+    * ``"rank_length"`` : opt-in projection of released PEEK's plain eviction score onto one private cache
+      node per session: queued demand is one, so score equals cached token length. Unprotected KV is evicted
+      first, then queued KV by ascending length with LRU ties. Requires ``eviction="lru"``.
 ``ttl_s``  (TTL pin, "blocking pin"). The KV of a session that just finished a NON-final turn is pinned until
     ``finish + ttl_s``. Pinned KV is never evicted (admission waits if it does not fit). At expiry the pin is freed
     unless the session's next request is already queued (then it stays until that request is admitted).
@@ -19,6 +22,12 @@ An *ordering* policy (``policies.py``) decides the order in which waiting reques
       code): whenever the request being considered in a scheduling pass does not fit because of pinned KV, pins of
       other sessions are released latest-program-arrival first until it fits or no pin is left.
     * ``"eager_fit"`` (sensitivity): as ``eager`` but pins are released only if that makes the request fit.
+    * ``"continuum_waiting"`` (released preview's waiting-allocation rule): only when no request is running,
+      release one pin with the latest expiry after a failed admission, then retry scheduling. This does
+      not implement the preview's running-request preemption or tool-duration estimator. See BASELINES_AUDIT.md.
+``ttl_refresh_lru_on_unpin`` (default False). Move TTL-released idle KV to the newest eviction position,
+    matching the released preview's append to the free-block queue when a pin's reference is freed. Applies
+    to expiry and pressure releases, not admission or eviction. Requires ``ttl_pin_s`` when enabled.
 ``session_cap``  (CAP / LB-CAP / AIMD-CAP). Sessions beyond the cap wait in a gate and are not in the system.
     A static integer, ``lb`` (= N_lb = floor(M / E_lb), E_lb the length-biased mean context), ``{lb_mult: x}``
     (= floor(x N_lb)) or an AIMD controller (``{aimd: {...}}``) that is stepped every ``interval_s`` seconds.
@@ -90,16 +99,25 @@ def aimd_step(cap: int, hit_rate: float, usage: float, p: AimdParams) -> int:
     return new
 
 
-TTL_UNPIN_MODES = ("idle", "eager", "eager_fit")
+TTL_UNPIN_MODES = ("idle", "eager", "eager_fit", "continuum_waiting")
 
 
 @dataclass(frozen=True)
 class Mechanisms:
-    protect_queued: Optional[str] = None      # None | "pin" | "rank"
+    protect_queued: Optional[str] = None      # None | "pin" | "rank" | "rank_length"
     ttl_s: Optional[float] = None
     aimd: Optional[AimdParams] = None
     ttl_unpin: str = "idle"                   # one of TTL_UNPIN_MODES (only meaningful with ttl_s)
     eviction: str = "lru"                     # round 4: "lru" | "random" | "mru_idle" (see eviction.py); "lru" = rounds 1-3
+    ttl_refresh_lru_on_unpin: bool = False
+
+    def __post_init__(self) -> None:
+        if self.protect_queued == "rank_length" and self.eviction != "lru":
+            raise ValueError("rank_length requires eviction='lru'")
+        if type(self.ttl_refresh_lru_on_unpin) is not bool:
+            raise ValueError("ttl_refresh_lru_on_unpin must be a bool")
+        if self.ttl_refresh_lru_on_unpin and self.ttl_s is None:
+            raise ValueError("ttl_refresh_lru_on_unpin requires ttl_pin_s")
 
     @property
     def any_protection(self) -> bool:
@@ -143,8 +161,8 @@ def resolve_session_cap(value: Any, memory_tokens: float, wl: WorkloadParams
 
 def make_mechanisms(spec: Dict[str, Any], aimd: Optional[AimdParams]) -> Mechanisms:
     pq = spec.get("protect_queued")
-    if pq is not None and pq not in ("pin", "rank"):
-        raise ValueError(f"protect_queued must be 'pin' or 'rank', got {pq!r}")
+    if pq is not None and pq not in ("pin", "rank", "rank_length"):
+        raise ValueError(f"protect_queued must be 'pin', 'rank' or 'rank_length', got {pq!r}")
     ttl = spec.get("ttl_pin_s")
     if ttl is not None:
         ttl = float(ttl)
@@ -155,7 +173,10 @@ def make_mechanisms(spec: Dict[str, Any], aimd: Optional[AimdParams]) -> Mechani
         raise ValueError(f"ttl_unpin must be one of {TTL_UNPIN_MODES}, got {unpin!r}")
     if unpin != "idle" and ttl is None:
         raise ValueError("ttl_unpin requires ttl_pin_s")
+    if unpin == "continuum_waiting" and pq is not None:
+        raise ValueError("continuum_waiting cannot be combined with protect_queued")
     ev = spec.get("eviction", "lru")
     if ev not in EVICTION_MODES:
         raise ValueError(f"eviction must be one of {EVICTION_MODES}, got {ev!r}")
-    return Mechanisms(protect_queued=pq, ttl_s=ttl, aimd=aimd, ttl_unpin=unpin, eviction=ev)
+    return Mechanisms(protect_queued=pq, ttl_s=ttl, aimd=aimd, ttl_unpin=unpin, eviction=ev,
+                      ttl_refresh_lru_on_unpin=spec.get("ttl_refresh_lru_on_unpin", False))
