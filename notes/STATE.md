@@ -2,7 +2,12 @@
 
 _Last updated: 2026-10-25 ~15:00 CDT (always-on PC)_
 
-## NOW (2026-10-25 ~15:00 CDT). Read this first; it supersedes every block below.
+## NOW (2026-10-25 ~17:45 CDT). Read this first.
+**Native-pool kill test submitted 17:42: jobs 17102173–17102190** (18 one-arm jobs: λ 2.5 and 4.0 × the native λ_ref, seeds 0–2, BURST / NOBURST / CAPPED with N_CAP=64, `KV_TOKENS=native`, label `sglang-fcfs-r1-native`, `--time=03:10:00`), from `repo_next/` at `b8c19ec` under `configs/agentload_prereg_2026-10-25_native.yaml` (PREREG_SHA256 `21bf7c03…`; check-job passed for every arm at both points). **Do not change code in `repo_next/` while they are pending** (adding a config file, e.g. the vLLM exploratory registration, is safe). Verdict when all 18 finish: `summarize burst2 --prereg configs/agentload_prereg_2026-10-25_native.yaml` over the 18 runs with the E2 overrides, in `repo_next/`; compare with B3n (`notes/PREDICTIONS_native.md`).
+**Native E0b done** (edge between 5.5 and 6.5 ×; LOG 2026-10-25). **vLLM E0a 17100940 still running** (then the vLLM exploratory registration and 6 BURST jobs).
+**Paper:** draft on `main` (`paper/main.pdf`, 18 pages, all references verified); open: the `\pending` native and vLLM results and the author decisions listed below.
+
+## NOW (2026-10-25 ~15:00 CDT). Superseded by the block above.
 **E2 is a decisive PASS at both pre-registered points** (1.35 and 1.65 × λ_ref; BURST trapped 2/3 and 3/3, NOBURST good 6/6, CAPPED recovered 6/6; verdict `results/agentload_analysis_burst2/20261025-144012/` on frozen `d279b7b`; data `results/nova/e2_170933xx_pulled_20261025-144558/`; LOG 2026-10-25). Every blind B3 prediction held.
 **Also finished overnight (all COMPLETED 0:0; pulled data and LOG entries follow the archive pull):** native-pool Stage C (17096856–57: pool sized by SGLang at 955,757 tokens; μ peaks 0.479 at n = 64, collapses to 0.123 at n = 96) and native E0a (17096858: λ_miss 0.0718 turns-based, same as at 300k); the exploratory policy grid (17097086–103: FCFS refresh-off behaves like refresh-on; stock LPM recovers at 1.35 × in most seeds but traps at 1.65 ×); vLLM install, GPU check and smoke (17097972–74; token ids returned, cached tokens reported, flush verified).
 **Running on Nova (from `repo_next/` at `fb3510e`; `repo/` stays frozen at `d279b7b`):** native E0b **17100938** (mults 1.5, 2.5, 3.5) and **17100939** (4.5, 5.5, 6.5) of the native λ_ref, calibration `results/agentload_analysis_miss/20261025-054653/calibration.json`; vLLM E0a **17100940** (3 seeds + POP 64, `OUTPUT_FEEDBACK=server`).
