@@ -452,12 +452,12 @@ validate_mode_inputs() {
           log "capped arm: gate.n_cap = $v (from $CAP_FILE, primary_label == $ENGINE_LABEL)"
         fi ;;
       esac
-      # The E2 kill test runs only under a committed, clean, valid pre-registration whose label / lambdas / cap / references /
-      # hardware / protocol are this job's (analysis.prereg check-job); its sha256 goes into every run's meta.json
+      # E2 and exploratory grid jobs require a committed, clean, valid registration whose label / arms / lambdas / cap /
+      # references / hardware / protocol authorise this job; its sha256 goes into every run's meta.json
       require_set PREREG_FILE; require_set CALIB_FILE; require_set MULTS
-      [ -f "$PREREG_FILE" ] || die "PREREG_FILE not found: $PREREG_FILE (the filled, COMMITTED configs/agentload_prereg_<date>.yaml)"
+      [ -f "$PREREG_FILE" ] || die "PREREG_FILE not found: $PREREG_FILE (a COMMITTED filled or exploratory registration)"
       [ -f "$CALIB_FILE" ] || die "CALIB_FILE not found: $CALIB_FILE"
-      local pc_args=(--label "$ENGINE_LABEL" --mults "$MULTS" --calib "$CALIB_FILE" --hardware "$HW" \
+      local pc_args=(--label "$ENGINE_LABEL" --arms "$ARMS" --mults "$MULTS" --calib "$CALIB_FILE" --hardware "$HW" \
                      --duration-s "$BURST_RUN_S" --t-burst-s "$T_BURST")
       [ -n "$RESOLVED_N_CAP" ] && pc_args+=(--n-cap "$RESOLVED_N_CAP")
       [ "${ALLOW_HW_MISMATCH:-0}" = "1" ] && pc_args+=(--allow-hw-mismatch)

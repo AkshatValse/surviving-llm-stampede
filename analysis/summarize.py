@@ -132,6 +132,7 @@ def cmd_burst2(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
         except ValueError as e:
             skipped.append({"run_dir": str(r.dir), "reason": str(e)})
             continue
+        rec["classification"] = "TRAPPED" if rec["trapped"] else "RECOVERED" if rec["recovered"] else "neither"
         rec["legacy"] = legacy_secondary(r, p)
         recs.append(rec)
         by_run[rec["run_dir"]] = r
@@ -161,17 +162,26 @@ def cmd_burst2(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
     pr, pr_info = None, {"provided": False}
     if args.prereg:
         pr = prereg_mod.load_prereg(args.prereg)
-        probs = prereg_mod.validate(pr, p, args.fcfs_substr)
+        probs = prereg_mod.validate(pr, p, args.fcfs_substr, prereg_path=args.prereg)
         prov = prereg_mod.file_provenance(args.prereg)
         pr_info = {"provided": True, "provenance": prov, "problems": probs, "status": pr.get("status"),
                    "window": prereg_mod.window_of(pr), "engine_cell_label": (pr.get("inputs") or {}).get("engine_cell_label"),
                    "registered_lambda_mults": prereg_mod.registered_mults(pr),
                    "valid": not any(x["severity"] == "error" for x in probs),
                    "committed_clean": prov["committed_clean"]}
+        if pr.get("exploratory") is not None:
+            pr_info["exploratory"] = pr["exploratory"]
+    exploratory_registration = bool(pr is not None and (pr.get("status") == "EXPLORATORY" or "exploratory" in pr))
+    if exploratory_registration:
+        pr_info["window_scope"] = "inherited_parent_not_measured_for_cell"
+    pre_registered = bool(pr_info.get("valid") and pr_info.get("committed_clean")
+                          and pr_info.get("status") == "FILLED" and not exploratory_registration)
     run_by_dir = {rec["run_dir"]: by_run[rec["run_dir"]] for rec in recs}
     for c in cells:
         c["diagnosis"] = diagnose(c)
-        c["in_registered_window"] = prereg_mod.lambda_in_window(pr, c["lambda"]) if pr is not None else None
+        # A derived grid file carries the parent's SGLang window as provenance, not a measured boundary for this cell.
+        c["in_registered_window"] = (prereg_mod.lambda_in_window(pr, c["lambda"])
+                                      if pr is not None and not exploratory_registration else None)
         c["pairing_problems"] = {k: v for k, v in pair_probs.items() if k.startswith(f"{c['label']}|{c['rate_mult']}|")}
         c["meets_valid_pairing"] = bool(c["meets"] and not c["pairing_problems"])
         if pr is not None:
@@ -187,10 +197,13 @@ def cmd_burst2(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
                     if bl:
                         blockers[rec["run_dir"]] = bl
             c["registration_blockers"] = blockers
-            c["decisive_eligible"] = bool(c["registered_label"] and c["registered_lambda"] and c["in_registered_window"] is True
+            c["decisive_eligible"] = bool(not exploratory_registration and pr_info["status"] == "FILLED"
+                                          and c["registered_label"] and c["registered_lambda"] and c["in_registered_window"] is True
                                           and not blockers)
+        c["exploratory"] = not bool(pre_registered and c.get("decisive_eligible"))
+        if exploratory_registration:
+            c["diagnosis"] = "EXPLORATORY: per-run TRAPPED / RECOVERED / neither; no decisive paired-arm kill-test verdict"
     fc = [c for c in cells if args.fcfs_substr in str(c["label"])]
-    pre_registered = bool(pr_info.get("valid") and pr_info.get("committed_clean"))
     rule_only = [c for c in fc if c["meets_valid_pairing"]]
     decisive = ([c for c in cells if c["meets_valid_pairing"] and c.get("decisive_eligible")] if pre_registered else [])
     legacy_tab = pd.DataFrame([{"label": r["label"], "rate_mult": r["rate_mult"], "seed": r["seed"],
@@ -211,15 +224,18 @@ def cmd_burst2(args: argparse.Namespace, p: AnalysisParams, out: Path, runs: Lis
         "rule": dict(p.trap_v2), "hit_metric": p.w["hit_metric"],
         "prereg": pr_info, "pre_registered": pre_registered,
         "fcfs_substr": args.fcfs_substr, "cells": cells,
+        "runs": [{k: rec[k] for k in ("run_dir", "label", "rate_mult", "seed", "arm", "classification", "state",
+                                     "trapped", "recovered", "draining", "prereg_sha256")} for rec in recs],
         "fcfs_cells_meeting_rule": [{"label": c["label"], "rate_mult": c["rate_mult"]} for c in rule_only],
         "kill_test_pass_rule_only": bool(rule_only) if fc else None,
         "kill_test_pass_decisive": (bool(decisive) if pre_registered else None),
         "decisive_cells": [{"label": c["label"], "rate_mult": c["rate_mult"]} for c in decisive],
-        "decisive_note": ("a decisive PASS needs a valid, committed, clean pre-registration file whose last commit predates every "
+        "decisive_note": ("a decisive PASS needs a valid, committed, clean FILLED pre-registration file whose last commit predates every "
                           "run of the cell, the registered cell (label == inputs.engine_cell_label; 'fcfs'-substring matches "
                           "such as vllm-fcfs or -native do NOT count), a registered lambda multiple inside its window, and "
-                          "every run bound to the file (meta.prereg_sha256) and to its protocol; without --prereg the verdict "
-                          "is exploratory"),
+                          "every run bound to the file (meta.prereg_sha256) and to its protocol; without --prereg or with a "
+                          "derived EXPLORATORY file the verdict is exploratory. A derived file's window is inherited from "
+                          "its parent cell, not measured for the exploratory engine"),
         "pairing_problems": pair_probs, "skipped_runs": skipped,
         "legacy_secondary_burst_arm": legacy,
         "guards": summarize_problems(args.guard_problems)}
@@ -316,7 +332,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--warmup-s", type=float, default=None,
                     help="(miss, closed) discard this many seconds at the start (miss: 0 if omitted; closed: closed.warmup_s)")
     ap.add_argument("--fcfs-substr", default="fcfs", help="(burst, burst2, closed) labels containing this are the FCFS cells")
-    ap.add_argument("--prereg", default=None, help="(burst2) filled pre-registration YAML; recorded and checked")
+    ap.add_argument("--prereg", default=None, help="(burst2) FILLED or derived EXPLORATORY registration YAML; recorded and checked")
     ap.add_argument("--primary-label", default=None,
                     help="(closed) the engine label whose n_cap / mu_300 / mu_max become the top-level values of mu_curve.json "
                          "(default: the FCFS cell with the most distinct n; summarise the 300k and the native pool separately)")
