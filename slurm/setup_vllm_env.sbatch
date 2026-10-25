@@ -92,6 +92,28 @@ sys.exit(0 if ok else 1)
 PY
 }
 
+record_environment() (
+  # Stage both exports before replacing either previous provenance record. The
+  # subshell keeps its cleanup trap local to this operation.
+  local records_tmp
+  records_tmp=$(mktemp -d "$SWAPP_ROOT/envs/.vllm-provenance.XXXXXX") || {
+    echo "FATAL: cannot create temporary provenance directory" >&2; exit 6;
+  }
+  trap 'rm -f -- "$records_tmp/vllm.lock.txt" "$records_tmp/vllm.micromamba.yml"; rmdir -- "$records_tmp"' EXIT
+  "$ENV_VLLM/bin/python" -m pip freeze > "$records_tmp/vllm.lock.txt" || {
+    echo "FATAL: pip freeze failed; previous provenance records preserved" >&2; exit 6;
+  }
+  micromamba env export -p "$ENV_VLLM" > "$records_tmp/vllm.micromamba.yml" || {
+    echo "FATAL: micromamba env export failed; previous provenance records preserved" >&2; exit 6;
+  }
+  # Each same-directory rename is atomic. A publication failure is fatal; the
+  # pair of renames is not a transaction across interruption or storage failure.
+  mv -fT -- "$records_tmp/vllm.lock.txt" "$SWAPP_ROOT/envs/vllm.lock.txt" &&
+    mv -fT -- "$records_tmp/vllm.micromamba.yml" "$SWAPP_ROOT/envs/vllm.micromamba.yml" || {
+      echo "FATAL: cannot publish complete provenance records" >&2; exit 6;
+    }
+)
+
 phase_install() {
   echo "=== 1. outbound internet from the compute node (pip needs PyPI)"
   local pypi
@@ -128,8 +150,7 @@ phase_install() {
   echo "=== 4. versions (no GPU on this node unless the job asked for one)"
   report_versions || exit 6
   assert_versions || exit 6
-  "$ENV_VLLM/bin/python" -m pip freeze > "$SWAPP_ROOT/envs/vllm.lock.txt"
-  micromamba env export -p "$ENV_VLLM" > "$SWAPP_ROOT/envs/vllm.micromamba.yml" 2>/dev/null || true
+  record_environment || exit 6
   echo "lock file: $SWAPP_ROOT/envs/vllm.lock.txt ($(wc -l < "$SWAPP_ROOT/envs/vllm.lock.txt") lines)"
   du -sh "$ENV_VLLM" "$SWAPP_ROOT/cache" 2>/dev/null
 }
