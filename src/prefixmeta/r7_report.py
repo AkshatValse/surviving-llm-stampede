@@ -356,7 +356,8 @@ def cmd_report(spec_path: Path, args: argparse.Namespace, repo_dir: Path) -> Pat
     cfg = load_probe_config(str(spec_path), repo_dir)
     r7 = cfg["r7"]
     S = Stages(args.out_root)
-    ctx = begin("r7_report", "r7_report", cfg, cfg, args, repo_dir)
+    cfg_eff = {k: v for k, v in cfg.items() if k != "preregistration_file"}      # not a registered run: do not copy a pre-registration into the report dir
+    ctx = begin("r7_report", "r7_report", cfg_eff, cfg_eff, args, repo_dir)
     tables = build_tables(S, r7)
     (ctx.out / "tables.md").write_text(tables, encoding="utf-8")
     head = headline_numbers(S)
