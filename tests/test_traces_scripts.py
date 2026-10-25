@@ -231,3 +231,11 @@ def test_proposed_workload_configs_load_into_workload_params(name):
         assert mean == pytest.approx(sec["tool_time_mean_s"], rel=2e-4) and cv == pytest.approx(sec["tool_time_cv"], rel=2e-3), key
         if wp.tool_time_dist == "empirical":
             assert len(wp.tool_time_quantiles) == len(wp.tool_time_quantile_levels) == 250
+
+
+def test_exceedance_exponential_row_matches_monte_carlo():
+    from compare import exp_row, series_row
+    x = np.random.default_rng(3).exponential(5.0, 2_000_000)
+    a, b = exp_row(5.0, 600.0), series_row("mc", x, 600.0)
+    for k in ("P(>1s)", "P(>5s)", "P(>10s)", "P(>30s)", "time_share(>5s)", "time_share(>10s)", "time_share(>30s)"):
+        assert a[k] == pytest.approx(b[k], abs=0.004), k

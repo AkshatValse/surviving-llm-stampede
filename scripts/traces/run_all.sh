@@ -22,4 +22,5 @@ if [ "$what" = both ] || [ "$what" = mini ]; then
   "$PY" -I scripts/traces/make_configs.py mini_swe_v2 --config "$CFG"
 fi
 
+"$PY" -I scripts/traces/compare.py results/traces_summary
 "$PY" -I scripts/traces/make_tables.py

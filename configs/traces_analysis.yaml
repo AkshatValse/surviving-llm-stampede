@@ -17,7 +17,7 @@ analysis:
 
 sources:
   tracelab:
-    description: SyFI TraceLab public coding-agent trace (Claude Code + Codex CLI sessions of 43 pseudonymous users, 2026)
+    description: SyFI TraceLab public coding-agent trace (Claude Code + Codex CLI sessions of 52 pseudonymous users in release v0.0.2, Sep 2025 - Jul 2026; the repository front page still describes the earlier 43-developer snapshot)
     repo: https://github.com/uw-syfi/TraceLab
     release: v0.0.2
     asset: syfi_coding_trace.jsonl.gz
