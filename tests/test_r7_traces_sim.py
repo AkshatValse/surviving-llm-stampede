@@ -18,6 +18,7 @@ import pandas as pd
 import pytest
 import yaml
 
+from prefixmeta import r7_posthoc as PH
 from prefixmeta import r7_report as RP
 from prefixmeta import r7_robustness as R7
 from prefixmeta.probe import load_probe_config
@@ -164,8 +165,20 @@ def test_every_stage_and_the_report_of_the_traces_spec_run_end_to_end_on_a_tiny_
     prov = (d / "provenance.md").read_text(encoding="utf-8")
     assert "`" + str(spec).replace("\\", "/") in prov.replace("\\", "/") or "tiny_traces.yaml" in prov
     assert "burst_sizes" not in prov and "horizon" not in prov
+    ph = Path(PH.main(["--spec", str(spec), "--out-root", out], repo_dir=REPO))                # post-hoc diagnostics read the same manifest
+    ptxt = (ph / "posthoc.md").read_text(encoding="utf-8")
+    assert "P1. CAPPED and NOBURST arms" in ptxt and "P2. NOBURST runs that are not RECOVERED" in ptxt and "drain time of the burst" in ptxt
+    assert "TraceLab per-turn" not in ptxt.split("### P2.")[0]                                         # the empty-window workload has no tested point, hence no row
+    ps = json.loads((ph / "summary.json").read_text())
+    assert {r["workload"] for r in ps["capped"]} == {"Exp(5 s) (record, control)", "mini-SWE-agent v2 full workload (empirical)"} and len(ps["capped"]) == 3
     notes = tmp_path / "notes.md"
     head = tmp_path / "head.md"
     head.write_text("HEADLINE", encoding="utf-8")
     RP.main(["assemble", "--spec", str(spec), "--out-root", out, "--headline", str(head), "--notes", str(notes)], repo_dir=REPO)
     assert notes.read_text(encoding="utf-8").startswith("# Round 7: real-trace tool times in the calibrated simulator (referee objection 3)\n")
+
+
+def test_drain_time_is_burst_over_spare_capacity():
+    assert PH.drain_time_s(200, 0.05035, 0.02811) == pytest.approx(200 / 0.02224)
+    assert PH.drain_time_s(200, 0.2144, 0.09745) == pytest.approx(200 / (0.2144 - 0.09745))
+    assert PH.drain_time_s(200, 0.05, 0.05) == float("inf") and PH.drain_time_s(200, 0.04, 0.05) == float("inf")
