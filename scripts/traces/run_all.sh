@@ -21,3 +21,5 @@ if [ "$what" = both ] || [ "$what" = mini ]; then
   "$PY" -I scripts/traces/write_meta.py mini_swe_v2 --config "$CFG"
   "$PY" -I scripts/traces/make_configs.py mini_swe_v2 --config "$CFG"
 fi
+
+"$PY" -I scripts/traces/make_tables.py
