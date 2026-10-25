@@ -6,7 +6,7 @@ Scope: every work cited or named in `notes/RELATED_WORK_prefix_meta.md`, `notes/
 
 ## Method and evidence classes
 
-Each work was opened on a primary page (arXiv abstract page with full version history, PMLR or USENIX or Crossref record, or the paper itself). For 18 works I read the paper text: the PDF was fetched with the fetch tool, which keeps the binary, and I extracted the text locally with `pdftotext` and searched it for the specific claim. This is better than the summaries the earlier agents used, because I could grep for the exact passage.
+Each work was opened on a primary page (arXiv abstract page with full version history, PMLR or USENIX or Crossref record, or the paper itself). For 20 works I read the paper text: the PDF was fetched with the fetch tool, which keeps the binary, and I extracted the text locally with `pdftotext` and searched it for the specific claim. This is better than the summaries the earlier agents used, because I could grep for the exact passage.
 
 | Class | Meaning |
 |---|---|
@@ -25,7 +25,7 @@ Limits of what I did:
 
 ## Summary
 
-(Counts are filled in at the end of the file; see the "Counts" section.)
+46 audited works: 40 correct, 5 overstated, 1 misattributed, 0 not found. Most important findings: the working set is not from the Denning thrashing paper; XPerf proposes no mechanism; PEEK's "scheduling-induced thrashing" is not the 128 fallback; no paper claims metastability of the prefix-cache good state, but Yao et al. (2609.02027, Simchi-Levi group) and the NVIDIA Dynamo/ThunderAgent deployment are the nearest neighbours. Details in the "Counts" and "Scoop check" sections.
 
 ## Audit table
 
@@ -58,6 +58,7 @@ Rows are grouped. "Notes" = the file(s) where the claim appears: RW = RELATED_WO
 | dai2025throughput | Dai, Deng, Li, Peng, Throughput-Optimal Scheduling Algorithms for LLM Inference and AI Agents | arXiv:2504.07347 v3, 18 May 2026, no venue | FULL | RW s2: "Work-conserving policies are throughput-optimal when service does not depend on cache state." | correct | Matches the abstract (work-conserving algorithms achieve maximum throughput for single servers with several classes, DAG and fork-join agent workflows). The model has no prefix cache state. Authors: v3 lists Dai, Deng, Li, Peng; v1 listed Li, Dai, Peng (WAIT cites it as "Li et al. 2025b"). Add the paper's own caveat, which is relevant to sessions that return to the server: it constructs a Rybko-Stolyar-type example where work-conserving scheduling fails under cyclic routing. |
 | nie2026queueing | Nie, Si, Zhou, A Queueing-Theoretic Framework for Stability Analysis of LLM Inference with KV Cache Memory Constraints | arXiv:2605.04595 v1, 6 May 2026; "Accepted in ICML 2026" (arXiv comments) | FULL | RW s2: "Memory-time capacity for one-shot requests." | correct | Paraphrase of: stability and instability conditions for LLM inference with computation and KV memory constraints, single requests (prompt then decode), no prefix reuse, no sessions. Use the real title. Predictions within 10% on GPU experiments. |
 | dong2026flow | Dong, Cao, Flow-Controlled Scheduling for LLM Inference with Provable Stability Guarantees | arXiv:2604.11001, 13 Apr 2026 | ABSTRACT | L-engine: "also does not mention prefix caching" | correct | Flow control limiting the rate at which prompts join the active set; stability conditions; decode-memory growth only. |
+| yao2026multiturn | Yao, Gao, Lyu, Grosof, Simchi-Levi, Multi-Turn LLM Conversations under the LRU Policy: Mean-Field Asymptotics and Hit Ratio Approximation | arXiv:2609.02027 v1, 2 Sep 2026; no venue | FULL (model, assumptions, appendix) | (not in any note; found by the scoop check) | added | Poisson conversation arrivals, i.i.d. turn counts and inter-turn gaps W, LRU; hit ratio has a closed-form limit as arrival rate and memory capacity grow proportionally; estimator checked on Qwen3-8B on Ascend NPUs. W is exogenous. Appendix B: raising the arrival rate so that compute is the bottleneck would let latency change the observed gaps, so the theory scales the rate with memory and the experiments keep the physical rate low and adjust the gaps. No thrashing, hysteresis or admission analysis. Same senior author as Ao et al. |
 
 ### C. Engines
 
@@ -77,7 +78,7 @@ Rows are grouped. "Notes" = the file(s) where the claim appears: RW = RELATED_WO
 | chen2026concur | Chen et al., CONCUR: High-Throughput Agentic Batch Inference of LLM via Congestion-Based Concurrency Control | ICML 2026, PMLR 306:17881-17891; arXiv:2601.22705 | FULL | RW s3: "AIMD cap on active agents driven by KV usage and hit rate. It reports 'middle-phase thrashing' on SGLang. Its convergence argument is informal." REF: hit rate 77.7% to 35.4% between 32 and 40 agents, "and an agent cap that fixes it" | correct | Title: the arXiv PDF's first page carries an older title ("Proactive Agent-Level Admission Control ..."); the PMLR title above is the published one. Rule: window +2 if KV usage U < 0.2; window x0.5 if U > 0.5 and hit rate H < 0.2. SGLang, H100 80 GB. SGLang's hit rate on DeepSeek-V3 (TP=8): 80.38% at batch 16, 77.72% at 32, 35.41% at 40 (Table 2). Speedups up to 4.09x (Qwen3-32B) and 1.90x (DeepSeek-V3). The O(log N) exit claim is a prose argument (convex recompute penalty), no proof. Continuum is cited only in related work (cache pinning), not compared. Caveat for REF: "fixes" is loose; with the cap the DeepSeek-V3 hit rate at batch 40 is still below the low-batch rates (the CONCUR column of Table 2 is not unambiguously recoverable from the extracted layout, so I did not quote it). |
 | wang2026xperf | Wang et al., Benchmarking LLM Serving Systems for Agentic AI Workloads with XPerf | arXiv:2608.20370 v1; submitted 19 Jun 2026 (announced under a 2608 id) | FULL | RW s3: "hit-rate collapse past a rate threshold, measured on an up-sweep only." RW Positioning: "PEEK, CONCUR, XPerf, CacheWise report prefix-cache thrashing empirically and propose mechanisms against it." | overstated | XPerf is a benchmarking and profiling framework, not a mechanism: it proposes no remedy (its lesson list advises designing prompts for prefix sharing). Observations that match our note: on vLLM v0.19.0 prefix-cache hit rate drops as request rate approaches saturation, and in fixed-concurrency runs SWE-agent throughput falls 38% from 25 to 200 concurrent requests and another workload falls 35% from 10 to 50, which it attributes to prefix-cache thrashing; evictions "during tool calls" are named. Only rate up-sweeps and fixed-concurrency runs, no down-sweep or burst. RW positioning sentence fixed. |
 | tiwari2026cachewise | Tiwari et al., CacheWise: Understanding Workloads and Optimizing KVCache Management for Efficiently Serving LLM Coding Agents | arXiv:2606.16824 v1, 15 Jun 2026 | FULL | RW s3 (listed); L-lru: "CacheWise (LRU thrashing at N>10)"; "prefix-aware scheduling and reuse-aware eviction in vLLM for coding agents" | correct | Confirmed. Evaluation launches N independent agent sessions at once and runs to completion (closed load): all systems are similar for N <= 10 and CacheWise is 2.7-3.5x better in completion time for N > 10. FCFS thrashing and LRU's blindness to future reuse are named as implications. Not an open-arrival or burst study. |
-| kang2026thunderagent | Kang et al., ThunderAgent | arXiv:2602.13692 v3, 30 Jun 2026 | ABSTRACT | L-engine: "program-aware scheduler targeting KV hit rate" | correct | Also cited by RR-Evict for thrashing risk. |
+| kang2026thunderagent | Kang et al., ThunderAgent | arXiv:2602.13692 v3, 30 Jun 2026 | FULL for the claims checked | L-engine: "program-aware scheduler targeting KV hit rate"; RW s3 listed it with no description | correct | The note is right but incomplete. The paper defines thrashing as total program memory demand above KV capacity, checks it periodically, and pauses and restores whole programs with high/low watermarks that form "a hysteresis window" (a control-loop anti-flapping device, not system hysteresis). Evaluated with a fixed number of parallel workflows (RL rollouts and agent benchmarks): baselines "suffer from severe throughput collapse once the workload exceeds memory limits"; re-prefill raises latency up to 7.14x. Compared with Continuum, adopted by SkyRL and NVIDIA Dynamo. No open-arrival burst, no metastability or recovery-threshold analysis. It is a deployed mechanism our evaluation must include (see Scoop check). |
 | pan2025kvflow | Pan et al., KVFlow | NeurIPS 2025; arXiv:2507.07400 | ABSTRACT + NeurIPS page (search) | RW s3 (listed); L: "KVFlow NeurIPS 2025" | correct | Workflow-aware eviction and prefetching for multi-agent workflows (Agent Step Graph). |
 | xia2026mori | Xia et al., MORI | arXiv:2606.00866, 30 May 2026 | ABSTRACT | RW s3 (listed); L-kv: "idleness ranking, CPU offload, real Claude Code traces" | correct | Matches the abstract (20-71% higher throughput than the best offloading baseline). |
 | abhyankar2024infercept | Abhyankar et al., InferCept | ICML 2024, PMLR 235:81-95; arXiv:2402.01869 | ABSTRACT + PMLR page (search) | RW s3 (listed); L-kv: "discard/preserve/swap for intercepted requests" | correct | Abstract: recomputation after interceptions is 37-40% of forwarding time. |
@@ -105,3 +106,123 @@ Rows are grouped. "Notes" = the file(s) where the claim appears: RW = RELATED_WO
 | patil2025bfcl | Patil et al., BFCL | ICML 2025, PMLR 267:48371-48392 | META | L-kv: "BFCL v4" (as Continuum's workload) | correct | Cite the ICML paper for BFCL; v4 is a later leaderboard release, not in that paper. |
 | qwen2024qwen25 | Qwen Team, Qwen2.5 Technical Report | arXiv:2412.15115 | ABSTRACT | workload of record uses Qwen2.5-7B | correct | Cite for the model. |
 | yu2022orca | Yu et al., Orca | OSDI '22 | META | (not named; the simulator is a continuous-batching model) | added | Standard cite for iteration-level (continuous) batching. |
+
+## Works not verified, and out of scope
+
+**In scope but not verified (do not cite until checked):**
+- LIRS detail "LRU on loops slightly larger than the cache": only the bibliographic record and the abstract-level idea were checked (the PDF host refused the connection and the ACM page returned 403). `refs.bib` has the entry for the reference itself.
+- EELRU "extended version was opened" (earlier agent's statement) and its journal version (Performance Evaluation 53(2), 2003): not opened by me.
+- Semantic Scholar forward-citation counts in `engine-sources-prefix-cache.md` (not re-run). The one citing paper it left unopened, arXiv 2604.26968, is a single-author KV-tiering paper first posted in April 2026 (before the SIC preprint) and is irrelevant.
+- The "GitHub replication, 393 Claude Code sessions" in `lru-cyclic-agent-kv.md`: the 393-session figure is the AgentX trace used by Liu et al. (reference 53 there). I did not open the replication repository.
+- The ICML "PACE" poster's relation to CONCUR (engine-sources note): not checked.
+- Engine-internals notes that are not part of the related-work text (`engine-alloc-semantics-vllm-sglang.md`: preemption order, retraction, over-admission): not re-read; they feed the simulator, not the citations.
+- Release year of SGLang v0.5.22 and vLLM v0.32.0: day and month only (19 and 18 Oct).
+- Venues of Pensieve, Mooncake, Parrot, CachedAttention and Marconi come from arXiv comment fields or search-result pages (class ABSTRACT or META). Autellix/Agentix: only the NSDI '26 presentation page seen in a search result.
+
+**Out of scope for this paper (named in `notes/lit/*.md` for other candidate projects; not verified, not in `refs.bib`):**
+- `agent-serving-gittins.md`: Hermes (2506.14851), FastServe (2305.05920), SSJF (2404.08509), Learning-to-Rank scheduling (2408.15792), Andes (2404.16283), Teola (2407.00326), Scully and Harchol-Balter (2111.10703), Chen, Ye and Zhou (2508.14544).
+- `agent-hpc-workloads.md`: RASER, ScienceFlow, AlphaLab, AI Research Preference Models, HyperSched, ASHA, 2506.02025, 2607.22242, AI Scientist, MLS-Bench, 2608.01995.
+- `preemptible-checkpointing.md`: Desai et al. (EuroMLSys 2026), Bautista-Gomez et al., Bougeret et al., Aupy et al., CheckFreq, Kokolis et al., Parcae, Bamboo, Oobleck, Varuna, Gemini, Check-N-Run.
+- `stratified-length-sampling.md`: Cost-Aware Learning (2604.28020), Zhao and Zhang, Katharopoulos and Fleuret, Pollux, WLB-LLM, Zeppelin, SlimPack, Hierarchical Balance Packing, Krell et al., Dataset Decomposition, Sequence Length Warmup.
+- `valid-agentic-tuning.md` (other than AutoTuneBench, which OUTLINE names): Hu and Tang (2610.09239), SIREN, Hsu and Shekhar, Pilditch, TUNA, KernelBench-Verified, R3, Hoefler and Belli, Howard and Ramdas, Kalibera and Jones, irace, KernelBand, Kevin.
+- Named only in the lit notes as context for WAIT and Dai et al.: Vidur, Sarathi-Serve, FasterTransformer, TensorRT-LLM.
+
+## Changes made to `notes/RELATED_WORK_prefix_meta.md`
+
+Structure kept; each change is also marked **[fixed]** or **[added]** in the file.
+
+| # | Where | Change | Reason |
+|---|---|---|---|
+| C1 | s1 Denning | Rewritten: the working set belongs to Denning CACM 1968; this paper shows the collapse and the keep-working-sets-in-memory rule; no plotted curve | misattributed |
+| C2 | s1 Bronson | Cold cache is one of four case studies (s2.2); Fig. 2 is the retry case; added definition and Huang et al. | overstated |
+| C3 | s1 Gibbens | Added fluid-limit and diffusion/tunnelling content | verified addition |
+| C4 | s1 Alvaro | Added title and content | missing title |
+| C5 | s1 LRU looping list | ARC moved out (scan resistance); LIRS reworded to weak locality; EELRU and Chou-DeWitt carry the loop claim | overstated |
+| C6 | s2 WAIT | "Non-work-conserving" marked as our characterisation; version and bound details | precision |
+| C7 | s2 SIC | Prefix-cache reuse explicitly abstracted away; SGLang runs have prefix caching off; remedies; version dates | precision |
+| C8 | s2 Dai | Author order note; added the cyclic-routing caveat | precision, relevant caveat |
+| C9 | s2 Nie | Real title; "memory-time capacity" was our paraphrase | overstated |
+| C10 | s2 | New bullet for Yao et al. (2609.02027) | scoop check |
+| C11 | s3 SGLang | Theorem scope (offline, cache at least the longest request); refresh details (128 requests, every 32 passes, gating conditions) | precision |
+| C12 | s3 PEEK | "Scheduling-induced thrashing" is LPM tie-breaking, not the 128 fallback; engines and W4 workload | overstated |
+| C13 | s3 Continuum | Added measured tool-time statistics | verifies REF's "(unverified)" figure |
+| C14 | s3 CONCUR | Venue pages, rule thresholds, hit-rate numbers | precision |
+| C15 | s3 XPerf | A benchmark, not a mechanism | overstated |
+| C16 | s3 ThunderAgent | Described (thrashing check, pause/restore with watermarks, closed concurrency, Dynamo) | was blank |
+| C17 | s3 DLPM, CacheWise, others | Short descriptions, venues | precision |
+| C18 | s3 RR-Evict, Randomization | Scope details | precision |
+| C19 | s3 Fancy Eviction | Trace-driven, overload not modelled, quick-demotion exception | overstated |
+| C20 | Positioning | XPerf no longer "proposes mechanisms"; ThunderAgent and Yao et al. added | follows C15, C16, C10 |
+
+## Statements in the other notes that need a fix (not changed: I was told to edit only the related-work note)
+
+- `THEORY_prefix_meta.md`, "What is (probably) new": "Bronson et al. ... with look-aside caches as the canonical example" is overstated (see the Bronson row). "Ao, Dong, Luo, Simchi-Levi (2606.15555). An empirical open-arrival threshold, with no sessions or prefix hits": the paper's theory is a saturated-input dynamical system (instability of the eviction-free fixed point, limit cycle) and its experiments use open Poisson arrivals; the phrase should say that. The open question about 2504.11320 ("whether they treat ordering by cache state") is answered: no, there is no cache state in the model.
+- `THEORY_prefix_meta.md`, Claim 1: the "furthest-next-use rule" should cite Belady 1966 (`belady1966study`).
+- `REFEREE_prefix_meta.md`: "Continuum reports roughly 0.9-1.9 s mean tool time (unverified)" is now verified (925 ms and 1923 ms; SD 3550 and 2133). "CONCUR ... an agent cap that fixes it" is loose: with the cap the DeepSeek-V3 hit rate at batch 40 still falls below its low-batch level (I could not read the CONCUR column of Table 2 unambiguously).
+- `OUTLINE_prefix_meta.md`, mechanisms in Contribution 3: add ThunderAgent-style pause/restore (and its deployment in NVIDIA Dynamo, see the Scoop check). The AutoTuneBench mention is acceptable as "protocols in that style".
+- `lit/lru-cyclic-agent-kv.md`: the 0.403 versus 0.491 pair comes from the Qwen To-B trace, not from the two production agent traces, and "baselines LRU only" for RR-Evict omits the completion-aware LRU baseline.
+- `lit/kv-mechanisms-continuum-peek-concur-wait.md`: CONCUR's arXiv PDF carries an older first-page title; cite the PMLR title.
+
+## Scoop check
+
+Date of search: 2026-10-25. Question: has anyone published or posted work on metastability, hysteresis, thrashing or collapse in LLM serving with prefix/KV caching, agentic or multi-turn workloads, or session caps or admission control for agent serving; and what is the status of 2606.15555?
+
+### How I searched
+- arXiv API (export.arxiv.org) keyword queries. Results: metastable with serving and cache (1 hit), hysteresis with KV cache (0), bistable or bistability with LLM (1, irrelevant), thrashing with agent and prefix (0), burst with agentic and prefix cache (1, irrelevant), admission with session and prefix cache (1), "prefix cache" with thrashing, hysteresis, bistability, metastability or collapse (1, irrelevant), KV cache with agent and admission, concurrency control or session cap (2), multi-turn KV with queueing, stability, fluid limit, mean-field or dynamical system (8), tool call with KV cache and serving (14).
+- A date-windowed listing of every arXiv paper from 2026-06-01 to 2026-10-26 whose text matches (agentic or agent or multi-turn) and (KV cache or prefix cache or prefix caching): June 39, July 26, August 35, September 47, October 44 results. I read all titles (re-querying the ranges that the summariser truncated) and opened the abstract pages of every title that could touch thrashing, collapse, admission, queueing or working sets (about 30).
+- Author queries for the Ao / Simchi-Levi group (all 19 arXiv papers by Ao; 30 listed for Simchi-Levi on LLM-related topics).
+- Web search (five queries, two in extended mode) for metastable, hysteresis, thrashing and admission wording in papers, blogs and engine issue trackers; the NVIDIA Dynamo engineering post was read in full.
+- Limits: titles and abstracts only for most hits, so a paper whose abstract does not use these words but whose body does would be missed; papers that mention neither "agent" or "multi-turn" nor "KV" or "prefix cache" in the indexed fields were not listed; conference submissions not yet public (MLSys 2027, OSDI/NSDI 2027) are invisible; the arXiv full-text field search is crude (several keyword queries returned zero hits for terms that surely occur somewhere).
+
+### Result in one paragraph
+No paper found claims metastability, hysteresis or bistability of the prefix-cache good state under open arrivals, and none runs a paired burst / no-burst / capped test on a real engine. The word "metastable" appears in exactly one LLM-serving abstract (Metronome, below), in a different sense. The empirical statement "hit rate collapses when concurrent agents exceed the cache" is published repeatedly (CONCUR, ThunderAgent, XPerf, PEEK, CacheWise) and is deployed in NVIDIA Dynamo, so it cannot be claimed as new; the novelty rests on the open-system, hysteresis and recovery-threshold framing, the pre-registered paired test, and the model. The nearest theory is from the Simchi-Levi group (WAIT, SIC, and the new multi-turn LRU hit-ratio model), whose natural next step would make the gap between turns depend on load.
+
+### Status of 2606.15555 (Service-Induced Congestion)
+- Versions: v1 14 Jun 2026; v2 19 Oct 2026 ("adds GPU experiments with benchmark workloads (Appendix D.4) and revises the figures"); v3 20 Oct 2026. 100 pages. Primary category math.OC. No journal reference or venue on the abstract page.
+- Does it now cover prefix reuse with tool calls? No. I read v3. The model keeps decode-only dynamics and says it abstracts away "prefix-cache reuse"; the new GPU experiments (SGLang; Qwen3-1.7B on H20 with IFEval and GPQA Diamond; Qwen2.5-1.5B on A800) run with prefix caching disabled; the words agent and multi-turn occur only in the motivation and in a remark about heterogeneity. Its remedies are rate-limited admission and length mixing. So v2 and v3 moved the paper toward real engines, not toward our topic.
+- Group activity: Ao has 19 arXiv papers, two on LLM serving (WAIT, SIC). Simchi-Levi is senior author on 2609.02027 (Yao et al., multi-turn LRU hit ratio, Sep 2026), which does model multi-turn sessions with prefix reuse but with exogenous turn gaps.
+
+### Hits, and overlap with our four contributions
+C1 = phenomenon on a real engine with a pre-registered paired burst test; C2 = thrashing-curve model mu(n) with metastable window and recovery threshold; C3 = unified evaluation of deployed mechanisms; C4 = saturation diagnostic. Threat is to novelty: none, low, medium or high.
+
+| Work | What it claims (evidence level) | C1 | C2 | C3 | C4 | Threat |
+|---|---|---|---|---|---|---|
+| Yao et al. 2609.02027 (Sep 2026; FULL) | Mean-field closed-form LRU hit ratio for multi-turn sessions under Poisson arrivals; exogenous turn gaps; capacity-provisioning estimator | no | partial: the hit-rate-versus-capacity part | no | partial: capacity provisioning | medium. Same group as WAIT and SIC; coupling gaps to latency is the natural next paper. It is the hit-rate component of mu(n) in the non-saturated regime and could also serve as a check on ours |
+| Ao et al. 2606.15555 v3 (FULL) | Instability and limit cycle from KV growth and eviction, decode-only, no prefix reuse; rate-limited admission | no | partial: instability theory | no | no | medium (theory neighbour, already cited) |
+| WAIT 2504.11320 v4 (FULL) | Fluid model, threshold admission, no prefix reuse | no | no | no | no | low |
+| CONCUR 2601.22705 (FULL) | Empirical middle-phase thrashing, AIMD agent cap, closed batches | partial (observation; no open arrival, no burst) | informal | mechanism we evaluate | no | medium; already the main prior art |
+| ThunderAgent 2602.13692 v3 (FULL) | Thrashing detection, pause and restore of programs with watermarks, throughput collapse beyond memory limits, closed concurrency | partial | no | mechanism we must add | no | medium for C3 |
+| NVIDIA Dynamo post on the PyTorch blog, updated 2026-10-08 (read in full) | Deployed session-aware admission: a ThunderAgent port that pauses ACTING programs at tool boundaries; pause at utilization 0.95 down to 0.80, resume at 0.85 or below (resume hysteresis); +12-16% throughput on SWE-bench; "working set" and "thrashing" language | no | no | yes: a deployed mechanism | no | medium for C3 (industry deployment of the cap idea) |
+| XPerf 2608.20370 (FULL) | Benchmark; hit rate drops toward saturation on rate up-sweeps; fixed-concurrency throughput falls 35-38% | partial (up-sweep only) | no | no | no | low |
+| PEEK 2607.02525 (FULL) | Queue-aware eviction and scheduling; LPM tie-break thrashing | no | no | mechanism | no | low |
+| Metronome 2607.02640 (abstract) | Full-duplex speech serving: "the collapse is metastable" (run-to-run variance near the threshold), caused by session KV exhausting the pool; a per-session KV window removes it (0/20 versus 14/20 runs); an admission controller over-admits without the window | no (different mechanism, no prefix-cache loop) | no | no | no | low, but a reviewer may cite it for the word and for the admission-controller point |
+| KVSET 2609.27746 (abstract) | KV working set = minimum capacity for a target hit rate; online Mattson-stack estimator | no | partial: working-set concept | no | partial: capacity-planning diagnostic | low to medium for C4 |
+| EfficientAgent 2609.33762 (abstract) | Reuse working set sizes the host tier; stack-distance model; predictions made before the experiments | no | partial | no | partial | low |
+| MISA-T 2608.11152 (abstract) | Adaptive session admission with KV-aware accounting for mixed RL rollouts, +53% throughput | no | no | mechanism (admission) | no | low |
+| Microsoft M365 traces 2610.22863 (abstract) | Production KV residency; a one-hour idle cap cuts the memory ceiling 3.6x for a small recompute increase; LRU at a tenth of peak budget recomputes 63% of calls | no | no | no | no | none; useful workload data |
+| Copilot traces 2608.00101, TraceLab 2606.30560, Agentic AI Workload Characteristics 2605.26297 (abstracts) | Production or collected agent traces: hit rate about 90% within a turn and about 55% across turn boundaries; heavy-tailed tool calls; user idle gaps of minutes | no | no | no | no | none; evidence for the workload-realism critique (REFEREE reason 3) |
+| AgentServeSim 2606.09613, ServeTwin 2610.02732 (abstracts) | Simulators of agent-program serving with KV retention across tool gaps; validated against vLLM (JCT error about 5%) | no | no | partial (policy comparison in simulation) | no | low |
+| Vesta 2610.14686, SAGA 2605.00528, UNISON 2609.09643, TokenCake, MORI, Continuum, KVFlow, CacheWise | Routing, program-level scheduling, eviction, retention | no | no | mechanisms | no | low |
+| AgentReplay 2609.32283 (abstract) | Token-wise replay for fair serving benchmarks | method | no | no | no | none; relevant to how we replay |
+| Our own public overview, GitHub AkshatValse/Nova-Research-Overview (surfaced by web search) | Project overview with the thrashing-curve and burst framing | n/a | n/a | n/a | n/a | not a threat; a dated public record of the idea |
+
+### What this means for the four contributions
+1. C1 (phenomenon with a pre-registered paired test): no overlap found. The empirical "hit rate collapses with concurrency" is already published, so the claim has to be the open-system, burst-triggered, history-dependent version, shown with a no-burst control and a capped arm.
+2. C2 (model, window, recovery threshold): the Simchi-Levi group is the live risk. Their three papers cover decode-only instability, admission thresholds, and exogenous-gap multi-turn LRU. A paper that lets the gap depend on load would land on our model. The mitigation is speed and the real-engine data.
+3. C3 (deployed mechanisms): the list is now longer. ThunderAgent-style pause and restore (in NVIDIA Dynamo and SkyRL) and MISA-T-style session admission should be evaluated next to the CONCUR-style cap, and the write-up should say that the cap idea is already deployed.
+4. C4 (saturation diagnostic): KVSET and EfficientAgent are capacity-planning diagnostics based on stack distance. They are not the closed-population saturation test, but a reviewer will ask how ours differs.
+
+## Counts
+
+Works that appear in the notes and were audited (the "fluid limits" row names no work; added works are not counted): 46.
+
+| Verdict | Count | Works |
+|---|---|---|
+| correct | 40 | all others |
+| overstated | 5 | Bronson (cache as canonical example), ARC (looping list), PEEK (128 fallback), XPerf (proposes mechanisms), Fancy Eviction (LRU hard to beat, non-overload) |
+| misattributed | 1 | Denning thrashing paper (working set) |
+| not found | 0 | none; Autellix's NSDI '26 venue was confirmed. The "fluid limits" reference is simply not named |
+
+Evidence classes over the 48 entries in `refs.bib`: FULL 20, ABSTRACT 19, META 9.
+
+Also added by this audit (verified, not in the notes): Denning CACM 1968, Huang et al. OSDI '22, Orca, Yao et al. 2609.02027.
