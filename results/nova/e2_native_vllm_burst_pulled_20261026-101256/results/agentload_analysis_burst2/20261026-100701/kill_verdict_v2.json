@@ -1,0 +1,321 @@
+{
+  "schema": "kill_verdict_v2",
+  "criterion": "TRAPPED iff the completion rate (trap_v2.rate_estimator; default: uncached prefill tokens/s over the post-burst window vs E0a's all-miss rate) is within +-rate_tolerance of its all-miss reference AND the session backlog slope > slope_frac*(lambda-lambda_miss) [and lambda > lambda_miss]; DRAINING iff slope<0; RECOVERED iff hit > recovered_hit_above and the backlog (trap_v2.recovered_backlog_metric; default outstanding = requests in flight + gate queue) < recovered_backlog_below at the end. PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= pass_fraction_min of the seeds.",
+  "rule": {
+    "eval_from_s": 4500,
+    "min_eval_s": 600.0,
+    "rate_estimator": "uncached_tokens",
+    "rate_tolerance": 0.15,
+    "slope_frac": 0.5,
+    "slope_dt_s": 10.0,
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "recovered_backlog_metric": "outstanding",
+    "end_window_s": 300.0,
+    "pass_fraction_min": 0.6666666666666666,
+    "min_seeds": 3,
+    "trace_bin_s": 50.0
+  },
+  "hit_metric": "frac_turns_cached_gt50",
+  "prereg": {
+    "provided": true,
+    "provenance": {
+      "path": "/work/classtmp/avalse/swapp/repo_next/configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml",
+      "sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5",
+      "git_last_commit": "a78ce0784d8235fa942b838dd79b6d9393c2f599",
+      "git_last_commit_unix": 1792969578.0,
+      "git_last_commit_time": "2026-10-25T18:06:18-05:00",
+      "git_first_commit": "a78ce0784d8235fa942b838dd79b6d9393c2f599",
+      "git_first_commit_unix": 1792969578.0,
+      "git_first_commit_time": "2026-10-25T18:06:18-05:00",
+      "git_tracked": true,
+      "git_modified_since_commit": false,
+      "committed_clean": true
+    },
+    "problems": [
+      {
+        "severity": "warn",
+        "code": "mu300_far_from_lambda_miss",
+        "message": "|mu(300)/lambda_miss - 1| = 0.507: only a check (all n sessions start together, so mu(300) in the 1800 s window is transient-biased: simulator +65%); the registered recovery threshold is lambda_miss"
+      }
+    ],
+    "status": "EXPLORATORY",
+    "window": {
+      "lo": 0.07153402100919228,
+      "hi": 0.14306804201838455,
+      "lo_mult": 1.0,
+      "hi_mult": 2.0,
+      "lambda_ref": 0.07153402100919228
+    },
+    "engine_cell_label": "vllm-fcfs",
+    "registered_lambda_mults": [
+      1.35,
+      1.65
+    ],
+    "valid": true,
+    "committed_clean": true,
+    "exploratory": {
+      "parent": {
+        "path": "configs/agentload_prereg_2026-10-24.yaml",
+        "sha256": "2a6d680a9615bba962a5673d6db6b3e4ca5102bf778ca974cea46147f5cc0ac6"
+      },
+      "allowed_arms": [
+        "burst"
+      ],
+      "inherited_from_engine_cell_label": "sglang-fcfs-r1",
+      "inherited_window_lambda_ref": 0.07153402100919228,
+      "boundary_note": "Window, lambda multiples, protocol and trap rule are inherited from sglang-fcfs-r1; the window and lambda multiples are not measured for this engine cell. Parent predictions are context only, never decisive.",
+      "calibration_override": {
+        "path": "prereg/inputs/2026-10-25-vllm/calibration.json",
+        "sha256": "d27db7bd05fd6a618e0ff574d3ce9d240ca5ed822377ac89008ccda3caf0eb9f"
+      }
+    },
+    "window_scope": "inherited_parent_not_measured_for_cell"
+  },
+  "pre_registered": false,
+  "fcfs_substr": "fcfs",
+  "cells": [
+    {
+      "label": "vllm-fcfs",
+      "rate_mult": 1.35,
+      "lambda": 0.08864487840193404,
+      "lambda_miss": 0.06566287289032151,
+      "seeds": {
+        "0": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": true,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "trapped"
+          },
+          "pass": false
+        },
+        "1": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": false,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "indeterminate"
+          },
+          "pass": false
+        },
+        "2": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": true,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "trapped"
+          },
+          "pass": false
+        }
+      },
+      "n_seeds_seen": 3,
+      "n_seeds_complete": 0,
+      "n_pass": 0,
+      "frac_pass": 0.0,
+      "burst_trapped_frac": 0.6666666666666666,
+      "noburst_good_frac": null,
+      "capped_recovered_frac": null,
+      "enough_seeds": true,
+      "meets": false,
+      "incomplete": [
+        "0",
+        "1",
+        "2"
+      ],
+      "diagnosis": "EXPLORATORY: per-run TRAPPED / RECOVERED / neither; no decisive paired-arm kill-test verdict",
+      "in_registered_window": null,
+      "pairing_problems": {},
+      "meets_valid_pairing": false,
+      "registered_label": true,
+      "registered_lambda": true,
+      "registration_blockers": {},
+      "decisive_eligible": false,
+      "exploratory": true
+    },
+    {
+      "label": "vllm-fcfs",
+      "rate_mult": 1.65,
+      "lambda": 0.10834374026903049,
+      "lambda_miss": 0.06566287289032151,
+      "seeds": {
+        "0": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": true,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "trapped"
+          },
+          "pass": false
+        },
+        "1": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": false,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "indeterminate"
+          },
+          "pass": false
+        },
+        "2": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": true,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "trapped"
+          },
+          "pass": false
+        }
+      },
+      "n_seeds_seen": 3,
+      "n_seeds_complete": 0,
+      "n_pass": 0,
+      "frac_pass": 0.0,
+      "burst_trapped_frac": 0.6666666666666666,
+      "noburst_good_frac": null,
+      "capped_recovered_frac": null,
+      "enough_seeds": true,
+      "meets": false,
+      "incomplete": [
+        "0",
+        "1",
+        "2"
+      ],
+      "diagnosis": "EXPLORATORY: per-run TRAPPED / RECOVERED / neither; no decisive paired-arm kill-test verdict",
+      "in_registered_window": null,
+      "pairing_problems": {},
+      "meets_valid_pairing": false,
+      "registered_label": true,
+      "registered_lambda": true,
+      "registration_blockers": {},
+      "decisive_eligible": false,
+      "exploratory": true
+    }
+  ],
+  "runs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-224320-1",
+      "label": "vllm-fcfs",
+      "rate_mult": 1.35,
+      "seed": 0,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-224320",
+      "label": "vllm-fcfs",
+      "rate_mult": 1.65,
+      "seed": 0,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-224336",
+      "label": "vllm-fcfs",
+      "rate_mult": 1.35,
+      "seed": 1,
+      "arm": "burst",
+      "classification": "neither",
+      "state": "indeterminate",
+      "trapped": false,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-224445",
+      "label": "vllm-fcfs",
+      "rate_mult": 1.65,
+      "seed": 1,
+      "arm": "burst",
+      "classification": "neither",
+      "state": "indeterminate",
+      "trapped": false,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-225704",
+      "label": "vllm-fcfs",
+      "rate_mult": 1.35,
+      "seed": 2,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261026-005542",
+      "label": "vllm-fcfs",
+      "rate_mult": 1.65,
+      "seed": 2,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "c5037cac6003c4e98da89f88dae953bfe68bb21a27a4e3e5e3dab3c8891aeab5"
+    }
+  ],
+  "fcfs_cells_meeting_rule": [],
+  "kill_test_pass_rule_only": false,
+  "kill_test_pass_decisive": null,
+  "decisive_cells": [],
+  "decisive_note": "a decisive PASS needs a valid, committed, clean FILLED pre-registration file whose last commit predates every run of the cell, the registered cell (label == inputs.engine_cell_label; 'fcfs'-substring matches such as vllm-fcfs or -native do NOT count), a registered lambda multiple inside its window, and every run bound to the file (meta.prereg_sha256) and to its protocol; without --prereg or with a derived EXPLORATORY file the verdict is exploratory. A derived file's window is inherited from its parent cell, not measured for the exploratory engine",
+  "pairing_problems": {},
+  "skipped_runs": [],
+  "legacy_secondary_burst_arm": {
+    "vllm-fcfs|1.35": {
+      "n_burst_runs": 3,
+      "n_legacy_trap": 3
+    },
+    "vllm-fcfs|1.65": {
+      "n_burst_runs": 3,
+      "n_legacy_trap": 3
+    }
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}

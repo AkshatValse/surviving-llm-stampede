@@ -1,0 +1,2 @@
+label,rate_mult,lambda,lambda_miss,n_seeds_seen,n_seeds_complete,n_pass,frac_pass,burst_trapped_frac,noburst_good_frac,capped_recovered_frac,enough_seeds,meets,diagnosis,in_registered_window,meets_valid_pairing,registered_label,registered_lambda,decisive_eligible,exploratory
+vllm-fcfs,1.35,0.08864487840193404,0.06566287289032151,1,0,0,0.0,1.0,,,False,False,EXPLORATORY: per-run TRAPPED / RECOVERED / neither; no decisive paired-arm kill-test verdict,,False,True,True,False,True
