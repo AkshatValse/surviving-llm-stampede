@@ -8,6 +8,8 @@ Left, 300k-token pool (Stage C): real single runs; simulator = round-6 calibrate
 3-seed mean +- 1 s.e. (VALIDATION.md, registered seeds 0-2).
 Right, native pool (955,757 tokens, sized by SGLang): real single runs; simulator = the blind prediction B4 at the nearest
 simulated pool (900k tokens, registered seed 0, frozen before any native run; the real pool is 6% larger).
+Also on the right: the round-8 simulator run B4n at the real native pool (955,757 tokens, mixed batching, 3-seed mean; its spec
+was written after the real native curve was known, so it is not a blind test) and the native registered cap n_cap = 64.
 lambda_miss = E0a all-miss capacity (turns-based): 0.0715 (300k) and 0.0718 (native) sessions/s.
 Run:  python figures/paper/fig2_thrashing_curve.py
 """
@@ -34,6 +36,8 @@ CAL_300K = "results/nova/e0a_1707263x_pulled_20261023-142037/analysis_local_comb
 CAL_NATIVE = "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json"
 NATIVE_POOL_TOKENS = 955_757       # max_total_num_tokens reported by SGLang (notes/LOG.md, 2026-10-25 native entry)
 N_CAP_E2 = 20                      # registered session cap of E2 (configs/agentload_prereg_2026-10-24.yaml)
+SIM_B4N = "results/r8_native_report/20261025-150146/mixed_curves_curve_runs.csv"   # B4n: pool 955,757, mixed, seeds 0-2
+N_CAP_NATIVE = 64                  # registered native cap (configs/agentload_prereg_2026-10-25_native.yaml)
 
 
 def main() -> None:
@@ -46,6 +50,9 @@ def main() -> None:
     b4 = pd.read_csv(S.src(SIM_900K))
     s900 = b4[(b4["mode"] == "mixed") & (b4["kv_k"] == 900) & (b4["set"].str.startswith("registered"))].sort_values("n")
     assert len(s900) == 7 and (s900["seed"] == 0).all(), len(s900)
+    b4n = pd.read_csv(S.src(SIM_B4N))
+    assert set(b4n["seed"]) == {0, 1, 2} and (b4n["workload"] == "exp5").all()
+    b4n = b4n.groupby("n", as_index=False)[["mu", "hit_rate"]].mean().sort_values("n")
     lam300 = json.loads(S.src(CAL_300K).read_text())["lambda_miss_turns_based"]
     lamnat = json.loads(S.src(CAL_NATIVE).read_text())["lambda_miss_turns_based"]
 
@@ -63,6 +70,9 @@ def main() -> None:
             axm.plot(s300["n"], s300["mu_mean"], color=S.SIM, lw=1.0, ls=(0, (4, 2)), marker="o", mfc="white", mec=S.SIM, ms=2.6, mew=0.7, zorder=2)
             axh.plot(s300["n"], s300["hit_mean"], color=S.SIM, lw=1.0, ls=(0, (4, 2)), marker="o", mfc="white", mec=S.SIM, ms=2.6, mew=0.7, zorder=2)
         else:
+            for ax, col in ((axm, "mu"), (axh, "hit_rate")):
+                ax.plot(b4n["n"], b4n[col], color=S.LGRAY, lw=0.9, ls=(0, (1, 1.2)), marker="s", mfc="white", mec=S.GRAY, ms=2.4,
+                        mew=0.6, zorder=1.5)
             axm.plot(s900["n"], s900["mu"], color=S.SIM, lw=1.0, ls=(0, (4, 2)), marker="D", mfc="white", mec=S.SIM, ms=3.2, mew=0.8, zorder=2)
             axh.plot(s900["n"], s900["hit_rate"], color=S.SIM, lw=1.0, ls=(0, (4, 2)), marker="D", mfc="white", mec=S.SIM, ms=3.2, mew=0.8, zorder=2)
         # real
@@ -82,6 +92,10 @@ def main() -> None:
     axes[0, 0].axvline(N_CAP_E2, color=S.GREEN, lw=0.8, ls=(0, (3, 2)), zorder=1)
     axes[1, 0].axvline(N_CAP_E2, color=S.GREEN, lw=0.8, ls=(0, (3, 2)), zorder=1)
     axes[0, 0].text(N_CAP_E2 * 0.93, 0.52, r"$n_{\mathrm{cap}}$ = 20" "\n(E2 cap)", fontsize=7.5, color=S.GREEN, ha="right", va="center")
+    for ax in axes[:, 1]:
+        ax.axvline(N_CAP_NATIVE, color=S.GREEN, lw=0.8, ls=(0, (3, 2)), zorder=1)
+    axes[1, 1].text(N_CAP_NATIVE * 0.93, 0.62, r"$n_{\mathrm{cap}}$ = 64" "\n(native cap)", fontsize=7.5, color=S.GREEN, ha="right",
+                    va="center")
     axes[0, 0].set_ylim(0, 0.56)
     axes[0, 0].set_ylabel("completed sessions / s")
     axes[1, 0].set_ylim(-0.03, 1.03)
@@ -94,8 +108,10 @@ def main() -> None:
     h2 = [Line2D([0], [0], color=S.REAL, marker="o", ms=3.8, lw=1.1, label="real, sessions/s"),
           Line2D([0], [0], color=S.REAL, marker="+", ms=4.2, mew=0.8, lw=0, label="real, turns-based"),
           Line2D([0], [0], color=S.SIM, ls=(0, (4, 2)), marker="D", mfc="white", ms=3.0, mew=0.8, lw=1.0,
-                 label="simulator, 900k pool\n(blind prediction B4)")]
-    axes[0, 1].legend(handles=h2, loc="upper right", bbox_to_anchor=(1.0, 1.0), fontsize=7.5)
+                 label="simulator, 900k pool\n(blind prediction B4)"),
+          Line2D([0], [0], color=S.LGRAY, ls=(0, (1, 1.2)), marker="s", mfc="white", mec=S.GRAY, ms=2.4, mew=0.6, lw=0.9,
+                 label="simulator, 955,757 tokens\n(B4n, not blind; 3 seeds)")]
+    axes[1, 1].legend(handles=h2, loc="lower left", bbox_to_anchor=(0.0, 0.0), fontsize=7.5)
     fig.subplots_adjust(left=0.085, right=0.99, top=0.93, bottom=0.115, hspace=0.12, wspace=0.07)
     S.save(fig, "fig2_thrashing_curve")
     S.finish("fig2_thrashing_curve")
