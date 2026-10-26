@@ -302,6 +302,9 @@ Short names for the sources used most often:
 | 7500 s, 30,000 s | 10 | horizons | REG; R7 | d279b7b, c653498 |
 | 8700 s | 10 | horizon of the unrun vLLM NOBURST arm (the protocol's run length) | VREG (inherited `duration_s: 8700`) | a78ce07 |
 | 2.0, 5.5 | 10 | largest all-stable multiples, E0b and native E0b | E0B; NE0B | cfbc702, f3f55ab |
+| 64 whichever of 64, 80; no point between 48 and 64 | 10 | native cap rule outcome if mu(80) were the peak; grid gap below the cap | NREG (`mu_by_n`: mu(48) 0.4311, mu(64) 0.47889, mu(80) 0.47722; `n_cap_ambiguous: true`); derived: 0.95 x 0.47889 = 0.4549 and 0.95 x 0.47722 = 0.4534, both above mu(48) and below mu(64); NAT grid 24, 48, 64, 80, ... | b8c19ec, fa265c2 |
+| 32 to 48: 17062103, 17062104; 80 to 96: 17096856, 17096857 | 10 | the cliff of each closed curve falls between two jobs on different nodes | job logs: `results/nova/stageC_1706210x_pulled_20261022-125454/logs/pm-sglang-17062103.out` (nova22-gpu-1; n = 16, 20, 24, 32), `pm-sglang-17062104.out` (nova22-gpu-3; n = 48, 96, 300); `results/nova/r7_native_grid_vllm_pulled_20261025-145126/logs/pm-sglang-17096856.out` (nova22-gpu-2; n = 24, 48, 64, 80), `pm-sglang-17096857.out` (nova22-gpu-1; n = 96, 128, 300); LOG (2026-10-25 native entry) | d0235a7, fa265c2; 17062103-04, 17096856-57 |
+| collapsed side on different nodes; all three nodes | 10 | the collapsed side of the two curves ran on nova22-gpu-3 (300k) and nova22-gpu-1 (native); E2 and native E2 each ran on nova22-gpu-1, -2 and -3 | the four Stage C job logs above; `results/nova/e2_170933xx_pulled_20261025-144558/logs/pm-sglang-170933*.out` and `results/nova/e2_native_vllm_burst_pulled_20261026-101256/logs/pm-e2n-171021*.out` (`hostname`) | d0235a7, fa265c2, 49fbc7b, f116cf3 |
 | twice; 2.0 | Abs, 1, 11 | from empty: stable in single 3000 s runs up to 2.0 x lambda_miss, unstable at 2.5 | E0B (stable at 2.0, unstable at 2.5) | cfbc702 |
 
 ## Appendices
@@ -354,7 +357,7 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 2.5, 4.0 | Abs, 1, 3.4, 5.4, 5.5, 6, 10, 11, T1, F4, A, B | registered native multiples of lambda_ref | NREG (`lambda_mults`) | b8c19ec |
 | 0.1795, 0.2872 | 5.4, F4, B | registered native rates, sessions/s | NE2 (`lambda` 0.179494, 0.287190) | f116cf3 |
 | 64 | Abs, 1, 5.4, 5.5, 6, 8, 10, F2, F4, T1, T2, A, B | registered native cap n_cap (smallest within 5%; also the argmax) | NREG (`n_cap: 64`, `n_cap_argmax: 64`) | b8c19ec |
-| 0.35% | 5.4, 10, B, T2 | mu(80) within 0.35% of mu(64) (native, one run each) | NREG `fill_problems` n_cap_ambiguous ("within 0.00348"); derived from NAT: 1 - 0.477218 / 0.478886 = 0.348% | b8c19ec |
+| 0.35% | 5.4, 10, B | mu(80) within 0.35% of mu(64) (native, one run each) | NREG `fill_problems` n_cap_ambiguous ("within 0.00348"); derived from NAT: 1 - 0.477218 / 0.478886 = 0.348% | b8c19ec |
 | pre-registered, decisive pass at both rates | Abs, 1, 5.4, B | native verdict | NE2 `kill_verdict_v2.json` (`pre_registered` true, `kill_test_pass_decisive` true, decisive cells 2.5 and 4.0) | f116cf3 |
 | T T T; G G G; R R R (6 of 6 each) | Abs, 1, 5.4, 6, 8, T1 | native per-seed states | NE2 (`state`; NOBURST state "recovered" with `good` true) | f116cf3 |
 | 0.000 | T1, 5.4 | native BURST hit fraction over the window | NE2 (`hit_eval` 0.0 in all six BURST rows) | f116cf3 |
@@ -368,14 +371,14 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 15.6-18.5; 28.2-33.6; 28.1-33.5; 16-34 | 5.4, 8, T1, A | native NOBURST / CAPPED mean backlog | NE2 (`backlog_eval_mean` NOBURST 18.46, 15.59, 18.22; 33.63, 28.22, 28.54; CAPPED 18.46, 15.57, 18.27; 33.46, 28.12, 28.54) | f116cf3 |
 | < 0.003; < 0.004 | T1 | native NOBURST / CAPPED slopes in absolute value | NE2 (`backlog_slope` between -0.00109 and 0.00211 at 2.5x; between -0.00329 and 0.00210 at 4.0x) | f116cf3 |
 | p = 1/64 | 5.4 | one-sided sign test, native BURST hit < NOBURST hit over 6 pairs | DERN `e2_native_counts.csv` (6 of 6, p 0.015625) | f03c0d8 (r8/paper) |
-| 12 of 12, [0.76, 1.00]; 11 of 12, [0.65, 0.99]; 12 of 12 at zero hits | 5.4, 8 (11 of 12) | counts pooled over E2 and native E2, Wilson 95% | DERN `e2_native_counts.csv` (pooled rows: 0.7575-1.0; 0.6461-0.9851) | f03c0d8 (r8/paper) |
+| 12 of 12, [0.76, 1.00]; 11 of 12, [0.65, 0.99]; 12 of 12 at zero hits | 5.4, 8 (11 of 12) | counts pooled post hoc over E2 and native E2, Wilson 95% (descriptive; no registration declares a pooled count) | DERN `e2_native_counts.csv` (pooled rows: 0.7575-1.0; 0.6461-0.9851) | f03c0d8 (r8/paper) |
 | 0.63-0.76; 0.21-0.33 | 5.4 | BURST hit fraction in the 100 s window containing the burst, native and 300k | DERN `burst_hit_onset.csv` (`hit_burst_window` native 0.6324-0.7582; 300k 0.2137-0.3319); F1R (0.21-0.33) | f03c0d8 (r8/paper), c974070 |
 | 300-600 s after the burst | 5.4 | native BURST: first 100 s window from which no later window has a hit | DERN `burst_hit_onset.csv` (`zero_hit_from_after_burst_s` 400, 500, 400, 400, 300, 600) | f03c0d8 (r8/paper) |
 | 155-231; 100-200 s; 658-1379 | 5.4 | native BURST backlog minimum after the burst, when, and over the last 300 s | DERN `e2_native_burst_backlog.csv` (`backlog_min_after_burst` 167.7, 161.1, 154.8, 231.1, 228.7, 201.5; `t_min_after_burst_s` 150, 150, 200, 100, 100, 100; `backlog_eval_last300` 711.2, 657.9, 689.0, 1379.0, 1284.8, 1321.0) | f03c0d8 (r8/paper) |
 | 0.103-0.146 | 5.4 | native BURST session completion rate over the window | NE2 (`rate_sessions` 0.1093, 0.1033, 0.1120; 0.1340, 0.1370, 0.1460) | f116cf3 |
 | 512-583 s; 837-937 s; 10-23% sooner; -23% | 5.4, 10 | native CAPPED gate first empty after the burst; ratio to the fluid estimate | DERN `e2_native_capped_drain.csv` (582.8, 511.6, 542.0; 936.8, 836.6, 900.4; ratio 0.766-0.898) | f03c0d8 (r8/paper); 17102175, 81, 87, 78, 84, 90 |
 | 6 to 13 times | 5.4, 8 | 200 burst sessions vs 16-34 in the good state | derived: 200 / 33.6 = 6.0, 200 / 15.6 = 12.8 | - |
-| 549-1130 | T2, 5.5 | native BURST outstanding backlog (requests) | NE2 (`outstanding_eval_mean` 593.7, 549.2, 575.3; 1129.7, 1088.9, 1104.0) | f116cf3 |
+| 549-594; 1089-1130 | T2, 5.5 | native BURST outstanding backlog (requests) at 2.5x and 4.0x | NE2 (`outstanding_eval_mean` 593.7, 549.2, 575.3; 1129.7, 1088.9, 1104.0) | f116cf3 |
 | 13 minutes; 17:31; 17:44 | B | native registration commit vs first native E2 run start | `git log -1 --format=%ci b8c19ec` (17:31:16); earliest native E2 run `meta.json` `start_time` 2026-10-25T17:44:02 (job 17102175) | b8c19ec, f116cf3 |
 | 21bf7c03...76c1 | B | native registration SHA-256 | NE2 `kill_verdict_v2.json` (`prereg.provenance.sha256`); `sha256sum` of the committed file | f116cf3 |
 | 0.2650, 0.4311, 0.4789, 0.4772, 0.1228, 0.0667, 0.1006; 0.4789 | B | native registered mu(n) and mu* | NREG (`mu_by_n`, `mu_max`) | b8c19ec |
@@ -396,15 +399,19 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 10 of 10 at 1.5-5.5 | 5.5, T2 | B2n stable runs at the five real stable multiples, both modes | PREDN ("Stable fraction at exactly the real E0b grid") | e3ea48f |
 | 0.5 grid | 5.5 | B2n multiples 1.5, 2.0, ..., 7.5 | `configs/r8_native_predict.yaml` (`r7.edge.multiples`) | 29728e3 |
 | 2.85, 4.65; 2.65, 4.35 | 5.5, T2 | B3n test points (mixed; separate) | PREDN (B3n table) | e3ea48f |
-| 1.09-1.14 | 5.5, T2 | B3n trapped token ratio (trapped runs, both modes) | PREDN ("The trapped runs process 1.09 to 1.14 x"); `{mixed,separate}_pairs_classified_runs.csv` (`token_ratio` of trapped rows 1.0859-1.1400) | e3ea48f |
-| 460-1333 | 5.5, T2 | B3n trapped backlog (waiting requests) | PREDN ("mean backlog 460 to 1333 requests") | e3ea48f |
+| 6-16% | Abs, 1, 5.5 | B3n's test points above the registered native multiples (2.5, 4.0), in multiples of lambda_miss | derived: 2.65 / 2.5 = 1.06, 2.85 / 2.5 = 1.14, 4.35 / 4.0 = 1.0875, 4.65 / 4.0 = 1.1625 (in sessions/s: 0.1891, 0.2053 vs 0.1795 and 0.3105, 0.3350 vs 0.2872, 5-17%) | e3ea48f, b8c19ec |
+| 9 of 10 at 2.85; seed 1 recovers | 5.5, T2 | B3n BURST trapped at its low mixed point; the weak spot it flagged | PREDN (B3n table; "The one weak spot is the low point of the mixed mode (2.85 x, 9/10)") | e3ea48f |
+| 7 of 10; 9 of 10, 10 of 10 | T2 caption | B3n per-arm pass rule; seeds in which all three arm conditions hold (mixed 2.85 x; the other three points) | `configs/r8_native_predict.yaml` (`pass_min_frac` comment: ">= ceil(2/3 * n_seeds - 1e-9) seeds (7 of 10)"); PREDN (B3n heading "PASS by >= 7/10 on all three arms"); derived from `{mixed,separate}_pairs_classified_runs.csv` per seed: BURST TRAPPED and NO_BURST RECOVERED and BURST_CAP RECOVERED in 9, 10, 10, 10 of 10 seeds | 29728e3, e3ea48f |
+| spec after the native curve; cap 64 from B4n | 5.5, C | B2n and B3n share the spec written after STATE listed the native curve; B3n's CAPPED cap is the simulated curve's cap | STN (6793fb7, 14:47:07); `git log -1 --format=%ci 29728e3` (14:49:39); `configs/r8_native_predict.yaml` (B3n `cap = smallest grid n within 5% of the turns-based argmax of the curve`); PREDN (B4n: "cap n ... used by the CAPPED arm: 64") | 6793fb7, 29728e3, e3ea48f |
+| 1.086-1.109 (low points); 1.119-1.140 (high points) | 5.5, T2 | B3n trapped token ratio per point, trapped BURST rows (burst 200) | PREDN ("The trapped runs process 1.09 to 1.14 x (mixed 4.65 x: 1.132 to 1.140; separate 4.35 x: 1.119 to 1.126)"); `{mixed,separate}_pairs_classified_runs.csv` (`token_ratio` of trapped BURST rows: separate 2.65 x 1.0859-1.0937, mixed 2.85 x 1.1000-1.1094; separate 4.35 x 1.1192-1.1260, mixed 4.65 x 1.1324-1.1400) | e3ea48f |
+| 460-643 (low points); 1067-1333 (high points) | 5.5, T2 | B3n trapped backlog per point (waiting requests) | PREDN ("mean backlog 460 to 1333 requests"); `{mixed,separate}_pairs_classified_runs.csv` (`backlog` of trapped BURST rows: separate 2.65 x 460.1-586.0, mixed 2.85 x 538.7-642.7; separate 4.35 x 1067.0-1195.5, mixed 4.65 x 1201.5-1332.8) | e3ea48f |
 | 0.928-0.936 | 5.5, T2 | B3n NOBURST and CAPPED hit | PREDN ("hit 0.93 (0.9275 to 0.9363)") | e3ea48f |
 | 9/10 to 10/10 | T2 | B3n BURST trapped (9/10 at mixed 2.85x, 10/10 at the other three points) | PREDN (B3n table) | e3ea48f |
 | 15% | 5.5 | registered rate tolerance quoted for B3n's warning | NREG (`rate_tolerance: 0.15`) | b8c19ec |
-| peak n = 72, 0.532; -10% | 5.5, T2 | B4n seed-mean peak (sessions-based; 0.537 turns-based) vs real 0.479 | PREDN (landmarks: peak n 72, [sessions-based] peak mu 0.5317); derived: 0.47889 / 0.5317 - 1 = -9.9% | e3ea48f |
+| peak n = 72, 0.532; -10% (T2); 11% above (5.5) | 5.5, T2 | B4n seed-mean peak (sessions-based; 0.537 turns-based) vs real 0.479 | PREDN (landmarks: peak n 72, [sessions-based] peak mu 0.5317); derived: real vs predicted 0.47889 / 0.5317 - 1 = -9.9% (T2's -10%); predicted vs real 0.5317 / 0.47889 = 1.110 (the text's 11% above) | e3ea48f |
 | 94; 0.42 at n = 96 | 5.5, T2 | B4n 0.5-hit crossing and seed-mean hit at 96 | PREDN (94.19; `mixed_curves_curve_runs.csv` seed mean 0.4153) | e3ea48f |
 | 0.42 | T2 | real native hit at n = 96 | NAT (0.4189) | fa265c2 |
-| cap 64, 0.35% inside the rule; 72 | 5.5, T2, 10 | B4n cap and its margin (mu(64) 0.5122 vs threshold 0.5104); the cap a slightly lower mu(64) would give | PREDN ("The cap n = 64 is knife-edge ... margin 0.35% ... would give cap 72") | e3ea48f |
+| cap 64, 0.35% inside the rule; 72 | 5.5, T2 | B4n cap and its margin (mu(64) 0.5122 vs threshold 0.5104); the cap a slightly lower mu(64) would give | PREDN ("The cap n = 64 is knife-edge ... margin 0.35% ... would give cap 72") | e3ea48f |
 | n = 80-96 bistable | 5.5 | B4n per-seed cliff cells | PREDN ("The cliff cell is bistable") | e3ea48f |
 | n = 72, 80, 88 | 5.5 | finer grid of the B4n spec | `configs/r8_native_predict.yaml` (`r7.curve.n_grid`) | 29728e3 |
 | 0.0720, 11,239; within 0.4% | 5.5 | B1n lambda_miss (turns-based, mixed) and all-miss token rate vs real 0.0718, 11,282 | PREDN (B1n); derived: 0.0720 / 0.0718 = 1.003, 11,239 / 11,282 = 0.996 | e3ea48f |
@@ -421,13 +428,13 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 8% | Abs, 5.7 | vLLM all-miss capacity below SGLang's | derived: 0.065663 / 0.071534 = 0.918; 10,349 / 11,243 = 0.920 | - |
 | 0.0603, 10,208; 0.0705, 10,487; 0.0662, 10,352; 0.0539, 0.0728, 0.0700 | A | vLLM E0a per seed (turns-based, tokens/s; sessions/s) | VE0A `lambda_miss_runs.csv` | b273241; 17100940 |
 | 0.0467, 0.0631, 10,531 | A | vLLM E0a, 64 sessions | VE0A popcheck `lambda_miss_runs.csv` (0.046666, 0.063116, 10530.65) | b273241; 17100940 |
-| 1.35, 1.65 of vLLM's lambda_ref; 0.0886, 0.1083 | 5.7, F5 | vLLM multiples (inherited) and rates | VREG (`lambda_mults`); VE2 (`lambda` 0.088645, 0.108344) | a78ce07, f116cf3 |
+| 1.35, 1.65 of vLLM's lambda_ref; 0.0886, 0.1083 | Abs (multiples), 5.7, F5 | vLLM multiples (inherited) and rates | VREG (`lambda_mults`); VE2 (`lambda` 0.088645, 0.108344) | a78ce07, f116cf3 |
 | stuck at zero hits in 6 of 6 | Abs, 1, 5.7, 6, 11 | vLLM BURST hit fraction over the window | VE2 (`hit_eval` 0.0 in all six) | f116cf3 |
 | 0.93-0.94 | 5.7 | vLLM BURST hit fraction from 300 s to the burst (post hoc) | DERN `burst_hit_onset.csv` (`hit_300_to_burst` 0.9284-0.9403) | f03c0d8 (r8/paper) |
 | 100 s after the burst | 5.7 | first 100 s window from which no vLLM BURST run hits again | DERN `burst_hit_onset.csv` (`zero_hit_from_after_burst_s` 100 in all six) | f03c0d8 (r8/paper) |
 | 0.997-1.031 | 5.7 | vLLM BURST uncached token rate / vLLM all-miss rate | VE2 (0.9965, 1.0005, 1.0071, 1.0309, 1.0252, 1.0263) | f116cf3 |
 | 203-227; 277-309 | 5.7, F5 | vLLM BURST mean backlog at 1.35x and 1.65x | VE2 (`backlog_eval_mean` 227.3, 202.8, 217.6; 308.7, 276.6, 300.1) | f116cf3 |
-| four trapped, two indeterminate | Abs (4 implicit), 5.7, 6 | vLLM per-run states | VE2 (`state`) | f116cf3 |
+| four trapped, two indeterminate (4 of 6) | Abs, 1, 5.7, 6 | vLLM per-run states | VE2 (`state`) | f116cf3 |
 | 203; 0.0002 vs 0.0115 | 5.7 | 1.35x seed 1: backlog, slope, threshold | VE2 (202.8; 0.000238; 0.011491) | f116cf3; 17102320 |
 | 269 to 294; 0.0175 vs 0.0213 | 5.7 | 1.65x seed 1: backlog at the start and end of the window, slope, threshold | VE2 (`backlog_eval_start` 269, `backlog_end` 293.6; 0.017479; 0.021340) | f116cf3; 17102321 |
 | c5037cac...eab5; 18:06; d27db7bd | B | vLLM registration SHA-256 and commit time; calibration copy | VE2 `kill_verdict_v2.json` (`prereg.provenance`); `git log -1 --format=%ci a78ce07` (18:06:18); `sha256sum prereg/inputs/2026-10-25-vllm/calibration.json` | a78ce07 |
