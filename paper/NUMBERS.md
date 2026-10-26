@@ -32,7 +32,7 @@ Short names for the sources used most often:
 | CIT | `notes/lit/CITATION_AUDIT_2026-10-25.md` | f0e2e19 | - |
 | TRAP | `results/agentload_trap_sim_traces/20261021-070449/summary_by_lambda.csv` | 8452338 | - |
 | DER | `paper/derived/{e2_burst_backlog.csv, e2_capped_drain.csv, e0b_hit.csv, e2_counts.csv}`, written read-only from the E2 and E0b run data (and REG) by `figures/paper/derived_numbers.py` | 38bf22b (r8/paper) | 17093387-404; 17084750-55 |
-| DERN | `paper/derived/{e0b_native_hit.csv, e2_native_burst_backlog.csv, e2_native_capped_drain.csv, e2_native_counts.csv, vllm_burst_backlog.csv, burst_hit_onset.csv}`, written read-only by the same script (extended 2026-10-26) from the NE0B, NE2 and VE2 run data and NREG | r8/paper, commit of 2026-10-26 (see git log of `paper/derived/`) | 17100938-39; 17102173-90; 17102318-23 |
+| DERN | `paper/derived/{e0b_native_hit.csv, e2_native_burst_backlog.csv, e2_native_capped_drain.csv, e2_native_counts.csv, vllm_burst_backlog.csv, burst_hit_onset.csv}`, written read-only by the same script (extended 2026-10-26) from the NE0B, NE2 and VE2 run data and NREG | f03c0d8 (r8/paper) | 17100938-39; 17102173-90; 17102318-23 |
 | RB | `notes/E2_RUNBOOK.md` as committed in 288b801 (Stage 3 items 4-5: rate rule and proposed cap n=20) | 288b801 | - |
 | NE0B | `results/nova/e0b_native_1710093x_pulled_20261025-173038/results/agentload_analysis_stable/20261025-172934/{stable_runs.csv, lambda_cap_bracket.json}`; run `meta.json` (`resolved_rate_sessions_per_s`) under `.../results/agentload_e0_cap/` | f3f55ab | 17100938-39 |
 | NREG | `configs/agentload_prereg_2026-10-25_native.yaml` (inputs `prereg/inputs/2026-10-25-native/`) | b8c19ec | - |
@@ -338,8 +338,8 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 0.0718 (native lambda_ref); 0.07180 | 5.2, 5.4, T1, F3, F4, B | native E0a turns-based lambda_miss used as lambda_ref | NATM (`lambda_miss_turns_based` 0.071797); NREG (`lambda_ref` 0.0717974) | fa265c2, b8c19ec |
 | stable through 5.5, unstable at 6.5; between 5.5 and 6.5 | Abs, 1, 5.2, 10, 11, T2, B | native largest all-stable / first unstable multiple, monotone, no guard warnings | NE0B `lambda_cap_bracket.json` (5.5, 6.5, monotone true, n_warnings 0) | f3f55ab |
 | 505, 477 | 5.2 | 6.5x: final queue and fitted rise over the last 1500 s | NE0B `stable_runs.csv` (504.8, 476.67) | f3f55ab; 17100939 |
-| 93% | 1, 5.2 | native E0b hit fraction over the whole run at the five stable rates | DERN `e0b_native_hit.csv` (`hit_whole_run` 0.9326, 0.9317, 0.9301, 0.9303, 0.9299) | this revision; 17100938-39 |
-| 0.84, 0.00 | 5.2 | 6.5x: hit fraction in [300, 1500) s and [1500, 3000) s | DERN `e0b_native_hit.csv` (0.8379, 0.0000) | this revision; 17100939 |
+| 93% | 1, 5.2 | native E0b hit fraction over the whole run at the five stable rates | DERN `e0b_native_hit.csv` (`hit_whole_run` 0.9326, 0.9317, 0.9301, 0.9303, 0.9299) | f03c0d8 (r8/paper); 17100938-39 |
+| 0.84, 0.00 | 5.2 | 6.5x: hit fraction in [300, 1500) s and [1500, 3000) s | DERN `e0b_native_hit.csv` (0.8379, 0.0000) | f03c0d8 (r8/paper); 17100939 |
 | 0.395, 0.467 | 5.2 | native edge bracket in sessions/s (5.5x and 6.5x) | NE0B run `meta.json` `resolved_rate_sessions_per_s` (0.394886, 0.466683) | f3f55ab |
 | 6.67 | 5.2, B | native mu*/lambda_ref | derived: 0.478886 / 0.071797 = 6.670; NREG `lambda_selection.rule` ("mu_max/lambda_ref = 6.67") | b8c19ec |
 | 2.75 times; 4.5 vs 1.0 | 5.2 | native upper edge / 300k upper edge in units of lambda_miss; window widths | derived: 5.5 / 2.0 = 2.75; 5.5 - 1 = 4.5, 2.0 - 1 = 1.0 (the LOG's "2.75 x wider" is this ratio of upper edges) | - |
@@ -367,13 +367,13 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 0.15-0.16; 0.24-0.27 | T1 | native NOBURST / CAPPED token rate / all-miss | NE2 (0.1647, 0.1454, 0.1631 at 2.5x in both arms; 0.2701, 0.2372, 0.2400 NOBURST and 0.2701, 0.2373, 0.2400 CAPPED at 4.0x) | f116cf3 |
 | 15.6-18.5; 28.2-33.6; 28.1-33.5; 16-34 | 5.4, 8, T1, A | native NOBURST / CAPPED mean backlog | NE2 (`backlog_eval_mean` NOBURST 18.46, 15.59, 18.22; 33.63, 28.22, 28.54; CAPPED 18.46, 15.57, 18.27; 33.46, 28.12, 28.54) | f116cf3 |
 | < 0.003; < 0.004 | T1 | native NOBURST / CAPPED slopes in absolute value | NE2 (`backlog_slope` between -0.00109 and 0.00211 at 2.5x; between -0.00329 and 0.00210 at 4.0x) | f116cf3 |
-| p = 1/64 | 5.4 | one-sided sign test, native BURST hit < NOBURST hit over 6 pairs | DERN `e2_native_counts.csv` (6 of 6, p 0.015625) | this revision |
-| 12 of 12, [0.76, 1.00]; 11 of 12, [0.65, 0.99]; 12 of 12 at zero hits | 5.4, 8 (11 of 12) | counts pooled over E2 and native E2, Wilson 95% | DERN `e2_native_counts.csv` (pooled rows: 0.7575-1.0; 0.6461-0.9851) | this revision |
-| 0.63-0.76; 0.21-0.33 | 5.4 | BURST hit fraction in the 100 s window containing the burst, native and 300k | DERN `burst_hit_onset.csv` (`hit_burst_window` native 0.6324-0.7582; 300k 0.2137-0.3319); F1R (0.21-0.33) | this revision, c974070 |
-| 300-600 s after the burst | 5.4 | native BURST: first 100 s window from which no later window has a hit | DERN `burst_hit_onset.csv` (`zero_hit_from_after_burst_s` 400, 500, 400, 400, 300, 600) | this revision |
-| 155-231; 100-200 s; 658-1379 | 5.4 | native BURST backlog minimum after the burst, when, and over the last 300 s | DERN `e2_native_burst_backlog.csv` (`backlog_min_after_burst` 167.7, 161.1, 154.8, 231.1, 228.7, 201.5; `t_min_after_burst_s` 150, 150, 200, 100, 100, 100; `backlog_eval_last300` 711.2, 657.9, 689.0, 1379.0, 1284.8, 1321.0) | this revision |
+| p = 1/64 | 5.4 | one-sided sign test, native BURST hit < NOBURST hit over 6 pairs | DERN `e2_native_counts.csv` (6 of 6, p 0.015625) | f03c0d8 (r8/paper) |
+| 12 of 12, [0.76, 1.00]; 11 of 12, [0.65, 0.99]; 12 of 12 at zero hits | 5.4, 8 (11 of 12) | counts pooled over E2 and native E2, Wilson 95% | DERN `e2_native_counts.csv` (pooled rows: 0.7575-1.0; 0.6461-0.9851) | f03c0d8 (r8/paper) |
+| 0.63-0.76; 0.21-0.33 | 5.4 | BURST hit fraction in the 100 s window containing the burst, native and 300k | DERN `burst_hit_onset.csv` (`hit_burst_window` native 0.6324-0.7582; 300k 0.2137-0.3319); F1R (0.21-0.33) | f03c0d8 (r8/paper), c974070 |
+| 300-600 s after the burst | 5.4 | native BURST: first 100 s window from which no later window has a hit | DERN `burst_hit_onset.csv` (`zero_hit_from_after_burst_s` 400, 500, 400, 400, 300, 600) | f03c0d8 (r8/paper) |
+| 155-231; 100-200 s; 658-1379 | 5.4 | native BURST backlog minimum after the burst, when, and over the last 300 s | DERN `e2_native_burst_backlog.csv` (`backlog_min_after_burst` 167.7, 161.1, 154.8, 231.1, 228.7, 201.5; `t_min_after_burst_s` 150, 150, 200, 100, 100, 100; `backlog_eval_last300` 711.2, 657.9, 689.0, 1379.0, 1284.8, 1321.0) | f03c0d8 (r8/paper) |
 | 0.103-0.146 | 5.4 | native BURST session completion rate over the window | NE2 (`rate_sessions` 0.1093, 0.1033, 0.1120; 0.1340, 0.1370, 0.1460) | f116cf3 |
-| 512-583 s; 837-937 s; 10-23% sooner; -23% | 5.4, 10 | native CAPPED gate first empty after the burst; ratio to the fluid estimate | DERN `e2_native_capped_drain.csv` (582.8, 511.6, 542.0; 936.8, 836.6, 900.4; ratio 0.766-0.898) | this revision; 17102175, 81, 87, 78, 84, 90 |
+| 512-583 s; 837-937 s; 10-23% sooner; -23% | 5.4, 10 | native CAPPED gate first empty after the burst; ratio to the fluid estimate | DERN `e2_native_capped_drain.csv` (582.8, 511.6, 542.0; 936.8, 836.6, 900.4; ratio 0.766-0.898) | f03c0d8 (r8/paper); 17102175, 81, 87, 78, 84, 90 |
 | 6 to 13 times | 5.4, 8 | 200 burst sessions vs 16-34 in the good state | derived: 200 / 33.6 = 6.0, 200 / 15.6 = 12.8 | - |
 | 549-1130 | T2, 5.5 | native BURST outstanding backlog (requests) | NE2 (`outstanding_eval_mean` 593.7, 549.2, 575.3; 1129.7, 1088.9, 1104.0) | f116cf3 |
 | 13 minutes; 17:31; 17:44 | B | native registration commit vs first native E2 run start | `git log -1 --format=%ci b8c19ec` (17:31:16); earliest native E2 run `meta.json` `start_time` 2026-10-25T17:44:02 (job 17102175) | b8c19ec, f116cf3 |
@@ -423,8 +423,8 @@ Source keys NE0B, NREG, NE2, VE0A, VREG, VE2, VLOG, PREDN, STN and DERN are defi
 | 0.0467, 0.0631, 10,531 | A | vLLM E0a, 64 sessions | VE0A popcheck `lambda_miss_runs.csv` (0.046666, 0.063116, 10530.65) | b273241; 17100940 |
 | 1.35, 1.65 of vLLM's lambda_ref; 0.0886, 0.1083 | 5.7, F5 | vLLM multiples (inherited) and rates | VREG (`lambda_mults`); VE2 (`lambda` 0.088645, 0.108344) | a78ce07, f116cf3 |
 | stuck at zero hits in 6 of 6 | Abs, 1, 5.7, 6, 11 | vLLM BURST hit fraction over the window | VE2 (`hit_eval` 0.0 in all six) | f116cf3 |
-| 0.93-0.94 | 5.7 | vLLM BURST hit fraction from 300 s to the burst (post hoc) | DERN `burst_hit_onset.csv` (`hit_300_to_burst` 0.9284-0.9403) | this revision |
-| 100 s after the burst | 5.7 | first 100 s window from which no vLLM BURST run hits again | DERN `burst_hit_onset.csv` (`zero_hit_from_after_burst_s` 100 in all six) | this revision |
+| 0.93-0.94 | 5.7 | vLLM BURST hit fraction from 300 s to the burst (post hoc) | DERN `burst_hit_onset.csv` (`hit_300_to_burst` 0.9284-0.9403) | f03c0d8 (r8/paper) |
+| 100 s after the burst | 5.7 | first 100 s window from which no vLLM BURST run hits again | DERN `burst_hit_onset.csv` (`zero_hit_from_after_burst_s` 100 in all six) | f03c0d8 (r8/paper) |
 | 0.997-1.031 | 5.7 | vLLM BURST uncached token rate / vLLM all-miss rate | VE2 (0.9965, 1.0005, 1.0071, 1.0309, 1.0252, 1.0263) | f116cf3 |
 | 203-227; 277-309 | 5.7, F5 | vLLM BURST mean backlog at 1.35x and 1.65x | VE2 (`backlog_eval_mean` 227.3, 202.8, 217.6; 308.7, 276.6, 300.1) | f116cf3 |
 | four trapped, two indeterminate | Abs (4 implicit), 5.7, 6 | vLLM per-run states | VE2 (`state`) | f116cf3 |
