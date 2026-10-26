@@ -2,7 +2,11 @@
 
 _Last updated: 2026-10-25 ~15:00 CDT (always-on PC)_
 
-## NOW (2026-10-25 ~17:45 CDT). Read this first.
+## NOW (2026-10-26 ~10:20 CDT). Read this first; it supersedes the blocks below.
+**All Nova work is finished; nothing is queued.** Native-pool E2 is a **decisive PASS at both registered points** (2.5 and 4.0 × native λ_ref; BURST 6/6 trapped, NOBURST 6/6 good, CAPPED 6/6 recovered; verdict `agentload_analysis_burst2/20261026-100653/`); the exploratory vLLM BURST runs are stuck in 6/6 (trapped by the rule 4/6). Data: `results/nova/e2_native_vllm_burst_pulled_20261026-101256/`; LOG 2026-10-26. Both registered kill tests have passed; every blind directional prediction held.
+**Next:** fill the paper's `\pending` sections (native E0b/E2, vLLM E0a and BURST) and rebuild; the author decisions listed below stay open. `repo_next/` (at `a78ce07`) and `repo/` (at `d279b7b`) may now be updated freely.
+
+## NOW (2026-10-25 ~17:45 CDT). Superseded by the block above.
 **Native-pool kill test submitted 17:42: jobs 17102173–17102190** (18 one-arm jobs: λ 2.5 and 4.0 × the native λ_ref, seeds 0–2, BURST / NOBURST / CAPPED with N_CAP=64, `KV_TOKENS=native`, label `sglang-fcfs-r1-native`, `--time=03:10:00`), from `repo_next/` at `b8c19ec` under `configs/agentload_prereg_2026-10-25_native.yaml` (PREREG_SHA256 `21bf7c03…`; check-job passed for every arm at both points). **Do not change code in `repo_next/` while they are pending** (adding a config file, e.g. the vLLM exploratory registration, is safe). Verdict when all 18 finish: `summarize burst2 --prereg configs/agentload_prereg_2026-10-25_native.yaml` over the 18 runs with the E2 overrides, in `repo_next/`; compare with B3n (`notes/PREDICTIONS_native.md`).
 **Native E0b done** (edge between 5.5 and 6.5 ×; LOG 2026-10-25). **vLLM E0a done** (λ_miss 0.0657 turns-based, 10,349 tok/s); **vLLM exploratory BURST jobs 17102318–17102323 running** (registration `configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml`; `repo_next/` at `a78ce07`, which only added that config and its input). Verdict: `summarize burst2 --prereg <that file>` over the six runs (exploratory).
 **Paper:** draft on `main` (`paper/main.pdf`, 18 pages, all references verified); open: the `\pending` native and vLLM results and the author decisions listed below.
