@@ -1,0 +1,63 @@
+{
+  "experiment": "r7_edge",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "edge",
+    "--spec",
+    "configs/r9_vllm_predict.yaml",
+    "--workers",
+    "6",
+    "--out-root",
+    "results/r9_vllm_v1_separate",
+    "--set",
+    "engine.batching=separate_prefill_priority",
+    "--set",
+    "engine.per_token_s=6.7645560000e-05",
+    "--set",
+    "engine.prefill_attn_s=2.4205440000e-09",
+    "--set",
+    "engine.decode_attn_s=3.3498600000e-04"
+  ],
+  "git": {
+    "commit": "29746a9d4ebd8f0969dfb2512e4ee75c68211308",
+    "dirty": false,
+    "branch": "r9/vllm-predict"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-30T12:26:50",
+  "end_time": "2026-10-30T12:26:52",
+  "wall_s": 1.8402957916259766,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "engine.batching=separate_prefill_priority",
+    "engine.per_token_s=6.7645560000e-05",
+    "engine.prefill_attn_s=2.4205440000e-09",
+    "engine.decode_attn_s=3.3498600000e-04"
+  ],
+  "tag": null,
+  "stage": "edge",
+  "only": null
+}
