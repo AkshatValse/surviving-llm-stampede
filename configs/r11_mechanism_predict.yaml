@@ -1,0 +1,35 @@
+# Round 11: frozen mechanism, occupancy and detector predictions for the registered vLLM paired test.
+# Frozen BEFORE any of its runs ended (see notes/PREDICTIONS_r11_mechanism.md for the time record).
+# The code that defines every quantity is committed with this file and is not to be edited for this evaluation:
+#   analysis/r11/loopvars_frozen.py   (hit, Z, lat, gap, churn, R = M / churn, gap/R, pred_hit)
+#   analysis/r11/detector_frozen.py   (online hit detector: 10 s tick, 60 s window, n >= 20, H < 0.2)
+#   analysis/r11/occupancy_frozen.py  (KV-usage gauge mean, uncached-token ratio, engine-TTFT rule)
+status: FROZEN
+target:
+  registration: configs/agentload_prereg_2026-10-30_vllm.yaml
+  jobs: 17166121-17166138   # 18 one-arm runs: 1.35 and 1.65 x lambda_ref, seeds 0-2, burst / noburst / capped (n_cap 20)
+  blind_rule: a run is blind iff its sacct End time is later than the push time of the commit that adds this file
+definitions:
+  levels_window_s: [5700, 8700]        # loopvars: requests COMPLETED in the window (t_complete); occupancy: metrics t_s and requests t_send in the window
+  detector_window_s: [0, 8700]
+  t_burst_s: 1200
+  follow_up: turn >= 2, status ok
+  hit: cached_tokens > prompt_tokens / 2
+  M_tokens: 300000                     # KV_TOKENS of the registered cell
+  churn: (uncached prompt tokens + completion tokens) of ok requests completed in the window, per second
+  R_s: M / churn
+  gap: (t_send[k] - t_complete[k-1]) + latency[k], median over follow-ups completed in the window
+  kv_usage_gauge: vllm:kv_cache_usage_perc (metrics.csv name column)
+  all_miss_reference_tok_s: 10348.6    # prereg/inputs/2026-10-25-vllm/calibration.json all_miss_uncached_tokens_per_s
+bands:
+  a_good_arms:   {noburst_and_capped: {gap_over_R_max: 0.05, hit_min: 0.95}}
+  a_burst_arm:   {gap_over_R_min: 2.0, hit_max: 0.05}
+  b_burst_arm:   {occ_mean_min: 0.90, uncached_ratio: [0.85, 1.15]}
+  c_detector:    {burst_first_alarm_delay_max_s: 300, good_arms_no_alarm_in_s: [600, 8700]}
+  d_ttft_rule:   {threshold_s: 30, window_s: 100, burst_first_alarm_delay_max_s: 300, good_arms_no_alarm_in_s: [600, 8700]}
+decision_rule:
+  consistent_with_refill_then_evict: every blind BURST run meets (b) and (c), and every blind NOBURST/CAPPED run except at most one meets (a) and (c)
+  b_failure: if a BURST run fails (b), the refill-then-evict description is dropped for vLLM and reported as a failure
+  good_arm_alarm: reported as a detector false alarm
+  not_tested: intermediate states (R over-predicts them by 0.04-0.27 in the committed SGLang runs; disclosed)
+provenance_of_bands: chosen from the committed SGLang E2 (300k, native) runs and the six exploratory vLLM BURST runs (jobs 17102318-17102323); the BURST arms of the registered test repeat those six runs' arrival plans by common random numbers, so the BURST-arm checks are a replication on new executions, and only NOBURST and CAPPED are out of sample
