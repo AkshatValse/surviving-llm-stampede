@@ -15,3 +15,5 @@ Written 2026-10-30 ~18:25 CDT, while the 18 registered vLLM jobs (17166121–171
 **Afterwards:** first the registered verdict (`summarize burst2 --prereg configs/agentload_prereg_2026-10-30_vllm.yaml`), then these frozen scripts unchanged, with a blind/non-blind flag per run from sacct End vs the push time.
 
 ## Time record
+- Freeze commit `f1338e3` (committer time 2026-10-30 18:20:11 CDT), pushed to GitHub as the creation of branch `r11/strengthen`: GitHub activity log timestamp **2026-10-30T23:20:13Z = 18:20:13 CDT** (`gh api repos/AkshatValse/Nova-Research/activity`).
+- At 18:20:13 CDT `sacct` showed 17166121 and 17166122 RUNNING since 16:25–16:26, 17166123 RUNNING since 17:17, and 17166124–17166138 PENDING: no run of the test had ended, so all 18 are blind under the rule if none ended before the push (to be confirmed from sacct End at evaluation).
