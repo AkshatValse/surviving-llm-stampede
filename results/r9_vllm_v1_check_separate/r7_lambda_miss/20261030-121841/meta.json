@@ -1,0 +1,56 @@
+{
+  "experiment": "r7_lambda_miss",
+  "status": "done",
+  "argv": [
+    "experiments/r7_robustness_run.py",
+    "lambda_miss",
+    "--spec",
+    "configs/r9_vllm_predict.yaml",
+    "--workers",
+    "6",
+    "--out-root",
+    "results/r9_vllm_v1_check_separate",
+    "--set",
+    "engine.batching=separate_prefill_priority",
+    "--set",
+    "engine.per_token_s=6.7426460000e-05",
+    "--set",
+    "engine.prefill_attn_s=2.4127040000e-09",
+    "--set",
+    "engine.decode_attn_s=3.3390100000e-04"
+  ],
+  "git": {
+    "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+    "dirty": false,
+    "branch": "r9/vllm-predict"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-30T12:18:41",
+  "end_time": "2026-10-30T12:18:42",
+  "wall_s": 1.3267319202423096,
+  "quick": false,
+  "workers": 6,
+  "overrides": [
+    "engine.batching=separate_prefill_priority",
+    "engine.per_token_s=6.7426460000e-05",
+    "engine.prefill_attn_s=2.4127040000e-09",
+    "engine.decode_attn_s=3.3390100000e-04"
+  ],
+  "tag": null,
+  "stage": "lambda_miss",
+  "only": null
+}

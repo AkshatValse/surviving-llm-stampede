@@ -1,0 +1,61 @@
+{
+  "mode": "mixed",
+  "target": 10349.0,
+  "tolerance_rel": 0.003,
+  "iterations": [
+    {
+      "factor": 1.0,
+      "sets": [],
+      "token_rate": 11219.72185185185,
+      "lambda_miss_turns": 0.07218695086154546,
+      "busy": 1.0,
+      "dir": "results/r9_vllm_v1_check_mixed/r7_lambda_miss/20261030-121827",
+      "wall_s": 2.438577890396118,
+      "git": {
+        "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+        "dirty": false,
+        "branch": "r9/vllm-predict"
+      }
+    },
+    {
+      "factor": 1.0841,
+      "sets": [
+        "engine.per_token_s=6.7864660000e-05",
+        "engine.prefill_attn_s=2.4283840000e-09",
+        "engine.decode_attn_s=3.3607100000e-04"
+      ],
+      "token_rate": 10386.196666666665,
+      "lambda_miss_turns": 0.06676728406067864,
+      "busy": 1.0,
+      "dir": "results/r9_vllm_v1_check_mixed/r7_lambda_miss/20261030-121829",
+      "wall_s": 2.2103452682495117,
+      "git": {
+        "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+        "dirty": false,
+        "branch": "r9/vllm-predict"
+      }
+    },
+    {
+      "factor": 1.0882,
+      "sets": [
+        "engine.per_token_s=6.8121320000e-05",
+        "engine.prefill_attn_s=2.4375680000e-09",
+        "engine.decode_attn_s=3.3734200000e-04"
+      ],
+      "token_rate": 10358.299629629628,
+      "lambda_miss_turns": 0.06622782648559236,
+      "busy": 1.0,
+      "dir": "results/r9_vllm_v1_check_mixed/r7_lambda_miss/20261030-121831",
+      "wall_s": 2.196043014526367,
+      "git": {
+        "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+        "dirty": false,
+        "branch": "r9/vllm-predict"
+      }
+    }
+  ],
+  "accepted_factor": 1.0882,
+  "accepted_rate": 10358.299629629628,
+  "residual_rel": 0.0008986017614869279,
+  "converged": true
+}

@@ -1,0 +1,19 @@
+{
+  "mode": "separate",
+  "factor": 1.0882,
+  "sets": [
+    "engine.batching=separate_prefill_priority",
+    "engine.per_token_s=6.8121320000e-05",
+    "engine.prefill_attn_s=2.4375680000e-09",
+    "engine.decode_attn_s=3.3734200000e-04"
+  ],
+  "token_rate": 10270.824074074073,
+  "lambda_miss_turns": 0.06576364206051812,
+  "ratio_to_target": 0.9924460405907888,
+  "dir": "results/r9_vllm_v1_check_separate_at_mixed_factor/r7_lambda_miss/20261030-121856",
+  "git": {
+    "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+    "dirty": false,
+    "branch": "r9/vllm-predict"
+  }
+}
