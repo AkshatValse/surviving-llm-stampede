@@ -1,0 +1,4 @@
+label,rate_mult,n_stable,n_runs
+vllm-fcfs,2.0,1,1
+vllm-fcfs,2.5,0,1
+vllm-fcfs,3.0,0,1
