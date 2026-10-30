@@ -1,0 +1,65 @@
+{
+  "mode": "separate",
+  "target": 10349.0,
+  "tolerance_rel": 0.003,
+  "iterations": [
+    {
+      "factor": 1.0,
+      "sets": [
+        "engine.batching=separate_prefill_priority"
+      ],
+      "token_rate": 11146.80037037037,
+      "lambda_miss_turns": 0.07135894621141302,
+      "busy": 0.9999913200800533,
+      "dir": "results/r9_vllm_v1_check_separate/r7_lambda_miss/20261030-121839",
+      "wall_s": 2.2273995876312256,
+      "git": {
+        "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+        "dirty": false,
+        "branch": "r9/vllm-predict"
+      }
+    },
+    {
+      "factor": 1.0771,
+      "sets": [
+        "engine.batching=separate_prefill_priority",
+        "engine.per_token_s=6.7426460000e-05",
+        "engine.prefill_attn_s=2.4127040000e-09",
+        "engine.decode_attn_s=3.3390100000e-04"
+      ],
+      "token_rate": 10381.520740740742,
+      "lambda_miss_turns": 0.06626546306059838,
+      "busy": 0.9998746342060891,
+      "dir": "results/r9_vllm_v1_check_separate/r7_lambda_miss/20261030-121841",
+      "wall_s": 2.314892530441284,
+      "git": {
+        "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+        "dirty": false,
+        "branch": "r9/vllm-predict"
+      }
+    },
+    {
+      "factor": 1.0806,
+      "sets": [
+        "engine.batching=separate_prefill_priority",
+        "engine.per_token_s=6.7645560000e-05",
+        "engine.prefill_attn_s=2.4205440000e-09",
+        "engine.decode_attn_s=3.3498600000e-04"
+      ],
+      "token_rate": 10341.86962962963,
+      "lambda_miss_turns": 0.06632819068560841,
+      "busy": 0.9998976916346939,
+      "dir": "results/r9_vllm_v1_check_separate/r7_lambda_miss/20261030-121843",
+      "wall_s": 2.2163045406341553,
+      "git": {
+        "commit": "5806460ea76b7ad9a71a0f47509a8934114eb325",
+        "dirty": false,
+        "branch": "r9/vllm-predict"
+      }
+    }
+  ],
+  "accepted_factor": 1.0806,
+  "accepted_rate": 10341.86962962963,
+  "residual_rel": -0.000688991242667969,
+  "converged": true
+}

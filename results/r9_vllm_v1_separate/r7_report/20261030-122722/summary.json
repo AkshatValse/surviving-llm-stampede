@@ -1,0 +1,22 @@
+{
+  "lambda_miss": {
+    "exp5": 0.06632819068560841
+  },
+  "peak_cap": {
+    "exp5": {
+      "peak_n": 24,
+      "peak_mu_turns": 0.21513442639190822,
+      "cap_n": 20
+    }
+  },
+  "window": {
+    "exp5": {
+      "hi": 2.0,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "empty": false
+    }
+  }
+}
