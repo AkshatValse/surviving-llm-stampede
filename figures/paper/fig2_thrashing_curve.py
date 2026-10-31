@@ -16,7 +16,7 @@ prediction B4v (notes/PREDICTIONS_vllm.md, frozen at tag r9-vllm-predictions-fro
 variant V1 (the SGLang-calibrated engine with its token costs scaled to vLLM's measured all-miss token rate, so its
 sessions/s are in vLLM's units), mixed batching (the primary mode), 10-seed mean +- 1 s.e. The other three B4v
 configurations (V0, and the separate batching mode) are not drawn; the README gives how far they lie from V1 mixed.
-Horizontal dotted line: lambda_miss = the cell's E0a all-miss capacity (turns-based), 0.0715 / 0.0718 / 0.0657 sessions/s.
+Horizontal dotted line: lambda_ref = the cell's measured E0a all-miss capacity (turns-based estimate of lambda_miss), 0.0715 / 0.0718 / 0.0657 sessions/s.
 Green dashed line: the cell's registered session cap n_cap (20 / 64 / 20).
 Run:  python figures/paper/fig2_thrashing_curve.py
 """
@@ -119,9 +119,9 @@ def main() -> None:
         axm.plot(real["n"], real["mu_sessions"], color=S.REAL, lw=1.1, marker="o", ms=3.4, zorder=4)
         axm.plot(real["n"], real["mu_turns_based"], color=S.REAL, lw=0, marker="+", ms=6.5, mew=0.8, zorder=5)
         axh.plot(real["n"], real["hit_frac_turns"], color=S.REAL, lw=1.1, marker="o", ms=3.4, zorder=4)
-        # lambda_miss
+        # lambda_ref (the measured estimate of lambda_miss)
         axm.axhline(pn["lam"], color=S.VERM, lw=0.8, ls=(0, (1, 1.5)), zorder=1)
-        axm.text(405, pn["lam"] - 0.008, rf"$\lambda_{{\mathrm{{miss}}}}$ = {pn['lam']:.4f}", fontsize=7.5, color=S.VERM, ha="right",
+        axm.text(405, pn["lam"] - 0.008, rf"$\lambda_{{\mathrm{{ref}}}}$ = {pn['lam']:.4f}", fontsize=7.5, color=S.VERM, ha="right",
                  va="top")
         # registered session cap
         for ax in (axm, axh):

@@ -894,7 +894,9 @@
 % (Figs. 10-11, 0.05 jobs/s, SLO 20 tokens/s): the no-control baseline at the maximum clock does not thrash; KAIROS without
 % thrashing avoidance (the SLO boost is a separate mechanism, so presumably still on) drops to 2.3 tokens/s P5 and 0.046 jobs/s, "a persistent thrashing regime ... making
 % recovery difficult"; Fig. 11 shows context usage, job throughput and pending agents, no frequency trace, so the clock
-% during the thrashing is not reported; one run per configuration, no burst trigger. Same first author as
+% during the thrashing is not reported; one run per configuration, no burst trigger. The Sec. 8 runs replay one recorded agent workload (Sec. 7); Poisson
+% arrivals are stated only for the Sec. 3 characterization (Sec. 3.1). Sec. 6.2.4 states that a short overload can push an
+% instance into a persistently inefficient operating region. Same first author as
 % yuan2026agentic: cite as "KAIROS" in prose. arXiv API 2026-10-31: v1 only, submitted 2026-04-17, no journal reference.
 @misc{yuan2026kairos,
   author       = {Yuan, Yichao and Chowdhury, Mosharaf and Talati, Nishil},
@@ -1110,8 +1112,10 @@
   doi     = {10.1109/TC.2002.1009151},
 }
 
-% META only (Crossref 10.1145/2838344.2839461: Queue vol. 13, no. 8, pp. 30-46, September 2015); the content claims
-% (adaptive LIFO, concurrency control) come from a secondary summary: read the article before citing specifics.
+% META (Crossref 10.1145/2838344.2839461: Queue vol. 13, no. 8, pp. 30-46, September 2015); content checked against the
+% verbatim quotations in Acolyer, The Morning Paper, 2015-11-19 (adaptive LIFO once a queue forms; per-service client limits
+% on outstanding requests), not against the article itself (queue.acm.org and dl.acm.org returned HTTP 403 on 2026-10-31).
+% Cited only for those two practices, not for the word "metastable"; an author should read the article before posting.
 @article{maurer2015fail,
   author  = {Maurer, Ben},
   title   = {Fail at Scale},

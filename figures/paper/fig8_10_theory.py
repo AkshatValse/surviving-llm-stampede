@@ -119,6 +119,9 @@ def add_h200_measured_to_scaling():
                    label="H200 measured (turns-based; seen before the freeze)")
             a.plot([x], [0.386109 / H200_LREF], "v", color=T.COL["ms"], ms=4, label="H200 measured (sessions/s)")
             a.legend(frameon=False, fontsize=6, loc="upper right")
+            # the paper writes omega_b = mu*/mu_b for Proposition 3's ratio (omega_ref = mu*/lambda_ref is the scored one)
+            for ax_ in fig.axes[:2]:
+                ax_.set_ylabel(ax_.get_ylabel().replace(r"$\omega=", r"$\omega_b=").replace(r"$\omega$", r"$\omega_b$"))
         orig(fig, name)
     T.save = save_with_h200
 
