@@ -1,0 +1,61 @@
+{
+  "mode": "mixed",
+  "target": 9353.0,
+  "tolerance_rel": 0.003,
+  "iterations": [
+    {
+      "factor": 1.0,
+      "sets": [],
+      "token_rate": 11219.72185185185,
+      "lambda_miss_turns": 0.07218695086154546,
+      "busy": 1.0,
+      "dir": "results/r12_llama31_v1_check_mixed/r7_lambda_miss/20261031-020721",
+      "wall_s": 2.169171094894409,
+      "git": {
+        "commit": "cec7043fc51c53af217d6a93bb576e138f8c3136",
+        "dirty": false,
+        "branch": "r12/llama31-predict"
+      }
+    },
+    {
+      "factor": 1.1996,
+      "sets": [
+        "engine.per_token_s=7.5094960000e-05",
+        "engine.prefill_attn_s=2.6871040000e-09",
+        "engine.decode_attn_s=3.7187600000e-04"
+      ],
+      "token_rate": 9445.627037037035,
+      "lambda_miss_turns": 0.06020597448462924,
+      "busy": 1.0,
+      "dir": "results/r12_llama31_v1_check_mixed/r7_lambda_miss/20261031-020723",
+      "wall_s": 2.456982374191284,
+      "git": {
+        "commit": "cec7043fc51c53af217d6a93bb576e138f8c3136",
+        "dirty": false,
+        "branch": "r12/llama31-predict"
+      }
+    },
+    {
+      "factor": 1.2121,
+      "sets": [
+        "engine.per_token_s=7.5877460000e-05",
+        "engine.prefill_attn_s=2.7151040000e-09",
+        "engine.decode_attn_s=3.7575100000e-04"
+      ],
+      "token_rate": 9348.224074074074,
+      "lambda_miss_turns": 0.05962888033453694,
+      "busy": 0.9999976251144069,
+      "dir": "results/r12_llama31_v1_check_mixed/r7_lambda_miss/20261031-020725",
+      "wall_s": 2.4289615154266357,
+      "git": {
+        "commit": "cec7043fc51c53af217d6a93bb576e138f8c3136",
+        "dirty": false,
+        "branch": "r12/llama31-predict"
+      }
+    }
+  ],
+  "accepted_factor": 1.2121,
+  "accepted_rate": 9348.224074074074,
+  "residual_rel": -0.0005106303780525456,
+  "converged": true
+}

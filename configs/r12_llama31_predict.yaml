@@ -184,8 +184,8 @@ r12:
     tolerance_rel: 0.003
     max_iterations: 6
     factor:                                        # FROZEN in the second commit from the quick B1 check (calibration/r12_llama31_v1_factor/)
-      mixed: null
-      separate: null
+      mixed: 1.2121
+      separate: 1.204
 
   b3v:
     multiples: [1.15, 1.25, 1.35, 1.5, 1.65, 2.0, 2.35]   # every multiple the registration rule can produce from the edge grid (as round 9)
