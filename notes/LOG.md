@@ -589,3 +589,93 @@ Every BURST run has hit 0.000 over the evaluation window (t_b + 4500 s to 8700 s
 **Blindness scope:** B3v is blind in time to every one of these runs; its BURST-arm predictions at 1.35 and 1.65 × are blind on the predicting worker's side only (the lead knew the exploratory BURST outcome). r11: all 18 runs are blind in time; the bands were chosen on committed SGLang E2 runs and the six exploratory vLLM BURST runs, whose arrival plans the registered BURST arms repeat, so the BURST checks are a replication on new executions and only NOBURST and CAPPED are out of sample. Before the verdict was run (2026-10-31 02:08), this session had opened no run dir, per-job analysis or `pm-e2v` `.out` file of these jobs, only `sacct` states. The freeze note's statement that no output had been opened by 18:20 is its author's, not checked here. The memory change above was made after the first three jobs had started and before any ended, and it does not touch the code or arguments of any job.
 **Verified vs. not:** Verified: the 18 accounting records (all COMPLETED 0:0, nodes nova22-gpu-[1-3]); `repo_next/` HEAD `5a6fbcd` with a clean tree; the registration hash on Nova and in all 18 `meta.json`; the archive checksum; the frozen scripts byte-identical to `f1338e3` and to `origin/r11/strengthen`, and `analysis/load.py` unchanged since the freeze; zero request errors and no guard warnings. Commit order: `5a6fbcd` was committed 37 s before the submission but first reached GitHub at 16:26:35 CDT (the creation of branch `r9/vllm-register` in GitHub's activity log), 1 min 59 s after the submission and after the first two jobs started (16:25:42, 16:26:17), before any job ended. So the decisive label the tool prints rests on commit order, not on the push log, and the paper should report the registered analysis's PASS. Not verified: anything beyond one model, one GPU type, the 300k pool and three seeds; the TTFT rule's alarm-free window in good arms is checked from the first alarm only (none occurred).
 **Interpretation:** vLLM, a second engine with its own measured window, fails the way SGLang does: at a load it carries indefinitely from empty (NOBURST good 6/6), a 200-session burst leaves it all-miss for the remaining 7500 s (stuck 6/6, trapped by the registered rule 4/6), and a client-side cap at its measured peak prevents that (6/6). The trapped pool is full (KV usage 0.92–0.94) and rewritten at about the all-miss rate, as refill-then-evict predicts. The frozen prediction that missed is the detector's specificity: during the CAPPED drain at cap 20 the follow-up hit dips below 0.2 for a few ticks in one seed at each rate, which a deployed alarm on this rule would report.
+
+## 2026-10-31 — H200 cell (SGLang, 300k pool): the window compresses to (1, 1.3) × λ_ref, too narrow to register; no kill test on H200
+**Question:** Does the SGLang 300k cell replicate on a different GPU (one H200 NVL instead of one A100 80GB PCIe), with the same model, revision, engine, pool and protocol? And what happens to the metastable window when the GPU is faster but the pool and the tool time stay fixed?
+**Setup:** Cell `sglang-fcfs-r1-h200` (E0a `sglang-nocache-h200`): SGLang 0.5.22, Qwen2.5-7B-Instruct `a09a3545`, `KV_TOKENS=300000` (server log: `max_total_num_tokens=300000`, `context_len=49152`), FCFS with waiting-prefix refresh, `OUTPUT_FEEDBACK=server`. Hardware: nova25-gpu-3, "NVIDIA H200 NVL, 143771 MiB", driver 580.178.04. Attention backend `fa3`, SGLang's Hopper default (server log of all 20 jobs). The A100 cells ran FlashInfer. The job log's `attn=flashinfer` text is only the script default. All jobs ran from the dedicated clone `repo_h200/` at `5a6fbcd` (clean tree, push URL disabled), with `--gres=gpu:h200:1` and one run per job. All COMPLETED 0:0:
+- smoke 17166807 (900 s);
+- E0a 17166810–12 (POP 32, seeds 0–2) and the POP-64 check 17166813;
+- Stage C 17166818–22, 828, 830, 832, 834 (n = 16, 20, 24, 28, 32, 40, 48, 96, 300; same closed protocol as the A100 Stage C: synchronized start, window [900, 2700) s);
+- E0b 17168377–82 (one 3000 s from-empty run each at 1.1, 1.2, 1.3, 1.4, 1.55 and 1.75 × λ_ref).
+
+The E0b grid was chosen after E0a by the plan's rule (`commands_corrected.sh`: R_bound = (24/68.8)/λ_ref = 1.80 < 2.2 gives "1.1 1.2 1.3 1.4 1.55 1.75"), before any Stage C or E0b result was read. Combines ran on the login node (`envs/swapp`, nice), each output dir taken from the tool's printed `out_dir`:
+- calibration `agentload_analysis_miss/20261030-204701` (3 runs);
+- POP-64 check `agentload_analysis_miss_popcheck/20261030-204702`;
+- curve: `summarize closed --primary-label sglang-fcfs-r1-h200` over the nine runs → `agentload_analysis_closed/20261031-023040` (no guard warnings);
+- bracket: `summarize stable` over the six → `agentload_analysis_stable/20261031-023042` (no guard warnings).
+
+Data: `results/nova/h200_wave1_pulled_20261031-023416/` (`d108056`; archive sha256 `ff2f6951…` checked at both ends, remote archive deleted). Inputs copied byte-exact into `prereg/inputs/2026-10-31-h200/`, hashes checked at both ends. Cost: 16.3 GPU-h (sacct elapsed).
+**Result (E0a):** λ_miss 0.1933 sessions/s, **turns-based 0.19388 ± 0.0062**; all-miss uncached tokens **29,866 ± 23 tok/s**: 2.71 × and 2.66 × the A100 cell (0.07153, 11,243). POP-64 check: tokens 31,232 (ratio 1.046, inside the runbook's 5 %); turns-based 0.2132 (ratio 1.100, outside 5 %). On the A100 300k cell the POP-64 check gave tokens +3.2 % and sessions −4 %; on the A100 native cell, turns-based −6 %. POP 32 is therefore close to saturation on the H200 but not certainly at it, and λ_ref may be a few percent low.
+**Result (Stage C, one run per n):**
+
+| n | 16 | 20 | 24 | 28 | 32 | 40 | 48 | 96 | 300 |
+|---|---|---|---|---|---|---|---|---|---|
+| μ sessions/s | 0.219 | 0.279 | 0.327 | 0.369 | **0.386** | 0.329 | 0.274 | 0.218 | 0.225 |
+| μ turns-based | 0.211 | 0.262 | 0.311 | 0.350 | **0.367** | 0.312 | 0.259 | 0.211 | 0.226 |
+| hit fraction (turns) | 0.929 | 0.925 | 0.901 | 0.839 | 0.744 | 0.456 | 0.215 | 0.000 | 0.000 |
+
+- Peak 0.3861 sessions/s at n = 32; n = 28 is within 4.3 % (`n_cap_ambiguous`).
+- μ_max/λ_ref = **1.99** (turns-based 1.89).
+- 0.5-hit crossing ≈ 38.8 (linear between 32 and 40).
+- μ falls 43 % from n = 32 to n = 96, and never below 1.13 × λ_miss (sessions-based).
+- Against the A100 300k cell (peak 0.233 at n = 24, μ_max/λ_ref 3.26, 0.5-hit crossing ≈ 32.1, hit 0.000 by n = 48, minimum μ 0.68 × λ_miss), the H200's cliff sits further out and is shallower.
+
+**Result (E0b):**
+- Stable at 1.1, 1.2 and 1.3 ×: final queue 0, trend −0.01, −0.03 and −2.3.
+- **Unstable at 1.4 ×** (final queue 50.4, fitted rise +48.6 over the last 1500 s), 1.55 × (177.7, +115.6) and 1.75 × (272.6, +170.7).
+- Bracket: largest all-stable 1.3 × (0.252 sessions/s), first unstable 1.4 × (0.271), monotone.
+- The 1.4 × run sits just above the queue threshold of 50, with a clear rising trend.
+
+**Registration rule (`836063a`, restated in the weekend's COORD rules before any H200 Stage C or E0b result was read):**
+- Window (1, hi) with hi = min(μ_max/λ_ref, largest all-stable E0b multiple) = min(1.99, 1.3) = **1.3** (`hi_source: lambda_cap_e0b`).
+- Points m1 = 1 + (hi − 1)/3 = 1.10 and m2 = 1 + 2(hi − 1)/3 = 1.20, rounded to 0.05.
+- The `boundary_margin_rel` band is (1.1, 1.17), and neither point lies inside it. `analysis.prereg fill` therefore returns **INCOMPLETE** (`prereg/inputs/2026-10-31-h200/fill_rulecheck_INCOMPLETE.yaml`: `lambda_outside_window` for both points).
+- The cap rule would have given n_cap 28 (μ(28) within 5 % of μ(32)) and a capped-drain limit of 1.73 ×. Neither of those binds; the window does.
+- **No registration and no E2 for this cell**, as the rules require.
+- An exploratory pair was considered and is not possible with the frozen code. `prereg derive-exploratory` needs a FILLED parent. The only FILLED 300k SGLang parent is the A100 registration, and its hardware check refuses the H200 calibration (`calibration hardware must equal the registered hardware`). Making it work would need a code change, so no BURST run was made.
+
+**Window compression (the measurement this cell delivers):** pool (300k) and tool time (Exp(5 s)) are the same as on the A100. The H200 raises the all-miss rate 2.71 ×, but the curve's peak only 1.66 × and the from-empty edge 1.76 × (0.143 → 0.252 sessions/s).
+- In units of λ_miss, the window shrinks from (1, 2.0) to (1, 1.3), i.e. from 1.0 to 0.3 λ_miss wide.
+- In absolute terms it shrinks from 0.072 to 0.058 sessions/s wide.
+- μ_max/λ_ref falls from 3.26 to 1.99.
+- The edge as a fraction of the peak stays similar: 2.0/3.26 = 0.61 on the A100, 1.3/1.99 = 0.65 on the H200.
+
+**Against predictions:**
+1. **Simulator:** no blind simulator prediction exists for this cell.
+2. **The checker's a-priori estimate** (`COORD/h200_scope_and_check.md`, written 2026-10-30 ~18:20, before any H200 job ran; not committed, so not blind by the project's standard). It expected a pool-set cliff at n ≈ 24–28 on either GPU, and put μ_max/λ_ref at 1.2–1.7 and hi at 1.1–1.5.
+   - The real hi (1.3) lies inside its range.
+   - The real μ_max/λ_ref (1.99) and peak (n = 32) lie above it, and above the plan's R_bound of 1.80, because the cliff moved out.
+3. **The round-13 first-principles theory:** tag `r13-theory-pred`, commit `997d2c4`, pushed 02:05:30 CDT 2026-10-31, before the combine; files `notes/PREDICTIONS_r13_theory.md` and `results/theory/merged/h200_300k.json`. I read it only after the combine and the registration check. Predictions on the turns-based estimator, against the measurements:
+
+   | quantity | predicted | measured |
+   |---|---|---|
+   | μ_max | 0.372 | 0.367 (−1.3 %) |
+   | window | 1.92 | 1.89 |
+   | peak n | ≈ 32.5 | 32 |
+   | 0.5-hit crossing | 37.3 | ≈ 38.8 |
+   | hit at the peak | ≈ 0.69 | 0.74 |
+   | F2 edge | 1.39 × | bracket [1.3, 1.4) |
+
+   - It also predicted that the cliff would move out while the window narrowed; it did.
+   - None of its three H200 refutation conditions fires: window 1.89 < 2.4; hit(32) 0.744 ≥ 0.5; hit(48) 0.215 < 0.5.
+   - Its F2 escape probabilities at the six E0b multiples (0.04, 0.12, 0.28, 0.52, 0.84, 0.98) give a log-likelihood of −1.36 for the observed outcomes.
+   - Beyond the peak the real cliff is softer than predicted (fluid / annealed): μ(40) 0.312 vs 0.257 / 0.278; μ(48) 0.259 vs 0.197 / 0.201; hit(48) 0.215 vs 0.000 / 0.013.
+   - The official scoring is the theory session's; these are this session's readings of the frozen file.
+
+**Blindness scope:** the per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell operator and Akshat at about 22:28 CDT, and not by the lead or the theory agents. n ≥ 40 and the E0b edge are fully blind. After the lead's hold (~22:40 CDT 2026-10-30), only `sacct` states were read until "theory predictions frozen" arrived (~02:25 CDT 2026-10-31).
+**Verified vs. not:**
+- Verified:
+  - the 20 accounting records;
+  - `repo_h200/` HEAD `5a6fbcd`, clean;
+  - the hardware string in every banner and every analysis;
+  - `fa3` and the 300k pool in every server log;
+  - no Traceback, OOM or CUDA error in any server log, only SGLang's context-length warning (49,152 > 32,768), as on the A100;
+  - the archive and input hashes;
+  - the rule check by `fill`.
+- Not verified:
+  - the seed-to-seed spread of the curve and of the edge (one run per n and per multiple; the 1.4 × run is close to the stability threshold);
+  - whether POP 32 saturates the H200 in turns (ratio 1.10);
+  - the effect of the attention backend (fa3 here, FlashInfer on the A100) separately from the GPU.
+
+**Interpretation:** The H200 neither refutes nor tests the mechanism. At this pool the window is too narrow for the registered rule to place two λ points at least 10 % from its edges, so no paired kill test was run. What the cell does show is that the window is not a property of the engine alone. It depends on the ratio of the pool-limited peak to the compute-limited all-miss rate. At a fixed pool and tool time, a faster GPU raises λ_miss more than it raises the peak, and the window compresses from 1.0 to 0.3 λ_miss. A larger pool widens it: 5.5 × for the A100 native pool.
+**Extra Stage C (submitted after this entry's data, at the lead's request):** 17169612–14 (n = 36, 44, 52, one n per job, same protocol and label, nice 0), to bracket the theory's predicted cliff. Their predictions are frozen in `r13-theory-pred`, so they are blind. They are not part of the nine-point curve above or of the registration check.
