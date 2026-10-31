@@ -1,0 +1,225 @@
+cell,group,quantity,predicted,measured,rel_err,in_seed_range,note
+a100_300k,all-miss,"lambda_miss turns-based (E0a, POP 32)",0.07177082661088079,0.07153402100919228,0.003310391312381016,,
+a100_300k,all-miss,E0a uncached tokens/s,11090.66387408682,11243.179816372982,-0.01356519639257738,,
+a100_300k,all-miss,POP-64 / POP-32 E0a tokens,1.000957228747344,1.0166678133515061,-0.015453016607628406,,check only (one POP-64 seed)
+a100_300k,closed,peak n (fluid),24.90674232579995,24.0,,,"measured flat top (within 5%): [20.0, 24.0]"
+a100_300k,closed,peak n (annealed F1),24.0,24.0,,,
+a100_300k,closed,mu_max sessions/s (fluid),0.2478161040065956,0.2333322545719467,0.06207392741830675,,turns-based measured 0.2255
+a100_300k,closed,mu_max sessions/s (annealed F1),0.23369883733011465,0.2333322545719467,0.0015710762270756506,,
+a100_300k,closed,mu_max turns-based (fluid),0.2478161040065956,0.225517314805372,0.09887839086975699,,model-consistent estimator
+a100_300k,closed,mu_max turns-based (annealed F1),0.23369883733011465,0.225517314805372,0.03627891069829186,,model-consistent estimator; primary for blind scoring
+a100_300k,closed,0.5-hit crossing n (fluid),31.492341420912283,32.16473616473616,-0.020904718147853493,,
+a100_300k,closed,0.5-hit crossing n (annealed F1),30.468385207048737,32.16473616473616,-0.05273946439353111,,
+a100_300k,closed,mu(16) sessions/s fluid | annealed,0.1765 | 0.1765,0.1755543126839591,0.005163419724086324,,rel_err of annealed
+a100_300k,closed,mu(16) turns-based fluid | annealed,0.1765 | 0.1765,0.1757615609392596,0.0039781869353215,,rel_err of annealed; fluid +0.004
+a100_300k,closed,hit(16) fluid | annealed,0.932 | 0.932,0.9321199143468952,,,
+a100_300k,closed,mu(20) sessions/s fluid | annealed,0.2161 | 0.2139,0.2238868137457633,-0.04439713319705999,,rel_err of annealed
+a100_300k,closed,mu(20) turns-based fluid | annealed,0.2161 | 0.2139,0.2150157600895343,-0.0049711659938877035,,rel_err of annealed; fluid +0.005
+a100_300k,closed,hit(20) fluid | annealed,0.932 | 0.922,0.926833537545948,,,
+a100_300k,closed,mu(24) sessions/s fluid | annealed,0.2462 | 0.2337,0.2333322545719467,0.0015710762270756506,,rel_err of annealed
+a100_300k,closed,mu(24) turns-based fluid | annealed,0.2462 | 0.2337,0.225517314805372,0.03627891069829186,,rel_err of annealed; fluid +0.092
+a100_300k,closed,hit(24) fluid | annealed,0.910 | 0.872,0.8876835781041389,,,
+a100_300k,closed,mu(32) sessions/s fluid | annealed,0.1078 | 0.1415,0.1149991290057621,0.23030320836754856,,rel_err of annealed
+a100_300k,closed,mu(32) turns-based fluid | annealed,0.1078 | 0.1415,0.1157692278916105,0.22211921036328952,,rel_err of annealed; fluid -0.069
+a100_300k,closed,hit(32) fluid | annealed,0.371 | 0.357,0.5052015604681405,,,
+a100_300k,closed,mu(48) sessions/s fluid | annealed,0.0718 | 0.0719,0.0488884197069655,0.4710429850842759,,rel_err of annealed
+a100_300k,closed,mu(48) turns-based fluid | annealed,0.0718 | 0.0719,0.0629277494927625,0.1428498149303567,,rel_err of annealed; fluid +0.142
+a100_300k,closed,hit(48) fluid | annealed,0.000 | 0.001,0.0,,,
+a100_300k,closed (Stage C protocol),"mu(48) synchronized start, sessions | turns-based",0.0712 | 0.0717,0.0489 | 0.0629,0.45717219373945867,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+a100_300k,closed,mu(96) sessions/s fluid | annealed,0.0718 | 0.0718,0.0611105591797356,0.17556248783373896,,rel_err of annealed
+a100_300k,closed,mu(96) turns-based fluid | annealed,0.0718 | 0.0718,0.0729766598344024,-0.015585515351653511,,rel_err of annealed; fluid -0.016
+a100_300k,closed,hit(96) fluid | annealed,0.000 | 0.000,0.0,,,
+a100_300k,closed (Stage C protocol),"mu(96) synchronized start, sessions | turns-based",0.0783 | 0.0796,0.0611 | 0.0730,0.2814923164712085,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+a100_300k,closed (Stage C protocol),"mu(300) synchronized start, sessions | turns-based",0.1085 | 0.1103,0.1078 | 0.1114,0.0069481418206200855,,graft of A; valid when trapped from t=0 (n E_1 > M)
+a100_300k,closed (RMS),"RMS rel err of mu, fluid vs sessions",all n<300: 0.208,below n_b only: 0.045,0.20793106639785058,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_300k,closed (RMS),"RMS rel err of mu, annealed F1 vs sessions",all n<300: 0.226,below n_b only: 0.117,0.22647423817281423,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_300k,closed (RMS),"RMS rel err of mu, fluid vs turns-based",all n<300: 0.075,below n_b only: 0.057,0.07473051657153598,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_300k,closed (RMS),"RMS rel err of mu, annealed F1 vs turns-based",all n<300: 0.109,below n_b only: 0.113,0.10904327837370416,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_300k,closed,"mu at large n, turns-based (stationary mu_b)",0.07183952770933337,0.0729766598344024,-0.015582134447498525,,measured at n = 96
+a100_300k,closed,all-miss threshold n_b (= closed form),32.70 (= 32.70),collapse between measured grid points,,,"measured hit: 16: 0.93, 20: 0.93, 24: 0.89, 32: 0.51, 48: 0.00, 96: 0.00"
+a100_300k,window,mu_max / lambda_ref (fluid),3.464312131386412,3.2618361344731763,0.062074239344318834,,turns-based measured 3.15
+a100_300k,window,mu_max / lambda_ref (annealed F1),3.26696168717134,3.2618361344731763,0.0015713703836908294,,
+a100_300k,window,mu_max / lambda_ref turns-based (annealed F1),3.26696168717134,3.152588259737175,0.03627921504843138,,model-consistent; primary for blind scoring
+a100_300k,from-empty edge (F2),P(unstable 3000 s run) at 1.25 x,0.0005817765433079325,stable,,,
+a100_300k,from-empty edge (F2),P(unstable 3000 s run) at 1.5 x,0.00598644059975495,stable,,,
+a100_300k,from-empty edge (F2),P(unstable 3000 s run) at 1.75 x,0.037394486479579436,stable,,,
+a100_300k,from-empty edge (F2),P(unstable 3000 s run) at 2 x,0.15025854876383238,stable,,,
+a100_300k,from-empty edge (F2),P(unstable 3000 s run) at 2.5 x,0.6907021823486226,UNSTABLE,,,
+a100_300k,from-empty edge (F2),P(unstable 3000 s run) at 3 x,0.9725011251382973,UNSTABLE,,,
+a100_300k,from-empty edge (F2),"predicted bracket (stable, unstable)","[2.0, 2.5]","[2.0, 2.5]",,,50% edge 2.34 x; log-likelihood of the observed outcomes -0.605
+a100_300k,from-empty edge (secondary: A's level crossing),P(unstable) at the registered multiples,"1.25: 0.000, 1.5: 0.000, 1.75: 0.000, 2.0: 0.033, 2.5: 0.367, 3.0: 0.955",,,,50% edge 2.59 x; log-likelihood -1.083 (probabilities floored at 1e-3)
+a100_300k,E2 BURST 1.35 x,"backlog [5700, 8700) mean",215.44855564618868,"232.2, 199.7, 221.4",-0.010794305464031742,True,
+a100_300k,E2 BURST 1.35 x,backlog slope (sessions/s),0.015930463197240383,"0.02222, 0.003596, 0.01861",0.07593594963380883,True,
+a100_300k,E2 BURST 1.35 x,session rate (sessions/s),0.07790607868994408,"0.081, 0.09133, 0.084",-0.08822201168627798,False,
+a100_300k,E2 BURST 1.35 x,uncached token rate / E0a,1.0055288608060187,"1.025, 1.009, 1.019",-0.012024691705271852,False,model ratio = trapped / model E0a
+a100_300k,E2 BURST 1.35 x,hit,0.0,"0, 0, 0",,True,
+a100_300k,E2 BURST 1.35 x,gap/R (frozen loopvars),6.924961519846659,"6.916, 6.354, 6.79",0.0356373160289121,False,
+a100_300k,E2 BURST 1.35 x,R = M/churn (s),26.622233161043987,"25.8, 26.2, 25.9",0.025246463198099537,False,
+a100_300k,E2 BURST 1.35 x,post-burst backlog minimum,153.4053651167976,"146.7, 146.8, 135.2",0.07351550116723307,False,
+a100_300k,E2 BURST 1.35 x,time of the minimum after the burst (s),1286.0,"1050, 1300, 900",0.18707692307692317,True,
+a100_300k,E2 NOBURST 1.35 x,hit,0.9322541649891649,"0.9313, 0.93, 0.9342",0.0004481036223881499,True,
+a100_300k,E2 NOBURST 1.35 x,sessions in system n1,8.467829605453247,"9.224, 7.912, 9.657",-0.05186209503216848,True,
+a100_300k,E2 NOBURST 1.35 x,gap/R (frozen loopvars),0.016851865491995743,"0.019, 0.016, 0.02",-0.08080733680023236,True,
+a100_300k,E2 NOBURST 1.35 x,R = M/churn (s),281.53049067362815,"264.9, 306.6, 255.1",0.0217656327375809,True,
+a100_300k,E2 CAPPED 1.35 x (cap 20),gate empty after the burst (s),1576.2839464975125,"1547, 1847, 1904",-0.10734273912363612,True,
+a100_300k,E2 BURST 1.65 x,"backlog [5700, 8700) mean",304.2326503194234,"331.8, 282.7, 311",-0.01382254422927977,True,
+a100_300k,E2 BURST 1.65 x,backlog slope (sessions/s),0.029257834558723807,"0.03201, 0.02766, 0.03621",-0.08453263334581146,True,
+a100_300k,E2 BURST 1.65 x,session rate (sessions/s),0.08576405870195265,"0.08967, 0.09667, 0.096",-0.08868907707727425,False,
+a100_300k,E2 BURST 1.65 x,uncached token rate / E0a,1.0158750187473007,"1.025, 1.029, 1.026",-0.010541378694686276,False,model ratio = trapped / model E0a
+a100_300k,E2 BURST 1.65 x,hit,0.0,"0, 0, 0",,True,
+a100_300k,E2 BURST 1.65 x,gap/R (frozen loopvars),8.98261071297359,"9.672, 8.183, 8.478",0.023348351457136353,True,
+a100_300k,E2 BURST 1.65 x,R = M/churn (s),26.32657981571388,"25.7, 25.6, 25.7",0.025710901910930384,False,
+a100_300k,E2 BURST 1.65 x,post-burst backlog minimum,174.34482449346564,"172.1, 170.4, 162.4",0.03591696074548815,False,
+a100_300k,E2 BURST 1.65 x,time of the minimum after the burst (s),803.0,"300, 1200, 900",0.00375,True,
+a100_300k,E2 NOBURST 1.65 x,hit,0.9322541649889765,"0.9335, 0.9343, 0.9212",0.0027701538411429014,True,
+a100_300k,E2 NOBURST 1.65 x,sessions in system n1,10.432870727195995,"11.56, 10.92, 11.83",-0.08769930734750113,False,
+a100_300k,E2 NOBURST 1.65 x,gap/R (frozen loopvars),0.020811941614903285,"0.024, 0.022, 0.028",-0.15627263723365062,False,
+a100_300k,E2 NOBURST 1.65 x,R = M/churn (s),230.25648498863322,"213.4, 229.6, 188.1",0.09454833618428082,False,
+a100_300k,E2 CAPPED 1.65 x (cap 20),gate empty after the burst (s),1941.1237870703906,"2693, 2021, 2127",-0.14874192559295232,False,
+a100_native,all-miss,"lambda_miss turns-based (E0a, POP 32)",0.07177082661088079,0.07179742331825469,-0.00037044097329238016,,
+a100_native,all-miss,E0a uncached tokens/s,11090.66387408682,11282.003728242735,-0.016959740376341577,,
+a100_native,all-miss,POP-64 / POP-32 E0a tokens,1.0207854373180971,1.0119081634321494,0.008772805879772867,,check only (one POP-64 seed)
+a100_native,closed,peak n (fluid),74.13451954675035,64.0,,,"measured flat top (within 5%): [64.0, 80.0]"
+a100_native,closed,peak n (annealed F1),69.5,64.0,,,
+a100_native,closed,mu_max sessions/s (fluid),0.5076076597205496,0.4788861047397107,0.059975753517529776,,turns-based measured 0.4655
+a100_native,closed,mu_max sessions/s (annealed F1),0.49486860316382686,0.4788861047397107,0.033374320670262754,,
+a100_native,closed,mu_max turns-based (fluid),0.5076076597205496,0.4655240897843918,0.09040041291020798,,model-consistent estimator
+a100_native,closed,mu_max turns-based (annealed F1),0.49486860316382686,0.4655240897843918,0.06303543473556011,,model-consistent estimator; primary for blind scoring
+a100_native,closed,0.5-hit crossing n (fluid),93.7367040777801,93.42120789127966,0.0033771366654518423,,
+a100_native,closed,0.5-hit crossing n (annealed F1),92.04188080335156,93.42120789127966,-0.014764603445647123,,
+a100_native,closed,mu(24) sessions/s fluid | annealed,0.2538 | 0.2538,0.2649976621456069,-0.04241307909031085,,rel_err of annealed
+a100_native,closed,mu(24) turns-based fluid | annealed,0.2538 | 0.2538,0.2515606480294627,0.008736053631717823,,rel_err of annealed; fluid +0.009
+a100_native,closed,hit(24) fluid | annealed,0.932 | 0.932,0.928785158587672,,,
+a100_native,closed,mu(48) sessions/s fluid | annealed,0.4263 | 0.4263,0.4311078555471622,-0.011128581724581183,,rel_err of annealed
+a100_native,closed,mu(48) turns-based fluid | annealed,0.4263 | 0.4263,0.4144508341898819,0.028614738773288018,,rel_err of annealed; fluid +0.029
+a100_native,closed,hit(48) fluid | annealed,0.932 | 0.932,0.9294406102433708,,,
+a100_native,closed,mu(64) sessions/s fluid | annealed,0.4882 | 0.4867,0.4788861047397107,0.01633259777445512,,rel_err of annealed
+a100_native,closed,mu(64) turns-based fluid | annealed,0.4882 | 0.4867,0.4655240897843918,0.04550456044846003,,rel_err of annealed; fluid +0.049
+a100_native,closed,hit(64) fluid | annealed,0.932 | 0.932,0.930390492359932,,,
+a100_native,closed,mu(80) sessions/s fluid | annealed,0.4871 | 0.4502,0.4772179852957253,-0.056597636111151615,,rel_err of annealed
+a100_native,closed,mu(80) turns-based fluid | annealed,0.4871 | 0.4502,0.4637161235974384,-0.02912891636026801,,rel_err of annealed; fluid +0.050
+a100_native,closed,hit(80) fluid | annealed,0.920 | 0.888,0.9221654086518952,,,
+a100_native,closed,mu(96) sessions/s fluid | annealed,0.0737 | 0.1730,0.1227768253429686,0.4093645006530945,,rel_err of annealed
+a100_native,closed,mu(96) turns-based fluid | annealed,0.0737 | 0.1730,0.11599502434321,0.49176484182008123,,rel_err of annealed; fluid -0.365
+a100_native,closed,hit(96) fluid | annealed,0.000 | 0.355,0.4188838416612589,,,
+a100_native,closed (Stage C protocol),"mu(96) synchronized start, sessions | turns-based",0.0798 | 0.0811,0.1228 | 0.1160,-0.3497964571498002,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+a100_native,closed,mu(128) sessions/s fluid | annealed,0.0737 | 0.0737,0.0666660326380494,0.10554172547874538,,rel_err of annealed
+a100_native,closed,mu(128) turns-based fluid | annealed,0.0737 | 0.0737,0.0730142611081087,0.00942034658632474,,rel_err of annealed; fluid +0.009
+a100_native,closed,hit(128) fluid | annealed,0.000 | 0.000,0.0072164948453608,,,
+a100_native,closed (Stage C protocol),"mu(128) synchronized start, sessions | turns-based",0.0857 | 0.0871,0.0667 | 0.0730,0.28499227679496286,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+a100_native,closed (Stage C protocol),"mu(300) synchronized start, sessions | turns-based",0.1108 | 0.1126,0.1006 | 0.1074,0.10226680836013699,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+a100_native,closed (RMS),"RMS rel err of mu, fluid vs sessions",all n<300: 0.170,below n_b only: 0.026,0.17011688167163916,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_native,closed (RMS),"RMS rel err of mu, annealed F1 vs sessions",all n<300: 0.175,below n_b only: 0.037,0.17517187321054256,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_native,closed (RMS),"RMS rel err of mu, fluid vs turns-based",all n<300: 0.152,below n_b only: 0.038,0.1521261478906518,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_native,closed (RMS),"RMS rel err of mu, annealed F1 vs turns-based",all n<300: 0.202,below n_b only: 0.031,0.2023757574736439,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+a100_native,closed,"mu at large n, turns-based (stationary mu_b)",0.07369848352663744,0.0730142611081087,0.009371079130906255,,measured at n = 128
+a100_native,closed,all-miss threshold n_b (= closed form),94.86 (= 94.86),collapse between measured grid points,,,"measured hit: 24: 0.93, 48: 0.93, 64: 0.93, 80: 0.92, 96: 0.42, 128: 0.01"
+a100_native,window,mu_max / lambda_ref (fluid),7.070000581087192,6.6699622717233735,0.05997609777490649,,turns-based measured 6.48
+a100_native,window,mu_max / lambda_ref (annealed F1),6.892569969996503,6.6699622717233735,0.03337465628806505,,
+a100_native,window,mu_max / lambda_ref turns-based (annealed F1),6.892569969996503,6.483855106065221,0.06303577998665577,,model-consistent; primary for blind scoring
+a100_native,from-empty edge (F2),P(unstable 3000 s run) at 1.5 x,0.0,stable,,,
+a100_native,from-empty edge (F2),P(unstable 3000 s run) at 2.5 x,1.2323475573339238e-14,stable,,,
+a100_native,from-empty edge (F2),P(unstable 3000 s run) at 3.5 x,1.11417667314484e-08,stable,,,
+a100_native,from-empty edge (F2),P(unstable 3000 s run) at 4.5 x,0.00012315815978147793,stable,,,
+a100_native,from-empty edge (F2),P(unstable 3000 s run) at 5.5 x,0.049248736110534264,stable,,,
+a100_native,from-empty edge (F2),P(unstable 3000 s run) at 6.5 x,0.6829670544606417,UNSTABLE,,,
+a100_native,from-empty edge (F2),"predicted bracket (stable, unstable)","[5.5, 6.5]","[5.5, 6.5]",,,50% edge 6.26 x; log-likelihood of the observed outcomes -0.432
+a100_native,from-empty edge (secondary: A's level crossing),P(unstable) at the registered multiples,"1.5: 0.000, 2.5: 0.000, 3.5: 0.000, 4.5: 0.000, 5.5: 0.000, 6.5: 0.345",,,,50% edge 6.58 x; log-likelihood -1.069 (probabilities floored at 1e-3)
+a100_native,E2 BURST 2.5 x,"backlog [5700, 8700) mean",564.8149211665523,"601.2, 557, 583.2",-0.026955043044218478,True,
+a100_native,E2 BURST 2.5 x,backlog slope (sessions/s),0.0696551872089472,"0.08484, 0.08292, 0.0794",-0.15450963141080112,False,
+a100_native,E2 BURST 2.5 x,session rate (sessions/s),0.10611258583531541,"0.1093, 0.1033, 0.112",-0.01948960463799637,True,
+a100_native,E2 BURST 2.5 x,uncached token rate / E0a,1.0668419301176477,"1.078, 1.074, 1.074",-0.007881732303620192,False,model ratio = trapped / model E0a
+a100_native,E2 BURST 2.5 x,hit,0.0,"0, 0, 0",,True,
+a100_native,E2 BURST 2.5 x,gap/R (frozen loopvars),4.452072650963586,"4.572, 4.141, 4.272",0.028588213545687875,True,
+a100_native,E2 BURST 2.5 x,R = M/churn (s),79.70530706788212,"77.5, 77.9, 77.8",0.025368444269495492,False,
+a100_native,E2 BURST 2.5 x,post-burst backlog minimum,205.9077098724047,"167.7, 161.1, 154.8",0.27734311335238654,False,
+a100_native,E2 BURST 2.5 x,time of the minimum after the burst (s),301.0,"150, 150, 200",0.806,False,
+a100_native,E2 NOBURST 2.5 x,hit,0.9322541649891649,"0.9313, 0.9291, 0.935",0.0005034001729147925,True,
+a100_native,E2 NOBURST 2.5 x,sessions in system n1,16.2920022265568,"18.46, 15.59, 18.22",-0.06474926625895305,True,
+a100_native,E2 NOBURST 2.5 x,gap/R (frozen loopvars),0.010096713592627286,"0.012, 0.01, 0.011",-0.08211694612479227,True,
+a100_native,E2 NOBURST 2.5 x,R = M/churn (s),489.6831105877497,"445.7, 505.2, 449.8",0.04879655298297207,True,
+a100_native,E2 CAPPED 2.5 x (cap 64),gate empty after the burst (s),493.39158723459883,"582.8, 511.6, 542",-0.095468857428626,False,
+a100_native,E2 BURST 4 x,"backlog [5700, 8700) mean",1088.6635977057617,"1139, 1098, 1114",-0.025404702924287443,False,
+a100_native,E2 BURST 4 x,backlog slope (sessions/s),0.1518763335499577,"0.1643, 0.1465, 0.1555",-0.02283930351592598,True,
+a100_native,E2 BURST 4 x,session rate (sessions/s),0.13072162001256796,"0.134, 0.137, 0.146",-0.05955237202322647,False,
+a100_native,E2 BURST 4 x,uncached token rate / E0a,1.0787237084263521,"1.11, 1.106, 1.124",-0.031010150740579504,False,model ratio = trapped / model E0a
+a100_native,E2 BURST 4 x,hit,0.0,"0, 0, 0",,True,
+a100_native,E2 BURST 4 x,gap/R (frozen loopvars),7.064140443469798,"6.862, 6.682, 6.96",0.03357497709760984,False,
+a100_native,E2 BURST 4 x,R = M/churn (s),78.59947838332214,"75.1, 75.4, 74.2",0.04939223475730501,False,
+a100_native,E2 BURST 4 x,post-burst backlog minimum,232.9931529592354,"231.1, 228.7, 201.5",0.056977860090286235,False,
+a100_native,E2 BURST 4 x,time of the minimum after the burst (s),60.0,"100, 100, 100",-0.4,False,
+a100_native,E2 NOBURST 4 x,hit,0.9322541649891649,"0.935, 0.9322, 0.929",0.00018802506976654213,True,
+a100_native,E2 NOBURST 4 x,sessions in system n1,27.797436165773785,"33.63, 28.22, 28.54",-0.07744111842110192,False,
+a100_native,E2 NOBURST 4 x,gap/R (frozen loopvars),0.017312451623156925,"0.022, 0.018, 0.019",-0.11970584966998682,False,
+a100_native,E2 NOBURST 4 x,R = M/churn (s),307.8343738896553,"271.6, 309.5, 306.1",0.040918757516868624,True,
+a100_native,E2 CAPPED 4 x (cap 64),gate empty after the burst (s),815.0445786012586,"936.8, 836.6, 900.4",-0.08552108018409167,False,
+vllm_300k,all-miss,"lambda_miss turns-based (E0a, POP 32)",0.0669711155169567,0.06566287289032151,0.01992362760033943,,"tokens fitted, turns predicted"
+vllm_300k,all-miss,E0a uncached tokens/s,10348.969999999998,10348.97253582688,-2.450317530871244e-07,,E0a token rate (fitted: one speed factor)
+vllm_300k,all-miss,POP-64 / POP-32 E0a tokens,1.0010708643070096,1.0175554794204051,-0.01620021261424002,,check only (one POP-64 seed)
+vllm_300k,closed,peak n (fluid),24.86863976346447,20.0,,,"measured flat top (within 5%): [20.0, 24.0]"
+vllm_300k,closed,peak n (annealed F1),24.0,20.0,,,
+vllm_300k,closed,mu_max sessions/s (fluid),0.24900024299671528,0.2194433037954096,0.13469054963218227,,turns-based measured 0.2108
+vllm_300k,closed,mu_max sessions/s (annealed F1),0.23532237778720783,0.2194433037954096,0.0723607133011565,,
+vllm_300k,closed,mu_max turns-based (fluid),0.24900024299671528,0.2107637245004451,0.18141887835251955,,model-consistent estimator
+vllm_300k,closed,mu_max turns-based (annealed F1),0.23532237778720783,0.2107637245004451,0.11652220202965181,,model-consistent estimator; primary for blind scoring
+vllm_300k,closed,0.5-hit crossing n (fluid),31.750782689604563,29.10120595144871,0.09104697388061177,,
+vllm_300k,closed,0.5-hit crossing n (annealed F1),30.69315488599784,29.10120595144871,0.054703881935514086,,
+vllm_300k,closed,mu(16) sessions/s fluid | annealed,0.1786 | 0.1785,0.1749992729625084,0.019911100987440394,,rel_err of annealed
+vllm_300k,closed,mu(16) turns-based fluid | annealed,0.1786 | 0.1785,0.1739931633952362,0.02580870234399266,,rel_err of annealed; fluid +0.026
+vllm_300k,closed,hit(16) fluid | annealed,0.932 | 0.932,0.9318624269954576,,,
+vllm_300k,closed,mu(20) sessions/s fluid | annealed,0.2181 | 0.2160,0.2194433037954096,-0.015898929435274257,,rel_err of annealed
+vllm_300k,closed,mu(20) turns-based fluid | annealed,0.2181 | 0.2160,0.2107637245004451,0.02462788938267642,,rel_err of annealed; fluid +0.035
+vllm_300k,closed,hit(20) fluid | annealed,0.932 | 0.923,0.9260714285714284,,,
+vllm_300k,closed,mu(24) sessions/s fluid | annealed,0.2476 | 0.2353,0.2183324171960792,0.07781693991813562,,rel_err of annealed
+vllm_300k,closed,mu(24) turns-based fluid | annealed,0.2476 | 0.2353,0.2096348431418703,0.12253466198819576,,rel_err of annealed; fluid +0.181
+vllm_300k,closed,hit(24) fluid | annealed,0.910 | 0.877,0.8791741472172352,,,
+vllm_300k,closed,mu(28) sessions/s fluid | annealed,0.2254 | 0.2086,0.1188880471311158,0.7547873033485296,,rel_err of annealed
+vllm_300k,closed,mu(28) turns-based fluid | annealed,0.2254 | 0.2086,0.1228449110462664,0.6982651853360939,,rel_err of annealed; fluid +0.835
+vllm_300k,closed,hit(28) fluid | annealed,0.812 | 0.717,0.6583946078431373,,,
+vllm_300k,closed,mu(32) sessions/s fluid | annealed,0.1116 | 0.1402,0.0433330807962598,2.235854756610089,,rel_err of annealed
+vllm_300k,closed,mu(32) turns-based fluid | annealed,0.1116 | 0.1402,0.054384533940827,1.5782983773605974,,rel_err of annealed; fluid +1.053
+vllm_300k,closed,hit(32) fluid | annealed,0.441 | 0.381,0.0830449826989619,,,
+vllm_300k,closed,mu(40) sessions/s fluid | annealed,0.0670 | 0.0720,0.0411108894656065,0.7503616513172436,,rel_err of annealed
+vllm_300k,closed,mu(40) turns-based fluid | annealed,0.0670 | 0.0720,0.0555136488372479,0.2962384184672349,,rel_err of annealed; fluid +0.208
+vllm_300k,closed,hit(40) fluid | annealed,0.000 | 0.028,0.007457627118644,,,
+vllm_300k,closed (Stage C protocol),"mu(40) synchronized start, sessions | turns-based",0.0664 | 0.0667,0.0411 | 0.0555,0.6146324424851148,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+vllm_300k,closed,mu(48) sessions/s fluid | annealed,0.0670 | 0.0671,0.0438886342997633,0.5294959606207281,,rel_err of annealed
+vllm_300k,closed,mu(48) turns-based fluid | annealed,0.0670 | 0.0671,0.0592396254223423,0.1331518118163369,,rel_err of annealed; fluid +0.132
+vllm_300k,closed,hit(48) fluid | annealed,0.000 | 0.001,0.0,,,
+vllm_300k,closed (Stage C protocol),"mu(48) synchronized start, sessions | turns-based",0.0666 | 0.0671,0.0439 | 0.0592,0.517623652727844,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+vllm_300k,closed,mu(96) sessions/s fluid | annealed,0.0670 | 0.0670,0.057221857510522,0.17163853650894223,,rel_err of annealed
+vllm_300k,closed,mu(96) turns-based fluid | annealed,0.0670 | 0.0670,0.0686486752688206,-0.023384892317048152,,rel_err of annealed; fluid -0.023
+vllm_300k,closed,hit(96) fluid | annealed,0.000 | 0.000,0.0,,,
+vllm_300k,closed (Stage C protocol),"mu(96) synchronized start, sessions | turns-based",0.0743 | 0.0755,0.0572 | 0.0686,0.29763444153111296,,graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here
+vllm_300k,closed (Stage C protocol),"mu(300) synchronized start, sessions | turns-based",0.1036 | 0.1053,0.1050 | 0.1047,-0.013154541538359122,,graft of A; valid when trapped from t=0 (n E_1 > M)
+vllm_300k,closed (RMS),"RMS rel err of mu, fluid vs sessions",all n<300: 0.708,below n_b only: 0.813,0.7082082978353959,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+vllm_300k,closed (RMS),"RMS rel err of mu, annealed F1 vs sessions",all n<300: 0.898,below n_b only: 1.056,0.8977975438041549,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+vllm_300k,closed (RMS),"RMS rel err of mu, fluid vs turns-based",all n<300: 0.488,below n_b only: 0.607,0.4875663872336388,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+vllm_300k,closed (RMS),"RMS rel err of mu, annealed F1 vs turns-based",all n<300: 0.623,below n_b only: 0.774,0.6225874297264254,,all-points RMS is the headline; the below-n_b subset is chosen by the model
+vllm_300k,closed,"mu at large n, turns-based (stationary mu_b)",0.06704283249416441,0.0686486752688206,-0.02339218882764861,,measured at n = 96
+vllm_300k,closed,all-miss threshold n_b (= closed form),32.83 (= 32.83),collapse between measured grid points,,,"measured hit: 16: 0.93, 20: 0.93, 24: 0.88, 28: 0.66, 32: 0.08, 40: 0.01, 48: 0.00, 96: 0.00"
+vllm_300k,window,mu_max / lambda_ref (fluid),3.79209361431423,3.341969276335986,0.13468835311129618,,turns-based measured 3.21
+vllm_300k,window,mu_max / lambda_ref (annealed F1),3.583789619530144,3.341969276335986,0.0723586374376491,,
+vllm_300k,window,mu_max / lambda_ref turns-based (annealed F1),3.583789619530144,3.2097853051981065,0.11652004067884351,,model-consistent; primary for blind scoring
+vllm_300k,from-empty edge (F2),P(unstable 3000 s run) at 1.25 x,0.00015951211692766254,stable,,,
+vllm_300k,from-empty edge (F2),P(unstable 3000 s run) at 1.5 x,0.0017548736143597754,stable,,,
+vllm_300k,from-empty edge (F2),P(unstable 3000 s run) at 1.75 x,0.012152511986356584,stable,,,
+vllm_300k,from-empty edge (F2),P(unstable 3000 s run) at 2 x,0.056900257662945486,stable,,,
+vllm_300k,from-empty edge (F2),P(unstable 3000 s run) at 2.5 x,0.42376343506167014,UNSTABLE,,,
+vllm_300k,from-empty edge (F2),P(unstable 3000 s run) at 3 x,0.8822243225810331,UNSTABLE,,,
+vllm_300k,from-empty edge (F2),"predicted bracket (stable, unstable)","[2.5, 3.0]","[2.0, 2.5]",,,50% edge 2.57 x; log-likelihood of the observed outcomes -1.057
+vllm_300k,from-empty edge (secondary: A's level crossing),P(unstable) at the registered multiples,"1.25: 0.000, 1.5: 0.000, 1.75: 0.000, 2.0: 0.007, 2.5: 0.177, 3.0: 0.693",,,,50% edge 2.81 x; log-likelihood -2.107 (probabilities floored at 1e-3)
+vllm_300k,E2 BURST 1.35 x,"backlog [5700, 8700) mean",206.3377531253111,"227.3, 202.8, 217.6",-0.04424471583703364,True,
+vllm_300k,E2 BURST 1.35 x,backlog slope (sessions/s),0.014499237664683109,"0.01409, 0.0002376, 0.01633",0.4186162177481718,True,
+vllm_300k,E2 BURST 1.35 x,session rate (sessions/s),0.07163864814794407,"0.08033, 0.08433, 0.07867",-0.11678132347670594,False,
+vllm_300k,E2 BURST 1.35 x,uncached token rate / E0a,0.9920989080253529,"0.9965, 1, 1.007",-0.009244427506840519,False,model ratio = trapped / model E0a
+vllm_300k,E2 BURST 1.35 x,hit,0.0,"0, 0, 0",,True,
+vllm_300k,E2 BURST 1.35 x,gap/R (frozen loopvars),6.640113717041425,"6.709, 6.508, 6.715",-0.0005849312098998202,True,
+vllm_300k,E2 BURST 1.35 x,R = M/churn (s),28.91683979006993,"28.8, 28.7, 28.5",0.008726969421043992,False,
+vllm_300k,E2 BURST 1.65 x,"backlog [5700, 8700) mean",288.2186563460298,"308.7, 276.6, 300.1",-0.023425754817083387,True,
+vllm_300k,E2 BURST 1.65 x,backlog slope (sessions/s),0.026713059362384037,"0.03219, 0.01748, 0.03258",-0.025567743355357043,True,
+vllm_300k,E2 BURST 1.65 x,session rate (sessions/s),0.07887035028201665,"0.086, 0.09267, 0.08567",-0.10487408533020696,False,
+vllm_300k,E2 BURST 1.65 x,uncached token rate / E0a,1.00223859867379,"1.031, 1.025, 1.026",-0.024557757124854796,False,model ratio = trapped / model E0a
+vllm_300k,E2 BURST 1.65 x,hit,0.0,"0, 0, 0",,True,
+vllm_300k,E2 BURST 1.65 x,gap/R (frozen loopvars),8.51886726927748,"8.627, 8.054, 8.297",0.023164457035488827,True,
+vllm_300k,E2 BURST 1.65 x,R = M/churn (s),28.597613606216264,"27.8, 28, 27.9",0.02500407190739315,False,

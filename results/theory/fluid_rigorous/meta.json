@@ -1,0 +1,79 @@
+{
+ "written": [
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_closed_curves.png",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_closed_curves.pdf",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_from_empty_edge.png",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_from_empty_edge.pdf",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_window_scaling.png",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_window_scaling.pdf",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_trapped.png",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_trapped.pdf",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_feedback_map.png",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_feedback_map.pdf",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_blind_cells.png",
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\figures\\theory\\fluid_rigorous_blind_cells.pdf"
+ ],
+ "seconds": 259.45188879966736,
+ "inputs": {
+  "calibration": "calibration/round6_server_log_fit/calibration.yaml (constants in model.Costs)",
+  "workload": "configs/agentload_e2_burst.yaml workload section (model.Workload defaults)",
+  "measured": {
+   "a100_300k": {
+    "mu_curve": "stageC_1706210x_pulled_20261022-125454/analysis_local/agentload_analysis_closed/20261022-125619/mu_curve.csv",
+    "label": "sglang-fcfs-r1",
+    "e0a": "e0a_1707263x_pulled_20261023-142037/analysis_local_combined/20261023-142416/calibration.json",
+    "e0a64": "e0a_1707263x_pulled_20261023-142037/agentload_analysis_miss/20261022-163440/calibration.json",
+    "bracket": "e0b_1708475x_pulled_20261024-150639/results/agentload_analysis_stable/20261024-150720/lambda_cap_bracket.json",
+    "e0b_mults": [
+     1.25,
+     1.5,
+     1.75,
+     2.0,
+     2.5,
+     3.0
+    ],
+    "trap": "e2_170933xx_pulled_20261025-144558/results/agentload_analysis_burst2/20261025-144012/trap_v2_runs.csv",
+    "trap_root": "e2_170933xx_pulled_20261025-144558"
+   },
+   "a100_native": {
+    "mu_curve": "r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_closed/20261025-144228/mu_curve.csv",
+    "label": "sglang-fcfs-r1-native",
+    "e0a": "r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json",
+    "e0a64": "r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss_popcheck/20261025-054654/calibration.json",
+    "bracket": "e0b_native_1710093x_pulled_20261025-173038/results/agentload_analysis_stable/20261025-172934/lambda_cap_bracket.json",
+    "e0b_mults": [
+     1.5,
+     2.5,
+     3.5,
+     4.5,
+     5.5,
+     6.5
+    ],
+    "trap": "e2_native_vllm_burst_pulled_20261026-101256/results/agentload_analysis_burst2/20261026-100653/trap_v2_runs.csv",
+    "trap_root": "e2_native_vllm_burst_pulled_20261026-101256"
+   },
+   "vllm_300k": {
+    "mu_curve": "stageC_vllm_1716295x_pulled_20261030-153621/results/agentload_analysis_closed/20261030-153533/mu_curve.csv",
+    "label": "vllm-fcfs",
+    "e0a": "e0a_vllm_17100940_pulled_20261025-180814/results/agentload_analysis_miss/20261025-175648/calibration.json",
+    "e0a64": "e0a_vllm_17100940_pulled_20261025-180814/results/agentload_analysis_miss_popcheck/20261025-175648/calibration.json",
+    "bracket": "e0b_vllm_1716296x_pulled_20261030-172810/results/agentload_analysis_stable/20261030-172042/lambda_cap_bracket.json",
+    "e0b_mults": [
+     1.25,
+     1.5,
+     1.75,
+     2.0,
+     2.5,
+     3.0
+    ],
+    "trap": "e2_native_vllm_burst_pulled_20261026-101256/results/agentload_analysis_burst2/20261026-100701/trap_v2_runs.csv",
+    "trap_root": "e2_native_vllm_burst_pulled_20261026-101256"
+   }
+  },
+  "h200_e0a": {
+   "tokens": 29866.0,
+   "lambda_miss_turns": 0.19388,
+   "pop64_token_ratio": 1.046
+  }
+ }
+}

@@ -1,0 +1,1192 @@
+cells:
+  h200_300k:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/h200_300k.yaml
+    spec: analysis/theory/cells/h200_300k.yaml
+    fitted:
+    - uniform speed factor s (every cost divided by s)
+    speed_factor: 2.742
+    lambda_ref: 0.19388
+    e0a_model:
+      lambda_turns: 0.19327
+      tokens: 29866.0
+      pop64_over_pop32: 1.0192
+    mu_max_fluid: 0.3779
+    mu_max_annealed_PRIMARY: 0.3715
+    peak_n_fluid: 32.8
+    peak_n_annealed_PRIMARY: 32.5
+    hit_at_peak_fluid: 0.673
+    n_half_fluid_PRIMARY: 37.3
+    n_half_annealed: 36.5
+    n_b: 41.31
+    n_b_tool_call_part: 13.55
+    n_b_pool_part: 27.76
+    mu_b: 0.19698
+    window_fluid: 1.949
+    window_annealed_PRIMARY: 1.916
+    f2_edge_mult_PRIMARY: 1.392
+    f2_edge_lambda_sessions_per_s: 0.26991
+    f2_bracket:
+    - 1.25
+    - 1.5
+    f2_p_unstable:
+      '1.25': 0.191
+      '1.5': 0.749
+      '1.75': 0.984
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    level_crossing_edge_mult: 1.572
+    level_crossing_p_unstable:
+      '1.25': 0.018
+      '1.5': 0.305
+      '1.75': 0.95
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    stagec_mu300_synchronized: 0.2251
+    registration_consequence:
+      hi_mult: 1.25
+      hi_capped: 1.25
+      lambda_points:
+      - 1.1
+      - 1.15
+      n_cap: 32.0
+      grid_argmax: 32.0
+    e2_auto:
+      '1.1':
+        lam: 0.21327
+        n1: 16.1
+        n_u: 40.98
+        burst_backlog: 170.7
+        burst_token_ratio: 1.021
+        burst_gap_over_R: 5.91
+        noburst_hit: 0.932
+        capped_drain_s: 1125.0
+        b_crit: 62.2
+      '1.15':
+        lam: 0.22296
+        n1: 16.84
+        n_u: 40.78
+        burst_backlog: 207.8
+        burst_token_ratio: 1.022
+        burst_gap_over_R: 7.06
+        noburst_hit: 0.932
+        capped_drain_s: 1201.0
+        b_crit: 59.9
+    grid_points:
+      '16.0':
+        mu_fluid: 0.212
+        mu_annealed: 0.212
+        hit_fluid: 0.932
+        hit_annealed: 0.931
+      '20.0':
+        mu_fluid: 0.2641
+        mu_annealed: 0.2636
+        hit_fluid: 0.93
+        hit_annealed: 0.919
+      '24.0':
+        mu_fluid: 0.3135
+        mu_annealed: 0.3117
+        hit_fluid: 0.895
+        hit_annealed: 0.874
+      '28.0':
+        mu_fluid: 0.3538
+        mu_annealed: 0.3513
+        hit_fluid: 0.803
+        hit_annealed: 0.795
+      '32.0':
+        mu_fluid: 0.3769
+        mu_annealed: 0.3714
+        hit_fluid: 0.696
+        hit_annealed: 0.69
+      '40.0':
+        mu_fluid: 0.2566
+        mu_annealed: 0.2783
+        hit_fluid: 0.265
+        hit_annealed: 0.277
+      '48.0':
+        mu_fluid: 0.197
+        mu_annealed: 0.2009
+        hit_fluid: 0.0
+        hit_annealed: 0.013
+      '96.0':
+        mu_fluid: 0.197
+        mu_annealed: 0.197
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.784
+  h200_300k_ratiofit:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/h200_300k_ratiofit.yaml
+    spec: analysis/theory/cells/h200_300k_ratiofit.yaml
+    fitted:
+    - uniform speed factor s (every cost divided by s)
+    speed_factor: 2.7032
+    lambda_ref: 0.19388
+    e0a_model:
+      lambda_turns: 0.19065
+      tokens: 29461.0
+      pop64_over_pop32: 1.0186
+    mu_max_fluid: 0.3753
+    mu_max_annealed_PRIMARY: 0.3689
+    peak_n_fluid: 32.7
+    peak_n_annealed_PRIMARY: 32.0
+    hit_at_peak_fluid: 0.676
+    n_half_fluid_PRIMARY: 37.2
+    n_half_annealed: 36.4
+    n_b: 41.12
+    n_b_tool_call_part: 13.36
+    n_b_pool_part: 27.76
+    mu_b: 0.1942
+    window_fluid: 1.936
+    window_annealed_PRIMARY: 1.903
+    f2_edge_mult_PRIMARY: 1.382
+    f2_edge_lambda_sessions_per_s: 0.26786
+    f2_bracket:
+    - 1.25
+    - 1.5
+    f2_p_unstable:
+      '1.25': 0.208
+      '1.5': 0.771
+      '1.75': 0.986
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    level_crossing_edge_mult: 1.562
+    level_crossing_p_unstable:
+      '1.25': 0.022
+      '1.5': 0.34
+      '1.75': 0.97
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    stagec_mu300_synchronized: 0.2226
+    registration_consequence:
+      hi_mult: 1.25
+      hi_capped: 1.25
+      lambda_points:
+      - 1.1
+      - 1.15
+      n_cap: 32.0
+      grid_argmax: 32.0
+    e2_auto:
+      '1.1':
+        lam: 0.21327
+        n1: 16.12
+        n_u: 40.73
+        burst_backlog: 181.5
+        burst_token_ratio: 1.021
+        burst_gap_over_R: 6.25
+        noburst_hit: 0.932
+        capped_drain_s: 1140.0
+        b_crit: 61.6
+      '1.15':
+        lam: 0.22296
+        n1: 16.86
+        n_u: 40.53
+        burst_backlog: 218.7
+        burst_token_ratio: 1.022
+        burst_gap_over_R: 7.4
+        noburst_hit: 0.932
+        capped_drain_s: 1218.0
+        b_crit: 59.2
+    grid_points:
+      '16.0':
+        mu_fluid: 0.2117
+        mu_annealed: 0.2117
+        hit_fluid: 0.932
+        hit_annealed: 0.931
+      '20.0':
+        mu_fluid: 0.2637
+        mu_annealed: 0.2632
+        hit_fluid: 0.93
+        hit_annealed: 0.919
+      '24.0':
+        mu_fluid: 0.313
+        mu_annealed: 0.3111
+        hit_fluid: 0.895
+        hit_annealed: 0.874
+      '28.0':
+        mu_fluid: 0.3528
+        mu_annealed: 0.3501
+        hit_fluid: 0.803
+        hit_annealed: 0.795
+      '32.0':
+        mu_fluid: 0.3747
+        mu_annealed: 0.3689
+        hit_fluid: 0.696
+        hit_annealed: 0.688
+      '40.0':
+        mu_fluid: 0.246
+        mu_annealed: 0.2715
+        hit_fluid: 0.24
+        hit_annealed: 0.264
+      '48.0':
+        mu_fluid: 0.1942
+        mu_annealed: 0.1979
+        hit_fluid: 0.0
+        hit_annealed: 0.012
+      '96.0':
+        mu_fluid: 0.1942
+        mu_annealed: 0.1942
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.785
+  h200_300k_lamratiofit:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/h200_300k_lamratiofit.yaml
+    spec: analysis/theory/cells/h200_300k_lamratiofit.yaml
+    fitted:
+    - uniform speed factor s (every cost divided by s)
+    speed_factor: 2.7605
+    lambda_ref: 0.19388
+    e0a_model:
+      lambda_turns: 0.19452
+      tokens: 30059.0
+      pop64_over_pop32: 1.0195
+    mu_max_fluid: 0.3791
+    mu_max_annealed_PRIMARY: 0.3728
+    peak_n_fluid: 32.9
+    peak_n_annealed_PRIMARY: 32.5
+    hit_at_peak_fluid: 0.67
+    n_half_fluid_PRIMARY: 37.4
+    n_half_annealed: 36.6
+    n_b: 41.4
+    n_b_tool_call_part: 13.65
+    n_b_pool_part: 27.76
+    mu_b: 0.19831
+    window_fluid: 1.955
+    window_annealed_PRIMARY: 1.923
+    f2_edge_mult_PRIMARY: 1.397
+    f2_edge_lambda_sessions_per_s: 0.2709
+    f2_bracket:
+    - 1.25
+    - 1.5
+    f2_p_unstable:
+      '1.25': 0.184
+      '1.5': 0.739
+      '1.75': 0.982
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    level_crossing_edge_mult: 1.578
+    level_crossing_p_unstable:
+      '1.25': 0.018
+      '1.5': 0.297
+      '1.75': 0.948
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    stagec_mu300_synchronized: 0.2262
+    registration_consequence:
+      hi_mult: 1.25
+      hi_capped: 1.25
+      lambda_points:
+      - 1.1
+      - 1.15
+      n_cap: 32.0
+      grid_argmax: 32.0
+    e2_auto:
+      '1.1':
+        lam: 0.21327
+        n1: 16.09
+        n_u: 41.1
+        burst_backlog: 165.6
+        burst_token_ratio: 1.021
+        burst_gap_over_R: 5.74
+        noburst_hit: 0.932
+        capped_drain_s: 1118.0
+        b_crit: 62.6
+      '1.15':
+        lam: 0.22296
+        n1: 16.83
+        n_u: 40.9
+        burst_backlog: 202.6
+        burst_token_ratio: 1.023
+        burst_gap_over_R: 6.91
+        noburst_hit: 0.932
+        capped_drain_s: 1193.0
+        b_crit: 60.2
+    grid_points:
+      '16.0':
+        mu_fluid: 0.2121
+        mu_annealed: 0.2121
+        hit_fluid: 0.932
+        hit_annealed: 0.931
+      '20.0':
+        mu_fluid: 0.2643
+        mu_annealed: 0.2638
+        hit_fluid: 0.93
+        hit_annealed: 0.919
+      '24.0':
+        mu_fluid: 0.3138
+        mu_annealed: 0.312
+        hit_fluid: 0.895
+        hit_annealed: 0.874
+      '28.0':
+        mu_fluid: 0.3542
+        mu_annealed: 0.3518
+        hit_fluid: 0.803
+        hit_annealed: 0.795
+      '32.0':
+        mu_fluid: 0.3779
+        mu_annealed: 0.3725
+        hit_fluid: 0.697
+        hit_annealed: 0.69
+      '40.0':
+        mu_fluid: 0.2616
+        mu_annealed: 0.2814
+        hit_fluid: 0.276
+        hit_annealed: 0.283
+      '48.0':
+        mu_fluid: 0.1983
+        mu_annealed: 0.2023
+        hit_fluid: 0.0
+        hit_annealed: 0.013
+      '96.0':
+        mu_fluid: 0.1983
+        mu_annealed: 0.1983
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.784
+  h200_300k_decode2:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/h200_300k_decode2.yaml
+    spec: analysis/theory/cells/h200_300k_decode2.yaml
+    fitted:
+    - compute-side speed factor (b, c_p divided by)
+    speed_factor: 2.882
+    lambda_ref: 0.19388
+    e0a_model:
+      lambda_turns: 0.19327
+      tokens: 29866.0
+      pop64_over_pop32: 1.0288
+    mu_max_fluid: 0.3571
+    mu_max_annealed_PRIMARY: 0.3523
+    peak_n_fluid: 32.4
+    peak_n_annealed_PRIMARY: 32.0
+    hit_at_peak_fluid: 0.679
+    n_half_fluid_PRIMARY: 37.0
+    n_half_annealed: 36.3
+    n_b: 41.46
+    n_b_tool_call_part: 13.68
+    n_b_pool_part: 27.78
+    mu_b: 0.19883
+    window_fluid: 1.842
+    window_annealed_PRIMARY: 1.817
+    f2_edge_mult_PRIMARY: 1.339
+    f2_edge_lambda_sessions_per_s: 0.25966
+    f2_bracket:
+    - 1.25
+    - 1.5
+    f2_p_unstable:
+      '1.25': 0.283
+      '1.5': 0.849
+      '1.75': 0.993
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    level_crossing_edge_mult: 1.517
+    level_crossing_p_unstable:
+      '1.25': 0.03
+      '1.5': 0.44
+      '1.75': 0.993
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    stagec_mu300_synchronized: 0.2267
+    registration_consequence:
+      hi_mult: 1.25
+      hi_capped: 1.25
+      lambda_points:
+      - 1.1
+      - 1.15
+      n_cap: 28.0
+      grid_argmax: 32.0
+    e2_auto:
+      '1.1':
+        lam: 0.21327
+        n1: 16.64
+        n_u: 41.1
+        burst_backlog: 166.4
+        burst_token_ratio: 1.029
+        burst_gap_over_R: 5.78
+        noburst_hit: 0.932
+        capped_drain_s: 1502.0
+        b_crit: 61.1
+      '1.15':
+        lam: 0.22296
+        n1: 17.41
+        n_u: 40.84
+        burst_backlog: 204.0
+        burst_token_ratio: 1.03
+        burst_gap_over_R: 6.96
+        noburst_hit: 0.932
+        capped_drain_s: 1634.0
+        b_crit: 58.6
+    grid_points:
+      '16.0':
+        mu_fluid: 0.2052
+        mu_annealed: 0.2052
+        hit_fluid: 0.932
+        hit_annealed: 0.931
+      '20.0':
+        mu_fluid: 0.2554
+        mu_annealed: 0.2547
+        hit_fluid: 0.931
+        hit_annealed: 0.919
+      '24.0':
+        mu_fluid: 0.3024
+        mu_annealed: 0.3003
+        hit_fluid: 0.897
+        hit_annealed: 0.875
+      '28.0':
+        mu_fluid: 0.3389
+        mu_annealed: 0.3362
+        hit_fluid: 0.804
+        hit_annealed: 0.794
+      '32.0':
+        mu_fluid: 0.3569
+        mu_annealed: 0.3523
+        hit_fluid: 0.691
+        hit_annealed: 0.683
+      '40.0':
+        mu_fluid: 0.2521
+        mu_annealed: 0.2703
+        hit_fluid: 0.256
+        hit_annealed: 0.272
+      '48.0':
+        mu_fluid: 0.1988
+        mu_annealed: 0.2023
+        hit_fluid: 0.0
+        hit_annealed: 0.012
+      '96.0':
+        mu_fluid: 0.1988
+        mu_annealed: 0.1988
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.749
+  h200_300k_e0a2:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/h200_300k_e0a2.yaml
+    spec: analysis/theory/cells/h200_300k_e0a2.yaml
+    fitted:
+    - decode/memory-side speed-up (a, f, c_d divided by)
+    - compute-side speed factor (b, c_p divided by)
+    speed_factor: 3.2342
+    lambda_ref: 0.19388
+    e0a_model:
+      lambda_turns: 0.19327
+      tokens: 29866.0
+      pop64_over_pop32: 1.046
+    mu_max_fluid: 0.3225
+    mu_max_annealed_PRIMARY: 0.3197
+    peak_n_fluid: 31.9
+    peak_n_annealed_PRIMARY: 32.0
+    hit_at_peak_fluid: 0.682
+    n_half_fluid_PRIMARY: 36.4
+    n_half_annealed: 35.9
+    n_b: 41.74
+    n_b_tool_call_part: 13.91
+    n_b_pool_part: 27.83
+    mu_b: 0.20216
+    window_fluid: 1.663
+    window_annealed_PRIMARY: 1.649
+    f2_edge_mult_PRIMARY: 1.244
+    f2_edge_lambda_sessions_per_s: 0.24122
+    f2_bracket:
+    - null
+    - 1.25
+    f2_p_unstable:
+      '1.25': 0.516
+      '1.5': 0.955
+      '1.75': 1.0
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    level_crossing_edge_mult: 1.415
+    level_crossing_p_unstable:
+      '1.25': 0.062
+      '1.5': 0.805
+      '1.75': 1.0
+      '2.0': 1.0
+      '2.5': 1.0
+      '3.0': 1.0
+    stagec_mu300_synchronized: 0.2294
+    registration_consequence:
+      hi_mult: null
+      hi_capped: null
+      lambda_points: null
+      n_cap: 28.0
+      grid_argmax: 32.0
+    e2_auto: {}
+    grid_points:
+      '16.0':
+        mu_fluid: 0.1916
+        mu_annealed: 0.1916
+        hit_fluid: 0.932
+        hit_annealed: 0.931
+      '20.0':
+        mu_fluid: 0.2376
+        mu_annealed: 0.237
+        hit_fluid: 0.931
+        hit_annealed: 0.921
+      '24.0':
+        mu_fluid: 0.2802
+        mu_annealed: 0.2778
+        hit_fluid: 0.902
+        hit_annealed: 0.877
+      '28.0':
+        mu_fluid: 0.3107
+        mu_annealed: 0.3081
+        hit_fluid: 0.805
+        hit_annealed: 0.792
+      '32.0':
+        mu_fluid: 0.3225
+        mu_annealed: 0.3197
+        hit_fluid: 0.68
+        hit_annealed: 0.671
+      '40.0':
+        mu_fluid: 0.2449
+        mu_annealed: 0.2577
+        hit_fluid: 0.242
+        hit_annealed: 0.262
+      '48.0':
+        mu_fluid: 0.2022
+        mu_annealed: 0.205
+        hit_fluid: 0.0
+        hit_annealed: 0.012
+      '96.0':
+        mu_fluid: 0.2022
+        mu_annealed: 0.2022
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.675
+  llama31_8b_300k:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/llama31_8b_300k.yaml
+    spec: analysis/theory/cells/llama31_8b_300k.yaml
+    fitted: []
+    speed_factor: null
+    lambda_ref: 0.061859
+    e0a_model:
+      lambda_turns: 0.06186
+      tokens: 9559.0
+      pop64_over_pop32: 1.0
+    mu_max_fluid: 0.2223
+    mu_max_annealed_PRIMARY: 0.2084
+    peak_n_fluid: 24.3
+    peak_n_annealed_PRIMARY: 23.0
+    hit_at_peak_fluid: 0.912
+    n_half_fluid_PRIMARY: 30.9
+    n_half_annealed: 30.1
+    n_b: 32.02
+    n_b_tool_call_part: 4.26
+    n_b_pool_part: 27.76
+    mu_b: 0.06186
+    window_fluid: 3.593
+    window_annealed_PRIMARY: 3.37
+    f2_edge_mult_PRIMARY: 2.457
+    f2_edge_lambda_sessions_per_s: 0.152
+    f2_bracket:
+    - 2.0
+    - 2.5
+    f2_p_unstable:
+      '1.25': 0.0
+      '1.5': 0.003
+      '1.75': 0.022
+      '2.0': 0.095
+      '2.5': 0.549
+      '3.0': 0.931
+    level_crossing_edge_mult: 2.727
+    level_crossing_p_unstable:
+      '1.25': 0.0
+      '1.5': 0.0
+      '1.75': 0.0
+      '2.0': 0.025
+      '2.5': 0.207
+      '3.0': 0.8
+    stagec_mu300_synchronized: 0.0999
+    registration_consequence:
+      hi_mult: 2.0
+      hi_capped: 2.0
+      lambda_points:
+      - 1.35
+      - 1.65
+      n_cap: 24.0
+      grid_argmax: 24.0
+    e2_auto:
+      '1.35':
+        lam: 0.08351
+        n1: 7.51
+        n_u: 31.55
+        burst_backlog: 203.7
+        burst_token_ratio: 1.006
+        burst_gap_over_R: 6.54
+        noburst_hit: 0.932
+        capped_drain_s: 1324.0
+        b_crit: 60.1
+      '1.65':
+        lam: 0.10207
+        n1: 9.29
+        n_u: 31.1
+        burst_backlog: 282.0
+        burst_token_ratio: 1.015
+        burst_gap_over_R: 8.31
+        noburst_hit: 0.932
+        capped_drain_s: 1544.0
+        b_crit: 54.5
+    grid_points:
+      '16.0':
+        mu_fluid: 0.1662
+        mu_annealed: 0.1661
+        hit_fluid: 0.932
+        hit_annealed: 0.932
+      '20.0':
+        mu_fluid: 0.1995
+        mu_annealed: 0.1971
+        hit_fluid: 0.932
+        hit_annealed: 0.923
+      '24.0':
+        mu_fluid: 0.2221
+        mu_annealed: 0.2077
+        hit_fluid: 0.915
+        hit_annealed: 0.87
+      '28.0':
+        mu_fluid: 0.1888
+        mu_annealed: 0.1739
+        hit_fluid: 0.803
+        hit_annealed: 0.665
+      '32.0':
+        mu_fluid: 0.0628
+        mu_annealed: 0.1158
+        hit_fluid: 0.017
+        hit_annealed: 0.341
+      '40.0':
+        mu_fluid: 0.0619
+        mu_annealed: 0.0649
+        hit_fluid: 0.0
+        hit_annealed: 0.023
+      '48.0':
+        mu_fluid: 0.0619
+        mu_annealed: 0.0619
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+      '96.0':
+        mu_fluid: 0.0619
+        mu_annealed: 0.0619
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.781
+  a100_pool150k:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/a100_pool150k.yaml
+    spec: analysis/theory/cells/a100_pool150k.yaml
+    fitted: []
+    speed_factor: null
+    lambda_ref: 0.071534
+    e0a_model:
+      lambda_turns: 0.06881
+      tokens: 10633.0
+      pop64_over_pop32: 1.0
+    mu_max_fluid: 0.1409
+    mu_max_annealed_PRIMARY: 0.1339
+    peak_n_fluid: 14.0
+    peak_n_annealed_PRIMARY: 14.0
+    hit_at_peak_fluid: 0.798
+    n_half_fluid_PRIMARY: 16.9
+    n_half_annealed: 16.3
+    n_b: 18.32
+    n_b_tool_call_part: 4.73
+    n_b_pool_part: 13.59
+    mu_b: 0.06881
+    window_fluid: 1.969
+    window_annealed_PRIMARY: 1.872
+    f2_edge_mult_PRIMARY: 1.094
+    f2_edge_lambda_sessions_per_s: 0.07826
+    f2_bracket:
+    - null
+    - 1.1
+    f2_p_unstable:
+      '1.1': 0.511
+      '1.25': 0.759
+      '1.5': 0.961
+      '1.75': 0.997
+      '2.0': 1.0
+      '2.5': 1.0
+    level_crossing_edge_mult: 1.468
+    level_crossing_p_unstable:
+      '1.1': 0.0
+      '1.25': 0.058
+      '1.5': 0.605
+      '1.75': 0.968
+      '2.0': 1.0
+      '2.5': 1.0
+    stagec_mu300_synchronized: 0.1063
+    registration_consequence:
+      hi_mult: null
+      hi_capped: null
+      lambda_points: null
+      n_cap: 12.0
+      grid_argmax: 14.0
+    e2_auto: {}
+    grid_points:
+      '8.0':
+        mu_fluid: 0.0914
+        mu_annealed: 0.0913
+        hit_fluid: 0.932
+        hit_annealed: 0.929
+      '10.0':
+        mu_fluid: 0.1133
+        mu_annealed: 0.112
+        hit_fluid: 0.932
+        hit_annealed: 0.91
+      '12.0':
+        mu_fluid: 0.1327
+        mu_annealed: 0.1282
+        hit_fluid: 0.905
+        hit_annealed: 0.853
+      '14.0':
+        mu_fluid: 0.1409
+        mu_annealed: 0.1339
+        hit_fluid: 0.798
+        hit_annealed: 0.736
+      '16.0':
+        mu_fluid: 0.1291
+        mu_annealed: 0.1239
+        hit_fluid: 0.626
+        hit_annealed: 0.541
+      '20.0':
+        mu_fluid: 0.0688
+        mu_annealed: 0.0851
+        hit_fluid: 0.0
+        hit_annealed: 0.133
+      '24.0':
+        mu_fluid: 0.0688
+        mu_annealed: 0.0711
+        hit_fluid: 0.0
+        hit_annealed: 0.018
+      '48.0':
+        mu_fluid: 0.0688
+        mu_annealed: 0.0688
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.761
+  a100_pool600k:
+    command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/a100_pool600k.yaml
+    spec: analysis/theory/cells/a100_pool600k.yaml
+    fitted: []
+    speed_factor: null
+    lambda_ref: 0.071534
+    e0a_model:
+      lambda_turns: 0.07177
+      tokens: 11091.0
+      pop64_over_pop32: 1.0199
+    mu_max_fluid: 0.409
+    mu_max_annealed_PRIMARY: 0.3914
+    peak_n_fluid: 47.0
+    peak_n_annealed_PRIMARY: 45.0
+    hit_at_peak_fluid: 0.924
+    n_half_fluid_PRIMARY: 60.0
+    n_half_annealed: 58.9
+    n_b: 61.17
+    n_b_tool_call_part: 5.04
+    n_b_pool_part: 56.13
+    mu_b: 0.0732
+    window_fluid: 5.718
+    window_annealed_PRIMARY: 5.471
+    f2_edge_mult_PRIMARY: 4.533
+    f2_edge_lambda_sessions_per_s: 0.32427
+    f2_bracket:
+    - 4.5
+    - 5.0
+    f2_p_unstable:
+      '1.5': 0.0
+      '2.0': 0.0
+      '2.5': 0.0
+      '3.0': 0.0
+      '3.5': 0.01
+      '4.0': 0.111
+      '4.5': 0.47
+      '5.0': 0.847
+      '5.5': 0.976
+      '6.0': 1.0
+    level_crossing_edge_mult: 4.818
+    level_crossing_p_unstable:
+      '1.5': 0.0
+      '2.0': 0.0
+      '2.5': 0.0
+      '3.0': 0.0
+      '3.5': 0.0
+      '4.0': 0.018
+      '4.5': 0.158
+      '5.0': 0.705
+      '5.5': 0.998
+      '6.0': 1.0
+    stagec_mu300_synchronized: 0.112
+    registration_consequence:
+      hi_mult: 4.5
+      hi_capped: 4.5
+      lambda_points:
+      - 2.15
+      - 3.35
+      n_cap: 40.0
+      grid_argmax: 48.0
+    e2_auto:
+      '2.15':
+        lam: 0.1538
+        n1: 13.8
+        n_u: 59.65
+        burst_backlog: 451.7
+        burst_token_ratio: 1.051
+        burst_gap_over_R: 6.03
+        noburst_hit: 0.932
+        capped_drain_s: 772.0
+        b_crit: 113.2
+      '3.35':
+        lam: 0.23964
+        n1: 22.46
+        n_u: 57.45
+        burst_backlog: 857.1
+        burst_token_ratio: 1.064
+        burst_gap_over_R: 9.5
+        noburst_hit: 0.932
+        capped_drain_s: 1310.0
+        b_crit: 86.4
+    grid_points:
+      '32.0':
+        mu_fluid: 0.3216
+        mu_annealed: 0.3216
+        hit_fluid: 0.932
+        hit_annealed: 0.932
+      '40.0':
+        mu_fluid: 0.379
+        mu_annealed: 0.3763
+        hit_fluid: 0.932
+        hit_annealed: 0.929
+      '48.0':
+        mu_fluid: 0.4078
+        mu_annealed: 0.3832
+        hit_fluid: 0.92
+        hit_annealed: 0.895
+      '56.0':
+        mu_fluid: 0.2849
+        mu_annealed: 0.2672
+        hit_fluid: 0.811
+        hit_annealed: 0.652
+      '64.0':
+        mu_fluid: 0.0732
+        mu_annealed: 0.1214
+        hit_fluid: 0.0
+        hit_annealed: 0.175
+      '80.0':
+        mu_fluid: 0.0732
+        mu_annealed: 0.0733
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+      '96.0':
+        mu_fluid: 0.0732
+        mu_annealed: 0.0732
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+      '192.0':
+        mu_fluid: 0.0732
+        mu_annealed: 0.0732
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+    fold_margin: 0.821
+B1:
+  command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/b1_basin_300k.yaml
+  multiple: 1.65
+  stuck_by_s: 6344.0
+  b_crit_deterministic: 53.4
+  rows:
+    '10':
+      p_trapped: 0.033
+      committor: 0.0017
+      X0: 14.54
+    '25':
+      p_trapped: 0.042
+      committor: 0.0109
+      X0: 20.69
+    '40':
+      p_trapped: 0.139
+      committor: 0.1115
+      X0: 26.66
+    '50':
+      p_trapped: 0.547
+      committor: 0.5327
+      X0: 30.48
+    '60':
+      p_trapped: 1.0
+      committor: 1.0
+      X0: 32.7
+    '75':
+      p_trapped: 1.0
+      committor: 1.0
+      X0: 32.7
+    '100':
+      p_trapped: 1.0
+      committor: 1.0
+      X0: 32.7
+    '150':
+      p_trapped: 1.0
+      committor: 1.0
+      X0: 32.7
+    '200':
+      p_trapped: 1.0
+      committor: 1.0
+      X0: 32.7
+  p_pass_registered_2of3: 0.995
+  N_crit_by_mult:
+    '1.35':
+      N_crit_deterministic: 59.4
+      N_crit_committor_50pct: 56.0
+      b_stat: 23.77
+    '1.65':
+      N_crit_deterministic: 53.4
+      N_crit_committor_50pct: 50.0
+      b_stat: 21.34
+    '2.0':
+      N_crit_deterministic: 46.1
+      N_crit_committor_50pct: 42.0
+      b_stat: 18.38
+R1:
+  command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/r1_rescue_300k.yaml
+  rows:
+    '1.35':
+      in_window: true
+      n1: 8.47
+      n_u: 32.23
+      n_on: 161.3
+      t_release_fluid_PRIMARY: 3830.0
+      t_release_annealed: 3920.0
+      t_release_collapsed_resumed_mix: 7510.0
+      t_release_collapsed_stationary_mix: 5940.0
+      released_by_7200_fluid: true
+      p_relapse: 0.002
+      mu_phase1_fluid: 0.1633
+      mu_phase1_needed: 0.0517
+      needed_over_fluid: 0.317
+    '1.65':
+      in_window: true
+      n1: 10.43
+      n_u: 31.77
+      n_on: 175.5
+      t_release_fluid_PRIMARY: 4360.0
+      t_release_annealed: 4480.0
+      t_release_collapsed_resumed_mix: 9240.0
+      t_release_collapsed_stationary_mix: 7240.0
+      released_by_7200_fluid: true
+      p_relapse: 0.025
+      mu_phase1_fluid: 0.1674
+      mu_phase1_needed: 0.07
+      needed_over_fluid: 0.418
+R4:
+  command: PYTHONPATH="src;." python -m analysis.theory.predict analysis/theory/cells/r4_rescue_native.yaml
+  rows:
+    '4.0':
+      in_window: true
+      n1: 27.8
+      n_u: 90.03
+      n_on: 326.6
+      t_release_fluid_PRIMARY: 5040.0
+      t_release_annealed: 5250.0
+      t_release_collapsed_resumed_mix: 14640.0
+      t_release_collapsed_stationary_mix: 11480.0
+      released_by_7200_fluid: true
+      p_relapse: 0.0
+      mu_phase1_fluid: 0.2815
+      mu_phase1_needed: 0.1438
+      needed_over_fluid: 0.511
+llama_speed_table:
+  command: PYTHONPATH="src;." python -m analysis.theory.merged.speed_table analysis/theory/cells/llama31_8b_300k.yaml
+  rule: s = T_meas / rows[s=1].e0a_tokens_per_s; interpolate every column linearly in s; express windows and edges in multiples of the measured
+    lambda_miss
+  rows:
+  - s: 0.7
+    e0a_tokens_per_s: 6691.49097
+    lambda_miss_turns_model: 0.0433
+    mu_b: 0.0433
+    mu_max_fluid: 0.18004
+    peak_n_fluid: 24.11734
+    n_half_fluid: 30.01297
+    n_b: 30.74207
+    n_b_tool_call_part: 2.97944
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.16686
+    peak_n_annealed: 22.5
+    window_fluid_vs_model_lambda: 4.15773
+    window_annealed_vs_model_lambda: 3.85338
+    f2_edge_lambda_sessions_per_s: 0.12537
+    f2_edge_vs_model_lambda: 2.8953
+  - s: 0.8
+    e0a_tokens_per_s: 7647.41826
+    lambda_miss_turns_model: 0.04949
+    mu_b: 0.04949
+    mu_max_fluid: 0.1959
+    peak_n_fluid: 24.08053
+    n_half_fluid: 30.31651
+    n_b: 31.16771
+    n_b_tool_call_part: 3.40508
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.18223
+    peak_n_annealed: 22.5
+    window_fluid_vs_model_lambda: 3.95839
+    window_annealed_vs_model_lambda: 3.68235
+    f2_edge_lambda_sessions_per_s: 0.13515
+    f2_edge_vs_model_lambda: 2.73094
+  - s: 0.85
+    e0a_tokens_per_s: 8125.3819
+    lambda_miss_turns_model: 0.05258
+    mu_b: 0.05258
+    mu_max_fluid: 0.2031
+    peak_n_fluid: 24.11806
+    n_half_fluid: 30.46796
+    n_b: 31.38052
+    n_b_tool_call_part: 3.61789
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.18927
+    peak_n_annealed: 22.5
+    window_fluid_vs_model_lambda: 3.86259
+    window_annealed_vs_model_lambda: 3.59945
+    f2_edge_lambda_sessions_per_s: 0.13966
+    f2_edge_vs_model_lambda: 2.65613
+  - s: 0.9
+    e0a_tokens_per_s: 8603.34554
+    lambda_miss_turns_model: 0.05567
+    mu_b: 0.05567
+    mu_max_fluid: 0.20988
+    peak_n_fluid: 24.1754
+    n_half_fluid: 30.61921
+    n_b: 31.59334
+    n_b_tool_call_part: 3.83071
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.19601
+    peak_n_annealed: 23.0
+    window_fluid_vs_model_lambda: 3.7697
+    window_annealed_vs_model_lambda: 3.52062
+    f2_edge_lambda_sessions_per_s: 0.14396
+    f2_edge_vs_model_lambda: 2.58576
+  - s: 0.95
+    e0a_tokens_per_s: 9081.30918
+    lambda_miss_turns_model: 0.05877
+    mu_b: 0.05877
+    mu_max_fluid: 0.21626
+    peak_n_fluid: 24.20097
+    n_half_fluid: 30.77024
+    n_b: 31.80616
+    n_b_tool_call_part: 4.04353
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.20242
+    peak_n_annealed: 23.0
+    window_fluid_vs_model_lambda: 3.67989
+    window_annealed_vs_model_lambda: 3.44439
+    f2_edge_lambda_sessions_per_s: 0.14807
+    f2_edge_vs_model_lambda: 2.51951
+  - s: 1.0
+    e0a_tokens_per_s: 9559.0539
+    lambda_miss_turns_model: 0.06186
+    mu_b: 0.06186
+    mu_max_fluid: 0.22229
+    peak_n_fluid: 24.29211
+    n_half_fluid: 30.92105
+    n_b: 32.01898
+    n_b_tool_call_part: 4.25635
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.20844
+    peak_n_annealed: 23.0
+    window_fluid_vs_model_lambda: 3.59341
+    window_annealed_vs_model_lambda: 3.3696
+    f2_edge_lambda_sessions_per_s: 0.152
+    f2_edge_vs_model_lambda: 2.45714
+  - s: 1.05
+    e0a_tokens_per_s: 10034.40798
+    lambda_miss_turns_model: 0.06494
+    mu_b: 0.06495
+    mu_max_fluid: 0.22799
+    peak_n_fluid: 24.39873
+    n_half_fluid: 31.07163
+    n_b: 32.23179
+    n_b_tool_call_part: 4.46916
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.21428
+    peak_n_annealed: 23.5
+    window_fluid_vs_model_lambda: 3.51099
+    window_annealed_vs_model_lambda: 3.29987
+    f2_edge_lambda_sessions_per_s: 0.15577
+    f2_edge_vs_model_lambda: 2.3989
+  - s: 1.1
+    e0a_tokens_per_s: 10509.47421
+    lambda_miss_turns_model: 0.06801
+    mu_b: 0.06805
+    mu_max_fluid: 0.2334
+    peak_n_fluid: 24.46677
+    n_half_fluid: 31.22198
+    n_b: 32.44461
+    n_b_tool_call_part: 4.68198
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.21985
+    peak_n_annealed: 23.5
+    window_fluid_vs_model_lambda: 3.43184
+    window_annealed_vs_model_lambda: 3.23256
+    f2_edge_lambda_sessions_per_s: 0.15941
+    f2_edge_vs_model_lambda: 2.34395
+  - s: 1.15
+    e0a_tokens_per_s: 10984.24619
+    lambda_miss_turns_model: 0.07108
+    mu_b: 0.07114
+    mu_max_fluid: 0.23854
+    peak_n_fluid: 24.60036
+    n_half_fluid: 31.3721
+    n_b: 32.65743
+    n_b_tool_call_part: 4.8948
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.22509
+    peak_n_annealed: 23.5
+    window_fluid_vs_model_lambda: 3.3559
+    window_annealed_vs_model_lambda: 3.16664
+    f2_edge_lambda_sessions_per_s: 0.16293
+    f2_edge_vs_model_lambda: 2.29207
+  - s: 1.2
+    e0a_tokens_per_s: 11458.71733
+    lambda_miss_turns_model: 0.07415
+    mu_b: 0.07423
+    mu_max_fluid: 0.24345
+    peak_n_fluid: 24.6916
+    n_half_fluid: 31.52196
+    n_b: 32.87025
+    n_b_tool_call_part: 5.10762
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.23027
+    peak_n_annealed: 24.0
+    window_fluid_vs_model_lambda: 3.28316
+    window_annealed_vs_model_lambda: 3.1053
+    f2_edge_lambda_sessions_per_s: 0.16633
+    f2_edge_vs_model_lambda: 2.24304
+  - s: 1.3
+    e0a_tokens_per_s: 12406.72977
+    lambda_miss_turns_model: 0.08029
+    mu_b: 0.08042
+    mu_max_fluid: 0.25266
+    peak_n_fluid: 24.9611
+    n_half_fluid: 31.82094
+    n_b: 33.29588
+    n_b_tool_call_part: 5.53325
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.23987
+    peak_n_annealed: 24.5
+    window_fluid_vs_model_lambda: 3.14691
+    window_annealed_vs_model_lambda: 2.98765
+    f2_edge_lambda_sessions_per_s: 0.17284
+    f2_edge_vs_model_lambda: 2.15278
+  - s: 1.5
+    e0a_tokens_per_s: 14298.83286
+    lambda_miss_turns_model: 0.09253
+    mu_b: 0.09279
+    mu_max_fluid: 0.26914
+    peak_n_fluid: 25.55798
+    n_half_fluid: 32.41569
+    n_b: 34.14715
+    n_b_tool_call_part: 6.38452
+    n_b_pool_part: 27.76263
+    mu_max_annealed: 0.2575
+    peak_n_annealed: 25.0
+    window_fluid_vs_model_lambda: 2.9086
+    window_annealed_vs_model_lambda: 2.78284
+    f2_edge_lambda_sessions_per_s: 0.18495
+    f2_edge_vs_model_lambda: 1.99877

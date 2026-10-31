@@ -1,0 +1,22 @@
+# OUT-OF-SAMPLE (blind, a priori). Llama-3.1-8B-Instruct on the a100_300k engine/pool/workload. No data exist: the calibrated
+# Qwen2.5-7B costs are multiplied by architecture ratios (roofline assumption); lambda_ref is the model's own lambda_miss.
+base: a100_300k.yaml
+name: llama31_8b_300k
+description: "SGLang 0.5.22 FCFS, Llama-3.1-8B-Instruct, 1x A100 80GB PCIe, KV pool 300,000 tokens (a priori prediction)"
+blind: true
+costs:
+  calibration: calibration/round6_server_log_fit/calibration.yaml
+  architecture_ratios: {a: 1.05, f: 1.05, b: 1.06, cd: 2.2857142857, cp: 1.3061224490}
+  architecture_source: "weight bytes per iteration ~1.05; per-token GEMM ~ non-embedding parameters 1.06; decode attention per context token ~ layers x KV heads 32*8/(28*4); prefill attention per pair ~ layers x query heads 32*32/(28*28) (Llama-3.1-8B vs Qwen2.5-7B published configs)"
+lambda_ref: model
+stage_c:
+  grid: [16, 20, 24, 28, 32, 40, 48, 96, 300]
+  window_s: [900, 2700]
+e0b:
+  multiples: [1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+  horizon_s: 3000
+e2:
+  multiples: auto
+  burst: {n: 200, t_s: 1200, width_s: 60}
+  window_s: [5700, 8700]
+  cap: auto

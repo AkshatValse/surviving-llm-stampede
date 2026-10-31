@@ -1,0 +1,19 @@
+# OUT-OF-SAMPLE (blind). Pool-size sweep: the a100_300k cell with a 600,000-token KV pool. Zero fitted parameters.
+base: a100_300k.yaml
+name: a100_pool600k
+description: "SGLang 0.5.22 FCFS (label sglang-fcfs-r1-p600k), Qwen2.5-7B-Instruct, A100, KV pool 600,000 tokens (blind)"
+blind: true
+pool_tokens: 600000
+pool_source: "--max-total-tokens 600000 (lead's pool sweep)"
+lambda_ref:
+  value: 0.071534
+  source: "a100_300k E0a lambda_miss_turns_based (reference for multiples; the sweep has no E0a of its own)"
+stage_c:
+  grid: [32, 40, 48, 56, 64, 80, 96, 192, 300]
+  window_s: [900, 2700]
+e0b:
+  multiples: [1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]
+  horizon_s: 3000
+e2:
+  multiples: auto
+  cap: auto

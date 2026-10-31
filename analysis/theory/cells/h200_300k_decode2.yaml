@@ -1,0 +1,9 @@
+# OUT-OF-SAMPLE (blind), SENSITIVITY variant of h200_300k: the iteration-fixed, floor and decode-attention costs
+# (memory-bandwidth / CPU side) divided by 2.0 only; the per-token and prefill-attention (compute) costs by the factor that
+# restores the H200 E0a token rate (the one fitted parameter).
+base: h200_300k.yaml
+name: h200_300k_decode2
+description: "H200 cell, decode/memory-side speed-up 2.0, compute side fitted to the H200 E0a (sensitivity; blind)"
+costs:
+  decode_side_speedup: 2.0
+  decode_side_source: "assumption (between the A100->H200 HBM-bandwidth ratio 4.8/1.935 = 2.48 and no speed-up of CPU-bound overhead)"

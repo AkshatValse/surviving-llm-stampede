@@ -1,0 +1,27 @@
+# Validation cell 1 (measured). Zero fitted parameters.
+name: a100_300k
+description: "SGLang 0.5.22 FCFS (label sglang-fcfs-r1), Qwen2.5-7B-Instruct, 1x A100 80GB PCIe, KV pool 300,000 tokens"
+blind: false
+pool_tokens: 300000
+pool_source: "SGLang --max-total-tokens 300000 (the Stage C / E0a / E0b / E2 job scripts of this cell)"
+workload:
+  config: configs/agentload_e2_burst.yaml
+engine:
+  mode: separate              # SGLang: prefill iterations with priority, decode in separate iterations
+  hit_prefill_tokens: auto    # = new_prompt_tokens + 1 = 551 (the last decoded token has no KV)
+costs:
+  calibration: calibration/round6_server_log_fit/calibration.yaml   # used unchanged
+lambda_ref:
+  value: 0.071534
+  source: "results/nova/e0a_1707263x_pulled_20261023-142037/analysis_local_combined/20261023-142416/calibration.json: lambda_miss_turns_based"
+stage_c:
+  grid: [16, 20, 24, 32, 48, 96, 300]
+  window_s: [900, 2700]
+e0b:
+  multiples: [1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+  horizon_s: 3000
+e2:
+  multiples: [1.35, 1.65]
+  burst: {n: 200, t_s: 1200, width_s: 60}
+  window_s: [5700, 8700]
+  cap: 20                     # the registered n_cap of the CAPPED arm (protocol input)

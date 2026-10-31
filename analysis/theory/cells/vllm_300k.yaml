@@ -1,0 +1,32 @@
+# Validation cell 3 (measured). ONE fitted parameter: a uniform speed factor fitted to this cell's own E0a token rate.
+name: vllm_300k
+description: "vLLM 0.32.0 FCFS (label vllm-fcfs), Qwen2.5-7B-Instruct, 1x A100 80GB PCIe, KV pool 18,750 blocks x 16 = 300,000 tokens"
+blind: false
+pool_tokens: 300000
+pool_source: "vLLM KV cache of 18,750 blocks x 16 tokens (the vLLM cell job scripts)"
+workload:
+  config: configs/agentload_e2_burst.yaml
+engine:
+  mode: mixed                 # vLLM: chunked prefill riding on decode iterations
+  cache_block_tokens: 16
+  hit_prefill_tokens: auto    # = 551 + 8 (mean unfilled part of the last 16-token block) = 559
+costs:
+  calibration: calibration/round6_server_log_fit/calibration.yaml
+  fit_speed_to_e0a:
+    tokens_per_s: 10348.97
+    pop: 32
+    source: "results/nova/e0a_vllm_17100940_pulled_20261025-180814/results/agentload_analysis_miss/20261025-175648/calibration.json: all_miss_uncached_tokens_per_s"
+lambda_ref:
+  value: 0.065663
+  source: "results/nova/e0a_vllm_17100940_pulled_20261025-180814/results/agentload_analysis_miss/20261025-175648/calibration.json: lambda_miss_turns_based"
+stage_c:
+  grid: [16, 20, 24, 28, 32, 40, 48, 96, 300]
+  window_s: [900, 2700]
+e0b:
+  multiples: [1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+  horizon_s: 3000
+e2:
+  multiples: [1.35, 1.65]
+  burst: {n: 200, t_s: 1200, width_s: 60}
+  window_s: [5700, 8700]
+  cap: 20
