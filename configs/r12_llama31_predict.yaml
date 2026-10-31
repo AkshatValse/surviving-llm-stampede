@@ -164,9 +164,9 @@ r12:
   kv_pool_tokens: 300000
   model: "NousResearch/Meta-Llama-3.1-8B-Instruct @ d10aef7999a2b5ba950ab3974312feeedbfe0b77 (shards = meta-llama/Llama-3.1-8B-Instruct @ 0e9e39f2)"
   real_inputs:                                     # the ONLY real Llama numbers used: this cell's E0a 3-seed combine (label sglang-nocache-llama31, jobs 17166823/29/31)
-    lambda_miss_turns_sessions_per_s: null         # FILLED in the second commit: calibration.json lambda_miss_turns_based
-    all_miss_token_rate_tok_per_s: null            # FILLED in the second commit: calibration.json all_miss_uncached_tokens_per_s
-    source: null                                   # FILLED: the calibration file path, its sha256 and the job IDs
+    lambda_miss_turns_sessions_per_s: 0.05964         # FILLED in the second commit: calibration.json lambda_miss_turns_based
+    all_miss_token_rate_tok_per_s: 9353            # FILLED in the second commit: calibration.json all_miss_uncached_tokens_per_s
+    source: "Nova repo_llama31 results/cal_llama31/calibration.json (job pm-l31-cal 17168803 over E0a jobs 17166823, 17166829, 17166831; source agentload_analysis_miss/20261031-012036); sha256 7c2cb2de8fa6641502c6db7d9e73709b271eb0436fbb49faeed32489a1e32949; lambda_miss_turns_based 0.0596408614267974 (se 0.0020409550192559077), all_miss_uncached_tokens_per_s 9352.893143955092 (se 95.75834893046039); rounded here"                                   # FILLED: the calibration file path, its sha256 and the job IDs
 
   modes:                                           # PRIMARY first
     mixed: {batching: mixed}
@@ -176,7 +176,7 @@ r12:
   check_out_root_template: "results/r12_llama31_v1_check_{mode}"
 
   v1:
-    target_token_rate_tok_per_s: null              # FILLED in the second commit (= real_inputs.all_miss_token_rate_tok_per_s)
+    target_token_rate_tok_per_s: 9353              # FILLED in the second commit (= real_inputs.all_miss_token_rate_tok_per_s)
     scaled_engine_keys: [per_token_s, prefill_attn_s, decode_attn_s]
     base_values_from: engine
     value_format: ".10e"
