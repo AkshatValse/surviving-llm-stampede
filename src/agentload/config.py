@@ -66,6 +66,18 @@ class WorkloadCfg:
     # scripts give every run in a job a different salt, so a flush that silently failed cannot make the next run's
     # prompts hit the previous run's cache. 0 = the unsalted legacy streams.
     content_salt: int = 0
+    # Optional tool-latency spike (plan N3, TOOLSLOW): every tool call whose sleep STARTS (the agent's previous response
+    # completed) at t in [t_s, t_s + width_s) sleeps its drawn tool time plus add_s; tool calls starting outside the window
+    # are unchanged. Logged per call in tool_calls.csv (only when set). null (the default) = no slowdown: the client, plan.csv
+    # and every output file are then exactly those of the client before the option existed.
+    tool_slowdown: Optional["ToolSlowdownCfg"] = None
+
+
+@dataclass
+class ToolSlowdownCfg:
+    t_s: float = 0.0                       # window start (seconds since run start)
+    width_s: float = 0.0                   # window length: a tool call starting in [t_s, t_s + width_s) is slowed
+    add_s: float = 0.0                     # seconds added to that tool call's drawn tool time
 
 
 @dataclass
@@ -216,6 +228,14 @@ def _build(cls: Any, d: Dict[str, Any], where: str) -> Any:
     kw = dict(d)
     if cls is ArrivalsCfg and kw.get("burst") is not None:
         kw["burst"] = _build(BurstCfg, kw["burst"], f"{where}.burst")
+    if cls is WorkloadCfg and kw.get("tool_slowdown") is not None:
+        ts = kw["tool_slowdown"]
+        if not isinstance(ts, dict):
+            raise ValueError(f"{where}.tool_slowdown must be a mapping {{t_s, width_s, add_s}} or null, got {ts!r}")
+        missing = sorted({"t_s", "width_s", "add_s"} - set(ts))
+        if missing:
+            raise KeyError(f"{where}.tool_slowdown lacks {missing} (all of t_s, width_s, add_s are required)")
+        kw["tool_slowdown"] = _build(ToolSlowdownCfg, ts, f"{where}.tool_slowdown")
     return cls(**kw)
 
 
@@ -253,6 +273,7 @@ def validate(cfg: Config) -> None:
                          "'mock') unless workload.allow_text_mode=true: text mode is not token-stable on real engines")
     if not isinstance(w.content_salt, int) or isinstance(w.content_salt, bool) or w.content_salt < 0:
         raise ValueError("workload.content_salt must be a non-negative integer")
+    validate_tool_slowdown(cfg)
     if a.kind not in ("constant", "ramp", "closed"):
         raise ValueError(f"arrivals.kind must be constant|ramp|closed, got {a.kind!r}")
     if a.kind == "closed" and a.closed_n < 1:
@@ -278,6 +299,35 @@ def validate(cfg: Config) -> None:
 
 def _num(v: Any) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool) and v == v and v not in (float("inf"), float("-inf"))
+
+
+def validate_tool_slowdown(cfg: Config) -> None:
+    """``workload.tool_slowdown`` (plan N3): finite numbers with t_s >= 0, width_s > 0, add_s > 0, the window inside the run,
+    and open-loop arrivals (a closed population is a calibration run, never slowed)."""
+    ts = cfg.workload.tool_slowdown
+    if ts is None:
+        return
+    for k in ("t_s", "width_s", "add_s"):
+        if not _num(getattr(ts, k)):
+            raise ValueError(f"workload.tool_slowdown.{k} must be a finite number, got {getattr(ts, k)!r}")
+    if ts.t_s < 0:
+        raise ValueError(f"workload.tool_slowdown.t_s must be >= 0, got {ts.t_s!r}")
+    if ts.width_s <= 0:
+        raise ValueError(f"workload.tool_slowdown.width_s must be > 0, got {ts.width_s!r}")
+    if ts.add_s <= 0:
+        raise ValueError(f"workload.tool_slowdown.add_s must be > 0 (omit the block for no slowdown), got {ts.add_s!r}")
+    if ts.t_s + ts.width_s > cfg.run.duration_s:
+        raise ValueError(f"workload.tool_slowdown window [{ts.t_s}, {ts.t_s + ts.width_s}) ends after run.duration_s "
+                         f"{cfg.run.duration_s}")
+    if cfg.arrivals.kind == "closed":
+        raise ValueError("workload.tool_slowdown is for open-loop runs (arrivals.kind constant|ramp), not a closed population")
+
+
+def tool_slowdown_add_s(ts: Optional[ToolSlowdownCfg], t_start: float) -> float:
+    """Seconds added to a tool call whose sleep starts at ``t_start`` (0.0 outside [t_s, t_s + width_s) or without the option)."""
+    if ts is None:
+        return 0.0
+    return float(ts.add_s) if ts.t_s <= t_start < ts.t_s + ts.width_s else 0.0
 
 
 def validate_gate(cfg: Config) -> None:
