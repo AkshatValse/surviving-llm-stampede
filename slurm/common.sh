@@ -294,7 +294,13 @@ post_analysis() {
                --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} || log "post-analysis failed (raw results are intact)" ;;
     cap)   gen_python -m analysis.summarize stable --run-dirs $dirs --out-root "$RESULTS_ROOT" ${ANALYSIS_EXTRA:-} \
                || log "post-analysis failed (raw results are intact)" ;;
-    burst) gen_python -m analysis.summarize burst --run-dirs $dirs --out-root "$RESULTS_ROOT" \
+    burst) if [ "${ARMS:-}" = "rescue" ]; then
+             # BLINDING (plan R1): no hit fractions of a rescue run in the job log before all cells of a rate end; the job ran
+             # only the mechanical analysis.rescue check-run after each run (mode_burst)
+             log "ARMS=rescue: skipping summarize burst / burst2 (blinding); the verdict is analysis.rescue verdict over all cells"
+             return 0
+           fi
+           gen_python -m analysis.summarize burst --run-dirs $dirs --out-root "$RESULTS_ROOT" \
                --set "burst.trap_min_s=$TRAP_MIN_S" --set "burst.hit_eval_from_s=$HIT_EVAL_FROM_S" ${ANALYSIS_EXTRA:-} \
                || log "legacy burst analysis failed (raw results are intact)"
            gen_python -m analysis.summarize burst2 --run-dirs $dirs --out-root "$RESULTS_ROOT" \
@@ -406,6 +412,23 @@ e2_run() {   # e2_run ARM MULT SEED [extra agentload args...]: one run of one ar
       || { log "run failed (arm $arm mult $m seed $seed)"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
 }
 
+run_dirs_count() {   # number of run dirs recorded so far in this job (run_gen appends one line per run that wrote its dir)
+  local f="$JOB_DIR/run_dirs_${RUN_TAG:-$MODE}.txt"
+  if [ -s "$f" ]; then wc -l < "$f" | tr -d ' '; else echo 0; fi
+}
+
+# After each rescue run: the automatic, outcome-blind check (meta.arm / gate.mode rescue, the gate block equals E2_CONFIG's,
+# one engage at t_on, the gate-log invariants, session conservation; the smoke config adds >= 10 pauses / resumes and 0
+# request errors and does NOT require a release). A failure counts as a failed run, so the job exits nonzero (afterok).
+rescue_check_run() {   # rescue_check_run RUN_DIR MULT SEED
+  local rd="$1" smoke_flag=""
+  case "$E2_CONFIG" in *rescue_smoke*.yaml) smoke_flag="--smoke" ;; esac
+  log "rescue check-run: $rd (e2 config $E2_CONFIG${smoke_flag:+, $smoke_flag})"
+  gen_python -m analysis.rescue check-run "$rd" --e2-config "$E2_CONFIG" $smoke_flag \
+      --json-out "$JOB_DIR/rescue_check_m$2_s$3.json" \
+      || { log "rescue check-run FAILED (mult $2 seed $3): $rd"; FAILED_RUNS=$((FAILED_RUNS + 1)); }
+}
+
 mode_burst() {  # E2: caching on, burst at t_burst; for each (mult, seed) the PAIRED ARMS in ARMS (same seed = same arrival and session streams)
   # PREREG_FILE, CALIB_FILE, MULTS, the label, the cap and the hardware were validated against the committed pre-registration in
   # validate_mode_inputs (before the engine started); PREREG_SHA256 is written into every run's meta.json by e2_run
@@ -419,6 +442,18 @@ mode_burst() {  # E2: caching on, burst at t_burst; for each (mult, seed) the PA
           burst)   e2_run burst "$m" "$seed" --set "arrivals.burst.t_s=$T_BURST" ;;
           noburst) e2_run noburst "$m" "$seed" --set "arrivals.burst=null" ;;      # same plan, burst sessions removed
           capped)  e2_run capped "$m" "$seed" --set "arrivals.burst.t_s=$T_BURST" --set "gate.n_cap=$GATE_N_CAP_YAML" ;;
+          rescue)  # gate mode, t_on, hold, min_on come from E2_CONFIG only (registered verbatim); the job sets only the cap
+                   local nrd_before nrd_after rd
+                   nrd_before=$(run_dirs_count)
+                   e2_run rescue "$m" "$seed" --set "arrivals.burst.t_s=$T_BURST" --set "gate.n_cap=$GATE_N_CAP_YAML"
+                   nrd_after=$(run_dirs_count)
+                   if [ "$nrd_after" -gt "$nrd_before" ]; then
+                     rd=$(tail -n 1 "$JOB_DIR/run_dirs_${RUN_TAG:-$MODE}.txt")
+                     rescue_check_run "$rd" "$m" "$seed"
+                   else
+                     log "rescue check-run: no run dir recorded for mult $m seed $seed (run failed before writing one)"
+                     FAILED_RUNS=$((FAILED_RUNS + 1))
+                   fi ;;
         esac
         between_runs
       done
@@ -450,9 +485,11 @@ validate_mode_inputs() {
       [ -n "${N_LIST:-}" ] || die "MODE=closed needs N_LIST (e.g. N_LIST=\"16 20 24 32\"; split the n grid over jobs so each fits the time limit)"
       for v in $N_LIST; do case "$v" in ''|*[!0-9]*|0) die "N_LIST entries must be positive integers, got '$v'";; esac; done ;;
     burst)
-      for a in $ARMS; do case "$a" in burst|noburst|capped) ;; *) die "ARMS entries must be burst|noburst|capped, got '$a'";; esac; done
+      for a in $ARMS; do case "$a" in burst|noburst|capped|rescue) ;; *) die "ARMS entries must be burst|noburst|capped|rescue, got '$a'";; esac; done
       [ -n "$ARMS" ] || die "ARMS is empty"
-      case " $ARMS " in *" capped "*)
+      # the rescue arm runs alone (its registration authorises nothing else, and post_analysis is blinded for it)
+      case " $ARMS " in *" rescue "*) [ "$ARMS" = "rescue" ] || die "ARMS=rescue must be the only arm of a job, got '$ARMS'" ;; esac
+      case " $ARMS " in *" capped "*|*" rescue "*)
         if [ -n "${N_CAP:-}" ]; then
           case "$N_CAP" in ''|*[!0-9]*|0) die "N_CAP must be a positive integer, got '$N_CAP'";; esac
           GATE_N_CAP_YAML="$N_CAP"; RESOLVED_N_CAP="$N_CAP"

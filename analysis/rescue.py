@@ -52,6 +52,9 @@ THE REGISTERED PER-RUN RULE (plan R1 'Registered per-run rule'; R4 uses it with 
       a remainder shorter than 300 s is covered by the window ending at 8700, so every instant lies in a full window);
       the whole interval has FU-hit > 0.8; its uncached-token rate is < 0.5 x the all-miss reference
       (meta.uncached_tokens_ref_resolved); the registered trap_v2 RECOVERED predicate holds over the last 300 s.
+  HARDWARE: a run whose meta.hardware differs from the registered (calibrated) string ``PROFILES[..]["hardware"]``
+  ("NVIDIA A100 80GB PCIe, 81920 MiB": all three nova22-gpu nodes report it; the sbatch header excludes nova22-amp-7) is
+  INVALID (fails (a)), which counts against PASS.
   RESCUED = a and b and c.  RELAPSE = any of those 300-s windows has FU-hit < 0.2 (defined whenever released).
   A window in which no follow-up turn completes has an undefined FU-hit: it fails (c) (counted in post_n_windows_nan)
   but is not a RELAPSE (no evidence of the all-miss state); an undefined VALID window makes the run INVALID.
@@ -137,6 +140,7 @@ PROFILES: Dict[str, Dict[str, Any]] = {
            "rate_mults": [1.35, 1.65], "seeds": [0, 1, 2], "t_on_s": 1800.0, "n_cap": 20, "horizon_s": 8700.0,
            "t_burst_s": 1200.0, "pass_min_rescued": 2, "require_controls_stuck": True, "primary_rate": 1.35,
            "refute_relapse_min": 2, "refute_unreleased_min": 2, "prediction_cell": "R1_rescue",
+           "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
            "claims": {"primary": "no-shed drain of an established trap (1.35 x passes)",
                       "all": "no-shed drain at both test points (1.35 x and 1.65 x pass)",
                       "refuted": ">= 2 of 6 RELAPSE or >= 2 of 6 not released by 7200 s (negative result)"}},
@@ -151,6 +155,7 @@ PROFILES: Dict[str, Dict[str, Any]] = {
            "rate_mults": [4.0], "seeds": [0, 1, 2], "t_on_s": 2100.0, "n_cap": 64, "horizon_s": 8700.0,
            "t_burst_s": 1200.0, "pass_min_rescued": 2, "require_controls_stuck": True, "primary_rate": 4.0,
            "refute_relapse_min": 2, "refute_unreleased_min": None, "prediction_cell": "R4s_t2100",
+           "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
            "claims": {"primary": "no-shed drain at the native pool (4.0 x passes)",
                       "all": "no-shed drain at the native pool (4.0 x passes)",
                       "refuted": ">= 2 of 3 RELAPSE: persistence at the native pool refuted"}},
@@ -523,7 +528,10 @@ def evaluate_rescue_run(run: Run, events: Optional[pd.DataFrame], prof: Dict[str
     rec["sessions_in_system_at_t_on"] = backlog_at(run.sessions, t_on) if len(run.sessions) else NAN
     rec["valid_hit_ok"] = bool(not _isnan(rec["valid_fu_hit"]) and rec["valid_fu_hit"] < float(rule["valid_fu_hit_below"]))
     rec["valid_outstanding_ok"] = bool(rec["outstanding_at_t_on"] > float(rule["valid_outstanding_above"]))
-    rec["valid"] = bool(rec["valid_hit_ok"] and rec["valid_outstanding_ok"])
+    # a run on hardware other than the registered (calibrated) string is INVALID (lead decision before the registration tag)
+    rec["hardware_registered"] = prof.get("hardware")
+    rec["hardware_ok"] = bool(prof.get("hardware") is None or str(run.hardware) == str(prof["hardware"]))
+    rec["valid"] = bool(rec["valid_hit_ok"] and rec["valid_outstanding_ok"] and rec["hardware_ok"])
     # (b) released by the deadline
     rec["released"] = t_rel is not None
     rec["released_by_deadline"] = bool(t_rel is not None and t_rel <= float(rule["release_by_s"]) + 1e-9)

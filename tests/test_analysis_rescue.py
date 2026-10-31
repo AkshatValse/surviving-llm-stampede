@@ -23,6 +23,14 @@ from analysis.load import Run
 from analysis.params import load_params
 from analysis.throughput import outstanding_events
 
+
+@pytest.fixture(autouse=True)
+def _synthetic_registered_hardware(monkeypatch):
+    """The toy runs record hardware 'synthetic GPU'; the registered profiles name the calibrated A100 string, and a run on other
+    hardware is INVALID. Point the profiles at the toy string for these tests (one test checks the INVALID branch)."""
+    for k in R.PROFILES:
+        monkeypatch.setitem(R.PROFILES[k], "hardware", "synthetic GPU")
+
 REPO = Path(__file__).resolve().parent.parent
 PARAMS = load_params(REPO / "configs" / "agentload_analysis.yaml")
 
@@ -826,3 +834,11 @@ def test_check_run_json_out(tmp_path, std):
     out = tmp_path / "check.json"
     assert R.main(["check-run", str(std["rescue_1.35_0"]), "--e2-config", str(std["e2"]), "--json-out", str(out)]) == 0
     assert json.loads(out.read_text())["ok"] is True
+
+
+def test_a_run_on_hardware_other_than_the_registered_string_is_invalid(std, monkeypatch):
+    monkeypatch.setitem(R.PROFILES["r1"], "hardware", "NVIDIA A100 80GB PCIe, 81920 MiB")
+    doc, frames = R.verdict(rescues(std, (1.35,)), controls(std, (1.35,)), PARAMS, profile="r1")
+    runs = frames["rescue_runs"]
+    assert (~runs["hardware_ok"]).all() and (runs["outcome"] == "INVALID").all() and not runs["rescued"].any()
+    assert doc["cells"][0]["n_invalid"] == 3 and not doc["cells"][0]["meets"]

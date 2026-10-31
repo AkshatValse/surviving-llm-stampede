@@ -113,6 +113,11 @@ def check_gate(runs: Sequence[Run]) -> List[Dict[str, Any]]:
         cap = r.gate_n_cap
         if cap is None:
             continue
+        if r.gate_mode == "rescue":
+            # a rescue run is uncapped until t_on and then lowers the cap by attrition, so max_active_seen and the session log
+            # exceed the cap by design before (and just after) the engage; its gate is checked by analysis.rescue check-run
+            # (gate_invariant_checks: the cap held once reached, pause rows over the cap, no lost wakeup)
+            continue
         g = (r.meta.get("outcome") or {}).get("gate") or {}
         seen = max(int(g.get("max_active_seen") or 0), max_active_from_log(r.sessions))
         if seen > cap:
