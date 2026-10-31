@@ -1,0 +1,2 @@
+label,seed,rate_mult,stable,final_queue,trend_rise,aborted,queue_source,run_dir
+sglang-fcfs-r1-h200-p600k,0,1.75,True,0.0,0.0,False,engine_waiting,results/agentload_e0_cap/20261031-074219

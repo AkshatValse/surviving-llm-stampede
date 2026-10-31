@@ -1,15 +1,17 @@
-# Paper input: the H200 cell (SGLang, 300k pool): window compression, no registered test
+# Paper input: the H200 cells (SGLang): 300k window compression, no registered test there; 600k pool registered, paired test running
 
 Written 2026-10-31 for the lead. Every number below comes from committed files on branch `r12/h200`. The pull is `results/nova/h200_wave1_pulled_20261031-023416/` (abbreviated **HP**), committed in `d108056`. Full narrative: `notes/LOG.md`, entry 2026-10-31 "H200 cell".
 
 ## Verdict
 
-**No kill test on the H200.** The registered rule (`836063a`: window (1, hi), points at ⅓ and ⅔ rounded to 0.05, `boundary_margin_rel` 0.1) cannot be applied:
+**At the 300k pool: no kill test on the H200.** The registered rule (`836063a`: window (1, hi), points at ⅓ and ⅔ rounded to 0.05, `boundary_margin_rel` 0.1) cannot be applied:
 - hi = min(μ_max/λ_ref, largest all-stable E0b multiple) = min(1.99, 1.3) = 1.3;
 - the rule's points 1.10 and 1.20 × both fall outside the band (1.1, 1.17);
 - `analysis.prereg fill` returns INCOMPLETE.
 
 So there is no registration and no E2, and no decisive claim for this cell. No exploratory pair was run either: `derive-exploratory` needs a FILLED parent, the only one at this pool is the A100 registration, and its hardware check refuses the H200 calibration. Making that work would need a code change.
+
+**At a 600k pool on the same H200, the window reopens to (1, 2.5) and the cell registers** (1.5 and 2.0 ×, cap 48). Its paired test, jobs 17171020–37, is running; see the section "600k-pool H200 cell" below. The verdict will be added after the Sunday pull.
 
 **What the cell delivers is a measurement: window compression on a faster GPU.** The pool (300k tokens) and the workload (Exp(5 s) tool time) are the same as on the A100. Against the A100:
 - the H200 raises λ_miss 2.71 ×;
@@ -94,6 +96,49 @@ F2 P(unstable) at the six E0b multiples is 0.04, 0.12, 0.28, 0.52, 0.84 and 0.98
 - The theory matches to n = 36. Past the midpoint the real tail is gradual: hit 0.32 and 0.16 at n = 44 and 52, where the theory is all-miss, and μ 1.27–1.29 × the annealed prediction.
 - No refutation rule is affected.
 - **Suggested sentence:** "On the H200 the collapse is a slide rather than a cliff: hit falls from 0.74 at n = 32 to 0.16 at n = 52, whereas the fluid model, which matches the rising branch and the peak blind, goes all-miss by n ≈ 42."
+
+## 600k-pool H200 cell (`sglang-fcfs-r1-h200-p600k`): registered; E2 running (verdict pending)
+
+Sources:
+- pull HP6 = `results/nova/h200p600k_stageC_e0b_171696xx_pulled_20261031-092822/` (archive sha256 `10682cc6…`), with the curve `results/agentload_analysis_closed/20261031-092435/mu_curve.json` and the bracket `results/agentload_analysis_stable/20261031-092436/`;
+- registration `configs/agentload_prereg_2026-10-31_h200_p600k.yaml` (repo root; commit `4d1d431`, pushed 09:26:41 CDT; PREREG_SHA256 `6be6e232280a8b5d2454e08356e8a169a67fb908eb4afdf7a02f444aa504578e`);
+- inputs `prereg/inputs/2026-10-31-h200-p600k/`.
+
+Jobs: Stage C 17169672–80, E0b 17169682–87 (all COMPLETED 0:0; all started after the pred2 push at 04:20:20); E2 **17171020–17171037** (submitted 09:27:44 CDT).
+
+| number(s) | what | source |
+|---|---|---|
+| 0.427, 0.522, **0.592**, 0.581, 0.477, 0.403, 0.298, 0.269, 0.232 | μ sessions/s at n = 32, 40, 48, 56, 64, 72, 80, 96, 300 | HP6 curve `mu_sessions` |
+| 0.412, 0.505, **0.577**, 0.569, 0.466, 0.379, 0.281, 0.254, 0.231 | μ turns-based | `mu_turns_based` |
+| 0.930, 0.927, 0.897, 0.804, 0.654, 0.478, 0.227, 0.140, 0.000 | hit fraction (turns) | `hit_frac_turns` |
+| 3.05 (turns-based 2.98) | μ_max/λ_ref (λ_ref 0.19388, the H200 E0a) | curve, calibration |
+| ≈ 71.0 | 0.5-hit crossing | curve |
+| stable 1.25–2.5 × (final queue 0); unstable 3.0 × (620.2, +433) | E0b | HP6 bracket `stable_runs.csv` |
+| (1, 2.5) × λ_ref = (0.194, 0.485) sessions/s; points 1.5, 2.0 × (0.291, 0.388); n_cap 48 | registration | prereg file |
+
+Against pred2 (`results/theory/pred2/h200_600k.json` at tag `r13-theory-pred2`, read after the combine):
+
+| quantity | predicted | measured | result |
+|---|---|---|---|
+| μ_max (F1) | 0.620 | 0.577 | +7.3 % |
+| window | 3.20 | 2.98 | hit |
+| peak n | ≈ 53 | flat top 48–56 | hit |
+| n_half | 66.6 / 64.8 | ≈ 71.0 | miss (+4.4 / +6.2) |
+| E0b bracket | [2.5, 3.0) | [2.5, 3.0) | equal |
+| registration | 1.5 / 2.0 ×, cap 48 | 1.5 / 2.0 ×, cap 48 | identical |
+
+The tail past the midpoint is softer than predicted, as at 300k: hit 0.48 / 0.23 / 0.14 at n = 72 / 80 / 96, against 0.15 / 0.02 / 0.00.
+
+The 2×2 (μ_max/λ_ref; edge):
+
+| | A100 | H200 |
+|---|---|---|
+| 300k | 3.26; 2.0 × | 1.99; 1.3 × |
+| 600k | from the pool-sweep cell | 3.05; 2.5 × |
+
+**Suggested sentence:** "Doubling the pool on the H200 reopens the window: the peak rises 1.53 × and moves from n = 32 to 48, the from-empty edge moves from 1.3 to 2.5 λ_miss, and the cell registers at 1.5 and 2.0 λ_miss, exactly the registration our frozen model predicted."
+
+The verdict follows when the 18 E2 jobs have finished (pull Sunday 08:00–11:30).
 
 ## Caveats
 

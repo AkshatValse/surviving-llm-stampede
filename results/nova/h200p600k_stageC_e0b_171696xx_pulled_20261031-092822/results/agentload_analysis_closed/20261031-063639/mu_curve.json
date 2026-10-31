@@ -1,0 +1,84 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "sglang-fcfs-r1-h200-p600k": {
+      "n": [
+        40
+      ],
+      "n_runs": [
+        1
+      ],
+      "mu_sessions": [
+        0.5216632059369984
+      ],
+      "mu_turns_based": [
+        0.5048536679160672
+      ],
+      "turns_per_s": [
+        7.452172784279975
+      ],
+      "hit_frac_turns": [
+        0.9265692560011928
+      ],
+      "hit_frac_followup": [
+        0.9963924963924964
+      ],
+      "cached_frac_tokens": [
+        0.9325715336038686
+      ],
+      "queue_mean": [
+        0.0
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA H200 NVL, 143771 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 40,
+        "turns_based": 40
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 40,
+      "mu_max": 0.5216632059369984,
+      "argmax_margin_rel": null,
+      "runner_up_n": null,
+      "argmax_ambiguous": true,
+      "n_inf": 300,
+      "mu_n_inf": null,
+      "missing_n": [
+        16,
+        20,
+        24,
+        32,
+        48,
+        96,
+        300
+      ],
+      "complete_grid": false,
+      "extra_n": [
+        40
+      ],
+      "mu_by_n": {
+        "40": 0.5216632059369984
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "sglang-fcfs-r1-h200-p600k",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA H200 NVL, 143771 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 40,
+  "mu_300": null,
+  "mu_max": 0.5216632059369984,
+  "notes": [
+    "primary cell sglang-fcfs-r1-h200-p600k: n grid incomplete, missing [16, 20, 24, 32, 48, 96, 300]; n_cap is the argmax over the points that exist",
+    "n_cap=40 is ambiguous: runner-up n=None is within 5% (margin None); one run per n",
+    "mu(n=300) missing: the recovery threshold cannot be predicted"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

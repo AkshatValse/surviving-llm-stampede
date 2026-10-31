@@ -714,3 +714,86 @@ The peak stays at n = 32; n = 36 is the new runner-up, within 3.2 %. The 0.5-hit
 
 **Against predictions:** the frozen r13 F2 escape probability (tag `r13-theory-pred`) is 0.28 at 1.3 × and 0.52 at 1.4 ×, i.e. P(stable) 0.72 and 0.48. Observed: 3/3 and 2/3. Both are consistent at three seeds. No simulator prediction exists.
 **Interpretation:** The registration conclusion does not change. hi is the largest multiple at which every run is stable: still 1.3, so the rule's points stay 1.10 and 1.20, outside the margin band. But the edge is not a hard threshold. At 1.4 × an empty engine stays good in two of three seeds and escapes in one, so the edge lies in the stochastic band 1.3–1.4 ×. That is what a first-passage (escape) edge looks like, not a deterministic stability boundary. The paper should quote the H200 edge as "stable at 1.3 × in 3/3 seeds, at 1.4 × in 2/3".
+
+## 2026-10-31 — H200 at a 600k-token pool: the window reopens to (1, 2.5) × λ_ref; pre-registration filled and the paired test submitted
+**Question:** On the same H200, does doubling the KV pool (300k → 600k) restore a registrable window, as the window law predicts? That completes the 2×2 (A100 / H200 × 300k / 600k). And do the frozen pred2 predictions for this cell hold?
+**Setup:** The lead asked for this cell at ~03:00 CDT (Akshat's authorization for Nova use covers it).
+- **Cell:** `sglang-fcfs-r1-h200-p600k`, `KV_TOKENS=600000` (server log of all 15 jobs: `max_total_num_tokens=600000`). Everything else is as in the H200 300k cell: SGLang 0.5.22, Qwen2.5-7B `a09a3545`, fa3, FCFS with refresh, nova25-gpu-3, clone `repo_h200` at `5a6fbcd`, one run per job, nice 0.
+- **λ_ref:** reused from the H200 300k E0a (17166810–12; λ_miss is pool-independent: A100 300k 0.0715 vs native 0.0718).
+- **Stage C:** 17169672–80 (n = 32, 40, 48, 56, 64, 72, 80, 96, 300).
+- **E0b:** 17169682–87 (1.25, 1.5, 1.75, 2.0, 2.5, 3.0 ×). The default grid was chosen by the plan's rule R_bound = (n_peak/68.8)/λ_ref ≥ 3, i.e. n_peak ≥ 40. The lead's reasoning, from the frozen closed form, was n_b ≈ 13.55 + 2 × 27.76 ≈ 69 at 600k, with the 300k peak already at 32.
+- **Timing:** all 15 jobs were held by `--begin=2026-10-31T05:00:00` and carried `--deadline`. All COMPLETED 0:0 (starts 05:27–08:25). The blind predictions `r13-theory-pred2` (commit `cfa7712`) were pushed at 04:20:20 CDT, before any of these jobs could start.
+- **Combines** (login node; out_dirs parsed from the tools' output):
+  - curve: `summarize closed --primary-label sglang-fcfs-r1-h200-p600k` → `agentload_analysis_closed/20261031-092435`;
+  - bracket: `summarize stable` → `agentload_analysis_stable/20261031-092436`;
+  - no guard warnings in either.
+- **Data:** `results/nova/h200p600k_stageC_e0b_171696xx_pulled_20261031-092822/` (archive sha256 `10682cc6…` checked at both ends, remote archive deleted).
+
+**Result (Stage C, one run per n):**
+
+| n | 32 | 40 | 48 | 56 | 64 | 72 | 80 | 96 | 300 |
+|---|---|---|---|---|---|---|---|---|---|
+| μ sessions/s | 0.427 | 0.522 | **0.592** | 0.581 | 0.477 | 0.403 | 0.298 | 0.269 | 0.232 |
+| μ turns-based | 0.412 | 0.505 | **0.577** | 0.569 | 0.466 | 0.379 | 0.281 | 0.254 | 0.231 |
+| hit fraction (turns) | 0.930 | 0.927 | 0.897 | 0.804 | 0.654 | 0.478 | 0.227 | 0.140 | 0.000 |
+
+- Peak 0.5917 sessions/s at n = 48; n = 56 is within 1.8 % (`n_cap_ambiguous`).
+- μ_max/λ_ref = **3.05** (turns-based 2.98).
+- 0.5-hit crossing ≈ 71.0 (linear between 64 and 72).
+- The grid has no n = 16, 20 or 24 (`grid_incomplete`, a warning only).
+
+**Result (E0b):** stable at 1.25, 1.5, 1.75, 2.0 and 2.5 × (final queue 0; trend 0.0 to −0.10); **unstable at 3.0 ×** (final queue 620.2, fitted rise +433). Bracket: largest all-stable 2.5 × (0.485 sessions/s), first unstable 3.0 ×, monotone.
+**Pre-registration:** `configs/agentload_prereg_2026-10-31_h200_p600k.yaml`, FILLED and valid, PREREG_SHA256 `6be6e232…578e`.
+- **Commit:** `4d1d431` on `r12/h200-prereg` (parent `5a6fbcd`; committed 09:26:38 CDT; GitHub `branch_creation` at 14:26:41Z = 09:26:41 CDT); merged into `r12/h200` (`e12138f`, a merge).
+- **Window:** (1, 2.5) × λ_ref, with hi from E0b (`lambda_cap_e0b`; μ_max/λ_ref = 3.05 does not bind).
+- **λ points:** 1.5 and 2.0 × by the ⅓/⅔ rule of `836063a`, no rounding needed, inside the band (1.1, 2.25).
+- **Cap:** n_cap **48** (`smallest_within_margin`); capped-drain limit 2.87 ×.
+- **Warnings only:** `n_cap_ambiguous`, `grid_incomplete`.
+- **Inputs:** `prereg/inputs/2026-10-31-h200-p600k/`, copied byte-exact, hashes checked at both ends; `calibration.json` is a byte copy of the H200 300k E0a calibration.
+- **Sync to Nova:** an 8 KB bundle `5a6fbcd..r12/h200-prereg`, pulled `--ff-only` into `repo_h200` while no H200 job was running. `repo_h200` is at `4d1d431`, clean.
+
+**E2 submitted** at 09:27:44 CDT (Nova clock), after `check-job` passed for all six (λ, arm) with `--duration-s 8700 --t-burst-s 1200 --set trap_v2.eval_from_s=4500`.
+- **Jobs:** 18 one-arm jobs, **17171020–17171037**, seed-major: for seed 0, 1, 2 → for 1.5 then 2.0 × → BURST, NOBURST, CAPPED.
+- **Arguments:** `KV_TOKENS=600000`; `N_CAP=48` on CAPPED; `CALIB_FILE=prereg/inputs/2026-10-31-h200-p600k/calibration.json`; `--gres=gpu:h200:1 --time=03:10:00 --deadline=2026-11-01T11:40:00`; nice 0. The lead revised nice 58 → 0 because an H200 job can hold at most 4 of the 11 cap slots.
+- **Script:** `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `h200_jobs.env`.
+
+**Against the blind pred2 predictions** (`results/theory/pred2/h200_600k.json` at `r13-theory-pred2`; read after the combine and the registration check; turns-based estimator; tolerances of `notes/THEORY_r13_scoring.md`):
+
+| quantity | predicted | measured | result |
+|---|---|---|---|
+| μ_max (annealed / F1) | 0.620 | 0.577 | +7.3 %, inside ±10 %; the freeze note expected 4–12 % high on the H200 |
+| window | 3.20 (fluid 3.27) | 2.98 | +7.3 %, a hit |
+| peak n | ≈ 53 (fluid 53.7) | flat top {48, 56} | a hit |
+| 0.5-hit crossing | 66.6 (fluid) / 64.8 (F1) | ≈ 71.0 | +4.4 / +6.2, outside ±3: **a miss** |
+| E0b bracket | [2.5, 3.0) (F2 edge 2.57 ×) | [2.5, 3.0) | equal, a hit |
+| registration consequence | 1.5 / 2.0 ×, cap 48 | 1.5 / 2.0 ×, cap 48 | **exactly as registered** |
+
+- F2 log-likelihood of the six E0b outcomes: −0.50.
+- Up to n = 64 the curve matches the frozen prediction to within 7 % in μ (0.412–0.577 vs 0.419–0.609 annealed; largest gap −6.5 % at n = 56). hit is 0.93–0.65 vs 0.93–0.55.
+- Past the midpoint the same soft tail as at 300k appears. hit(72) is 0.478 vs 0.147 (annealed), hit(80) 0.227 vs 0.019, hit(96) 0.140 vs 0.000. μ(72) is 0.379 vs 0.262; μ(80–96) is 0.25–0.28 vs 0.20.
+- Rival scoring (pred2 §6): the frozen n_half (66.6) beats the rival M/E_S (≈ 55.5) for the measured crossing of 71.0. T3(b)'s tool-call term is supported, since 71.0 > M/E_S + (n_b − M/E_S)/2 ≈ 62.7.
+- pred2's N2 rule for the 300k cell (`hit(36) ≥ 0.5 and hit(44) < 0.5`, P = 0.80) holds on the measured 0.613 and 0.318. The 300k crossing (38.9) also beats its rival (27.8).
+
+**The 2×2 window law (μ_max/λ_ref, sessions-based; from-empty edge):**
+
+| pool | A100 | H200 |
+|---|---|---|
+| 300k | 3.26; 2.0 × | 1.99; 1.3 × (1.4 × 2/3) |
+| 600k | (pool-sweep cell, another session) | 3.05; 2.5 × |
+
+On the H200, doubling the pool raises the peak 1.53 × (0.386 → 0.592), moves it out 1.5 × in n (32 → 48), and moves the edge from 1.3 to 2.5 ×.
+**Verified vs. not:**
+- Verified:
+  - the 15 accounting records;
+  - the pool size in every server log;
+  - the input hashes at both ends;
+  - the registration's validity, commit and push time;
+  - check-job for all six (λ, arm);
+  - the 18 job IDs and their submit lines (sampled with `scontrol`/`sacct`: label, pool, arm, cap, deadline, gres).
+- Not verified:
+  - seed-to-seed spread of the curve and of the edge (one run per n and per multiple);
+  - n < 32 (not run);
+  - anything about E2's outcome.
+
+**Interpretation:** The window is set by pool and speed together. The faster GPU closes it at 300k, and doubling the pool reopens it, to an edge (2.5 ×) above the A100 300k cell's (2.0 ×). The frozen fluid model predicted the registration this cell actually produced, blind. As at 300k, it gets the rising branch, the peak and the edge, but misplaces the tail past the midpoint, where the real engine keeps a partial hit rate. The kill test now runs at 1.5 and 2.0 × λ_ref, where the frozen pred2 E2 block predicts a good NOBURST state (hit 0.932) and a trapped BURST arm (backlog ≈ 458 and 867 sessions).
+**Next:** the 18 E2 jobs, about 4.5 waves of 2.5 h on the 4 H200s; first ends ≈ 12:00 Sat, last ≈ 22:00 Sat if the cap allows four at once. Pull what has finished before the VPN drops (~14:00 Sat), the rest on Sun 08:00–11:30. Then run `summarize burst2 --prereg configs/agentload_prereg_2026-10-31_h200_p600k.yaml` with the E2 overrides (`--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500`).
