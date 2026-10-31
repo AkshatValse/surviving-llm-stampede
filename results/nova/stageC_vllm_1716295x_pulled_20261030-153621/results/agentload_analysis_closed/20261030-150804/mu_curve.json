@@ -1,0 +1,97 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "vllm-fcfs": {
+      "n": [
+        48,
+        96,
+        300
+      ],
+      "n_runs": [
+        1,
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.04388863429976332,
+        0.05722185751052203,
+        0.10499893880237311
+      ],
+      "mu_turns_based": [
+        0.05923962542234235,
+        0.06864867526882068,
+        0.10470389345106793
+      ],
+      "turns_per_s": [
+        0.8744393719978161,
+        1.0133268747494386,
+        1.545539935175672
+      ],
+      "hit_frac_turns": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "hit_frac_followup": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "cached_frac_tokens": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "queue_mean": [
+        19.40833333333333,
+        63.724999999999994,
+        253.1138888888889
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 300,
+        "turns_based": 300
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 300,
+      "mu_max": 0.10499893880237311,
+      "argmax_margin_rel": 0.4550244205970133,
+      "runner_up_n": 96,
+      "argmax_ambiguous": false,
+      "n_inf": 300,
+      "mu_n_inf": 0.10499893880237311,
+      "missing_n": [
+        16,
+        20,
+        24,
+        32
+      ],
+      "complete_grid": false,
+      "extra_n": [],
+      "mu_by_n": {
+        "48": 0.04388863429976332,
+        "96": 0.05722185751052203,
+        "300": 0.10499893880237311
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "vllm-fcfs",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 300,
+  "mu_300": 0.10499893880237311,
+  "mu_max": 0.10499893880237311,
+  "notes": [
+    "primary cell vllm-fcfs: n grid incomplete, missing [16, 20, 24, 32]; n_cap is the argmax over the points that exist"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

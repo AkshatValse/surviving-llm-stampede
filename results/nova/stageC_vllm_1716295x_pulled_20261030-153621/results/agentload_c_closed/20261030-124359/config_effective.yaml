@@ -1,0 +1,68 @@
+research_question: 'Stage C (real engine): what is the closed-population throughput
+  curve mu(n) of Qwen2.5-7B-Instruct on one A100-80GB with the prefix cache ON, at
+  n in {16, 20, 24, 32, 48, 96, 300} concurrent sessions (FCFS) and n in {48, 300}
+  (LPM)? Its argmax is the session cap N_cap of the CAPPED arm and max_n mu(n) bounds
+  the pre-registered metastable window from above (together with E0b''s from-empty
+  stability edge, configs/agentload_prereg_template.yaml). mu(300) is only a CHECK
+  of the recovery threshold (= lambda_miss): all n sessions start at t=0, so mu(300)
+  over the measured window is transient-biased.'
+assumptions_note: 'Same workload constants and engine pins as E0a (configs/agentload_e0_miss.yaml),
+  but caching ENABLED and the schedule policy fixed per job (SGLang --schedule-policy
+  fcfs|lpm; the cache is flushed and verified empty between runs). Closed population:
+  a finished session is replaced at once, so exactly n sessions are alive (tool-time
+  sleeps included). Protocol c_closed: warmup 900 s discarded, 1800 s measured (analysis:
+  summarize closed --warmup-s 900). One run per n (no replicate): the argmax is noisy
+  and is flagged when the runner-up is within 5%. Throughput is both completed sessions/s
+  and turns/s / E[T]; hit fractions and the queue are recorded next to it. KNOWN BIAS
+  (review of 2026-10-21, finding 2; simulator, same protocol): all n sessions start
+  together at t=0, so in the window [900 s, 2700 s) mu(n) is +65% too high at n=300
+  (session lifetime there is ~6000 s, longer than the run), +17-20% at n=100, and
+  9-25% too LOW at n=22-30 (the cliff region), where mu(n) is bistable between windows.
+  Do not read n_cap or the window edges off this curve as steady-state values: the
+  argmax is flagged when the runner-up is within 5% and n_cap is only the capped arm''s
+  cap. Staggered session ages (not implemented) would remove the bias.'
+server:
+  base_url: http://127.0.0.1:22961
+  model: Qwen/Qwen2.5-7B-Instruct
+  completions_path: /v1/completions
+  request_timeout_s: 7200
+  extra_body:
+    ignore_eos: true
+    repetition_penalty: 1.0
+    top_p: 1.0
+  request_token_ids: true
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: server
+  content_salt: 1
+arrivals:
+  kind: closed
+  closed_n: 48
+run:
+  duration_s: 2700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+metrics:
+  enabled: true
+  interval_s: 5.0
+meta:
+  hardware: NVIDIA A100 80GB PCIe, 81920 MiB
+  engine_label: vllm-fcfs
+  notes: Stage C closed-population mu(n), cache on
+  start_state_verified: true
+  start_state_detail: 'canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed,
+    3 unverifiable); see canary_1_*.json'
+output:
+  root: results
+  name: agentload_c_closed

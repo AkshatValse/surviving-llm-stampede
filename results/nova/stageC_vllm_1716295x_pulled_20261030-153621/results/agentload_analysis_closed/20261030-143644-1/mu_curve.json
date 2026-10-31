@@ -1,0 +1,99 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "vllm-fcfs": {
+      "n": [
+        16,
+        20,
+        24
+      ],
+      "n_runs": [
+        1,
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.17499927296250842,
+        0.21944330379540966,
+        0.21833241719607924
+      ],
+      "mu_turns_based": [
+        0.1739931633952362,
+        0.21076372450044514,
+        0.2096348431418703
+      ],
+      "turns_per_s": [
+        2.5683226631926237,
+        3.111094939884289,
+        3.0944314600054996
+      ],
+      "hit_frac_turns": [
+        0.9318624269954575,
+        0.9260714285714285,
+        0.8791741472172352
+      ],
+      "hit_frac_followup": [
+        1.0,
+        0.9963496637848223,
+        0.9459146223681669
+      ],
+      "cached_frac_tokens": [
+        0.9348912539002501,
+        0.9294085283997453,
+        0.8664656931092684
+      ],
+      "queue_mean": [
+        0.0,
+        0.0,
+        0.4
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 20,
+        "turns_based": 20
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 20,
+      "mu_max": 0.21944330379540966,
+      "argmax_margin_rel": 0.005062294360852863,
+      "runner_up_n": 24,
+      "argmax_ambiguous": true,
+      "n_inf": 300,
+      "mu_n_inf": null,
+      "missing_n": [
+        32,
+        48,
+        96,
+        300
+      ],
+      "complete_grid": false,
+      "extra_n": [],
+      "mu_by_n": {
+        "16": 0.17499927296250842,
+        "20": 0.21944330379540966,
+        "24": 0.21833241719607924
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "vllm-fcfs",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 20,
+  "mu_300": null,
+  "mu_max": 0.21944330379540966,
+  "notes": [
+    "primary cell vllm-fcfs: n grid incomplete, missing [32, 48, 96, 300]; n_cap is the argmax over the points that exist",
+    "n_cap=20 is ambiguous: runner-up n=24 is within 5% (margin 0.005062294360852863); one run per n",
+    "mu(n=300) missing: the recovery threshold cannot be predicted"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

@@ -1,0 +1,24 @@
+{
+  "workloads": {
+    "exp5": {
+      "label": "Exp(5 s) (record)",
+      "population": 32,
+      "n_seeds": 3,
+      "lambda_miss_turns": 0.06626546306059838,
+      "lambda_miss_turns_sd": 0.0009252271529822828,
+      "lambda_miss_sessions": 0.065,
+      "lambda_miss_sessions_sd": 0.011758894715842627,
+      "token_rate": 10381.520740740742,
+      "busy": 0.9998746342060891,
+      "E_T": 14.761055049953429,
+      "tool_time_mean_s": 5.0,
+      "tool_time_cv": 1.0,
+      "check_pop64": {
+        "lambda_miss_turns": 0.06619018991058634,
+        "token_rate": 10480.41925925926,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    }
+  }
+}

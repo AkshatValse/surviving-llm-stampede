@@ -1,0 +1,46 @@
+### 1. Workloads and lambda_miss (B1: cache off, closed POP 32, window [900, 2700) s)
+
+| workload | tool-time mean (s) | tool-time CV | lambda_miss (turns-based, sessions/s) | sd over seeds | lambda_miss (sessions/s) | all-miss token rate (tok/s) | GPU busy | POP 64 lambda_miss (turns) | POP 64 busy |
+|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 5 | 1 | 0.066328 | 0.00040244 | 0.06537 | 10342 | 0.9999 | 0.065601 | 1 |
+
+### 2. Closed curve mu(n) (cache on, seeds 0-9) and the cap
+
+Cell = `mu turns-based (sessions/s) / hit fraction`, mean over the seeds, closed population, cache on:
+
+| n | Exp(5 s) (record) |
+|---|---|
+| 16 | 0.1742 / 0.93 |
+| 20 | 0.2114 / 0.93 |
+| 24 | 0.2151 / 0.89 |
+| 28 | 0.1650 / 0.75 |
+| 32 | 0.1152 / 0.52 |
+| 40 | 0.0709 / 0.10 |
+| 48 | 0.0656 / 0.01 |
+| 96 | 0.0738 / 0.00 |
+| 300 | 0.1048 / 0.00 |
+
+Landmarks (the cap n of the CAPPED arm is the turns-based one; the sessions-based columns are a labelled sensitivity):
+
+| workload | peak n | peak mu (turns-based sessions/s) | cap n (smallest within 5%) | mu(300) / peak | hit(300) | [sessions-based] peak n | [sessions-based] peak mu | [sessions-based] cap n |
+|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 24 | 0.2151 | 20 | 0.4869 | 0 | 24 | 0.2159 | 20 |
+
+### 3. From-empty stability edge and the measured window
+
+Stable runs per multiple of the workload's own lambda_miss (from empty, 3000 s, B2 rule), with Wilson 95% intervals:
+
+| workload | multiple of lambda_miss | lambda (sessions/s) | stable runs | all stable | final backlog mean | final backlog max | trend rise mean | tail hit mean | stopped early |
+|---|---|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 1.25 | 0.08291 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.001759 | 0.9326 | 0 |
+| Exp(5 s) (record) | 1.5 | 0.09949 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -1.641e-05 | 0.9308 | 0 |
+| Exp(5 s) (record) | 1.75 | 0.1161 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | -0.0008713 | 0.9296 | 0 |
+| Exp(5 s) (record) | 2 | 0.1327 | 10/10 (1.00) [0.72, 1.00] | True | 0 | 0 | 0.004477 | 0.9304 | 0 |
+| Exp(5 s) (record) | 2.5 | 0.1658 | 7/10 (0.70) [0.40, 0.89] | False | 18.9 | 117 | 14.22 | 0.7959 | 0 |
+| Exp(5 s) (record) | 3 | 0.199 | 3/10 (0.30) [0.11, 0.60] | False | 137.5 | 252 | 98.87 | 0.3172 | 0 |
+
+Measured metastability window and the paired-arm test points:
+
+| workload | lambda_miss (sessions/s) | hi (contiguous all-stable) | largest all-stable multiple | same | refinement grid run | window | test points (x lambda_miss) |
+|---|---|---|---|---|---|---|---|
+| Exp(5 s) (record) | 0.066328 | 2 | 2 | True | False | [1, 2] | 1.35, 1.65 |
