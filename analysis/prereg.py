@@ -27,6 +27,14 @@ CLI:  python -m analysis.prereg fill --template T --mu-curve M --calibration C -
       python -m analysis.prereg derive-exploratory --from FILLED --engine-cell-label L [--calibration C] --out NEWFILE
       python -m analysis.prereg validate FILE
       python -m analysis.prereg check-job FILE --label L --mults "..." --arms "..." [--n-cap N] [--calib F] [--hardware HW] ...
+
+RESCUE registrations (plan R1 / R4): when the E2 config given to ``fill`` has ``gate.mode: rescue``, fill copies that gate block
+verbatim into ``protocol.gate`` and the config file's sha256 into ``protocol.e2_config_sha256`` (other configs: nothing is
+added, so the default fill output is unchanged). Such a registration authorises ONLY the rescue arm, and the rescue arm is
+authorised ONLY by such a registration (check-job and run_blockers). check-job then refuses a job whose --e2-config gate block
+differs in any key (t_on_s, n_cap, hold, min_on, ...) or whose e2-config bytes differ from the registered sha256, and a job
+that runs any other arm with a rescue config. The CAPPED-drain limit is informational for a rescue registration (no CAPPED
+arm runs under it).
 """
 from __future__ import annotations
 
@@ -59,6 +67,31 @@ UNREGISTERED_TRAP_V2_KEYS = ("trace_bin_s",)            # plots only; changes no
 # leaves of the filled sections that may legitimately be null
 _OPTIONAL_NULL = ("measured.lambda_cap_e0b.first_unstable_mult_above",)
 REL_TOL = 1e-9
+RESCUE_MODE = "rescue"
+
+
+def protocol_gate(pr: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """The registered gate block (``protocol.gate``), or None: only rescue registrations carry one."""
+    g = (pr.get("protocol") or {}).get("gate")
+    return g if isinstance(g, dict) else None
+
+
+def is_rescue_registration(pr: Dict[str, Any]) -> bool:
+    g = protocol_gate(pr)
+    return g is not None and g.get("mode") == RESCUE_MODE
+
+
+def _same(a: Any, b: Any) -> bool:
+    def num(x: Any) -> bool:
+        return isinstance(x, (int, float)) and not isinstance(x, bool)
+    return _close(a, b) if num(a) and num(b) else a == b
+
+
+def gate_block_diff(registered: Dict[str, Any], got: Dict[str, Any], skip: Sequence[str] = ()) -> List[str]:
+    """Keys whose value differs between the registered gate block and ``got`` ("<absent>" for a missing key)."""
+    return [f"gate.{k}: {got.get(k, '<absent>')!r} != registered {registered.get(k, '<absent>')!r}"
+            for k in sorted((set(registered) | set(got)) - set(skip))
+            if not _same(registered.get(k, "<absent>"), got.get(k, "<absent>"))]
 
 
 def load_prereg(path: str | Path) -> Dict[str, Any]:
@@ -180,13 +213,28 @@ def validate(pr: Dict[str, Any], p: Optional[AnalysisParams] = None, fcfs_substr
                 add("error", "lambda_outside_window", f"lambda mult {m} is not inside ({lo:.4g}, {hi:.4g}) "
                     f"(window ({w['lo_mult']:.4g}, {w['hi_mult']:.4g}) x lambda_ref, margin {margin})")
     drain = (pr.get("predicted_boundaries") or {}).get("capped_drain") or {}
+    pg = protocol_gate(pr)
     if drain.get("max_lambda_mult") is not None:
         for m in mults:
             if m > drain["max_lambda_mult"]:
-                add("error", "capped_drain_does_not_fit",
+                add("warn" if pg is not None else "error", "capped_drain_does_not_fit",
                     f"lambda mult {m} > {drain['max_lambda_mult']:.4g}: the CAPPED arm's gate queue "
                     f"({drain.get('burst_n')} sessions at mu(n_cap)-lambda) would not drain inside the run, so kill condition 3 "
-                    "(cap does not rescue) would fire for a reason unrelated to the mechanism")
+                    "(cap does not rescue) would fire for a reason unrelated to the mechanism"
+                    + (" (rescue registration: no CAPPED arm runs under it, informational)" if pg is not None else ""))
+    if pg is not None:
+        if pg.get("mode") != RESCUE_MODE:
+            add("error", "gate_block_not_rescue", f"protocol.gate.mode is {pg.get('mode')!r}: only a rescue gate block is registered")
+        n_cap_reg = (pr.get("measured") or {}).get("n_cap")
+        if pg.get("n_cap") != n_cap_reg:
+            add("error", "gate_cap_mismatch", f"protocol.gate.n_cap {pg.get('n_cap')!r} != measured.n_cap {n_cap_reg!r} (the cap "
+                "rule's value): the rescue cap must be the registered cap")
+        for k in ("t_on_s", "pause_at_turns", "release_hold_s", "min_on_s"):
+            if k not in pg:
+                add("error", "gate_block_incomplete", f"protocol.gate.{k} missing")
+        sha = (pr.get("protocol") or {}).get("e2_config_sha256")
+        if not (isinstance(sha, str) and len(sha) == 64 and all(c in "0123456789abcdef" for c in sha)):
+            add("error", "e2_config_sha256_missing", f"protocol.e2_config_sha256 must be the e2 config's sha256 (got {sha!r})")
     rd = ((pr.get("predicted_boundaries") or {}).get("consistency") or {}).get("mu_300_vs_lambda_miss_rel_dev")
     if rd is not None and abs(rd) > 0.25:
         add("warn", "mu300_far_from_lambda_miss", f"|mu(300)/lambda_miss - 1| = {abs(rd):.3f}: only a check (all n sessions "
@@ -240,7 +288,8 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
          lambda_mults: Optional[Sequence[float]] = None, rule: Optional[str] = None,
          engine_cell_label: Optional[str] = None,
          mu_curve_path: str = "", calibration_path: str = "", e0b_path: str = "", e2_cfg_path: str = "",
-         n_cap_rule: str = "argmax", p: Optional[AnalysisParams] = None) -> Dict[str, Any]:
+         n_cap_rule: str = "argmax", p: Optional[AnalysisParams] = None,
+         e2_cfg_sha256: Optional[str] = None) -> Dict[str, Any]:
     """Fill the measured values and the formula-derived boundaries of ``template`` (a deep copy is returned). The
     lambda points and their rule come from the arguments (or stay as in the template). ``status`` becomes FILLED only
     if :func:`validate` finds no error. ``e0b`` (the ``lambda_cap_bracket.json`` of E0b) and ``e2_cfg`` (the raw E2 config:
@@ -313,6 +362,10 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
     pr["protocol"] = {"duration_s": run_c.get("duration_s"),
                       "t_burst_s": arr.get("analysis_t_burst_s", burst.get("t_s")),
                       "burst_n": burst.get("n"), "burst_width_s": burst.get("width_s")}
+    if isinstance(cp.get("gate"), dict) and cp["gate"].get("mode") == RESCUE_MODE:
+        # a rescue registration: the gate block is registered verbatim, and the config file by its sha256 (plan R1)
+        pr["protocol"]["gate"] = copy.deepcopy(cp["gate"])
+        pr["protocol"]["e2_config_sha256"] = e2_cfg_sha256
     pb = pr["predicted_boundaries"]
     pb["recovery_threshold"].update(sessions_per_s=lam_ref, mult_of_lambda_ref=1.0)
     lcap = None if b is None or b.get("largest_all_stable_mult") is None else float(b["largest_all_stable_mult"]) * lam_ref
@@ -537,15 +590,22 @@ def run_blockers(pr: Dict[str, Any], prov: Dict[str, Any], run: Any) -> List[str
     arm = run.arm or run.arm_derived
     if pr.get("status") == "EXPLORATORY" and arm not in (pr.get("exploratory") or {}).get("allowed_arms", []):
         out.append(f"arm {arm!r} is not allowed by this exploratory registration")
+    reg_rescue = is_rescue_registration(pr)
+    if arm == RESCUE_MODE and not reg_rescue:
+        out.append("rescue arm: the registration has no rescue gate block (protocol.gate.mode rescue)")
+    if reg_rescue and arm != RESCUE_MODE:
+        out.append(f"arm {arm!r} under a rescue registration (it registers only the rescue arm)")
     bcfg = (run.cfg.get("arrivals") or {}).get("burst")
-    if arm in ("burst", "capped"):
+    if arm in ("burst", "capped", RESCUE_MODE):
         if not bcfg or not _close(bcfg.get("n"), proto.get("burst_n")) or not _close(bcfg.get("width_s"), proto.get("burst_width_s")):
             out.append(f"burst spec {bcfg} != registered n={proto.get('burst_n')} width={proto.get('burst_width_s')}")
-    if arm == "capped":
+    if arm in ("capped", RESCUE_MODE):
         if run.gate_n_cap != m.get("n_cap"):
             out.append(f"gate cap {run.gate_n_cap} != registered n_cap {m.get('n_cap')}")
     elif run.gate_n_cap is not None:
         out.append(f"{arm} arm ran with a gate cap {run.gate_n_cap}")
+    if arm == RESCUE_MODE and reg_rescue:                   # n_cap is compared above as the resolved cap
+        out.extend(gate_block_diff(protocol_gate(pr) or {}, dict(run.cfg.get("gate") or {}), skip=("n_cap",)))
     if run.prereg_sha256 != prov.get("sha256"):
         out.append(f"run not bound to this file (meta.prereg_sha256={run.prereg_sha256!r}, file sha256={prov.get('sha256')!r})")
     t0 = run.t0_unix
@@ -561,7 +621,8 @@ def check_job(pr: Dict[str, Any], prov: Dict[str, Any], p: AnalysisParams, *, la
               n_cap: Optional[int] = None, calibration: Optional[Dict[str, Any]] = None, hardware: Optional[str] = None,
               e2_cfg: Optional[Dict[str, Any]] = None, fcfs_substr: Optional[str] = None,
               arms: Optional[Sequence[str]] = None, calibration_path: Optional[str | Path] = None,
-              allow_uncommitted: bool = False, allow_hw_mismatch: bool = False) -> List[str]:
+              allow_uncommitted: bool = False, allow_hw_mismatch: bool = False,
+              e2_cfg_sha256: Optional[str] = None) -> List[str]:
     """Problems with launching an E2 job under registration ``pr`` (what the job script will pass); empty = go."""
     out = [f"[{x['code']}] {x['message']}" for x in validate(pr, p, fcfs_substr, prereg_path=prov.get("path"))
            if x["severity"] == "error"]
@@ -611,6 +672,35 @@ def check_job(pr: Dict[str, Any], prov: Dict[str, Any], p: AnalysisParams, *, la
                                 ("analysis_t_burst_s", arr.get("analysis_t_burst_s"), proto.get("t_burst_s"))):
             if want is not None and not _close(got, want):
                 out.append(f"E2 config {name}={got} != registered protocol {want}")
+    # rescue arm (plan R1): authorised only by a rescue registration, which authorises nothing else, with the registered gate
+    # block and e2-config bytes; a rescue e2 config runs only the rescue arm
+    pg, reg_rescue = protocol_gate(pr), is_rescue_registration(pr)
+    job_arms = list(arms) if arms is not None else None
+    if job_arms is None:
+        if reg_rescue:
+            out.append("a rescue registration requires explicit ARMS (rescue)")
+    else:
+        if RESCUE_MODE in job_arms and not reg_rescue:
+            out.append("job arm 'rescue' needs a rescue registration (protocol.gate.mode rescue); this one registers none")
+        if reg_rescue and any(a != RESCUE_MODE for a in job_arms):
+            out.append(f"job arms {job_arms}: this rescue registration authorises only the rescue arm")
+    if reg_rescue and n_cap is None:
+        out.append("rescue arm: the job passes no resolved cap (--n-cap / N_CAP)")
+    if e2_cfg is not None:
+        eg = e2_cfg.get("gate") if isinstance(e2_cfg.get("gate"), dict) else {}
+        other = [a for a in (job_arms or []) if a != RESCUE_MODE]
+        if eg.get("mode") == RESCUE_MODE and other:
+            out.append(f"E2 config gate.mode is rescue: only the rescue arm may run it, not {other}")
+        if pg is not None:
+            if eg.get("mode") != RESCUE_MODE:
+                out.append(f"E2 config has no rescue gate block (gate.mode {eg.get('mode')!r}) but the registration registers one")
+            out.extend(f"E2 config {d}" for d in gate_block_diff(pg, eg))
+    if pg is not None:
+        want = proto.get("e2_config_sha256")
+        if e2_cfg_sha256 is None:
+            out.append("rescue registration: check-job needs the --e2-config file to compare its sha256")
+        elif want != e2_cfg_sha256:
+            out.append(f"E2 config sha256 {e2_cfg_sha256} != registered protocol.e2_config_sha256 {want}")
     return out
 
 
@@ -689,7 +779,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                   json.loads(Path(args.calibration).read_text()), e0b=json.loads(Path(args.e0b_bracket).read_text()),
                   e2_cfg=yaml.safe_load(Path(args.e2_config).read_text()), lambda_mults=args.lambda_mults, rule=args.rule,
                   engine_cell_label=args.engine_cell_label, mu_curve_path=args.mu_curve, calibration_path=args.calibration,
-                  e0b_path=args.e0b_bracket, e2_cfg_path=args.e2_config, n_cap_rule=args.n_cap_rule, p=p)
+                  e0b_path=args.e0b_bracket, e2_cfg_path=args.e2_config, n_cap_rule=args.n_cap_rule, p=p,
+                  e2_cfg_sha256=hashlib.sha256(Path(args.e2_config).read_bytes()).hexdigest())
         out.write_text(yaml.safe_dump(pr, sort_keys=False))
         print(f"wrote {out} status={pr['status']}")
         for x in pr["fill_problems"]:
@@ -704,6 +795,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     prov = file_provenance(args.file)
     calib = json.loads(Path(args.calib).read_text()) if args.calib else None
     e2 = yaml.safe_load(Path(args.e2_config).read_text()) if args.e2_config else None
+    e2_sha = hashlib.sha256(Path(args.e2_config).read_bytes()).hexdigest() if args.e2_config else None
     if e2 is not None:
         if args.duration_s is not None:
             e2.setdefault("run", {})["duration_s"] = args.duration_s
@@ -712,7 +804,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     probs = check_job(pr, prov, p, label=args.label, mults=[float(x) for x in args.mults.split()], n_cap=args.n_cap,
                       calibration=calib, hardware=args.hardware, e2_cfg=e2, fcfs_substr=args.fcfs_substr,
                       arms=args.arms.split() if args.arms is not None else None, calibration_path=args.calib,
-                      allow_uncommitted=args.allow_uncommitted, allow_hw_mismatch=args.allow_hw_mismatch)
+                      allow_uncommitted=args.allow_uncommitted, allow_hw_mismatch=args.allow_hw_mismatch,
+                      e2_cfg_sha256=e2_sha)
     for x in probs:
         print(f"PREREG PROBLEM: {x}")
     if probs:

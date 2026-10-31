@@ -58,8 +58,17 @@ class Run:
         return int(v) if v is not None else None
 
     @property
+    def gate_mode(self) -> str:
+        """Gate mode: ``meta.gate_mode`` (rescue runs record it), else the config's ``gate.mode``, else "static"."""
+        v = self.meta.get("gate_mode") or (self.cfg.get("gate") or {}).get("mode")
+        return str(v) if v else "static"
+
+    @property
     def arm_derived(self) -> str:
-        """What the config structurally implies: no burst -> noburst; burst + gate -> capped; burst -> burst."""
+        """What the config structurally implies: gate.mode rescue -> rescue (checked first: a rescue run records its engaged
+        cap in gate_n_cap_resolved); no burst -> noburst; burst + gate -> capped; burst -> burst."""
+        if self.gate_mode == "rescue":
+            return "rescue"
         if self.t_burst is None:
             return "noburst"
         capped = self.gate_n_cap is not None or (self.cfg.get("gate") or {}).get("n_cap") is not None

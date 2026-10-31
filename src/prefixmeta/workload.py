@@ -97,6 +97,10 @@ class ArrivalPlan:
     none     : no Poisson arrivals (only the extras below).
     Extras (on top of any kind): ``initial_cold`` sessions arriving at t=0; ``burst_n`` sessions with
     arrival times uniform on [burst_t0, burst_t0 + burst_width_s).
+    Lull (round 11, opt-in; the defaults leave every plan bit-identical to the earlier rounds): the BASE arrivals with
+    times in [lull_t0, lull_t1) are kept with probability ``lull_keep`` (seeded thinning on a separate stream, see
+    ``build_specs``); 0 = a full stop, 0.5 = half rate. The kept sessions keep their own turn counts and tool times
+    (common random numbers with the constant plan). Extras (cold start, burst) are never thinned.
     """
     kind: str
     horizon_s: float
@@ -110,6 +114,27 @@ class ArrivalPlan:
     burst_n: int = 0
     burst_t0: float = 0.0
     burst_width_s: float = 0.0
+    lull_t0: Optional[float] = None
+    lull_t1: Optional[float] = None
+    lull_keep: float = 1.0
+
+    def has_lull(self) -> bool:
+        return self.lull_t0 is not None or self.lull_t1 is not None
+
+
+def lull_keep_mask(plan: ArrivalPlan, ss: np.random.SeedSequence, base: np.ndarray) -> np.ndarray:
+    """Keep mask of the base arrivals ``base`` under the plan's lull. One uniform per base arrival from the 5th child of ``ss``
+    (spawned after the four workload streams, so those are unchanged); an arrival in [lull_t0, lull_t1) is kept iff its uniform
+    is < lull_keep, every other arrival is kept. With lull_keep = 1 every arrival is kept."""
+    if plan.lull_t0 is None or plan.lull_t1 is None or not (float(plan.lull_t1) > float(plan.lull_t0)):
+        raise ValueError(f"a lull needs lull_t0 < lull_t1, got {plan.lull_t0}, {plan.lull_t1}")
+    keep = float(plan.lull_keep)
+    if not (0.0 <= keep <= 1.0):
+        raise ValueError(f"lull_keep must be in [0, 1], got {keep}")
+    (s_lull,) = ss.spawn(1)
+    u = np.random.default_rng(s_lull).random(base.shape[0])
+    inside = (base >= float(plan.lull_t0)) & (base < float(plan.lull_t1))
+    return ~inside | (u < keep)
 
 
 def turn_counts(rng: np.random.Generator, n: int, mean_turns: float, max_turns: int) -> np.ndarray:
@@ -247,6 +272,12 @@ def build_specs(wl: WorkloadParams, plan: ArrivalPlan, seed: int) -> SessionSpec
     else:
         raise ValueError(f"unknown arrival plan kind {plan.kind!r}")
     blocks = [_make_block(base, turn_rng, tool_rng, wl)]
+    if plan.has_lull():
+        # thin AFTER the base block is drawn: the kept sessions keep their turn counts / tool times (their offsets into the
+        # unchanged tool table stay valid), so a lull plan differs from the constant plan only by the dropped sessions
+        m = lull_keep_mask(plan, ss, base)
+        b0 = blocks[0]
+        blocks[0] = (b0[0][m], b0[1][m], b0[2][m], b0[3])
 
     if plan.initial_cold > 0 or plan.burst_n > 0:
         e_main, e_turn, e_tool = (np.random.default_rng(s) for s in s_extra.spawn(3))

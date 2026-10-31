@@ -1,0 +1,75 @@
+{
+  "experiment": "r11_predict_rescue",
+  "status": "done",
+  "argv": [
+    "experiments/r11_predict_rescue.py",
+    "--workers",
+    "6"
+  ],
+  "git": {
+    "commit": "4d2bba245537a1b42801291217cb3e56d8d59513",
+    "dirty": true,
+    "branch": "r11/rescue"
+  },
+  "file_sha256": {
+    "src/prefixmeta/gate_control.py": "d1d6b6e8f7c811279565c27ac45534a928cac2fbb95371a6a9c5aa5718be1398",
+    "src/prefixmeta/probe.py": "5b503c997f0a848e63ee305d1ca5dc6f22b16bdb34465d9d41bd6abdf03ed191",
+    "src/prefixmeta/workload.py": "8ea0e9b29c540b1843e21b3cc198ecb0ef24be1925ee7a209ac21f45f852453d",
+    "src/prefixmeta/engine.py": "5e881b4eb5a1e63eab3a51c053d405661d77b67f4a04ee47433c99a5fc1e68b1",
+    "experiments/r11_predict_rescue.py": "acc3d6252761c11ff9fdb508875aac2c9f944a2d46fb9442f6ac9cebb58b8a88",
+    "configs/r11_predict_rescue.yaml": "3601b9d9846fb4378276670c347af14a107e591e0d5854cfcfdf33137e80212b",
+    "configs/r6_predict.yaml": "15240ebec2d58946592015df5a0ffc663f80debfe8cc5f69b8f6eb7f6f57bdb4",
+    "configs/agentload_e2_burst.yaml": "608bec40913eb2450d2204bbc6ff07cb890ae5bfba4dd0c6bdcc177bbee9b4ba",
+    "src/agentload/workload.py": "b848f31d198b2f87063f36ecff1197ae89414432402985878439af6bb5946c60",
+    "src/agentload/config.py": "f2ed8ac202f295c512894bea242d9ae014703073f029e8fca0cc60b9d4221172"
+  },
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "start_time": "2026-10-30T19:52:31",
+  "end_time": "2026-10-30T19:54:17",
+  "wall_s": 105.54320311546326,
+  "n_runs": 2090,
+  "quick": false,
+  "workers": 6,
+  "modes": [
+    "mixed",
+    "separate"
+  ],
+  "cells": [
+    "R1_rescue",
+    "R4_rescue",
+    "smoke",
+    "R1_attrition",
+    "R4_attrition",
+    "lull_stop_4200",
+    "lull_stop_4800",
+    "lull_stop_5400",
+    "lull_half_6000",
+    "lull_stop_trel",
+    "R1_shed_pause",
+    "R1_shed_attrition",
+    "aimd_300k",
+    "aimd_native",
+    "aimd_noburst_300k",
+    "aimd_noburst_native",
+    "aimd_noholdoff_300k",
+    "aimd_noholdoff_native",
+    "aimd_noholdoff_noburst_300k",
+    "ctl_burst_300k",
+    "ctl_noburst_300k",
+    "ctl_burst_native",
+    "ctl_noburst_native",
+    "ctl_burst_smoke",
+    "R4s_cap80",
+    "R4s_t2100",
+    "R4s_rates"
+  ],
+  "blindness": "no rescue run (GPU or mock with the rescue gate) existed when this ran; only committed BURST plan.csv files were read from results/nova (to check the rebuilt client plans)"
+}
