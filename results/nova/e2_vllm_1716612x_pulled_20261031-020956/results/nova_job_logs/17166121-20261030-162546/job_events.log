@@ -1,0 +1,6 @@
+16:26:57 flush HTTP 200 success=true (/reset_prefix_cache) after 0 retries
+16:26:58 flush HTTP 200 success=true (/reset_prefix_cache) after 0 retries
+16:26:58 reset_and_verify: verified=true canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_1_*.json
+18:55:00 flush HTTP 200 success=true (/reset_prefix_cache) after 0 retries
+18:55:00 flush HTTP 200 success=true (/reset_prefix_cache) after 0 retries
+18:55:00 reset_and_verify: verified=true canary 2: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_2_*.json

@@ -1,0 +1,41 @@
+{
+  "freeze_push_cdt": "2026-10-30 18:20:13",
+  "n_runs": 18,
+  "n_blind": 18,
+  "burst_blind": 6,
+  "burst_meet_b": 6,
+  "burst_meet_c": 6,
+  "burst_meet_a": 6,
+  "burst_meet_d": 6,
+  "good_blind": 12,
+  "good_meet_a": 12,
+  "good_meet_c": 10,
+  "good_meet_d": 12,
+  "good_failing_a_or_c": [
+    {
+      "job_id": 17166135,
+      "run": "20261030-205613",
+      "rate_mult": 1.35,
+      "seed": 2,
+      "arm": "capped",
+      "a_ok": true,
+      "c_ok": false,
+      "c_note": "false alarm at 2080 s (2 ticks)"
+    },
+    {
+      "job_id": 17166138,
+      "run": "20261030-215216",
+      "rate_mult": 1.65,
+      "seed": 2,
+      "arm": "capped",
+      "a_ok": true,
+      "c_ok": false,
+      "c_note": "false alarm at 2020 s (4 ticks)"
+    }
+  ],
+  "every_blind_burst_meets_b_and_c": true,
+  "good_arm_failures_allowed": 1,
+  "consistent_with_refill_then_evict": false,
+  "b_failure_any": false,
+  "detector_false_alarms_good_arms": 2
+}
