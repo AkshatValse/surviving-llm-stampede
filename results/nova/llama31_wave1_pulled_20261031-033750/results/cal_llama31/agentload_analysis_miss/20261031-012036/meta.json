@@ -1,0 +1,160 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "miss",
+    "--run-dirs",
+    "results/agentload_e0_miss/20261031-002240",
+    "results/agentload_e0_miss/20261031-002535",
+    "results/agentload_e0_miss/20261031-003224",
+    "--warmup-s",
+    "900",
+    "--out-root",
+    "results/cal_llama31"
+  ],
+  "git": {
+    "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+    "dirty": false,
+    "branch": "gen/llama31",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova22-28",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-31T01:20:36",
+  "end_time": "2026-10-31T01:20:37",
+  "wall_s": 0.59557,
+  "slurm_env": {
+    "SLURM_JOB_ID": "17168803",
+    "SLURM_JOB_NAME": "pm-l31-cal",
+    "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+    "SLURM_JOB_PARTITION": "instruction",
+    "SLURM_JOB_QOS": "instruction",
+    "SLURM_JOB_NODELIST": "nova22-28",
+    "SLURM_CPUS_PER_TASK": "2",
+    "SLURM_MEM_PER_NODE": "8192"
+  },
+  "inputs": [
+    {
+      "run_dir": "results/agentload_e0_miss/20261031-002240",
+      "label": "sglang-nocache-llama31",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "gen/llama31",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T00:22:40",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17166823",
+        "SLURM_JOB_NAME": "pm-l31-e0a",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-1",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_miss/20261031-002535",
+      "label": "sglang-nocache-llama31",
+      "seed": 1,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "gen/llama31",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T00:25:35",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17166829",
+        "SLURM_JOB_NAME": "pm-l31-e0a",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_miss/20261031-003224",
+      "label": "sglang-nocache-llama31",
+      "seed": 2,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "gen/llama31",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T00:32:24",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17166831",
+        "SLURM_JOB_NAME": "pm-l31-e0a",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "calibration": {
+    "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+    "hardware_all": [
+      "NVIDIA A100 80GB PCIe, 81920 MiB"
+    ],
+    "hostnames": [
+      "nova22-gpu-1",
+      "nova22-gpu-3"
+    ],
+    "output_ids_sources": [
+      "server_ids"
+    ],
+    "lambda_miss": 0.058517963317055645,
+    "lambda_miss_turns_based": 0.0596408614267974,
+    "lambda_miss_se": 0.003429624322336756,
+    "lambda_miss_turns_based_se": 0.0020409550192559077,
+    "all_miss_uncached_tokens_per_s": 9352.893143955092,
+    "all_miss_uncached_tokens_per_s_se": 95.75834893046039,
+    "all_miss_cached_frac_tokens_max": 0.0,
+    "n_runs": 3,
+    "warmup_s": 900.0,
+    "labels": [
+      "sglang-nocache-llama31"
+    ],
+    "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>'). all_miss_uncached_tokens_per_s = arrivals.uncached_tokens_ref of the E2 runs (trap criterion (a))."
+  },
+  "guard_problems": []
+}

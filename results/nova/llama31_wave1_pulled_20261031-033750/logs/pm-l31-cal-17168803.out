@@ -1,0 +1,39 @@
+hostname nova22-28 2026-10-31T01:20:34-05:00 commit 5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7
+E0a run dirs: results/agentload_e0_miss/20261031-002240  results/agentload_e0_miss/20261031-002535  results/agentload_e0_miss/20261031-003224 
+MODEL_OK NousResearch/Meta-Llama-3.1-8B-Instruct 3 runs
+{
+  "out_dir": "results/cal_llama31/agentload_analysis_miss/20261031-012036",
+  "calibration": {
+    "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+    "hardware_all": [
+      "NVIDIA A100 80GB PCIe, 81920 MiB"
+    ],
+    "hostnames": [
+      "nova22-gpu-1",
+      "nova22-gpu-3"
+    ],
+    "output_ids_sources": [
+      "server_ids"
+    ],
+    "lambda_miss": 0.058517963317055645,
+    "lambda_miss_turns_based": 0.0596408614267974,
+    "lambda_miss_se": 0.003429624322336756,
+    "lambda_miss_turns_based_se": 0.0020409550192559077,
+    "all_miss_uncached_tokens_per_s": 9352.893143955092,
+    "all_miss_uncached_tokens_per_s_se": 95.75834893046039,
+    "all_miss_cached_frac_tokens_max": 0.0,
+    "n_runs": 3,
+    "warmup_s": 900.0,
+    "labels": [
+      "sglang-nocache-llama31"
+    ],
+    "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>'). all_miss_uncached_tokens_per_s = arrivals.uncached_tokens_ref of the E2 runs (trap criterion (a))."
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}
+CALIB_OK {'lambda_miss_turns_based': 0.0596408614267974, 'lambda_miss_turns_based_se': 0.0020409550192559077, 'all_miss_uncached_tokens_per_s': 9352.893143955092}
+CALIB_FILE=results/cal_llama31/calibration.json  (source results/cal_llama31/agentload_analysis_miss/20261031-012036/calibration.json)

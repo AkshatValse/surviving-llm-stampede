@@ -1,0 +1,448 @@
+================ JOB BANNER ================
+date:      2026-10-31T01:10:49-05:00
+hostname:  nova22-gpu-1
+job:       17166808 name=pm-l31-s0 account=f2026.coms.6250.02 partition=instruction qos=instruction
+SBATCH_* input env (must be empty or correct; it overrides the #SBATCH lines): 
+node list: nova22-gpu-1   gpus: 1   CUDA_VISIBLE_DEVICES=0
+ulimit -n: soft 131072 hard 131072
+--- nvidia-smi
+Sat Oct 31 01:10:50 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.178.04             Driver Version: 580.178.04     CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100 80GB PCIe          On  |   00000000:C5:00.0 Off |                    0 |
+| N/A   34C    P0             55W /  300W |       0MiB /  81920MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+--- nvidia-smi topo -m
+	[4mGPU0	NIC0	CPU Affinity	NUMA Affinity	GPU NUMA ID[0m
+GPU0	 X 	NODE	28-31,44-47	1		N/A
+NIC0	NODE	 X 				
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+NIC Legend:
+
+  NIC0: mlx5_0
+
+--- git
+commit:    5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7
+branch:    gen/llama31
+dirty:     0 changed/untracked paths
+--- run parameters
+ENGINE=sglang MODE=smoke POLICY=fcfs REFRESH=1 LPM_INF=0 RADIX=1
+SEEDS="0" MULTS="" N_LIST="" ARMS="burst noburst capped" N_CAP= CAP_FILE=
+KV_TOKENS=300000 CONTEXT_LEN=49152 PORT=26808
+PREREG_FILE= PREREG_ALLOW_UNCOMMITTED=0
+OUTPUT_FEEDBACK=server REQUEST_TOKEN_IDS=true STRICT_FLUSH=0 STRICT_FLAGS=1
+ENGINE_LABEL=sglang-smoke-llama31  CALIB_FILE=
+MODEL=NousResearch/Meta-Llama-3.1-8B-Instruct SERVED_MODEL=NousResearch/Meta-Llama-3.1-8B-Instruct HF_REVISION=d10aef7999a2b5ba950ab3974312feeedbfe0b77 HF_HOME=/work/classtmp/avalse/swapp/hf
+HW=NVIDIA A100 80GB PCIe, 81920 MiB
+--- configs (verbatim)
+##### /work/classtmp/avalse/swapp/repo_llama31/configs/agentload_c_closed.yaml
+research_question: >-
+  Stage C (real engine): what is the closed-population throughput curve mu(n) of Qwen2.5-7B-Instruct on one A100-80GB
+  with the prefix cache ON, at n in {16, 20, 24, 32, 48, 96, 300} concurrent sessions (FCFS) and n in {48, 300} (LPM)? Its
+  argmax is the session cap N_cap of the CAPPED arm and max_n mu(n) bounds the pre-registered metastable window from above
+  (together with E0b's from-empty stability edge, configs/agentload_prereg_template.yaml). mu(300) is only a CHECK of the
+  recovery threshold (= lambda_miss): all n sessions start at t=0, so mu(300) over the measured window is transient-biased.
+
+assumptions_note: >-
+  Same workload constants and engine pins as E0a (configs/agentload_e0_miss.yaml), but caching ENABLED and the schedule
+  policy fixed per job (SGLang --schedule-policy fcfs|lpm; the cache is flushed and verified empty between runs). Closed
+  population: a finished session is replaced at once, so exactly n sessions are alive (tool-time sleeps included).
+  Protocol c_closed: warmup 900 s discarded, 1800 s measured (analysis: summarize closed --warmup-s 900). One run per n
+  (no replicate): the argmax is noisy and is flagged when the runner-up is within 5%. Throughput is both completed
+  sessions/s and turns/s / E[T]; hit fractions and the queue are recorded next to it.
+  KNOWN BIAS (review of 2026-10-21, finding 2; simulator, same protocol): all n sessions start together at t=0, so in
+  the window [900 s, 2700 s) mu(n) is +65% too high at n=300 (session lifetime there is ~6000 s, longer than the run),
+  +17-20% at n=100, and 9-25% too LOW at n=22-30 (the cliff region), where mu(n) is bistable between windows. Do not read
+  n_cap or the window edges off this curve as steady-state values: the argmax is flagged when the runner-up is within 5%
+  and n_cap is only the capped arm's cap. Staggered session ages (not implemented) would remove the bias.
+
+server:
+  base_url: http://127.0.0.1:8000       # overridden by the job script (--set server.base_url=...)
+  model: Qwen/Qwen2.5-7B-Instruct
+  completions_path: /v1/completions
+  request_timeout_s: 7200
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
+  request_token_ids: false              # the job script sets true iff OUTPUT_FEEDBACK=server (REQUIRED item: server ids)
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (required unless MODE=smoke)
+
+arrivals:
+  kind: closed
+  closed_n: 32                          # overridden per run by the job script (N_LIST)
+
+run:
+  duration_s: 2700                      # protocol c_closed: warmup 900 + measure 1800
+  seed: 0
+  max_inflight: 4000                    # n = 300 closed sessions keep <= 300 requests in flight; never reached by design
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"                 # job script sets e.g. sglang-fcfs-r1 / sglang-lpm-r1
+  notes: "Stage C closed-population mu(n), cache on"
+
+output:
+  root: results
+  name: agentload_c_closed
+##### /work/classtmp/avalse/swapp/repo_llama31/configs/agentload_e0_miss.yaml
+research_question: >-
+  E0a (real engine): what is the all-miss capacity lambda_miss (sessions/s) of Qwen2.5-7B-Instruct on one
+  A100-80GB under the simulator's agent workload, with prefix caching DISABLED at the server
+  (SGLang --disable-radix-cache / vLLM --no-enable-prefix-caching)?
+
+assumptions_note: >-
+  Workload constants are the simulator's (configs/prefix_meta.yaml on pilot/prefix-meta): L0=2000, Delta=550,
+  d=100, geometric mean 15 turns (cap 60), Exp(5 s) tool times. Closed population (a completed session is replaced
+  at once), as in the simulator's lambda_miss measurement. Throughput is measured by analysis (miss subcommand) over
+  [warmup_s, end]; the generator itself only logs. Max prompt = 2000 + 59*650 = 40350 tokens exceeds Qwen2.5's
+  default 32768 context: the engine must be launched with a longer context (see slurm/ and the plan, open issue O2).
+
+server:
+  base_url: http://127.0.0.1:8000       # overridden by the job script (--set server.base_url=...)
+  model: Qwen/Qwen2.5-7B-Instruct
+  completions_path: /v1/completions
+  request_timeout_s: 7200
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
+  request_token_ids: false              # set true only if the probe shows the engine returns token ids
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000                 # Qwen2.5 vocab ~151.6k real tokens; stay inside it
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
+
+arrivals:
+  kind: closed
+  closed_n: 32
+
+run:
+  duration_s: 2700                      # protocol e0_miss: warmup 900 + measure 1800 (analysis --warmup-s 900)
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"                 # job script sets e.g. sglang-nocache
+  notes: "E0a lambda_miss, closed population"
+
+output:
+  root: results
+  name: agentload_e0_miss
+##### /work/classtmp/avalse/swapp/repo_llama31/configs/agentload_e0_cap.yaml
+research_question: >-
+  E0b (real engine): up to which arrival rate (multiple of lambda_miss) is the cache-aware engine (SGLang LPM)
+  stable when started from an empty cache and empty queue, i.e. what is lambda_cap and R = lambda_cap / lambda_miss?
+
+assumptions_note: >-
+  Open-loop Poisson sessions at rate_mult * lambda_ref, simulator workload constants. lambda_ref MUST be set to the
+  calibration.json produced by `python -m analysis.summarize miss` (the placeholder below fails loudly).
+  Stability is judged by analysis (stable subcommand), with the simulator's rule: final queue < 50, no upward
+  trend over the last min(5000, run/2) s. Like the simulator's lambda_cap this is a finite-horizon (lifetime)
+  criterion; with 3000 s runs it cannot see escapes that take longer.
+
+server:
+  base_url: http://127.0.0.1:8000
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
+  request_token_ids: false
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
+
+arrivals:
+  kind: constant
+  rate_mult: 1.5                         # overridden per point by the job script
+  lambda_ref: "<RESULTS_DIR>/calibration.json:lambda_miss_turns_based"   # placeholder: set via --set
+
+run:
+  duration_s: 3000
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"
+  notes: "E0b lambda_cap from empty"
+
+output:
+  root: results
+  name: agentload_e0_cap
+##### /work/classtmp/avalse/swapp/repo_llama31/configs/agentload_e2_burst.yaml
+research_question: >-
+  E2 (real engine, paired arms): at the PRE-REGISTERED arrival rates lambda inside the measured metastable window
+  (lambda_miss, min(max_n mu(n), E0b from-empty stability edge)) -- the window comes from Stage C, E0a and E0b, not from fixed
+  multiples -- does a finite arrival burst of 200 sessions trap SGLang FCFS prefix-cache serving (post-burst prefill-token rate
+  stuck at the all-miss rate with a growing backlog), while the no-burst arm stays good and a client-side cap at argmax mu(n)
+  recovers; and, in the grid, do LPM / LPM-without-128-fallback / vLLM FCFS / SGLang waiting-prefix refresh change that?
+
+assumptions_note: >-
+  Burst of 200 sessions within 60 s (the simulator's E2 burst; bursts of >=100 trapped every work-conserving
+  policy in the simulator, bursts of 25 recovered). Timing is the SHORT protocol (deviation D1 in
+  notes/NOVA_PLAN_prefix_meta.md): burst at t=1200 s, run ends 7500 s later (8700 s total) so one run fits a 4 h job;
+  the simulator waited 25000 s after the burst. Analysis must be run with burst.trap_min_s=3000 and
+  burst.hit_eval_from_s=4500 for this protocol (the job script passes these). lambda_ref MUST be set to the
+  calibration.json from E0a (placeholder fails loudly).
+  PAIRED ARMS (common random numbers: same seed => same Poisson arrivals and per-session specs. The content salt is
+  per run IN A JOB (RUN_IDX): with ONE arm per job (how an 8700 s arm fits a 4 h job) every arm gets content_salt=1, so the
+  arms share token content as well as lengths and timing -- harmless, each job starts a fresh server; the salt differs
+  between arms only if several share a job): BURST = this config; NOBURST = arrivals.burst=null (same plan without the burst
+  sessions); CAPPED = BURST plus gate.n_cap (client-side FIFO session cap at argmax mu(n) from Stage C).
+  The kill test is judged by `analysis.summarize burst2` (throughput criterion, kill_verdict_v2.json); the hit-rate
+  rule of `summarize burst` is secondary.
+
+server:
+  base_url: http://127.0.0.1:8000
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
+  request_token_ids: false
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
+
+arrivals:
+  kind: constant
+  rate_mult: 1.6                         # overridden per run by the job script
+  lambda_ref: "<RESULTS_DIR>/calibration.json:lambda_miss_turns_based"   # placeholder: set via --set
+  uncached_tokens_ref: "<RESULTS_DIR>/calibration.json:all_miss_uncached_tokens_per_s"   # placeholder: set via --set (the job script does);
+                                         # E0a's all-miss uncached prefill tokens/s, the reference of trap criterion (a). Analysis only.
+  burst: {n: 200, t_s: 1200, width_s: 60}     # the BURST and CAPPED arms; the NOBURST arm sets arrivals.burst=null
+  analysis_t_burst_s: 1200                    # t_b the post-burst window is anchored to, recorded in EVERY arm (must equal burst.t_s)
+
+gate:
+  n_cap: null                            # CAPPED arm only: int, or "<dir>/mu_curve.json:n_cap" (Stage-C argmax mu(n)); the job script
+                                         # sets it from N_CAP / CAP_FILE. Client-side FIFO gate between session arrival and first request.
+
+run:
+  duration_s: 8700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+canary:                                  # start-state check around every cache flush (python -m agentload canary; also uses
+                                         # this file's server/metrics sections). Metric names are CANDIDATES (unverified).
+  tokens: 1024
+  resident_min_frac: 0.5                 # prime: 2nd identical canary request must report cached_tokens >= 0.5 * tokens
+  max_cached_after_flush: 15             # check: after the flush the canary may hit < 1 vLLM block (16 tokens)
+  idle_wait_s: 120
+  idle_poll_s: 2
+  kv_in_use_max: 0.02
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"                  # e.g. sglang-fcfs-r1 (policy, waiting-prefix-refresh flag)
+  arm: ""                                # burst | noburst | capped (set by the job script; paired arms share seed, rate and plan)
+  notes: "E2 burst"
+
+output:
+  root: results
+  name: agentload_e2_burst
+##### /work/classtmp/avalse/swapp/repo_llama31/configs/agentload_analysis.yaml
+research_question: >-
+  Analysis parameters for real-engine prefix-cache metastability runs (and mock-server tests): per-window
+  hit rate, throughput, queue and latency; burst trap / recovery / hysteresis detection with the same
+  definitions as the simulator (configs/prefix_meta.yaml on branch pilot/prefix-meta) unless noted.
+
+assumptions_note: >-
+  Engine metric names below are CANDIDATES from memory of vLLM/SGLang naming (first present wins). They are not
+  verified against v0.5.22 / v0.32.0; run `python -m agentload probe` (or read metrics_first.txt of the first
+  Nova test job) and edit this list. If no candidate is present the engine-queue columns are NaN and the
+  client-side in-flight count is used as the queue proxy (queue_source column says which).
+
+windows:
+  window_s: 1000.0              # per-window statistics (simulator: metrics.window_s)
+  fine_window_s: 100.0          # queue trace resolution for stability / escape tests (simulator: fine_window_s)
+  attribute_by: complete        # complete | send: which timestamp assigns a request to a window.
+                                # The simulator attributes hit/miss to ADMISSION time, which a client cannot see;
+                                # completion time differs from it by the service time only.
+  cached_frac_threshold: 0.5    # a turn counts as a "hit" when cached_tokens / prompt_tokens > this
+  hit_metric: frac_turns_cached_gt50   # column used as `hit_rate`: frac_turns_cached_gt50 | token_hit_rate
+
+engine_metrics:                 # candidates in priority order; value aggregated across label sets per timestamp
+  waiting:       {names: ["vllm:num_requests_waiting", "sglang:num_queue_reqs", "sglang:num_waiting_reqs"], agg: sum}
+  running:       {names: ["vllm:num_requests_running", "sglang:num_running_reqs"], agg: sum}
+  cache_usage:   {names: ["vllm:kv_cache_usage_perc", "vllm:gpu_cache_usage_perc", "sglang:token_usage"], agg: mean}
+  hit_gauge:     {names: ["sglang:cache_hit_rate", "vllm:gpu_prefix_cache_hit_rate"], agg: mean}
+  hit_counter:   {names: ["vllm:prefix_cache_hits_total", "vllm:prefix_cache_hits"], agg: sum}
+  query_counter: {names: ["vllm:prefix_cache_queries_total", "vllm:prefix_cache_queries"], agg: sum}
+client_queue_proxy: agentload:inflight_requests   # logged by the poller; also recomputed exactly from requests.csv
+
+burst:                          # simulator e2 block (trap_*, recovered_*, hit_eval_from_s) and its tail window
+  trap_hit_below: 0.2           # a window with hit rate < this is "trapped"
+  trap_min_s: 10000.0           # trapped = longest run of such consecutive windows after the burst >= this long.
+                                # SIMULATOR VALUE. 10 windows do not fit a 4 h job after warmup; the plan config
+                                # for Nova overrides this (see notes/NOVA_PLAN_prefix_meta.md, deviation D1).
+  hit_eval_from_s: 10000.0      # hit rate is evaluated on [t_burst + this, end of run]
+  recovered_hit_above: 0.8
+  recovered_queue_below: 20.0
+  tail_window_s: 5000.0         # "last 5k s" for the tail queue mean (capped at half the run)
+  good_before_hit_above: 0.5    # NOT in the simulator's e2 columns (it checked pre-burst state separately):
+  good_before_queue_below: 20.0 # pre-burst state is "good" if aggregated hit > this and mean queue < this
+  good_before_from_s: 0.0       # windows with t_start >= this and t_end <= t_burst are the pre-burst state
+  aborted_trap_last_windows: 3  # run aborted for overload: trapped_aborted if the last k complete post-burst
+                                # windows all have hit rate < trap_hit_below
+
+stability:                      # simulator e0 block (stable_*): used for lambda_cap from open-loop runs from empty
+  stable_final_queue_below: 50
+  stable_trend_window_s: 5000.0
+  stable_trend_max_rise: 10.0   # fitted rise (OLS slope * window) of the fine queue means must be <= this
+
+escape:                         # simulator e3 block: escape / re-entry from the fine queue trace
+  escape_queue_above: 128
+  reentry_queue_below: 20
+  reentry_bins: 5
+
+kill:
+  lam_mult_open_interval: [1.2, 2.0]   # the kill criterion's lambda range, in multiples of lambda_miss
+  trapped_fraction_min: 0.6666666666666666
+  min_runs_per_cell: 3
+
+trap_v2:                        # THROUGHPUT-BASED trap criterion and PASS rule of the paired kill test (kill_verdict_v2.json).
+                                # Referee-requested (notes/REFEREE_prefix_meta.md, "Kill-test design changes"). These values are
+                                # copied into configs/agentload_prereg_template.yaml; `summarize burst2 --prereg FILE` errors if
+                                # the registered rule differs from the one applied. All rates are sessions/s.
+  eval_from_s: 4500.0           # post-burst evaluation window = [t_b + eval_from_s, end of run] (short protocol; job script
+                                # passes HIT_EVAL_FROM_S). A window shorter than min_eval_s makes the run indeterminate.
+  min_eval_s: 600.0
+  rate_estimator: uncached_tokens # the "completion rate" of criterion (a): uncached_tokens (uncached prefill tokens/s over the window,
+                                # vs E0a's all-miss uncached tokens/s = arrivals.uncached_tokens_ref; DEFAULT) | sessions (last-turn
+                                # completions / s vs lambda_miss) | turns_based (ok turns / s / E[T] vs lambda_miss). All three are
+                                # always written to the output; this key decides the verdict. REGISTERED in the pre-registration.
+                                # Why tokens: in a trap with a growing backlog the sessions in progress are young and early turns
+                                # have short prompts, so sessions/s runs ABOVE the closed-population lambda_miss. Simulator traps,
+                                # span [t_b+5000, t_b+8000), lambda = 1.5 / 2 / 2.5 x lambda_miss (16 / 29 / 39 trapped runs): sessions
+                                # /s = 1.17 / 1.34 / 1.52 x lambda_miss, (a) fires in 38% / 0% / 0%; prefill tokens/s = 1.03 / 1.05 /
+                                # 1.07 x the all-miss rate, (a) fires in 100% (results/agentload_trap_sim_traces). FIX BEFORE
+                                # PRE-REGISTERING.
+  rate_tolerance: 0.15          # (a) trapped needs |rate/reference - 1| <= rate_tolerance (reference: E0a's all-miss uncached tokens/s, or
+                                # lambda_miss for the session/turn estimators)
+  slope_frac: 0.5               # (b) trapped needs backlog slope > slope_frac * (lambda - lambda_miss); both sides in sessions/s.
+                                # OPEN DECISION (lead): with (a) in token units, (b) no longer follows from (a). On the simulator's
+                                # traps (b) fires, by conservation, in 69% / 100% / 100% of true traps at lambda = 1.5 / 2 / 2.5 x
+                                # lambda_miss, so the pair (a and b) is weak at 1.5 x. Not changed here (it would be tuning on the
+                                # simulator); register lambda points >= 2 x, or decide a different slope_frac BEFORE registering.
+  slope_dt_s: 10.0              # backlog (client sessions in flight incl. gate) is averaged in bins of this width, OLS slope on bin means
+  recovered_hit_above: 0.8      # RECOVERED / "good": hit fraction > this ...
+  recovered_backlog_below: 20.0 # ... and backlog < this, both over the last end_window_s
+  recovered_backlog_metric: outstanding   # outstanding = requests in flight + sessions waiting at the client gate (the analogue of the
+                                # simulator's "waiting queue + gate" < 20; excludes sessions asleep in tool time) | sessions =
+                                # sessions in the system (arrived minus ended; includes tool-time sleepers, and in a saturated
+                                # CAPPED arm the n_cap admitted sessions, so it can never be < 20 while n_cap >= 20). Both are
+                                # always written (backlog_end, outstanding_end). REGISTERED.
+  end_window_s: 300.0
+  pass_fraction_min: 0.6666666666666666   # PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= this fraction of seeds
+  min_seeds: 3
+  trace_bin_s: 50.0             # resolution of backlog_trace.csv (plots only; not used by the verdict)
+
+closed:                         # Stage C: closed-population mu(n) with the prefix cache ON (summarize closed)
+  warmup_s: 900.0                       # discarded at the start of every run (measure window = the rest: 1800 s in the plan)
+  n_grid: [16, 20, 24, 32, 48, 96, 300] # FCFS cell; a missing n is flagged (complete_grid). 20 added: the simulator's mu(n) peaks sharply at
+                                        # n = 20-22, the grid {16, 24, 32} straddled it and the argmax flipped between 16 (transient window)
+                                        # and 24 (steady state) with a 1.6% margin
+  lpm_n: [48, 300]                      # LPM cell
+  n_inf: 300                            # mu(n_inf) stands for mu(infinity). CHECK ONLY: all n sessions start at t=0, so in the 1800 s window
+                                        # mu(300) is transient-inflated (simulator +65%); the registered recovery threshold is lambda_miss
+  mu_estimator: sessions                # decides argmax mu(n) = n_cap and mu_300: sessions (completions/s, literal) | turns_based
+  argmax_margin_warn: 0.05              # flag n_cap as ambiguous if the runner-up is within this relative margin (1 run per n)
+
+output:
+  root: results
+  name: agentload_analysis
+============================================

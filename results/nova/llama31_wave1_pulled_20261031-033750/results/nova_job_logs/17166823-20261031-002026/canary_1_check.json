@@ -1,0 +1,26 @@
+{
+  "cache_expected": false,
+  "exit_code": 0,
+  "idle": {
+    "idle": true,
+    "kv_in_use": {
+      "metric": "sglang:token_usage",
+      "value": 0.0
+    },
+    "n_categories_known": 3,
+    "running": {
+      "metric": "sglang:num_running_reqs",
+      "value": 0.0
+    },
+    "waited_s": 0.02,
+    "waiting": {
+      "metric": "sglang:num_queue_reqs",
+      "value": 0.0
+    }
+  },
+  "ok": true,
+  "phase": "check",
+  "reason": "idle verified (prefix caching not expected: no canary hit test)",
+  "salt": 900001,
+  "tokens": 1024
+}

@@ -1,0 +1,26 @@
+hostname: nova22-27  date: 2026-10-30T18:25:58-05:00  job: 17166805 account=f2026.coms.6250.02 partition=instruction qos=instruction
+Fetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 10 files:  10%|█         | 1/10 [00:00<00:02,  4.35it/s]Fetching 10 files:  50%|█████     | 5/10 [00:00<00:00, 13.99it/s]Fetching 10 files:  70%|███████   | 7/10 [00:11<00:06,  2.21s/it]Fetching 10 files:  80%|████████  | 8/10 [00:35<00:13,  6.73s/it]Fetching 10 files: 100%|██████████| 10/10 [00:35<00:00,  3.54s/it]
+Fetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]Fetching 10 files: 100%|██████████| 10/10 [00:00<00:00, 1394.57it/s]
+downloaded to /work/classtmp/avalse/swapp/hf/hub/models--NousResearch--Meta-Llama-3.1-8B-Instruct/snapshots/d10aef7999a2b5ba950ab3974312feeedbfe0b77
+RESOLVED_REVISION d10aef7999a2b5ba950ab3974312feeedbfe0b77
+refs/main: d10aef7999a2b5ba950ab3974312feeedbfe0b77
+total 8
+drwxrwsr-x. 2 avalse nova-classlist-flat 12 Oct 30 18:26 .
+drwxrwsr-x. 3 avalse nova-classlist-flat  3 Oct 30 18:25 ..
+lrwxrwxrwx. 1 avalse nova-classlist-flat 52 Oct 30 18:25 config.json -> ../../blobs/0bb6fd75b3ad2fe988565929f329945262c2814e
+lrwxrwxrwx. 1 avalse nova-classlist-flat 52 Oct 30 18:25 generation_config.json -> ../../blobs/cc7276afd599de091142c6ed3005faf8a74aa257
+lrwxrwxrwx. 1 avalse nova-classlist-flat 76 Oct 30 18:26 model-00001-of-00004.safetensors -> ../../blobs/2b1879f356aed350030bb40eb45ad362c89d9891096f79a3ab323d3ba5607668
+lrwxrwxrwx. 1 avalse nova-classlist-flat 76 Oct 30 18:26 model-00002-of-00004.safetensors -> ../../blobs/09d433f650646834a83c580877bd60c6d1f88f7755305c12576b5c7058f9af15
+lrwxrwxrwx. 1 avalse nova-classlist-flat 76 Oct 30 18:26 model-00003-of-00004.safetensors -> ../../blobs/fc1cdddd6bfa91128d6e94ee73d0ce62bfcdb7af29e978ddcab30c66ae9ea7fa
+lrwxrwxrwx. 1 avalse nova-classlist-flat 76 Oct 30 18:26 model-00004-of-00004.safetensors -> ../../blobs/92ecfe1a2414458b4821ac8c13cf8cb70aed66b5eea8dc5ad9eeb4ff309d6d7b
+lrwxrwxrwx. 1 avalse nova-classlist-flat 52 Oct 30 18:25 model.safetensors.index.json -> ../../blobs/0fd8120f1c6acddc268ebc2583058efaf699a771
+lrwxrwxrwx. 1 avalse nova-classlist-flat 52 Oct 30 18:25 special_tokens_map.json -> ../../blobs/02ee80b6196926a5ad790a004d9efd6ab1ba6542
+lrwxrwxrwx. 1 avalse nova-classlist-flat 52 Oct 30 18:26 tokenizer_config.json -> ../../blobs/421cda369d1e01e742b01d82e3a39c7cc82a8586
+lrwxrwxrwx. 1 avalse nova-classlist-flat 52 Oct 30 18:26 tokenizer.json -> ../../blobs/5cc5f00a5b203e90a27a3bd60d1ec393b07971e8
+15G	/work/classtmp/avalse/swapp/hf/hub/models--NousResearch--Meta-Llama-3.1-8B-Instruct/snapshots/d10aef7999a2b5ba950ab3974312feeedbfe0b77
+model-00001-of-00004.safetensors: OK
+model-00002-of-00004.safetensors: OK
+model-00003-of-00004.safetensors: OK
+model-00004-of-00004.safetensors: OK
+DOWNLOAD_DONE 2026-10-30T18:26:57-05:00
