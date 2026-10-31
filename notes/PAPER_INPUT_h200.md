@@ -76,6 +76,25 @@ Setup facts:
 
 F2 P(unstable) at the six E0b multiples is 0.04, 0.12, 0.28, 0.52, 0.84 and 0.98, which gives a log-likelihood of −1.36 for the observed S S S U U U. None of the three refutation rules fires. These are this session's readings of the frozen JSON; the theory session does the official scoring.
 
+## Supplementary 12-point curve (blind test of the theory's cliff; not used for registration)
+
+- **Jobs:** 17169612–14 (n = 36, 44, 52), submitted 02:33 CDT, after the theory's push at 02:05:30.
+- **Combine:** `results/agentload_analysis_closed_supp12/20261031-040909/mu_curve.json`, under HP2 = `results/nova/h200_stageC_extra_1716961x_pulled_20261031-040933/` (archive sha256 `c069b0b8…`).
+
+| n | 36 | 44 | 52 |
+|---|---|---|---|
+| μ sessions/s | 0.374 | 0.299 | 0.269 |
+| μ turns-based | 0.354 | 0.280 | 0.250 |
+| hit (turns) | 0.613 | 0.318 | 0.156 |
+| r13 μ turns-based (fluid / annealed) | 0.359 / 0.348 | 0.197 / 0.221 | 0.197 / 0.198 |
+| r13 hit (fluid / annealed) | 0.56 / 0.53 | 0.00 / 0.08 | 0.00 / 0.00 |
+
+- The peak stays at n = 32; n = 36 is within 3.2 %.
+- The 0.5-hit crossing is ≈ 38.9.
+- The theory matches to n = 36. Past the midpoint the real tail is gradual: hit 0.32 and 0.16 at n = 44 and 52, where the theory is all-miss, and μ 1.27–1.29 × the annealed prediction.
+- No refutation rule is affected.
+- **Suggested sentence:** "On the H200 the collapse is a slide rather than a cliff: hit falls from 0.74 at n = 32 to 0.16 at n = 52, whereas the fluid model, which matches the rising branch and the peak blind, goes all-miss by n ≈ 42."
+
 ## Caveats
 
 - **One run per n and per multiple.** The 1.4 × run ended at queue 50.4, just above the threshold of 50 (its trend +48.6 is clearly rising). One more seed could move the edge, but even at hi = 1.4 the rule gives 1.15 and 1.25 against a band of (1.1, 1.26). That registers only because 1.25 < 1.26.
@@ -83,7 +102,7 @@ F2 P(unstable) at the six E0b multiples is 0.04, 0.12, 0.28, 0.52, 0.84 and 0.98
 - **Backend.** fa3 on the H200 vs FlashInfer on the A100, the deployed default per GPU. The comparison is GPU-plus-default-backend, not GPU alone.
 - **Blindness.** The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell operator and Akshat at about 22:28 CDT, and not by the lead or the theory agents. n ≥ 40 and the E0b edge are fully blind.
 - **The checker's a-priori estimate** (μ_max/λ_ref 1.2–1.7, hi 1.1–1.5; written in COORD 2026-10-30 ~18:20 before any H200 job, not committed) is not a blind prediction by the project's standard. Its premise was a cliff at n ≈ 24–28 on either GPU, and the cliff moved out to about 39.
-- **Extra Stage C.** Jobs 17169612–14 (n = 36, 44, 52) were submitted at the lead's request after the combine and are not part of these numbers. They will be pulled separately.
+- **Extra Stage C.** Jobs 17169612–14 (n = 36, 44, 52) were submitted at the lead's request after the combine. They are not part of the registration numbers; see the supplementary section above.
 
 ## Suggested text (one paragraph, e.g. for the generality / limits section)
 

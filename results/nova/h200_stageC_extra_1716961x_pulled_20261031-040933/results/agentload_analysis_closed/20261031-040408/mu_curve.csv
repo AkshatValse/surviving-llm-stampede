@@ -1,0 +1,2 @@
+label,n,n_runs,mu_sessions,mu_turns_based,turns_per_s,hit_frac_turns,cached_frac_tokens,queue_mean
+sglang-fcfs-r1-h200,52,1,0.2694434164345974,0.2500188138659985,3.6905414750000634,0.15625470419990967,0.13975683015013407,15.336111111111109

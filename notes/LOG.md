@@ -679,3 +679,27 @@ Data: `results/nova/h200_wave1_pulled_20261031-023416/` (`d108056`; archive sha2
 
 **Interpretation:** The H200 neither refutes nor tests the mechanism. At this pool the window is too narrow for the registered rule to place two λ points at least 10 % from its edges, so no paired kill test was run. What the cell does show is that the window is not a property of the engine alone. It depends on the ratio of the pool-limited peak to the compute-limited all-miss rate. At a fixed pool and tool time, a faster GPU raises λ_miss more than it raises the peak, and the window compresses from 1.0 to 0.3 λ_miss. A larger pool widens it: 5.5 × for the A100 native pool.
 **Extra Stage C (submitted after this entry's data, at the lead's request):** 17169612–14 (n = 36, 44, 52, one n per job, same protocol and label, nice 0), to bracket the theory's predicted cliff. Their predictions are frozen in `r13-theory-pred`, so they are blind. They are not part of the nine-point curve above or of the registration check.
+
+## 2026-10-31 — H200 300k: three extra Stage C points (n = 36, 44, 52) are a blind test of the r13 cliff; the real cliff past n ≈ 38 is gradual, not abrupt
+**Question:** Where exactly does the H200 300k curve fall, and does the frozen r13 theory's predicted all-miss onset (n_b 41.3; n_half 37.3) hold between the measured grid points 32, 40 and 48?
+**Setup:** Jobs 17169612 (n = 36), 17169613 (44) and 17169614 (52), at the lead's request. They are one n per job, with the same protocol, label (`sglang-fcfs-r1-h200`), clone (`repo_h200` at `5a6fbcd`) and `--time=01:30:00` as the nine Stage C jobs, at nice 0. All COMPLETED 0:0 on nova25-gpu-3 (starts 02:39, 02:50, 03:15 CDT). The theory's predictions were pushed at 02:05:30 (`r13-theory-pred`), before submission (02:33), so these points are blind on everyone's side. Supplementary 12-point curve on the login node: `summarize closed --primary-label sglang-fcfs-r1-h200 --name agentload_analysis_closed_supp12` over the nine runs plus these three → `agentload_analysis_closed_supp12/20261031-040909` (no guard warnings). Data: `results/nova/h200_stageC_extra_1716961x_pulled_20261031-040933/` (archive sha256 `c069b0b8…` checked at both ends, remote archive deleted). The registration check (nine-point curve, `prereg/inputs/2026-10-31-h200/`) is unchanged.
+**Result:**
+
+| n | 32 | 36 | 40 | 44 | 48 | 52 |
+|---|---|---|---|---|---|---|
+| μ sessions/s | 0.386 | **0.374** | 0.329 | **0.299** | 0.274 | **0.269** |
+| μ turns-based | 0.367 | **0.354** | 0.312 | **0.280** | 0.259 | **0.250** |
+| hit fraction (turns) | 0.744 | **0.613** | 0.456 | **0.318** | 0.215 | **0.156** |
+| r13 μ turns-based, fluid / annealed | 0.377 / 0.371 | 0.359 / 0.348 | 0.257 / 0.278 | 0.197 / 0.221 | 0.197 / 0.201 | 0.197 / 0.198 |
+| r13 hit, fluid / annealed | 0.70 / 0.69 | 0.56 / 0.53 | 0.27 / 0.28 | 0.00 / 0.08 | 0.00 / 0.01 | 0.00 / 0.00 |
+
+The peak stays at n = 32; n = 36 is the new runner-up, within 3.2 %. The 0.5-hit crossing is ≈ 38.9 (linear between 36 and 40; 38.8 from the nine-point curve).
+**Against the frozen theory:**
+- Up to n = 36 the theory is close: μ within 2 % (annealed −1.6 %), hit 0.53–0.56 against 0.61.
+- From n = 40 on, the real curve falls gradually and the theory falls abruptly. At n = 44, 48 and 52 the theory is all-miss (hit ≤ 0.08), but the real hit is still 0.32, 0.22 and 0.16. Real μ is 1.27–1.29 × the annealed prediction at the three points, 1.29–1.45 × λ_miss (turns-based) against the theory's floor of 1.0.
+- The predicted all-miss onset n_b = 41.3 is therefore too early. Measured hit only reaches 0 somewhere between n = 52 and 96.
+- No refutation rule fires: the rules test the window, hit(32) and hit(48), and these points do not change any of them.
+- This matches the theory's own stated likeliest failure mode (open problem 2 in `PREDICTIONS_r13_theory.md`): its eviction-age assumption does not concentrate at this pool on the H200.
+
+**Verified vs. not:** Verified: the three accounting records, the archive hash, the 12-run combine (no guards). Not verified: seed-to-seed spread (one run per n).
+**Interpretation:** The fluid model gets the rising branch and the peak of the H200 curve right blind, and the cliff's midpoint to within about 1.5 sessions. It does not get the tail past the midpoint. The real engine keeps a partial hit rate (0.16–0.32) well past the model's all-miss onset. The model treats eviction as a sharp threshold; on the real engine it is spread out. For the window this matters little, because the window is set by the peak and the E0b edge. For the paper's mechanism text, the all-miss collapse is a gradual slide on the H200 (hit 0.74 → 0.16 over n = 32–52), not a cliff at a single n.
