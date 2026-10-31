@@ -36,7 +36,7 @@ Fig. 1 = F1 (`fig:e2`), 2 = F8 (`fig:fpmu`), 3 = F2 (`fig:curve`), 4 = F3 (`fig:
 | `fig5_robustness.pdf` | 3.40 x 4.09 | single |
 | `fig6_policy_grid.pdf` | 3.40 x 3.32 | single |
 | `fig7_e2_native_timeseries.pdf` | 7.00 x 3.60 | double |
-| `fig8_theory_curves.pdf` | 7.20 x 2.50 | double |
+| `fig8_theory_curves.pdf` | 7.00 x 2.45 | double |
 | `fig9_theory_scaling.pdf` | 7.20 x 2.50 | double |
 | `fig10_theory_fixed_points.pdf` | 7.20 x 2.45 | double |
 
@@ -340,6 +340,11 @@ are byte-identical to their committed versions (SHA-256 checked before and after
 - F8 (`fig:fpmu`, Section 4): the predicted closed curve mu(n), fluid and F1, against the measured Stage C points (sessions/s and
   turns-based) for SGLang 300k, SGLang with the native pool and vLLM 300k; dotted line at the predicted all-miss onset n_b,
   dash-dotted at lambda_ref. n = 300 is not drawn (a synchronized-start transient). No measured mu(n) point is an input of the curve.
+  Fix-up 1 of fill 2 (2026-10-31): a fourth panel shows the frozen H200 300k prediction (`results/theory/merged/h200_300k.json`)
+  against the measured H200 curve (`results/nova/h200_stageC_extra_1716961x_pulled_20261031-040933/results/agentload_analysis_closed_supp12/20261031-040909/mu_curve.csv`),
+  with n <= 32 shaded (seen by the first author before the freeze) and n = 36, 44, 52 ringed (blind in time); F8 now uses the serif
+  style of `_style.py` and F2's logarithmic n axis (ticks 16-96, cut at 140), and is 7.00 x 2.45 in. F9 (a) also plots the measured
+  H200 peak ratio (0.367218 and 0.386109 sessions/s over lambda_ref 0.193877). F10 is byte-identical.
 - F9 (`fig:fpscale`, Section 7): (a) the fluid peak ratio in model units, mu* / mu_b, against s zbar, with the A100's measured ratios
   (turns-based and sessions/s; measured in units of lambda_ref = 0.07153 from E0a, which lies 0.4% below the model's mu_b = 0.07184) and the frozen
   H200 prediction (s = 2.742); (b) the peak ratio against the pool M, with the two measured A100 pools and the frozen 150k and 600k
@@ -349,8 +354,8 @@ are byte-identical to their committed versions (SHA-256 checked before and after
   with n_1 = 10.4, n_2 = 31.8, n_b = 32.7 and the trap (n grows at lambda - mu_b); (b) the closed-system feedback map Phi_n(h) at
   n = 33.5 > n_b for exponential 5 s tool times (one stationary state, all-miss) and for 0.5 Exp(1 s) + 0.5 Exp(9 s) of the same mean
   (three: all-miss and good stable, one unstable); (c) the two closed curves, with the fold of the mixture above n_b (band
-  32.698-34.177 in `fixed_points.csv`). Panel (c) labels the band "bistable band", which is the closed system of Proposition 5 (a proof
-  sketch in the paper), not the open system.
+  32.698-34.177 in `fixed_points.csv`). Panel (c) labels the band "bistable band", which is the closed system of Proposition 7, the fold identity (Proposition 5 before fix-up 2 of fill 2,
+  which moved it to Appendix F; a proof sketch in the paper), not the open system.
 
 ---
 
