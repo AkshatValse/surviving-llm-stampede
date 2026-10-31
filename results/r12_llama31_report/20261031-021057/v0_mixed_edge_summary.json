@@ -1,0 +1,27 @@
+{
+  "workloads": {
+    "exp5": {
+      "label": "Exp(5 s) (record)",
+      "lambda_miss_turns": 0.07218695086154546,
+      "hi": 2.0,
+      "hi_largest_all_stable": 2.0,
+      "contiguous_equals_largest": true,
+      "refined": false,
+      "window_empty": false,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "n_seeds": 10,
+      "n_stable_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 6,
+        "3": 1
+      }
+    }
+  },
+  "lambda_miss_dir": "results\\r12_llama31_v0_mixed\\r7_lambda_miss\\20261031-020754"
+}
