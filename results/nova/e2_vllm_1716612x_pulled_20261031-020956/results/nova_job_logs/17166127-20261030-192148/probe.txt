@@ -1,0 +1,98 @@
+--- request 1: HTTP 200
+{"id":"cmpl-874af57915bfeba0","object":"text_completion","created":1793406175,"model":"Qwen/Qwen2.5-7B-Instruct","choices":[{"index":0,"text":"en\ntary\n 10","logprobs":null,"finish_reason":"length","stop_reason":null,"token_ids":null,"prompt_logprobs":null,"prompt_token_ids":null,"routed_experts":null}],"service_tier":null,"system_fingerprint":"vllm-0.32.0-932caac9","usage":{"prompt_tokens":64,"total_tokens":72,"completion_tokens":8,"prompt_tokens_details":{"cached_tokens":0,"created_cache_tokens":null,"multimodal_tokens":null},"completion_tokens_details":null},"kv_transfer_params":null,"ec_transfer_params":null,"metrics":null}
+parsed: {"prompt_tokens": 64, "completion_tokens": 8, "cached_tokens": 0, "cached_source": "usage.prompt_tokens_details", "raw_usage_json": "{\"usage\":{\"completion_tokens\":8,\"completion_tokens_details\":null,\"prompt_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":0,\"created_cache_tokens\":null,\"multimodal_tokens\":null},\"total_tokens\":72}}"}
+--- request 2: HTTP 200
+{"id":"cmpl-802431260a0a22ad","object":"text_completion","created":1793406175,"model":"Qwen/Qwen2.5-7B-Instruct","choices":[{"index":0,"text":"en\ntary\n 10","logprobs":null,"finish_reason":"length","stop_reason":null,"token_ids":null,"prompt_logprobs":null,"prompt_token_ids":null,"routed_experts":null}],"service_tier":null,"system_fingerprint":"vllm-0.32.0-932caac9","usage":{"prompt_tokens":64,"total_tokens":72,"completion_tokens":8,"prompt_tokens_details":{"cached_tokens":48,"created_cache_tokens":null,"multimodal_tokens":null},"completion_tokens_details":null},"kv_transfer_params":null,"ec_transfer_params":null,"metrics":null}
+parsed: {"prompt_tokens": 64, "completion_tokens": 8, "cached_tokens": 48, "cached_source": "usage.prompt_tokens_details", "raw_usage_json": "{\"usage\":{\"completion_tokens\":8,\"completion_tokens_details\":null,\"prompt_tokens\":64,\"prompt_tokens_details\":{\"cached_tokens\":48,\"created_cache_tokens\":null,\"multimodal_tokens\":null},\"total_tokens\":72}}"}
+--- request 3 (return_token_ids=true): HTTP 200
+{"id":"cmpl-88a7845b2fd8baef","object":"text_completion","created":1793406175,"model":"Qwen/Qwen2.5-7B-Instruct","choices":[{"index":0,"text":"en\ntary\n 10","logprobs":null,"finish_reason":"length","stop_reason":null,"token_ids":[268,198,83,658,198,220,16,15],"prompt_logprobs":null,"prompt_token_ids":[1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1021,1022,1023,1024,1025,1026,1027,1028,1029,1030,1031,1032,1033,1034,1035,1036,1037,1038,1039,1040,1041,1042,1043,1044,1045,1046,1047,1048,1049,1050,1051,1052,1053,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063],"routed_experts":null}],"service_tier":null,"system_fingerprint":"vllm-0.32.0-932caac9","usage":{"prompt_tokens":64,"total_tokens":72,"completion_tokens":8,"prompt_tokens_details":{"cached_tokens":48,"created_cache_tokens":null,"multimodal_tokens":null},"completion_tokens_details":null},"kv_transfer_params":null,"ec_transfer_params":null,"metrics":null}
+--- /metrics HTTP 200; 88 names with prefixes ['vllm:', 'sglang:']:
+vllm:admission_rejections_created
+vllm:admission_rejections_total
+vllm:cache_config_info
+vllm:e2e_request_latency_seconds_count
+vllm:e2e_request_latency_seconds_created
+vllm:e2e_request_latency_seconds_sum
+vllm:engine_sleep_state
+vllm:estimated_flops_per_gpu_created
+vllm:estimated_flops_per_gpu_total
+vllm:estimated_read_bytes_per_gpu_created
+vllm:estimated_read_bytes_per_gpu_total
+vllm:estimated_write_bytes_per_gpu_created
+vllm:estimated_write_bytes_per_gpu_total
+vllm:external_prefix_cache_hits_created
+vllm:external_prefix_cache_hits_total
+vllm:external_prefix_cache_queries_created
+vllm:external_prefix_cache_queries_total
+vllm:generation_tokens_created
+vllm:generation_tokens_total
+vllm:inter_token_latency_seconds_count
+vllm:inter_token_latency_seconds_created
+vllm:inter_token_latency_seconds_sum
+vllm:iteration_tokens_total_count
+vllm:iteration_tokens_total_created
+vllm:iteration_tokens_total_sum
+vllm:kv_cache_usage_perc
+vllm:mm_cache_hits_created
+vllm:mm_cache_hits_total
+vllm:mm_cache_queries_created
+vllm:mm_cache_queries_total
+vllm:num_preemptions_created
+vllm:num_preemptions_total
+vllm:num_requests_running
+vllm:num_requests_waiting
+vllm:num_requests_waiting_by_reason
+vllm:prefix_cache_hits_created
+vllm:prefix_cache_hits_total
+vllm:prefix_cache_queries_created
+vllm:prefix_cache_queries_total
+vllm:prompt_tokens_by_source_created
+vllm:prompt_tokens_by_source_total
+vllm:prompt_tokens_cached_by_source_created
+vllm:prompt_tokens_cached_by_source_total
+vllm:prompt_tokens_cached_created
+vllm:prompt_tokens_cached_total
+vllm:prompt_tokens_created
+vllm:prompt_tokens_total
+vllm:request_decode_time_seconds_count
+vllm:request_decode_time_seconds_created
+vllm:request_decode_time_seconds_sum
+vllm:request_generation_tokens_count
+vllm:request_generation_tokens_created
+vllm:request_generation_tokens_sum
+vllm:request_inference_time_seconds_count
+vllm:request_inference_time_seconds_created
+vllm:request_inference_time_seconds_sum
+vllm:request_max_num_generation_tokens_count
+vllm:request_max_num_generation_tokens_created
+vllm:request_max_num_generation_tokens_sum
+vllm:request_num_preemptions_count
+vllm:request_num_preemptions_created
+vllm:request_num_preemptions_sum
+vllm:request_params_max_tokens_count
+vllm:request_params_max_tokens_created
+vllm:request_params_max_tokens_sum
+vllm:request_params_n_count
+vllm:request_params_n_created
+vllm:request_params_n_sum
+vllm:request_prefill_kv_computed_tokens_count
+vllm:request_prefill_kv_computed_tokens_created
+vllm:request_prefill_kv_computed_tokens_sum
+vllm:request_prefill_time_seconds_count
+vllm:request_prefill_time_seconds_created
+vllm:request_prefill_time_seconds_sum
+vllm:request_prompt_tokens_count
+vllm:request_prompt_tokens_created
+vllm:request_prompt_tokens_sum
+vllm:request_queue_time_seconds_count
+vllm:request_queue_time_seconds_created
+vllm:request_queue_time_seconds_sum
+vllm:request_success_created
+vllm:request_success_total
+vllm:request_time_per_output_token_seconds_count
+vllm:request_time_per_output_token_seconds_created
+vllm:request_time_per_output_token_seconds_sum
+vllm:time_to_first_token_seconds_count
+vllm:time_to_first_token_seconds_created
+vllm:time_to_first_token_seconds_sum
+PROBE_SUMMARY {"metrics_http": 200, "n_metric_names": 88, "output_ids_path": "choices.0.token_ids", "output_ids_present": true, "prompt_tokens_sent": 64, "request1_cached_source": "usage.prompt_tokens_details", "request1_cached_tokens": 0, "request1_http": 200, "request1_prompt_tokens": 64, "request2_cached_source": "usage.prompt_tokens_details", "request2_cached_tokens": 48, "request2_http": 200, "request2_prompt_tokens": 64, "return_token_ids_http": 200}

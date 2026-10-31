@@ -1,0 +1,7 @@
+rate_mult,seed,run_dir,gate_empty_after_burst_s,predicted_drain_s,ratio_to_predicted,n_at_burst,fluid_drain_s,ratio_to_fluid,max_gate_wait_s
+1.35,0,results/agentload_e2_burst/20261030-171912,1550.3,1529.07,1.01388,5,1414.39,1.09609,859.302
+1.35,1,results/agentload_e2_burst/20261030-193321,1521.29,1529.07,0.994909,10,1452.62,1.04727,895.183
+1.35,2,results/agentload_e2_burst/20261030-205613,2027.3,1529.07,1.32584,11,1460.26,1.38831,1052.66
+1.65,0,results/agentload_e2_burst/20261030-185624,2735.35,1800.19,1.51948,6,1674.17,1.63385,892.131
+1.65,1,results/agentload_e2_burst/20261030-205158,1847.53,1800.19,1.0263,8,1692.18,1.0918,902.374
+1.65,2,results/agentload_e2_burst/20261030-215216,2218.91,1800.19,1.2326,8,1692.18,1.31128,1052.09
