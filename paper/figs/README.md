@@ -23,8 +23,8 @@ Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms).
 | file | width x height (in) | column |
 |---|---|---|
 | `fig1_e2_timeseries.pdf` | 7.00 x 3.90 | double |
-| `fig2_thrashing_curve.pdf` | 7.00 x 4.00 | double |
-| `fig3_from_empty_stability.pdf` | 3.40 x 4.75 | single |
+| `fig2_thrashing_curve.pdf` | 7.00 x 4.55 | double |
+| `fig3_from_empty_stability.pdf` | 3.40 x 4.30 | single |
 | `fig4_mechanisms.pdf` | 7.00 x 3.47 | double |
 | `fig5_robustness.pdf` | 3.40 x 4.09 | single |
 | `fig6_policy_grid.pdf` | 3.40 x 3.32 | single |
@@ -33,6 +33,12 @@ Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms).
 Changed on 2026-10-26 (native pool and vLLM results): F2 gains the B4n curve and the native cap; F3 gains a native-pool panel
 (native E0b against B2n); F6 gains a vLLM row; F7 is new. F1 was refactored into a function (`draw`) that F7 calls; F1's PDF is
 byte-identical to the previous build. F4 and F5 are unchanged.
+
+Changed on 2026-10-30 (vLLM's own curve and edge, inputs at `582c2a6`): F2 gains a third column, vLLM 0.32.0 at the 300k-token pool
+(vLLM Stage C against the blind prediction B4v), and F3 a third panel (vLLM E0b against the blind prediction B2v). The SGLang data in
+both figures are unchanged; only their layout changed (details under F2 and F3). F3 is shorter than before (4.30 in against 4.75 in)
+although it has three panels: with the default `\topfraction` of 0.7, a single-column top float may be at most 0.7 x 9.5 in = 6.65 in
+including its caption, and a 4.75 in figure with a ten-line caption is pushed to the end of the paper (checked in a scratch build).
 
 ---
 
@@ -78,46 +84,110 @@ Not in the notes, visible here: while the gate drains the 200-session burst, the
 
 ## F2 `fig2_thrashing_curve.pdf` (script `figures/paper/fig2_thrashing_curve.py`)
 
-**Shows.** The closed-population thrashing curve of the real engine, mu(n) in completed sessions/s (top; filled circles; small plus signs =
-the lower-variance turns-based estimate) and hit fraction (bottom), against the simulator. Left: 300k-token pool (Stage C), simulator =
-round-6 calibrated simulator, mixed batching, 17-point grid, mean of the 3 registered seeds +- 1 s.e. (VALIDATION.md section 5, fine grid).
-Right: native pool (955,757 tokens as sized by SGLang), simulator = blind prediction B4 at the nearest simulated pool (900k tokens,
-registered seed 0, frozen before any native run; the real pool is 6% larger, so the simulated cliff sits slightly to the left).
-Horizontal dotted line: lambda_miss (E0a all-miss capacity, turns-based: 0.0715 sessions/s at 300k, 0.0718 native). Green dashed line:
-n_cap = 20, the registered E2 cap. Log n axis; same y-limits in both columns so the shift of the cliff (hit-fraction crossing
-~32 at 300k, between 80 and 96 native) and the unchanged lambda_miss are visible.
-Added 2026-10-26 to the right column: light gray dotted squares = B4n, the round-8 simulator curve at the real pool (955,757 tokens,
-mixed batching, mean of seeds 0-2 of `mu` (sessions-based) and `hit_rate`). B4n is NOT a blind prediction: the native curve had been
-measured and summarised in `notes/STATE.md` (6793fb7, 14:47) before its spec (29728e3, 14:49) was written; the figure labels it so.
-Green dashed line in the right column: the registered native cap n_cap = 64 (`configs/agentload_prereg_2026-10-25_native.yaml`).
-The right column's legend moved into the empty lower-left of the hit panel.
+**Shows.** The closed-population thrashing curve of the real engine in three cells, against the simulator: mu(n) in completed
+sessions/s (top; black filled circles, one run per n; black plus signs = the lower-variance turns-based estimate, completed turns/s
+divided by E[T]) and the hit fraction (bottom; fraction of turns with cached/prompt > 0.5), against the closed population n
+(log axis, the same in all columns; same y-limits along each row). Closed population of n sessions, synchronized start, window
+[900, 2700) s, FCFS, Qwen2.5-7B-Instruct, one A100 80GB PCIe.
+- Left, SGLang 0.5.22, 300k-token pool (Stage C): simulator = round-6 calibrated simulator, mixed batching, 17-point grid, mean of the
+  3 registered seeds +- 1 s.e. (gray band; VALIDATION.md section 5, fine grid). This simulator was calibrated with this curve in view,
+  so the left column is a validation, not a blind prediction.
+- Middle, SGLang 0.5.22, native pool (955,757 tokens as sized by SGLang): gray dashed diamonds = blind prediction B4 at the nearest
+  simulated pool (900k tokens, registered seed 0, frozen before any native run; the real pool is 6% larger, so the simulated cliff
+  sits slightly to the left); light gray dotted squares = B4n, the round-8 simulator curve at the real pool (955,757 tokens, mixed
+  batching, mean of seeds 0-2 of `mu` (sessions-based) and `hit_rate`). B4n is NOT a blind prediction: the native curve had been
+  measured and summarised in `notes/STATE.md` (6793fb7, 14:47) before its spec (29728e3, 14:49) was written; the legend says so.
+- Right (added 2026-10-30), vLLM 0.32.0, 300k-token pool (18,750 blocks of 16), prefix caching on, FCFS: vLLM's own Stage C, jobs
+  17162959 (n = 16, 20, 24), 17162960 (28, 32, 40), 17162961 (48, 96, 300), label `vllm-fcfs`, one run per n. Gray dashed triangles
+  with a gray band = blind prediction B4v (`notes/PREDICTIONS_vllm.md`, frozen at tag `r9-vllm-predictions-frozen` = `cc01dbf`,
+  pushed 12:32 CDT on 2026-10-30 before any vLLM Stage C or E0b result was read), variant V1 (the SGLang-calibrated engine with its
+  token-proportional costs scaled by 1.0882 so that its all-miss token rate equals vLLM's measured 10,349 tok/s; its sessions/s are
+  therefore in vLLM's units), mixed batching (the primary mode), mean of seeds 0-9 of `mu` (sessions-based) and `hit_rate`, band
+  +- 1 s.e. Neither B4v variant models vLLM's block-level lazy eviction, its missing waiting-prefix refresh or its scheduler.
+
+Horizontal dotted line: lambda_miss of the cell (E0a all-miss capacity, turns-based: 0.0715 sessions/s at 300k, 0.0718 native,
+0.0657 vLLM), labelled at the right end. Green dashed line: the cell's registered session cap n_cap (20 at 300k,
+`configs/agentload_prereg_2026-10-24.yaml`; 64 native, `configs/agentload_prereg_2026-10-25_native.yaml`; 20 vLLM, read from
+`measured.n_cap` of `configs/agentload_prereg_2026-10-30_vllm.yaml`). One legend for all columns, below the panels; each simulator
+entry names its column.
+
+Layout changes of 2026-10-30, applied to all columns: third column added (figure height 4.00 -> 4.55 in); column titles name the
+engine and the pool ("Stage C" dropped from the title); the turns-based plus signs are drawn larger (6.5 pt over 3.4 pt circles)
+and on top, because the review (referee R12) found them hidden under the circles; the cap labels are rotated along the cap line
+in the hit panels and read "n_cap = 20 / 64 / 20" (the "(E2 cap)" and "(native cap)" tags are gone, SF18); the lambda_miss labels
+moved to the right end below the line, where no curve passes in any column; the x label is "closed population n".
 
 **Sources.**
 - `results/nova/stageC_1706210x_pulled_20261022-125454/analysis_local/agentload_analysis_closed/20261022-125619/mu_curve.csv` (label `sglang-fcfs-r1`, n = 16, 20, 24, 32, 48, 96, 300)
 - `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_closed/20261025-144228/mu_curve.csv` (label `sglang-fcfs-r1-native`, n = 24, 48, 64, 80, 96, 128, 300)
+- `results/nova/stageC_vllm_1716295x_pulled_20261030-153621/results/agentload_analysis_closed/20261030-153533/mu_curve.csv` (label `vllm-fcfs`, n = 16, 20, 24, 28, 32, 40, 48, 96, 300; added in `276c5f0`)
 - `results/r6_validate_stagec/20261024-025222/supp_fine_curve_mixed.csv`
 - `results/r6_predict_report/20261024-034707/b4_runs.csv` (mixed, kv_k 900, set `registered(seed 0)`)
+- `results/r8_native_report/20261025-150146/mixed_curves_curve_runs.csv` (B4n, seeds 0-2)
+- `results/r9_vllm_report/20261030-122723/v1_mixed_curves_curve_runs.csv` (B4v, V1 mixed, workload `exp5`, seeds 0-9; added in `cc01dbf`)
 - `results/nova/e0a_1707263x_pulled_20261023-142037/analysis_local_combined/20261023-142416/calibration.json` (`lambda_miss_turns_based`)
 - `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json` (`lambda_miss_turns_based`)
-- `results/r8_native_report/20261025-150146/mixed_curves_curve_runs.csv` (B4n, seeds 0-2)
+- `prereg/inputs/2026-10-25-vllm/calibration.json` (`lambda_miss_turns_based` = 0.06566287289032151, the vLLM registration's input; `65b65e2`),
+  asserted byte-identical to `results/nova/e0a_vllm_17100940_pulled_20261025-180814/results/agentload_analysis_miss/20261025-175648/calibration.json` (`b273241`)
+- `configs/agentload_prereg_2026-10-30_vllm.yaml` (`measured.n_cap` = 20; `measured.lambda_ref` asserted equal to the calibration; `5a6fbcd`)
 
-**Reading of B4n (right column).** Seed-mean peak at n = 72 (0.532 sessions/s; the real grid has no 72), hit 0.92 at 80, 0.79 at 88,
+**Reading of B4n (middle column).** Seed-mean peak at n = 72 (0.532 sessions/s; the real grid has no 72), hit 0.92 at 80, 0.79 at 88,
 0.42 at 96, 0 from 112: it lies on the real curve's cliff between 80 and 96 more closely than B4 (900k), but see the blindness note.
+
+**Reading of the vLLM column (right).** Real, sessions/s (turns-based) / hit fraction:
+
+| n | 16 | 20 | 24 | 28 | 32 | 40 | 48 | 96 | 300 |
+|---|---|---|---|---|---|---|---|---|---|
+| mu sessions/s | 0.175 | **0.219** | 0.218 | 0.119 | 0.043 | 0.041 | 0.044 | 0.057 | 0.105 |
+| mu turns-based | 0.174 | 0.211 | 0.210 | 0.123 | 0.054 | 0.056 | 0.059 | 0.069 | 0.105 |
+| hit fraction | 0.932 | 0.926 | 0.879 | 0.658 | 0.083 | 0.007 | 0.000 | 0.000 | 0.000 |
+| B4v (V1 mixed) mu | 0.177 | 0.213 | 0.215 | 0.163 | 0.106 | 0.067 | 0.066 | 0.073 | 0.102 |
+| B4v (V1 mixed) hit | 0.932 | 0.930 | 0.888 | 0.744 | 0.459 | 0.026 | 0.000 | 0.000 | 0.000 |
+
+Real peak 0.2194 sessions/s at n = 20 (n = 24 is 0.5% lower, n = 16 20% lower), 3.34 x lambda_miss (turns-based 0.2108, 3.21 x);
+the hit fraction crosses 0.5 at n = 29.1 (linear between 28 and 32); mu falls 80% from n = 24 to n = 32, and at n = 32-48 the
+turns-based mu is 0.83-0.90 x lambda_miss. B4v (V1 mixed) peaks at n = 24 (0.2153 sessions/s), crosses hit 0.5 at n = 31.4 and has
+hit 0.74 at 28 and 0.46 at 32 where the real engine has 0.66 and 0.08: the peak level and the cap (20) match, the real cliff is
+steeper and earlier. The three B4v configurations not drawn (V0 mixed, V0 separate, V1 separate) differ from V1 mixed by at most
+0.018 sessions/s in seed-mean mu (V0 separate at n = 32) and 0.079 in hit fraction (n = 40); across all four, the hit fraction at
+n = 32 is 0.46-0.53 and the 0.5 crossing 31.4-32.6 (`notes/PREDICTIONS_vllm.md`; linear interpolation of the seed means gives
+31.42-32.55).
 
 ## F3 `fig3_from_empty_stability.pdf` (script `figures/paper/fig3_from_empty_stability.py`)
 
-**Shows.** From-empty stability of the open system, 300k pool. Real engine (E0b): one 3000 s run per rate at 1.25, 1.5, 1.75, 2.0, 2.5, 3.0 x
-lambda_ref; black dot at 1 = stable, cross at 0 = unstable (final queue < 50 and no upward trend; the same operational rule as B2).
-Gray: blind prediction B2 of the simulator (mixed batching), fraction of runs stable at each lambda of the B2 grid, 3 registered
-seeds (dashed) and the 20-seed supplement (dotted). x axis in sessions/s with a second axis in multiples of lambda_ref (0.0715; the
-simulator's own lambda_miss is 0.0722, so the top axis is exact for the real runs and approximate for the simulator).
-Reading: real stable at 2.0 x (0.143), unstable at 2.5 x (0.179) and 3.0 x (0.215); simulator all-stable edge 0.14 (3 seeds) / 0.15 (20 seeds).
-That is the top panel. Bottom panel (added 2026-10-26): native pool (955,757 tokens). Real native E0b, one 3000 s run at 1.5, 2.5, 3.5,
-4.5, 5.5, 6.5 x the native lambda_ref (0.07180, native E0a turns-based; each run's rate from its `meta.json`, checked against
-multiple x lambda_ref); gray = blind prediction B2n (`notes/PREDICTIONS_native.md`, pushed 15:08 on 2026-10-25 before any native
-E0b run had finished), stable fraction of 10 seeds at each multiple of the mode's own lambda_miss, mixed (primary, dashed) and separate
-(secondary, dotted); refinement rows (none ran) excluded. Reading: real stable through 5.5 x (0.395), unstable at 6.5 x (0.467);
-B2n mixed 10/10 stable through 6.5 x (0.468), 7/10 at 7.0, 2/10 at 7.5; separate 10/10 through 6.0 x, 8/10 at 6.5, 3/10 at 7.0, 0/10 at 7.5.
+**Shows.** From-empty stability of the open system in three cells. Real engine: one 3000 s run per rate from an empty cache and
+queue, black dot at 1 = stable, cross at 0 = unstable (final queue < 50 and no upward trend; the same operational rule as the
+simulator's). Gray: blind simulator predictions, the fraction of simulated runs stable at each rate. Bottom axes: arrival rate in
+sessions/s (one shared label under the last panel); top axes: multiples of that cell's lambda_ref. Every real run is plotted at its
+nominal rate (`resolved_rate_sessions_per_s` of its `meta.json`, asserted equal to multiple x lambda_ref); every real run used
+arrival seed 0 (see data note 14).
+- Top, SGLang 0.5.22, 300k pool: E0b at 1.25, 1.5, 1.75, 2.0, 2.5, 3.0 x lambda_ref (0.0715). Gray: blind prediction B2 (mixed
+  batching), stable fraction at each lambda of the B2 grid, 3 registered seeds (dashed) and the 20-seed supplement (dotted); the
+  simulator's own lambda_miss is 0.0722, so the top axis is exact for the real runs and approximate for the simulator.
+  Reading: real stable at 2.0 x (0.143), unstable at 2.5 x (0.179) and 3.0 x (0.215); simulator all-stable edge 0.14 (3 seeds) / 0.15 (20 seeds).
+- Middle, SGLang 0.5.22, native pool (955,757 tokens): native E0b at 1.5, 2.5, 3.5, 4.5, 5.5, 6.5 x the native lambda_ref (0.07180,
+  native E0a turns-based); gray = blind prediction B2n (`notes/PREDICTIONS_native.md`, pushed 15:08 on 2026-10-25 before any native
+  E0b run had finished), stable fraction of 10 seeds at each multiple of the mode's own lambda_miss, mixed (primary, dashed) and
+  separate (secondary, dotted); refinement rows (none ran) excluded. Reading: real stable through 5.5 x (0.395), unstable at 6.5 x
+  (0.467); B2n mixed 10/10 stable through 6.5 x (0.468), 7/10 at 7.0, 2/10 at 7.5; separate 10/10 through 6.0 x, 8/10 at 6.5, 3/10 at 7.0, 0/10 at 7.5.
+- Bottom (added 2026-10-30), vLLM 0.32.0, 300k pool (18,750 blocks of 16): vLLM E0b, jobs 17162962 (1.25, 1.5, 1.75 x) and 17162963
+  (2.0, 2.5, 3.0 x) of vLLM's own lambda_ref (0.06566, vLLM E0a turns-based), label `vllm-fcfs`, the six-run bracket
+  `agentload_analysis_stable/20261030-172042`. Same x range as the top panel (0.06-0.232 sessions/s), so the two 300k cells can be
+  compared directly. Gray dashed = blind prediction B2v (`notes/PREDICTIONS_vllm.md`, tag `r9-vllm-predictions-frozen` = `cc01dbf`,
+  pushed before any vLLM E0b run), variant V1 (token costs scaled to vLLM's all-miss token rate, own lambda_miss 0.06623, so its
+  rates are in vLLM's units to within 0.9%), mixed batching (primary), stable fraction of 10 seeds at 1.25, 1.5, 1.75, 2.0, 2.5,
+  3.0 x its own lambda_miss (0.0828 ... 0.1987 sessions/s); no refinement rows exist.
+  Reading: real stable at 1.25, 1.5, 1.75 and 2.0 x (0.0821, 0.0985, 0.1149, 0.1313 sessions/s; final queue 0, trend rise at most
+  0.02), unstable at 2.5 x (0.1642; final queue 81.6, fitted rise +94 over the last 1500 s) and 3.0 x (0.1970; 247.1, +175): the
+  edge lies between 2.0 and 2.5 x, as at 300k with SGLang. B2v (V1 mixed): 10/10 stable through 2.0 x, 7/10 at 2.5 x, 3/10 at
+  3.0 x, hence the predicted edge 2.0 x. The three configurations not drawn: all 10/10 through 2.0 x; 6/10 (V0 mixed), 8/10
+  (V0 separate), 7/10 (V1 separate) at 2.5 x; 1/10, 1/10, 3/10 at 3.0 x.
+
+Layout changes of 2026-10-30: third panel added; the real-run legend moved to the top of the figure (it applies to all panels);
+one y label for the figure; one x label (under the last panel); y ticks 0, 0.5, 1 (minor ticks at 0.25, 0.75); each top-axis label
+names the engine and the pool. The figure is 4.30 in tall, so that figure and a caption of about ten lines still fit the 0.7
+`\topfraction` of a single-column top float (a scratch build placed it on the page of its section with a ten-line caption; at
+4.4 in it went to the end of the paper).
 
 **Sources.**
 - `results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_analysis_stable/20261024-150720/stable_runs.csv`
@@ -130,6 +200,12 @@ B2n mixed 10/10 stable through 6.5 x (0.468), 7/10 at 7.0, 2/10 at 7.5; separate
   `20261025-144656` (1.5), `20261025-153959` (2.5), `20261025-163302` (3.5), `20261025-144709` (4.5), `20261025-154012` (5.5), `20261025-163315` (6.5)
 - `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json`
 - `results/r8_native_report/20261025-150146/mixed_edge_edge_verdicts.csv`, `results/r8_native_report/20261025-150146/separate_edge_edge_verdicts.csv`
+- `results/nova/e0b_vllm_1716296x_pulled_20261030-172810/results/agentload_analysis_stable/20261030-172042/stable_runs.csv` (added in `582c2a6`)
+- the six `meta.json` under `results/nova/e0b_vllm_1716296x_pulled_20261030-172810/results/agentload_e0_cap/`:
+  `20261030-131849` (1.25), `20261030-141150` (1.5), `20261030-150452` (1.75), `20261030-143825` (2.0), `20261030-153127` (2.5), `20261030-162428` (3.0)
+- `prereg/inputs/2026-10-25-vllm/calibration.json` (asserted byte-identical to the vLLM E0a analysis
+  `results/nova/e0a_vllm_17100940_pulled_20261025-180814/results/agentload_analysis_miss/20261025-175648/calibration.json`)
+- `results/r9_vllm_report/20261030-122723/v1_mixed_edge_edge_verdicts.csv` (B2v, V1 mixed, seeds 0-9; added in `cc01dbf`)
 
 ## F4 `fig4_mechanisms.pdf` (script `figures/paper/fig4_mechanisms.py`)
 
@@ -256,3 +332,6 @@ burst (155-231 sessions 100-200 s after it) and then grows without a plateau to 
 11. **Native pool size (F7).** Two of the 18 native E2 servers (jobs 17102173 and 17102184) report `max_total_num_tokens=955756`, one token below the 955,757 of the other 16 and of native Stage C, E0a and E0b; the figures and the paper use 955,757.
 12. **Native E2 run times.** The LOG entry gives the native E2 runs as "2026-10-25 17:43 - 2026-10-26 ~10:00"; the runs' own `meta.json` start and end times span 17:44:02 to 01:08:10 (the six vLLM runs end at 03:20:42; ~10:00 is when the archive was pulled). The paper uses the `meta.json` times.
 13. **"About 2.75 x wider" (LOG).** The native E0b LOG entry calls the native window "about 2.75 x wider than at the 300k cap (in units of lambda_miss)". 2.75 is the ratio of the upper edges (5.5 / 2.0); the window widths are 4.5 and 1.0 lambda_miss. The paper states both.
+14. **Every E0b run used arrival seed 0 (F3).** The plan draws the session count from the same seed-0 stream at every rate, so in all 18 E0b runs (three cells) the count lies about 2.1 standard deviations above lambda T (z = 2.06-2.11) and the realized rate is 6-13% above the nominal one. Counts in [0, 3000) s from each run's `plan.csv` (= `sessions.csv` rows, all `base`): SGLang 300k 302, 359, 416, 472, 585, 697 (8.3-12.6% above lambda T; realized 1.41, 1.67, 1.94, 2.20, 2.73, 3.25 x lambda_ref); native 361, 587, 811, 1034, 1257, 1478 (5.6-11.7%; realized 1.68, 2.73, 3.77, 4.80, 5.84, 6.86 x); vLLM 279, 331, 383, 435, 539, 642 (8.6-13.3%; realized 1.42, 1.68, 1.94, 2.21, 2.74, 3.26 x). F3 plots the nominal rates. For vLLM the unstable 2.5 x run received 0.180 sessions/s, below the measured peak (0.219 sessions-based, 0.211 turns-based), so its edge lies below the peak in realized terms too, as at 300k with SGLang (0.195 against 0.233) and unlike the native pool (0.493 against 0.479).
+15. **Which blind vLLM prediction is drawn (F2, F3).** `notes/PREDICTIONS_vllm.md` has four configurations (V0 = SGLang-calibrated engine unchanged, V1 = token costs scaled to vLLM's all-miss token rate; each in mixed and separate batching) and names no single one the prediction; mixed is the primary mode. The figures draw V1 mixed because its sessions/s are in vLLM's units (V0's own lambda_miss is 0.0722, 10% above vLLM's 0.0657, so its rates and mu would sit 10% high on a sessions/s axis). The spread of the other three is in the F2 and F3 readings; the text quotes the range over all four (hit 0.46-0.53 at n = 32; 6-8/10 stable at 2.5 x).
+16. **Estimator spread in the vLLM curve (F2).** As at 300k with SGLang (note 4), the sessions-based and turns-based mu differ past the cliff: at n = 32, 40, 48 the sessions-based mu is 0.043, 0.041, 0.044 (0.66, 0.63, 0.67 x lambda_miss), the turns-based 0.054, 0.056, 0.059 (0.83, 0.85, 0.90 x). Single runs; the plus signs show the turns-based values.

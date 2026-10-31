@@ -1,6 +1,7 @@
-quantity,k,n,wilson95_lo,wilson95_hi,p_one_sided
-NOBURST good,6,6,0.609657,1,
-CAPPED recovered,6,6,0.609657,1,
-BURST trapped (registered rule),5,6,0.436491,0.969947,
-BURST hit 0 over the window,6,6,0.609657,1,
-sign test BURST hit < NOBURST hit (pairs),6,6,,,0.015625
+quantity,k,n,p_one_sided
+NOBURST good,6,6,
+CAPPED recovered,6,6,
+BURST trapped (registered rule),5,6,
+BURST hit 0 over the window,6,6,
+"BURST hit < NOBURST hit, seed-and-rate pairs (descriptive; the pairs share seeds)",6,6,
+"seeds with BURST hit < NOBURST hit at every rate (post-hoc sign test, each seed once)",3,3,0.125

@@ -1,7 +1,7 @@
-rate_mult,seed,run_dir,gate_empty_after_burst_s,predicted_drain_s,ratio_to_predicted,max_gate_wait_s
-2.5,0,results/agentload_e2_burst/20261025-174402,582.807,668.019,0.872441,297.02
-2.5,1,results/agentload_e2_burst/20261025-201333,511.572,668.019,0.765804,293.363
-2.5,2,results/agentload_e2_burst/20261025-204942,541.951,668.019,0.81128,246.952
-4,0,results/agentload_e2_burst/20261025-175810,936.786,1043.32,0.897893,339.301
-4,1,results/agentload_e2_burst/20261025-201337,836.646,1043.32,0.801911,361.342
-4,2,results/agentload_e2_burst/20261025-224304,900.425,1043.32,0.863042,261.864
+rate_mult,seed,run_dir,run_path,gate_empty_after_burst_s,predicted_drain_s,ratio_to_predicted,n_at_burst,fluid_drain_s,ratio_to_fluid,max_gate_wait_s
+2.5,0,results/agentload_e2_burst/20261025-174402,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-174402,582.807,668.019,0.872441,19,517.715,1.12573,297.02
+2.5,1,results/agentload_e2_burst/20261025-201333,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-201333,511.572,668.019,0.765804,11,490.994,1.04191,293.363
+2.5,2,results/agentload_e2_burst/20261025-204942,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-204942,541.951,668.019,0.81128,11,490.994,1.10378,246.952
+4,0,results/agentload_e2_burst/20261025-175810,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-175810,936.786,1043.32,0.897893,32,876.386,1.06892,339.301
+4,1,results/agentload_e2_burst/20261025-201337,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-201337,836.646,1043.32,0.801911,31,871.169,0.960372,361.342
+4,2,results/agentload_e2_burst/20261025-224304,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-224304,900.425,1043.32,0.863042,25,839.87,1.0721,261.864
