@@ -100,8 +100,30 @@ class GateCfg:
     arrival and the first request: at most ``n_cap`` sessions are admitted (= active: admitted and not yet ended,
     including their tool-time sleeps); the rest wait in a FIFO queue and their wait is logged. ``n_cap`` is an int, or
     ``"path/to/mu_curve.json:n_cap"`` (the Stage-C result, argmax of the closed-population curve mu(n)), resolved like
-    ``arrivals.lambda_ref``. null = no gate."""
+    ``arrivals.lambda_ref``. null = no gate.
+
+    ``mode`` selects when the cap acts:
+
+    * ``static`` (default; the CAPPED arm): the cap holds from t = 0. The rescue-only keys below must stay unset.
+    * ``rescue`` (the RESCUE arm): the run is uncapped until ``t_on_s`` (so the client is byte-identical to the BURST arm
+      before it), then the cap is set to ``n_cap``. The cap cannot evict, so it drops below the active count by
+      attrition, and with ``pause_at_turns`` a session whose tool call ends while active > cap gives up its slot and
+      waits in a resume deque that is served before new arrivals (FIFO within each). From ``t_on_s + min_on_s`` the
+      gate checks every ``release_check_s`` seconds (ticks at ``t_on_s + k * release_check_s``) and is released
+      (cap removed, both queues drained in order) at the first tick at which the arrival queue and the resume deque
+      have both been empty continuously for ``release_hold_s``. There is no forced release. Requires ``n_cap``,
+      ``t_on_s`` and ``pause_at_turns``."""
     n_cap: Optional[Any] = None
+    mode: str = "static"                   # static | rescue
+    t_on_s: Optional[float] = None         # rescue: when the cap is engaged (seconds since run start)
+    pause_at_turns: Optional[bool] = None  # rescue: pause over-cap sessions at their next tool-call boundary
+    release_hold_s: Optional[float] = None # rescue: both queues empty this long -> release (default 300)
+    min_on_s: Optional[float] = None       # rescue: no release before t_on_s + min_on_s (default 600)
+    release_check_s: Optional[float] = None  # rescue: release-check tick (default 10)
+
+
+GATE_RESCUE_DEFAULTS = {"release_hold_s": 300.0, "min_on_s": 600.0, "release_check_s": 10.0}
+_GATE_RESCUE_KEYS = ("t_on_s", "pause_at_turns", "release_hold_s", "min_on_s", "release_check_s")
 
 
 @dataclass
@@ -152,8 +174,9 @@ class MetaCfg:
     # set by the job script from the post-flush canary check (slurm/common.sh); recorded verbatim in meta.json
     start_state_verified: Optional[bool] = None
     start_state_detail: str = ""
-    # which arm of a paired E2 set this run is: burst | noburst | capped | "" (not part of a paired set). Recorded in
-    # meta.json; the analysis cross-checks it against what the config structurally implies (burst / gate present).
+    # which arm of a paired E2 set this run is: burst | noburst | capped | rescue | "" (not part of a paired set). Recorded
+    # in meta.json; the analysis cross-checks it against what the config structurally implies (burst / gate present /
+    # gate.mode). arm rescue requires gate.mode rescue and vice versa (config.validate).
     arm: str = ""
     # set by the job script for MODE=burst from the committed pre-registration it validated (slurm/common.sh); recorded in
     # meta.json so the analysis can check that the runs were launched under exactly the file that is being applied
@@ -210,7 +233,7 @@ def config_from_dict(d: Dict[str, Any]) -> Config:
     return cfg
 
 
-ARMS = {"", "burst", "noburst", "capped"}
+ARMS = {"", "burst", "noburst", "capped", "rescue"}
 
 
 def validate(cfg: Config) -> None:
@@ -248,8 +271,57 @@ def validate(cfg: Config) -> None:
             raise ValueError(f"gate.n_cap must be an int or 'path/to/mu_curve.json:key', got {n!r}")
         if isinstance(n, int) and n < 1:
             raise ValueError("gate.n_cap must be >= 1")
+    validate_gate(cfg)
     if a.analysis_t_burst_s is not None and a.burst is not None and abs(a.analysis_t_burst_s - a.burst.t_s) > 1e-9:
         raise ValueError("arrivals.analysis_t_burst_s must equal arrivals.burst.t_s when a burst is configured")
+
+
+def _num(v: Any) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v == v and v not in (float("inf"), float("-inf"))
+
+
+def validate_gate(cfg: Config) -> None:
+    """``gate.mode`` and the rescue keys (see :class:`GateCfg`). A static gate is exactly the CAPPED gate: the rescue
+    keys must be unset. A rescue gate needs ``n_cap``, ``t_on_s`` and ``pause_at_turns``, open-loop arrivals, and
+    ``meta.arm`` rescue (or "" outside a paired set); ``meta.arm`` rescue needs ``gate.mode`` rescue."""
+    g = cfg.gate
+    if g.mode not in ("static", "rescue"):
+        raise ValueError(f"gate.mode must be static|rescue, got {g.mode!r}")
+    if g.mode == "static":
+        set_keys = [k for k in _GATE_RESCUE_KEYS if getattr(g, k) is not None]
+        if set_keys:
+            raise ValueError(f"gate.{', gate.'.join(set_keys)} only apply to gate.mode=rescue (mode is static)")
+        if cfg.meta.arm == "rescue":
+            raise ValueError("meta.arm=rescue needs gate.mode=rescue")
+        return
+    if cfg.meta.arm not in ("", "rescue"):
+        raise ValueError(f"gate.mode=rescue is the rescue arm; meta.arm must be rescue (or ''), got {cfg.meta.arm!r}")
+    if g.n_cap is None:
+        raise ValueError("gate.mode=rescue requires gate.n_cap (the cap engaged at t_on_s)")
+    if cfg.arrivals.kind == "closed":
+        raise ValueError("gate.mode=rescue is for open-loop arrivals")
+    if g.t_on_s is None or not _num(g.t_on_s) or g.t_on_s < 0:
+        raise ValueError(f"gate.mode=rescue requires gate.t_on_s >= 0 (seconds since run start), got {g.t_on_s!r}")
+    if not isinstance(g.pause_at_turns, bool):
+        raise ValueError(f"gate.mode=rescue requires gate.pause_at_turns true|false, got {g.pause_at_turns!r}")
+    for k in ("release_hold_s", "min_on_s"):
+        v = getattr(g, k)
+        if v is not None and (not _num(v) or v < 0):
+            raise ValueError(f"gate.{k} must be a number >= 0, got {v!r}")
+    v = g.release_check_s
+    if v is not None and (not _num(v) or v <= 0):
+        raise ValueError(f"gate.release_check_s must be a positive number, got {v!r}")
+
+
+def gate_rescue_params(g: GateCfg) -> Dict[str, Any]:
+    """The effective rescue parameters (defaults filled in), as recorded in meta.json."""
+    out: Dict[str, Any] = {"mode": g.mode, "n_cap_configured": g.n_cap}
+    if g.mode == "rescue":
+        out.update(t_on_s=float(g.t_on_s), pause_at_turns=bool(g.pause_at_turns))
+        for k, d in GATE_RESCUE_DEFAULTS.items():
+            v = getattr(g, k)
+            out[k] = float(d if v is None else v)
+    return out
 
 
 def load_config(path: str | Path, overrides: Optional[Sequence[str]] = None) -> Tuple[Config, Dict[str, Any]]:

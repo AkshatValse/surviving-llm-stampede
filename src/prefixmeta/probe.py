@@ -145,6 +145,9 @@ def mode_label(cfg: dict, sec: dict) -> str:
 
 def _run(cfg: dict, specs: Sequence[RunSpec], workers: int) -> List[Dict[str, Any]]:
     check_run_specs(cfg, specs)
+    if any(rs.meta.get("control") is not None for rs in specs):       # round 11: gate controllers run through gate_control
+        from .gate_control import run_specs
+        return run_specs(cfg, specs, workers)
     with Runner(cfg, workers) as R:
         return R.run(specs)
 
@@ -292,10 +295,34 @@ def burst_lambda(sec: dict) -> Tuple[float, float]:
     raise ValueError("burst: give `lambda` (sessions / s) or `lambda_miss` together with `lam_mult`")
 
 
+ARM_KEYS = ("burst_n", "cap", "control", "lull")
+
+
+def _arm(v: dict) -> Dict[str, Any]:
+    """One explicit arm: {burst_n, cap} plus, only when given, ``control`` (a ``gate_control.GateControl`` dict, validated here) and
+    ``lull`` ({t0, t1, keep}: ``ArrivalPlan`` lull fields). An arm without them has exactly the keys of the earlier rounds."""
+    unknown = sorted(set(v) - set(ARM_KEYS))
+    if unknown:
+        raise ValueError(f"probe.burst.arms: unknown keys {unknown}; known: {list(ARM_KEYS)}")
+    a: Dict[str, Any] = {"burst_n": int(v.get("burst_n", 0)), "cap": (None if v.get("cap") is None else int(v["cap"]))}
+    if v.get("control") is not None:
+        from .gate_control import GateControl
+        if a["cap"] is not None:
+            raise ValueError("probe.burst.arms: an arm with `control` must not also set `cap` (the controller owns the cap)")
+        a["control"] = dict(GateControl.from_dict(dict(v["control"])).__dict__)
+    if v.get("lull") is not None:
+        lu = dict(v["lull"])
+        if sorted(lu) != ["keep", "t0", "t1"]:
+            raise ValueError("probe.burst.arms: `lull` needs exactly t0, t1 and keep")
+        a["lull"] = {"t0": float(lu["t0"]), "t1": float(lu["t1"]), "keep": float(lu["keep"])}
+    return a
+
+
 def burst_arms(sec: dict) -> Dict[str, Dict[str, Any]]:
-    """arm -> {burst_n, cap}. Default: no_burst (b = 0), burst (b = burst_n), burst_cap (b = burst_n, cap = ``cap``; only if ``cap`` is given)."""
+    """arm -> {burst_n, cap[, control][, lull]}. Default: no_burst (b = 0), burst (b = burst_n), burst_cap (b = burst_n, cap = ``cap``; only if
+    ``cap`` is given). Explicit ``arms`` may carry a gate controller (``control``) and / or an arrival lull (``lull``), see ``_arm``."""
     if sec.get("arms"):
-        return {str(k): {"burst_n": int(v.get("burst_n", 0)), "cap": (None if v.get("cap") is None else int(v["cap"]))} for k, v in sec["arms"].items()}
+        return {str(k): _arm(dict(v)) for k, v in sec["arms"].items()}
     arms = {"no_burst": {"burst_n": 0, "cap": None}, "burst": {"burst_n": int(sec["burst_n"]), "cap": None}}
     if sec.get("cap") is not None:
         arms["burst_cap"] = {"burst_n": int(sec["burst_n"]), "cap": int(sec["cap"])}
@@ -308,13 +335,18 @@ def burst_specs(cfg: dict, sec: dict) -> List[RunSpec]:
     lam, mult = burst_lambda(sec)
     specs: List[RunSpec] = []
     for arm, a in burst_arms(sec).items():
+        lull = {} if "lull" not in a else {"lull_t0": a["lull"]["t0"], "lull_t1": a["lull"]["t1"], "lull_keep": a["lull"]["keep"]}
         for sd in sec["seeds"]:
+            meta = {"lam": lam, "lam_mult": mult, "arm": arm, "burst_n": a["burst_n"], "cap": -1 if a["cap"] is None else a["cap"], "t_burst": tb}
+            if "control" in a:
+                meta["control"] = json.dumps(a["control"], sort_keys=True)
+            if lull:
+                meta.update(lull)
             specs.append(RunSpec(
                 exp="probe_burst", policy=sec["policy"], seed=int(sd), horizon_s=H, variant=f"arm={arm}", session_cap_override=a["cap"],
-                plan=ArrivalPlan(kind="constant", horizon_s=H, rate=lam, burst_n=a["burst_n"], burst_t0=tb, burst_width_s=float(sec["burst_width_s"])),
-                engine_overrides=dict(sec.get("engine") or {}), workload_overrides=dict(sec.get("workload") or {}),
-                meta={"lam": lam, "lam_mult": mult, "arm": arm, "burst_n": a["burst_n"], "cap": -1 if a["cap"] is None else a["cap"],
-                      "t_burst": tb}))
+                plan=ArrivalPlan(kind="constant", horizon_s=H, rate=lam, burst_n=a["burst_n"], burst_t0=tb, burst_width_s=float(sec["burst_width_s"]),
+                                 **lull),
+                engine_overrides=dict(sec.get("engine") or {}), workload_overrides=dict(sec.get("workload") or {}), meta=meta))
     return specs
 
 

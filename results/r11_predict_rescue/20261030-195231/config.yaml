@@ -1,0 +1,114 @@
+# Round 11, bundle 3 (plan S1, tag r11-rescue-pred): BLIND simulator predictions for the registered rescue cells R1 (300k pool) and R4 (native
+# pool), plus the simulation-only remedy comparison (pause cap vs attrition cap vs load-shedding lulls vs AIMD-pause).
+#
+# Driver: experiments/r11_predict_rescue.py (reads this file only; every number below is declared before any run of the driver).
+# Controller: src/prefixmeta/gate_control.py (GateEngine, a subclass of the calibrated engine; engine.py unchanged).
+# Engine: the calibrated round-6 engine block = configs/r6_predict.yaml `engine:` (inherited through base_config, unchanged), PRIMARY batching
+# `mixed`, SECONDARY `separate_prefill_priority`; the native pool changes kv_memory_tokens only (= configs/r8_native_predict.yaml).
+# Workload: the record workload (Stage C), inherited from configs/r6_predict.yaml.
+# Rates: each pool in its OWN engine lambda units, lambda = mult x lambda_ref, lambda_ref = the registered calibration's lambda_miss_turns_based.
+# Blindness: no rescue run (engine or mock with the rescue gate) exists when this file is written; nothing under results/nova/ is read except
+# the committed BURST plan.csv files (inputs, to check that the exact client plans are rebuilt byte for byte).
+research_question: >-
+  Does a pause cap engaged inside an established trap drain it without shedding load and leave the uncapped engine in the high-hit state
+  after release (R1 / R4 registered rule), and how does it compare with an attrition-only cap, load-shedding lulls and an AIMD-pause gate?
+
+base_config: configs/r6_predict.yaml
+
+parallel:
+  max_workers: 6
+
+r11_rescue:
+  batching_modes: {mixed: mixed, separate: separate_prefill_priority}     # key -> engine.batching; PRIMARY first
+  policy: fcfs_lru
+  pools:
+    p300k:
+      kv_memory_tokens: 300000
+      calibration: prereg/inputs/2026-10-23/calibration.json             # registration configs/agentload_prereg_2026-10-24.yaml
+      lambda_ref_key: lambda_miss_turns_based                            # 0.07153402100919228
+      uncached_ref_key: all_miss_uncached_tokens_per_s                   # 11243.18 tok/s (rule c3 reference)
+    native:
+      kv_memory_tokens: 955757
+      calibration: prereg/inputs/2026-10-25-native/calibration.json      # registration configs/agentload_prereg_2026-10-25_native.yaml
+      lambda_ref_key: lambda_miss_turns_based                            # 0.07179742331825469
+      uncached_ref_key: all_miss_uncached_tokens_per_s                   # 11282.00 tok/s
+  # the exact client plans (agentload.workload.build_open_plan of the e2 config with these overrides) for the per-seed rows
+  client_config: configs/agentload_e2_burst.yaml
+  protocol:                                # E2 timing (both pools)
+    duration_s: 8700.0
+    burst: {n: 200, t_s: 1200.0, width_s: 60.0}
+  smoke_protocol:                          # configs/agentload_e2_rescue_smoke.yaml (R1 smoke job): 2400-s run, burst at 300
+    duration_s: 2400.0
+    burst: {n: 200, t_s: 300.0, width_s: 60.0}
+  rule:                                    # the registered per-run rule of plan R1 (rule a-c), applied to every simulated run
+    valid_window_s: 300.0                  # (a) FU-hit < 0.2 over [t_on - 300, t_on) ...
+    valid_outstanding_above: 50.0          #     ... AND more than 50 outstanding at t_on
+    release_by_s: 7200.0                   # (b) t_rel <= 7200 (smoke: no requirement; reported against 2400)
+    post_delay_s: 300.0                    # (c) over [t_rel + 300, end): every 300-s window FU-hit >= 0.5, the whole interval FU-hit > 0.8,
+    win_s: 300.0                           #     uncached-token rate < 0.5 x the pool's all-miss reference, trap_v2 RECOVERED over the last 300 s
+    post_win_min: 0.5
+    post_all_min: 0.8
+    uncached_frac_max: 0.5
+    relapse_below: 0.2                     # RELAPSE: some 300-s window after t_rel + 300 with FU-hit < 0.2
+    rec_hit_above: 0.8                     # RECOVERED (trap_v2): all-turn hit > 0.8 AND mean outstanding < 20 over the last 300 s
+    rec_outstanding_below: 20.0
+    end_window_s: 300.0
+  controls:                                # gate_control.GateControl dicts
+    rescue_300k: {mode: rescue, cap: 20, t_on_s: 1800.0, pause: true, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    rescue_native: {mode: rescue, cap: 64, t_on_s: 2400.0, pause: true, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    rescue_smoke: {mode: rescue, cap: 20, t_on_s: 900.0, pause: true, release_hold_s: 120.0, min_on_s: 300.0, t_off_max_s: null}
+    attrition_300k: {mode: rescue, cap: 20, t_on_s: 1800.0, pause: false, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    attrition_native: {mode: rescue, cap: 64, t_on_s: 2400.0, pause: false, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    # AIMD-pause as designed in the gate scope (scope_gate/sim_gate.py, "at most one decrease per 60 s"); the design-time runs used md_holdoff_s 60
+    # (this controller reproduces them to one 10-s tick). PRIMARY.
+    aimd_pause: {mode: aimd, pause: true, tick_s: 10.0, win_s: 60.0, n_min: 20, h_low: 0.2, h_high: 0.8, beta: 0.7, alpha: 1, c_min: 4,
+                 md_holdoff_s: 60.0, aimd_release: true, release_hold_s: 300.0}
+    # SENSITIVITY: the literal plan S1 (6) parameter list, which names no holdoff (a decrease may fire at every 10-s tick on overlapping windows)
+    aimd_pause_noholdoff: {mode: aimd, pause: true, tick_s: 10.0, win_s: 60.0, n_min: 20, h_low: 0.2, h_high: 0.8, beta: 0.7, alpha: 1,
+                           c_min: 4, md_holdoff_s: 0.0, aimd_release: true, release_hold_s: 300.0}
+    rescue_native_cap80: {mode: rescue, cap: 80, t_on_s: 2400.0, pause: true, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    rescue_native_t2100: {mode: rescue, cap: 64, t_on_s: 2100.0, pause: true, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    observe: {mode: rescue, cap: 20, t_on_s: 1.0e+18, pause: true}       # never engages: the BURST / NOBURST / lull arms with the per-tick trace
+    # SHEDDING COMPARATORS (added after review, before the r11-rescue-pred tag; no rescue run exists): the pause cap's cap, engage and
+    # release rule, but an arrival that finds the cap binding is DROPPED instead of queued (with and without pausing at tool boundaries)
+    shed_pause_300k: {mode: rescue, cap: 20, t_on_s: 1800.0, pause: true, shed: true, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+    shed_attrition_300k: {mode: rescue, cap: 20, t_on_s: 1800.0, pause: false, shed: true, release_hold_s: 300.0, min_on_s: 600.0, t_off_max_s: null}
+  # cells: pool, mults, control, seeds (simulator seeds), exact_seeds (exact client plans), protocol (protocol | smoke_protocol), burst (true/false),
+  # t_on (the rule's anchor; null = the controller's engage tick), lull (t0, t1, keep) or null, group (the plan S1 item)
+  cells:
+    R1_rescue:     {group: "1", pool: p300k, mults: [1.35, 1.65], control: rescue_300k, seeds: 20, exact_seeds: [0, 1, 2], t_on: 1800.0}
+    R4_rescue:     {group: "2", pool: native, mults: [4.0], control: rescue_native, seeds: 20, exact_seeds: [0, 1, 2], t_on: 2400.0}
+    smoke:         {group: "3", pool: p300k, mults: [1.65], control: rescue_smoke, seeds: 10, exact_seeds: [0], t_on: 900.0, protocol: smoke_protocol}
+    R1_attrition:  {group: "4", pool: p300k, mults: [1.35, 1.65], control: attrition_300k, seeds: 20, exact_seeds: [0, 1, 2], t_on: 1800.0}
+    R4_attrition:  {group: "4", pool: native, mults: [4.0], control: attrition_native, seeds: 20, exact_seeds: [0, 1, 2], t_on: 2400.0}
+    lull_stop_4200: {group: "5", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 10, t_on: 1800.0, lull: {t0: 1800.0, t1: 4200.0, keep: 0.0}}
+    lull_stop_4800: {group: "5", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 10, t_on: 1800.0, lull: {t0: 1800.0, t1: 4800.0, keep: 0.0}}
+    lull_stop_5400: {group: "5", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 10, t_on: 1800.0, lull: {t0: 1800.0, t1: 5400.0, keep: 0.0}}
+    lull_half_6000: {group: "5", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 10, t_on: 1800.0, lull: {t0: 1800.0, t1: 6000.0, keep: 0.5}}
+    # added after review (same caveat as the shedding comparators): a full stop from 1800 s that ends at the SAME seed's pause-cap release time
+    # (R1_rescue t_rel, same mode, rate and simulator seed; common random numbers: the kept sessions are the rescue run's sessions)
+    lull_stop_trel: {group: "5", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 20, t_on: 1800.0, lull: {t0: 1800.0, t1_from: R1_rescue, keep: 0.0}}
+    R1_shed_pause:     {group: "5s", pool: p300k, mults: [1.35, 1.65], control: shed_pause_300k, seeds: 20, exact_seeds: [0, 1, 2], t_on: 1800.0}
+    R1_shed_attrition: {group: "5s", pool: p300k, mults: [1.35, 1.65], control: shed_attrition_300k, seeds: 20, exact_seeds: [0, 1, 2], t_on: 1800.0}
+    aimd_300k:     {group: "6", pool: p300k, mults: [1.35, 1.65], control: aimd_pause, seeds: 20, exact_seeds: [0, 1, 2], t_on: null}
+    aimd_native:   {group: "6", pool: native, mults: [2.5, 4.0], control: aimd_pause, seeds: 20, t_on: null}
+    aimd_noburst_300k: {group: "6", pool: p300k, mults: [1.35, 1.5, 1.65, 1.8, 2.0], control: aimd_pause, seeds: 20, burst: false, t_on: null}
+    aimd_noburst_native: {group: "6x", pool: native, mults: [2.5, 4.0], control: aimd_pause, seeds: 20, burst: false, t_on: null}   # extra
+    aimd_noholdoff_300k: {group: "6s", pool: p300k, mults: [1.35, 1.65], control: aimd_pause_noholdoff, seeds: 20, t_on: null}       # sensitivity
+    aimd_noholdoff_native: {group: "6s", pool: native, mults: [2.5, 4.0], control: aimd_pause_noholdoff, seeds: 20, t_on: null}       # sensitivity
+    aimd_noholdoff_noburst_300k: {group: "6s", pool: p300k, mults: [1.35, 1.5, 1.65, 1.8, 2.0], control: aimd_pause_noholdoff, seeds: 20, burst: false, t_on: null}
+    # paired controls (no controller; the observer only records the trace): same seeds and plans as the rescue cells
+    ctl_burst_300k:   {group: "ctl", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 20, exact_seeds: [0, 1, 2], t_on: 1800.0}
+    ctl_noburst_300k: {group: "ctl", pool: p300k, mults: [1.35, 1.65], control: observe, seeds: 20, exact_seeds: [0, 1, 2], t_on: 1800.0, burst: false}
+    ctl_burst_native: {group: "ctl", pool: native, mults: [2.5, 4.0], control: observe, seeds: 20, exact_seeds: [0, 1, 2], t_on: 2400.0}
+    ctl_noburst_native: {group: "ctl", pool: native, mults: [4.0], control: observe, seeds: 20, exact_seeds: [0, 1, 2], t_on: 2400.0, burst: false}
+    ctl_burst_smoke:  {group: "ctl", pool: p300k, mults: [1.65], control: observe, seeds: 10, exact_seeds: [0], t_on: 900.0, protocol: smoke_protocol}
+    # R4 RETHINK AIDS (SENSITIVITIES, not registered cells): added after the R4_rescue prediction came out below 7/10 RESCUED in the primary
+    # mode, to inform the plan-R1 "rethink before submission" step; the R4 registration is not changed by this file.
+    R4s_cap80:     {group: "R4s", pool: native, mults: [4.0], control: rescue_native_cap80, seeds: 20, exact_seeds: [0, 1, 2], t_on: 2400.0}
+    R4s_t2100:     {group: "R4s", pool: native, mults: [4.0], control: rescue_native_t2100, seeds: 20, exact_seeds: [0, 1, 2], t_on: 2100.0}
+    R4s_rates:     {group: "R4s", pool: native, mults: [2.5, 3.0, 3.5], control: rescue_native, seeds: 20, t_on: 2400.0}
+  # frozen decision aids (plan R1): a cell whose frozen prediction is below 7/10 RESCUED is rethought before submission; the smoke job requires a
+  # release only if the smoke prediction releases before 2400 s in >= 8/10 seeds
+  rethink_below_frac: 0.7
+  smoke_release_required_frac: 0.8
