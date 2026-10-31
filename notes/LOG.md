@@ -567,3 +567,69 @@ Peak 0.2194 sessions/s at n = 20 (n = 24 within 0.5 %; n = 16 is 20 % lower), μ
 ## 2026-10-30 — vLLM E0b complete: the 3.0 × run is unstable too; the six-run bracket equals the registered one
 **Setup:** Job 17162963's last run (3.0 × vLLM λ_ref, `agentload_e0_cap/20261030-162428`) finished after the registration; both E0b jobs COMPLETED 0:0. Six-run bracket on the login node → `agentload_analysis_stable/20261030-172042` (the jobs' own per-job brackets: `-155754` for 17162962, `-171731` for 17162963). Data: `results/nova/e0b_vllm_1716296x_pulled_20261030-172810/` (archive sha256 `4f982631…`; the five-run bracket used by the registration is byte-identical to `prereg/inputs/2026-10-30-vllm/lambda_cap_bracket.json`).
 **Result:** 3.0 × unstable (final queue 247.1, fitted rise +175). Six-run bracket: largest all-stable 2.0 ×, first unstable 2.5 ×, monotone, no guard warnings, the same as the five-run bracket the registration used. The registration's disclosed deviation (registered before the 3.0 × run ended) had no effect.
+
+## 2026-10-31 — LPM-INF (L1 step 2): stock LPM without its 128-request FCFS fallback does not collapse on the seeds where stock LPM did (exploratory)
+**Question:** At 1.65 × λ_ref, stock SGLang 0.5.22 LPM collapsed to the all-miss trap on seeds 0 and 1 in both grid replicates. The post-hoc crossing analysis (`analysis/lpm_crossing.py`, `notes/LPM_CROSSING_r11.md` on `r11/strengthen`) found every collapse coincided with the waiting queue passing 128. Above 128, `_determine_active_policy` silently switches LPM to FCFS order. If the fallback is removed, does LPM still collapse?
+**Setup:** Cell `sglang-lpminf`: POLICY=lpm, REFRESH=1, LPM_INF=1. That is the stock `envs/sglang` plus the job-local hook `slurm/hooks/lpm_inf/sitecustomize.py` (md5 `be788ae7…`), which raises `schedule_policy.WAITING_QUEUE_PREFIX_MATCH_MAX` from 128 to 1e9 in every process that imports it. BURST arm only, E2 protocol (200 sessions in 60 s at 1200 s, 8700 s run), 300k pool, 1.65 × λ_ref = 0.11803 sessions/s, seeds 0–2.
+- Frozen inputs, all on `r11/lpminf` at `5064580` (tag `r11-lpminf-pred`): the exploratory registration `configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml` (`derive-exploratory`, PREREG_SHA256 `f4454c5b…`), the endpoints and decision rule `configs/r11_lpminf_predict.yaml`, and the blind simulator predictions `notes/PREDICTIONS_r11_lpminf.md` (S1 bundle 2). Pushed to GitHub 2026-10-31 02:02:46 UTC (21:02:46 CDT Fri; `gh api …/activity`, branch creation at `5064580`), before submission.
+- Jobs **17168743 / 17168744 / 17168745** (seeds 0 / 1 / 2), submitted 2026-10-30 22:07:40 with `--nice=56` from `$W/repo_r11_lpm` (HEAD `5064580`, clean, untouched since). sacct: all COMPLETED 0:0, elapsed 2:29:41–2:29:45, on nova22-gpu-2 / -1 / -1, ended 03:51:56, 04:12:05 and 04:23:48 CDT Sat. MaxRSS 6.1–6.6 GB of 48 G.
+- Verdict on the login node: `summarize burst2 --run-dirs <3> --out-root results --set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml` → `agentload_analysis_burst2/20261031-042736`. No guard warnings; `pre_registered: false`, exploratory as designed.
+- Pulled read-only into `results/nova/lpminf_1716874x_pulled_20261031-042548/` (`fc8b028`). Archive sha256 `ce1eb62d…`, verdict-dir archive `7903a474…`; both checked on both ends, and the remote archives deleted.
+- Endpoints: `analysis/r11_lpminf_eval.py` (constants read from the frozen file) → `results/r11_lpminf_eval/20261031-eval/`.
+- Controls. All five cells have the same `plan.csv` sha256 per seed (common random numbers).
+  - Stock LPM `sglang-lpm-r1`: 17097090 / 096 / 102. `-r0`: 17097091 / 097 / 103. Grid pull `r7_native_grid_vllm_pulled_20261025-145126`.
+  - FCFS `sglang-fcfs-r1`, E2 BURST: 17093390 / 396 / 402 (`e2_170933xx_pulled_20261025-144558`). `-r0`: 17097089 / 095 / 101.
+
+**Manipulation check (frozen):**
+- **Hook items: all three runs pass.** `lpm_inf_markers.txt` holds `128 -> 1000000000` from the server pid and from exactly one child of it (pids 3826316, 3327643, 3330171, each with parent = the server pid the job printed). The CPU self-test in `flag_check.txt` reported value 1e9, `schedule_policy.py` md5 `b8ec334a…`, hook md5 `be788ae7…`, and LPM active at a queue of 300. The control without the variable gave 128 and FCFS.
+- **Scheduler cost** (`get_next_batch_to_run` s/s in 60-s bins whose mean queue is > 128):
+  - seed 0: 42 of 42 bins ≥ 0.008 (median 0.0130, min 0.0107);
+  - seed 1: 94 of 94 bins (median 0.0144, min 0.0119).
+  - Both **PASS**: the queue did pass 128, and LPM's prefix matching kept running there. Stock LPM and FCFS sit at 0.0027–0.0031 s/s in such bins (the fallback level).
+- **Seed 2:** the queue never passed 128 (max 120), so the scheduler-cost item is **UNINFORMATIVE**, not failed. The patched constant was never consulted at a value where it matters, so this run is in effect a third stock-LPM replicate.
+- **Not proven:** that the marking child is the scheduler. It is inferred: it is the only spawned child that imports `schedule_policy`, and the scheduler cost shows LPM active above 128. The log does not name the process.
+
+**Result (W = [5700, 8700) s):**
+
+| seed | cell | token hit W | collapse | trap_v2 | uncached / all-miss | slope (thr 0.0232) | p50 / p99 latency W (s) | unfinished | queue max | longest > 128 (s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | **LPM-INF** | **0.595** | no | draining | 0.84 | −0.025 | 12.0 / 210.7 | 104 | 165 | 1150 |
+| 0 | stock LPM r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.05 / 1.00 | 0.032 / 0.035 | 218 / 263; 229 / 279 | 354 / 361 | 334 / 345 | 5820 / 5650 |
+| 0 | FCFS r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.03 / 1.04 | 0.032 / 0.031 | 241 / 278; 235 / 271 | 370 / 366 | 356 / 342 | 6250 / 6265 |
+| 1 | **LPM-INF** | **0.419** | no | indeterminate | 0.92 | 0.016 | 149.0 / 230.8 | 194 | 184 | 2780 |
+| 1 | stock LPM r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.02 / 1.02 | 0.030 / 0.031 | 200 / 238; 199 / 238 | 318 / 317 | 290 / 287 | 6005 / 5800 |
+| 1 | FCFS r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.03 / 1.03 | 0.028 / 0.028 | 202 / 240; 202 / 240 | 320 / 320 | 299 / 298 | 6210 / 6130 |
+| 2 | LPM-INF (hook inert: queue ≤ 120) | 0.557 | no | draining | 0.88 | −0.015 | 13.5 / 113.9 | 59 | 120 | 0 |
+| 2 | stock LPM r1 / r0 | 0.442 / 0.816 | no / no | indeterminate / recovered | 0.92 / 0.34 | 0.004 / −0.011 | 73 / 118; 1.6 / 31 | 105 / 11 | 122 / 121 | 0 / 0 |
+| 2 | FCFS r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.03 / 1.03 | 0.036 / 0.036 | 213 / 256; 214 / 256 | 361 / 360 | 338 / 336 | 6475 / 6385 |
+
+- **Latency and starvation.** No turn waited more than 600 s in any run (the INF maximum is 241 s). INF miss-turn latency over W, p50 / p99: 131 / 215 s (s0), 183 / 234 s (s1), 89 / 118 s (s2). Every unfinished INF session is a base session; all 200 burst sessions finished.
+- **Token hit over time** (900-s bins, s0 / s1):
+  - INF: 0.93; 0.51; 0.23 / 0.19; 0.30 / 0.29; then 0.51–0.60 / 0.30–0.44.
+  - Stock r1: 0.93; 0.51 / 0.49; 0.30 / 0.12; 0.08 / 0.00; then 0.00 to the end.
+- **Queue.** It first passed 128 at almost the same time in INF and stock r1 (s0: 2475 vs 2525 s; s1: 1855 vs 1865 s) and stayed above it for at least 300 s in both (INF's sustained crossings begin at 3245 and 3270 s). After that, INF's 900-s mean queue stayed at 82–168, while stock's kept growing to 255–294.
+- **Timing.** The hit dip to 0.19–0.23 at 1800–2700 s comes before either queue reaches 128. So the fallback does not start the decline; it turns the decline into a collapse.
+
+**Decision rule (frozen, exploratory):** INF does not collapse on seed 0 and does not collapse on seed 1, so the outcome is **consistent** with the 128-request fallback causing stock LPM's collapse.
+- Trade-off clause, against the same-seed stock run with the same refresh flag (r1): INF has fewer unfinished sessions on all three seeds (104 vs 354, 194 vs 318, 59 vs 105) and a lower p99 over W (211 vs 263, 231 vs 238, 114 vs 118 s). No trade-off.
+- Against r0, the rule's literal test fires on seed 2 only (59 vs 11 unfinished, p99 114 vs 31 s). On that seed the queue never reached 128 in any LPM run, so the hook was inert, and the difference is replicate-to-replicate variation (see below).
+
+**Against the blind predictions** (`PREDICTIONS_r11_lpminf.md`, mixed primary):
+- Collapse flag: no collapse predicted on 3/3, and the engine did not collapse on 3/3 (**match 3/3**). The predicted decision outcome, "consistent", also matches.
+- Token hit: predicted 0.093 / 0.080 / 0.100, engine 0.595 / 0.419 / 0.557. The differences, 0.50 / 0.34 / 0.46, all exceed the 0.1 tolerance (**numeric miss 3/3**).
+- trap_v2: trapped predicted 3/3, engine draining / indeterminate / draining (**state miss 3/3**). The predicted disagreement between the primary endpoint and trap_v2 did not occur, because the engine did not stay near the all-miss rate.
+- The labelled secondary (separate batching: 0.38–0.42; s0 indeterminate, s1 trapped, s2 indeterminate) is closer. Seed 1's 0.419 lies inside its range and s0 and s2 lie above it, but it also misses the states.
+- The simulator was expected to be pessimistic about LPM: it has no partial hits and no LRU touch of waiting prefixes by LPM's matching. It turned out far more pessimistic than the 0.1 tolerance allows. Its predicted unfinished counts (334 / 295 / 321) are also far off (engine 104 / 194 / 59).
+
+**Verified vs. not:**
+- Verified: the sacct records; the archive hashes on both ends; the clone's HEAD `5064580` and clean status; the hook markers and self-tests; the scheduler-cost check on seeds 0–1; identical `plan.csv` across all five cells per seed; the burst2 verdict (no guard warnings); and the evaluator (5 tests in `tests/test_r11_lpminf_eval.py` pin the numbers).
+- Not verified: that the marking child is the scheduler by name (inferred, see above).
+- Not verified: the run-to-run variation of the engine at a fixed configuration. Only seed 2 gives a glimpse: three LPM runs that all stayed below 128, and so all ran effectively the same configuration, gave token hit 0.44, 0.56 and 0.82.
+- Not tested: any rate other than 1.65 ×, or any other seed.
+
+**Interpretation:** Exploratory: three seeds, one rate, two informative seeds.
+- On the two arrival streams where stock LPM collapsed in 4 of 4 runs, the same engine with only the 128-request switch disabled (verified active above 128) did not collapse. Token hit over the last 3000 s was 0.59 and 0.42, against 0.000, with a bounded queue and fewer unfinished sessions.
+- This is the causal step the post-hoc crossing analysis could not take. It supports the reading that stock LPM's collapse at 1.65 × is caused by its silent FCFS fallback, not by LPM ordering as such.
+- It does not show that pure LPM restores the good state. Seed 1 is indeterminate, with 189 requests outstanding at the end and an uncached-token rate at 0.92 × the all-miss rate, and no INF run recovers by the registered rule.
+- It cannot separate the two things the fallback switches off together: LPM's ordering, and the LRU touch of waiting requests' prefixes by LPM's matching.
+- It does not support a claim at other rates or a pooled estimate. With n = 2 informative seeds the result is directional only.
