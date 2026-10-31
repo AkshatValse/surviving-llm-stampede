@@ -24,13 +24,18 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
   - Blindness: tag `r13-theory-pred2` (tag object `6f0b504`, commit `cfa7712`) was pushed at 04:20:20 CDT (GitHub, per the lead; seen by `git ls-remote` at 04:21:51), before the p600k `--begin` of 05:00. Its files were read only after the p600k combine. The lead's message of ~04:25 quoted the H200-600k headline predictions, so the operator knew them before any p600k result existed. That does not affect blindness in time, and the registration is mechanical (rule of `836063a`).
 - The n = 36/44/52 points (17169612–14) are blind in time against `r13-theory-pred`, whose curve already covered them.
 
-## Still on Nova (not pulled)
+## Still on Nova (not pulled) — as of 12:25 CDT Sat, before the ~14:00 VPN drop
 - **p600k E2: 18 one-arm jobs 17171020–17171037**, submitted 09:27:44 CDT, seed-major:
   - seed 0 = 17171020–25 (1.5 × BURST, NOBURST, CAPPED, then 2.0 ×);
   - seed 1 = 17171026–31;
   - seed 2 = 17171032–37.
-  - Each runs one 8700 s arm (≈ 2.5 h with startup) with `--time=03:10:00 --deadline=2026-11-01T11:40:00`, nice 0, `--gres=gpu:h200:1`. Slurm drops any job that has not started by Sun 08:30.
-  - Submit script `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `$W/h200_jobs.env`. Each job's run dirs are listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`.
+  - Each runs with `--time=03:10:00 --deadline=2026-11-01T11:40:00`, nice 0, `--gres=gpu:h200:1`; about 2 h 29 min per job. Slurm drops any job not started by Sun 08:30.
+  - Submit script `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `$W/h200_jobs.env`. Each job's run dir is listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`.
+  - **Pulled already (part A):** 17171020–22 (seed 0, 1.5 ×, all three arms; COMPLETED 0:0, ended 11:56–12:03) in `results/nova/h200p600k_e2_partA_1717102x_pulled_20261031-120927/` (archive sha256 `c492385e…`; each run's `meta.json` carries PREREG_SHA256 `6be6e232…`). Not yet analysed.
+  - **Still on Nova:**
+    - 17171023–25 (seed 0, 2.0 ×), running since 11:57 / 11:57 / 12:04; due ≈ 14:30.
+    - 17171026–37 (seeds 1–2), pending.
+  - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
 - **Staging dirs** `/work/classtmp/avalse/swapp/pull_staging_h200*` (uncompressed copies; each archive deleted after its hash check).
 
 ## Sunday resume plan (VPN back ~08:00 CDT; results freeze 12:00)
@@ -38,7 +43,7 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
 2. **Verdict on the login node** (in `repo_h200`, which is at `4d1d431`, clean). Take RUNS_E from `results/nova_job_logs/<id>-*/run_dirs_burst.txt` of the 18 IDs, then run:
    `PYTHONPATH=src:. $PYG -m analysis.summarize burst2 --run-dirs $RUNS_E --out-root results --set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-31_h200_p600k.yaml`
    Parse the printed `out_dir`.
-3. **Pull read-only:** the 18 run dirs, job-log dirs, `logs/pm-e2h6-*.out` and the verdict dir. Use tar + `xz -T2`, sha256 on both ends, `tar --force-local`, then delete the remote archive. Put it in `results/nova/h200p600k_e2_1717102x_pulled_<ts>/`, before 11:30.
+3. **Pull read-only:** the remaining 15 run dirs (17171023–37; part A already holds 17171020–22), their job-log dirs, `logs/pm-e2h6-*.out`, `sacct` for all 18 and the verdict dir. Use tar + `xz -T2`, sha256 on both ends, `tar --force-local`, then delete the remote archive. Put it in `results/nova/h200p600k_e2_partB_1717102x_pulled_<ts>/`, before 11:30. If some jobs have not finished, pull what has and say which are missing; the verdict needs all 18.
 4. **Write it up:** a LOG entry (verdict table, against the pred2 E2 block, verified vs. not), a verdict section in `notes/PAPER_INPUT_h200.md`, and an update here. Commit, push `r12/h200`, and message the lead.
 
 ## Nova access window
