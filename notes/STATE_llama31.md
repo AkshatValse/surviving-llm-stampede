@@ -25,3 +25,4 @@ Cell: SGLang 0.5.22 + NousResearch/Meta-Llama-3.1-8B-Instruct @ d10aef7 (shards 
 4. Registration on `r12/llama31` (label sglang-fcfs-r1-llama31, smallest_within_margin, 1/3-2/3 rule), push, bundle into repo_llama31, check-job, 18 jobs seed-major `--time=03:10:00`.
 5. Verdict: burst2 --prereg with the E2 overrides; LOG; `notes/PAPER_INPUT_llama31.md`.
 Deadline: results by Sun 2026-11-01 12:00 CDT; cancel unstarted jobs at Sun 08:30.
+Connectivity (lead, Sat ~02:30): Nova is reachable only over Akshat's VPN, which drops automatically around 14:00 CDT Sat (the ssh silence 22:40-02:00 was a VPN outage). Pull every finished result before 13:30; anything still running at 14:00 waits for the next reconnect and is listed here. The lead's theory freeze is tag `r13-theory-pred` (~03:30); the Stage C / E0b read hold lifts only when it exists on the remote.
