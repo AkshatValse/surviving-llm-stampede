@@ -1,0 +1,34 @@
+{
+  "experiment": "r12_llama31_report",
+  "status": "done",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\llama31-predict\\src\\prefixmeta\\r12_llama31_predict.py",
+    "report",
+    "--spec",
+    "configs/r12_llama31_predict.yaml"
+  ],
+  "git": {
+    "commit": "6847dde8721aa91cd57fef10079219fe57212546",
+    "dirty": false,
+    "branch": "r12/llama31-predict"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-31T02:10:56",
+  "end_time": "2026-10-31T02:10:57",
+  "wall_s": 0.3328583240509033,
+  "quick": false,
+  "workers": 6,
+  "overrides": [],
+  "tag": null,
+  "stage": "report"
+}

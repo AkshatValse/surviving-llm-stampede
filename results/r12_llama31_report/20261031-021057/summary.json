@@ -1,0 +1,2876 @@
+{
+  "v0_mixed": {
+    "out_root": "results/r12_llama31_v0_mixed",
+    "B1v": {
+      "lambda_miss_turns": 0.07218695086154546,
+      "lambda_miss_turns_sd": 0.0018897159026692865,
+      "lambda_miss_sessions": 0.06944444444444443,
+      "token_rate": 11219.72185185185,
+      "busy": 1.0,
+      "token_rate_over_real_target": 1.1995853578372553,
+      "lambda_miss_over_real": 1.210378116390769,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07198622246151336,
+        "token_rate": 11350.604444444443,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "B4v": {
+      "peak_n": 24,
+      "peak_mu_turns": 0.22166437215545262,
+      "cap_n": 20,
+      "peak_n_sessions_based": 24,
+      "peak_mu_sessions": 0.22200000000000003,
+      "cap_n_sessions_based": 20,
+      "hit_at_peak": 0.8897674410772327,
+      "mu_last_over_peak": 0.5047201847324096,
+      "last_n": 300,
+      "hit_crossing": {
+        "0.5": 31.46199384157666,
+        "0.9": 22.9877456962406,
+        "0.2": 36.90051485188099
+      },
+      "largest_n_with_hit_at_least_top_level": 20,
+      "hit_crossing_first_level_by_seed": {
+        "0": 33.59013565383409,
+        "1": 32.77721779467415,
+        "2": 30.48992910100447,
+        "3": 30.407919360653434,
+        "4": 30.393489725130113,
+        "5": 32.79674695514784,
+        "6": 31.32088473400154,
+        "7": 32.11988750548118,
+        "8": 33.319575955029315,
+        "9": 30.001186891792386
+      },
+      "cap_margins": {
+        "cap_margin_rel": 0.023927994395115837,
+        "next_below_margin_rel": -0.16067930625259152
+      }
+    },
+    "B2v": {
+      "hi": 2.0,
+      "hi_sessions_per_s": 0.14437390172309092,
+      "censored_at_grid_top": false,
+      "grid_top": 3.0,
+      "hi_largest_all_stable": 2.0,
+      "contiguous_equals_largest": true,
+      "lambda_miss": 0.07218695086154546,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "window_empty": false,
+      "n_stable_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 6,
+        "3": 1
+      },
+      "n_runs_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 10,
+        "3": 10
+      },
+      "stable_frac_by_mult": {
+        "1.25": 1.0,
+        "1.5": 1.0,
+        "1.75": 1.0,
+        "2": 1.0,
+        "2.5": 0.6,
+        "3": 0.1
+      },
+      "stable_frac_crossing_0.95": 2.0625,
+      "stable_frac_crossing_0.5": 2.6,
+      "hi_in_real_units_sessions_per_s": 0.11928
+    },
+    "B3v": {
+      "cap_picked": 20,
+      "points": {
+        "1.1": {
+          "lam": 0.07940564594770001,
+          "burst_trapped": 4,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9960071512963172,
+          "trapped_token_ratio_max": 1.0104848007554423,
+          "trapped_backlog_mean": 148.77281706919996,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 4,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 4,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 4,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 4,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 4,
+              "noburst_good": 10,
+              "cap_recovered": 6,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 1,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 4,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.15": {
+          "lam": 0.08301499349077728,
+          "burst_trapped": 6,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9941128440861527,
+          "trapped_token_ratio_max": 1.0146826231811583,
+          "trapped_backlog_mean": 152.31529483481623,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 6,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 3,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 5,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.25": {
+          "lam": 0.09023368857693183,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9986073583589532,
+          "trapped_token_ratio_max": 1.0197745141169905,
+          "trapped_backlog_mean": 170.52857435302414,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 7,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 7,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.35": {
+          "lam": 0.09745238366308638,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0056886034244794,
+          "trapped_token_ratio_max": 1.0255212519462673,
+          "trapped_backlog_mean": 198.3725725402815,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 4,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 7,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.5": {
+          "lam": 0.10828042629231818,
+          "burst_trapped": 7,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.018353231110998,
+          "trapped_token_ratio_max": 1.0339685914838652,
+          "trapped_backlog_mean": 249.92654187836186,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 9,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.65": {
+          "lam": 0.11910846892155,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0272626141883958,
+          "trapped_token_ratio_max": 1.0426922302061428,
+          "trapped_backlog_mean": 290.1802129161174,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 9,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 2,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2": {
+          "lam": 0.14437390172309092,
+          "burst_trapped": 10,
+          "noburst_good": 9,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0484451000947443,
+          "trapped_token_ratio_max": 1.0587107378280889,
+          "trapped_backlog_mean": 399.13628602870443,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 9,
+              "cap_recovered": 6,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 9,
+              "cap_recovered": 5,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2.35": {
+          "lam": 0.16963933452463184,
+          "burst_trapped": 10,
+          "noburst_good": 6,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.063288391416847,
+          "trapped_token_ratio_max": 1.0732410802155954,
+          "trapped_backlog_mean": 522.5372772313535,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 0,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 2,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 1,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 0,
+              "cap_trapped": 5,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        }
+      },
+      "sim_registration_points": [
+        1.35,
+        1.65
+      ]
+    }
+  },
+  "v0_separate": {
+    "out_root": "results/r12_llama31_v0_separate",
+    "B1v": {
+      "lambda_miss_turns": 0.07135894621141302,
+      "lambda_miss_turns_sd": 0.0012945012296600334,
+      "lambda_miss_sessions": 0.06888888888888889,
+      "token_rate": 11146.80037037037,
+      "busy": 0.9999913200800533,
+      "token_rate_over_real_target": 1.1917887704875838,
+      "lambda_miss_over_real": 1.1964947386219487,
+      "check_pop64": {
+        "lambda_miss_turns": 0.07122094543639096,
+        "token_rate": 11218.086296296295,
+        "busy": 1.0,
+        "n_seeds": 3
+      }
+    },
+    "B4v": {
+      "peak_n": 24,
+      "peak_mu_turns": 0.22084389482032138,
+      "cap_n": 20,
+      "peak_n_sessions_based": 24,
+      "peak_mu_sessions": 0.22149999999999997,
+      "cap_n_sessions_based": 20,
+      "hit_at_peak": 0.8917476317325145,
+      "mu_last_over_peak": 0.5050615222059376,
+      "last_n": 300,
+      "hit_crossing": {
+        "0.5": 32.60362396070323,
+        "0.9": 23.142134209015715,
+        "0.2": 38.22194084350392
+      },
+      "largest_n_with_hit_at_least_top_level": 20,
+      "hit_crossing_first_level_by_seed": {
+        "0": 34.60696580918705,
+        "1": 33.44611422958896,
+        "2": 31.057378643474394,
+        "3": 32.44449330411453,
+        "4": 31.221103022312324,
+        "5": 33.157348943285164,
+        "6": 31.79851401518847,
+        "7": 32.56179654490905,
+        "8": 33.5712941637497,
+        "9": 32.08683297050941
+      },
+      "cap_margins": {
+        "cap_margin_rel": 0.018421680500716686,
+        "next_below_margin_rel": -0.1633195261920094
+      }
+    },
+    "B2v": {
+      "hi": 2.0,
+      "hi_sessions_per_s": 0.14271789242282604,
+      "censored_at_grid_top": false,
+      "grid_top": 3.0,
+      "hi_largest_all_stable": 2.0,
+      "contiguous_equals_largest": true,
+      "lambda_miss": 0.07135894621141302,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "window_empty": false,
+      "n_stable_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 8,
+        "3": 1
+      },
+      "n_runs_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 10,
+        "3": 10
+      },
+      "stable_frac_by_mult": {
+        "1.25": 1.0,
+        "1.5": 1.0,
+        "1.75": 1.0,
+        "2": 1.0,
+        "2.5": 0.8,
+        "3": 0.1
+      },
+      "stable_frac_crossing_0.95": 2.125,
+      "stable_frac_crossing_0.5": 2.7142857142857144,
+      "hi_in_real_units_sessions_per_s": 0.11928
+    },
+    "B3v": {
+      "cap_picked": 20,
+      "points": {
+        "1.1": {
+          "lam": 0.07849484083255433,
+          "burst_trapped": 6,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9896045890730776,
+          "trapped_token_ratio_max": 1.0049143815094457,
+          "trapped_backlog_mean": 149.67697720208767,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 8,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 6,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.15": {
+          "lam": 0.08206278814312497,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9899731253223604,
+          "trapped_token_ratio_max": 1.015101125348676,
+          "trapped_backlog_mean": 161.25354564666372,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 7,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.25": {
+          "lam": 0.08919868276426628,
+          "burst_trapped": 10,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9954264570391084,
+          "trapped_token_ratio_max": 1.0146703649653854,
+          "trapped_backlog_mean": 179.47703827930363,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 10,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 10,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 10,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 10,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 10,
+              "cap_recovered": 7,
+              "cap_trapped": 1,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 6,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.35": {
+          "lam": 0.09633457738540759,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.000925434141357,
+          "trapped_token_ratio_max": 1.0209618923696455,
+          "trapped_backlog_mean": 206.85739131254482,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 7,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 6,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.5": {
+          "lam": 0.10703841931711952,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.013900278508754,
+          "trapped_token_ratio_max": 1.027246888751766,
+          "trapped_backlog_mean": 252.37184295855306,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 2,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 2,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 7,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.65": {
+          "lam": 0.11774226124883147,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0223513493873897,
+          "trapped_token_ratio_max": 1.0375003782018697,
+          "trapped_backlog_mean": 295.4167907923903,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 8,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2": {
+          "lam": 0.14271789242282604,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0427961041535885,
+          "trapped_token_ratio_max": 1.051426024561574,
+          "trapped_backlog_mean": 409.23290253074333,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 6,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 7,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2.35": {
+          "lam": 0.1676935235968206,
+          "burst_trapped": 10,
+          "noburst_good": 6,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0542061586781204,
+          "trapped_token_ratio_max": 1.0658003019036086,
+          "trapped_backlog_mean": 521.3744338899962,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 0,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 3,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 3,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 10,
+              "noburst_good": 6,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        }
+      },
+      "sim_registration_points": [
+        1.35,
+        1.65
+      ]
+    }
+  },
+  "v1_mixed": {
+    "out_root": "results/r12_llama31_v1_mixed",
+    "B1v": {
+      "lambda_miss_turns": 0.05962888033453694,
+      "lambda_miss_turns_sd": 0.0012290133140599358,
+      "lambda_miss_sessions": 0.0587037037037037,
+      "token_rate": 9348.224074074074,
+      "busy": 0.9999976251144069,
+      "token_rate_over_real_target": 0.9994893696219475,
+      "lambda_miss_over_real": 0.9998135535636644,
+      "check_pop64": {
+        "lambda_miss_turns": 0.06078306863472153,
+        "token_rate": 9491.811481481482,
+        "busy": 1.0,
+        "n_seeds": 3
+      },
+      "v1_factor": 1.2121,
+      "bit_identical_to_the_frozen_check": true,
+      "check_accepted_rate": 9348.224074074074
+    },
+    "B4v": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.2100158521910896,
+      "cap_n": 20,
+      "peak_n_sessions_based": 20,
+      "peak_mu_sessions": 0.21077777777777779,
+      "cap_n_sessions_based": 20,
+      "hit_at_peak": 0.9300693837043535,
+      "mu_last_over_peak": 0.47375495062812484,
+      "last_n": 300,
+      "hit_crossing": {
+        "0.5": 30.621223022983084,
+        "0.9": 22.23361777176289,
+        "0.2": 35.95654167426528
+      },
+      "largest_n_with_hit_at_least_top_level": 20,
+      "hit_crossing_first_level_by_seed": {
+        "0": 32.91806326584926,
+        "1": 29.89527504366136,
+        "2": 30.16350367999905,
+        "3": 30.4410937294208,
+        "4": 29.279620619909256,
+        "5": 33.06668396790165,
+        "6": 29.595480701288302,
+        "7": 31.424897235919758,
+        "8": 32.51951375559821,
+        "9": 29.79791754652151
+      },
+      "cap_margins": {
+        "cap_margin_rel": 0.052631578947368585,
+        "next_below_margin_rel": -0.13119836562068776
+      }
+    },
+    "B2v": {
+      "hi": 2.5,
+      "hi_sessions_per_s": 0.14907220083634234,
+      "censored_at_grid_top": false,
+      "grid_top": 3.0,
+      "hi_largest_all_stable": 2.5,
+      "contiguous_equals_largest": true,
+      "lambda_miss": 0.05962888033453694,
+      "points": [
+        1.5,
+        2.0
+      ],
+      "window_empty": false,
+      "n_stable_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 10,
+        "3": 5
+      },
+      "n_runs_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 10,
+        "3": 10
+      },
+      "stable_frac_by_mult": {
+        "1.25": 1.0,
+        "1.5": 1.0,
+        "1.75": 1.0,
+        "2": 1.0,
+        "2.5": 1.0,
+        "3": 0.5
+      },
+      "stable_frac_crossing_0.95": 2.55,
+      "stable_frac_crossing_0.5": NaN,
+      "hi_in_real_units_sessions_per_s": 0.1491
+    },
+    "B3v": {
+      "cap_picked": 20,
+      "points": {
+        "1.1": {
+          "lam": 0.06559176836799065,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9856339692962082,
+          "trapped_token_ratio_max": 1.0050956337319763,
+          "trapped_backlog_mean": 127.09678890181652,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 6,
+              "cap_trapped": 2,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 6,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.15": {
+          "lam": 0.06857321238471747,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9926448410383354,
+          "trapped_token_ratio_max": 1.008736710339714,
+          "trapped_backlog_mean": 138.97351382205602,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 6,
+              "cap_trapped": 2,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 7,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.25": {
+          "lam": 0.07453610041817117,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0027961595399086,
+          "trapped_token_ratio_max": 1.014972761116639,
+          "trapped_backlog_mean": 159.5649907088402,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 5,
+              "cap_trapped": 2,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 8,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.35": {
+          "lam": 0.08049898845162488,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.010101418748382,
+          "trapped_token_ratio_max": 1.0204608623424414,
+          "trapped_backlog_mean": 183.88741150144392,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 9,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 2,
+              "cap_trapped": 3,
+              "per_arm_pass": false,
+              "same_seed_count": 2,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 8,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.5": {
+          "lam": 0.08944332050180541,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0187959471803023,
+          "trapped_token_ratio_max": 1.0326033183961858,
+          "trapped_backlog_mean": 218.46470489622914,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 5,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 8,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.65": {
+          "lam": 0.09838765255198595,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0282198547911952,
+          "trapped_token_ratio_max": 1.0396028938750697,
+          "trapped_backlog_mean": 254.18559927607203,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 8,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 6,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 5,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2": {
+          "lam": 0.11925776066907388,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0409392760478768,
+          "trapped_token_ratio_max": 1.0564815650269084,
+          "trapped_backlog_mean": 345.2439692609643,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 4,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 6,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2.35": {
+          "lam": 0.14012786878616182,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0569150163400018,
+          "trapped_token_ratio_max": 1.068408279568252,
+          "trapped_backlog_mean": 444.3038267960371,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 6,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 7,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        }
+      },
+      "sim_registration_points": [
+        1.5,
+        2.0
+      ]
+    }
+  },
+  "v1_separate": {
+    "out_root": "results/r12_llama31_v1_separate",
+    "B1v": {
+      "lambda_miss_turns": 0.05969160795954698,
+      "lambda_miss_turns_sd": 0.0014434988138922271,
+      "lambda_miss_sessions": 0.0587037037037037,
+      "token_rate": 9340.436296296297,
+      "busy": 0.9999798364503464,
+      "token_rate_over_real_target": 0.9986567193730671,
+      "lambda_miss_over_real": 1.000865324606757,
+      "check_pop64": {
+        "lambda_miss_turns": 0.0605196126096794,
+        "token_rate": 9457.28037037037,
+        "busy": 1.0,
+        "n_seeds": 3
+      },
+      "v1_factor": 1.204,
+      "bit_identical_to_the_frozen_check": true,
+      "check_accepted_rate": 9340.436296296297
+    },
+    "B4v": {
+      "peak_n": 20,
+      "peak_mu_turns": 0.20799853177076694,
+      "cap_n": 20,
+      "peak_n_sessions_based": 20,
+      "peak_mu_sessions": 0.20955555555555555,
+      "cap_n_sessions_based": 20,
+      "hit_at_peak": 0.9297374816437897,
+      "mu_last_over_peak": 0.4768841038632045,
+      "last_n": 300,
+      "hit_crossing": {
+        "0.5": 31.583150875991837,
+        "0.9": 22.686936315778254,
+        "0.2": 37.60206311442319
+      },
+      "largest_n_with_hit_at_least_top_level": 20,
+      "hit_crossing_first_level_by_seed": {
+        "0": 33.82934239204846,
+        "1": 30.924656151434814,
+        "2": 30.746211050161172,
+        "3": 31.685736079328755,
+        "4": 29.62112554451451,
+        "5": 33.28549216437758,
+        "6": 31.87867399508307,
+        "7": 32.19207087323322,
+        "8": 33.89328485431536,
+        "9": 30.325370361532613
+      },
+      "cap_margins": {
+        "cap_margin_rel": 0.052631578947368585,
+        "next_below_margin_rel": -0.12841000538077296
+      }
+    },
+    "B2v": {
+      "hi": 2.0,
+      "hi_sessions_per_s": 0.11938321591909395,
+      "censored_at_grid_top": false,
+      "grid_top": 3.0,
+      "hi_largest_all_stable": 2.0,
+      "contiguous_equals_largest": true,
+      "lambda_miss": 0.05969160795954698,
+      "points": [
+        1.35,
+        1.65
+      ],
+      "window_empty": false,
+      "n_stable_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 8,
+        "3": 4
+      },
+      "n_runs_by_mult": {
+        "1.25": 10,
+        "1.5": 10,
+        "1.75": 10,
+        "2": 10,
+        "2.5": 10,
+        "3": 10
+      },
+      "stable_frac_by_mult": {
+        "1.25": 1.0,
+        "1.5": 1.0,
+        "1.75": 1.0,
+        "2": 1.0,
+        "2.5": 0.8,
+        "3": 0.4
+      },
+      "stable_frac_crossing_0.95": 2.125,
+      "stable_frac_crossing_0.5": 2.875,
+      "hi_in_real_units_sessions_per_s": 0.11928
+    },
+    "B3v": {
+      "cap_picked": 20,
+      "points": {
+        "1.1": {
+          "lam": 0.06566076875550168,
+          "burst_trapped": 7,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9846166183529056,
+          "trapped_token_ratio_max": 1.0027936707532654,
+          "trapped_backlog_mean": 135.83665804744186,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 8,
+              "cap_trapped": 1,
+              "per_arm_pass": true,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 7,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 3,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.15": {
+          "lam": 0.06864534915347902,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 0.9906137686168832,
+          "trapped_token_ratio_max": 1.0068981471164524,
+          "trapped_backlog_mean": 148.8394768286608,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 6,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 3,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.25": {
+          "lam": 0.07461450994943372,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0011533191129385,
+          "trapped_token_ratio_max": 1.0122835058303643,
+          "trapped_backlog_mean": 166.49288350742063,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 6,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.35": {
+          "lam": 0.08058367074538843,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0084603867739066,
+          "trapped_token_ratio_max": 1.018131969249751,
+          "trapped_backlog_mean": 193.1097585204588,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 5,
+              "cap_trapped": 1,
+              "per_arm_pass": false,
+              "same_seed_count": 4,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.5": {
+          "lam": 0.08953741193932047,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0187595202349575,
+          "trapped_token_ratio_max": 1.030390839860046,
+          "trapped_backlog_mean": 225.05248197917848,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 2,
+              "cap_trapped": 2,
+              "per_arm_pass": false,
+              "same_seed_count": 1,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 8,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 9,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "1.65": {
+          "lam": 0.0984911531332525,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0250478774526277,
+          "trapped_token_ratio_max": 1.0377468988085177,
+          "trapped_backlog_mean": 263.83747448534973,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 9,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 8,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 3,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2": {
+          "lam": 0.11938321591909395,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.0383652853395935,
+          "trapped_token_ratio_max": 1.0536802016306797,
+          "trapped_backlog_mean": 354.5134242601764,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 7,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 7,
+              "same_seed_pass": true
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 4,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 10,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        },
+        "2.35": {
+          "lam": 0.1402752787049354,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "n_seeds": 10,
+          "trapped_token_ratio_min": 1.054331991312326,
+          "trapped_token_ratio_max": 1.0650624536612572,
+          "trapped_backlog_mean": 454.2358497505056,
+          "caps": {
+            "16": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 6,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 5,
+              "same_seed_pass": false
+            },
+            "20": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "24": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 10,
+              "cap_trapped": 0,
+              "per_arm_pass": true,
+              "same_seed_count": 9,
+              "same_seed_pass": true
+            },
+            "28": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 2,
+              "cap_trapped": 0,
+              "per_arm_pass": false,
+              "same_seed_count": 2,
+              "same_seed_pass": false
+            },
+            "32": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 7,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            },
+            "40": {
+              "n_seeds": 10,
+              "need": 7,
+              "burst_trapped": 9,
+              "noburst_good": 9,
+              "cap_recovered": 0,
+              "cap_trapped": 10,
+              "per_arm_pass": false,
+              "same_seed_count": 0,
+              "same_seed_pass": false
+            }
+          }
+        }
+      },
+      "sim_registration_points": [
+        1.35,
+        1.65
+      ]
+    }
+  }
+}
