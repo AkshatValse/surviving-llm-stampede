@@ -1,0 +1,22 @@
+{
+  "largest_all_stable_mult": null,
+  "first_unstable_mult_above": 2.5,
+  "monotone": true,
+  "n_rates": 1,
+  "by_label": {
+    "sglang-fcfs-r1-llama31": {
+      "largest_all_stable_mult": null,
+      "first_unstable_mult_above": 2.5,
+      "monotone": true,
+      "n_rates": 1,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ]
+    }
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}
