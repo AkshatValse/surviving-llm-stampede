@@ -15,6 +15,9 @@ committed run dirs, and writes into a new result dir:
                       rate, and t - t_engage, t - t_rel (figure 'trap, rescue, release, persist').
   trace_median.csv    per rate, arm and 60-s bin: the median over seeds of FU-hit and outstanding (t absolute), and, for the
                       rescue arm, the same aligned on t - t_rel (60-s bins of t - t_rel).
+  trace_300s.csv      per run and arm, 300-s bins: FU-hit pooled over the bin (follow-up-count weighted), mean outstanding,
+                      gated and paused.
+  hit_onset.csv       per rescue run: the first 60-s bin at or after t_engage with FU-hit >= 0.5 and >= 0.8.
 
   python figures/rescue_paper_data.py --verdict-dirs DIR [DIR ...] --capped-runs RUN [...] --out-root DIR
 """
@@ -140,7 +143,31 @@ def main(argv=None) -> int:
                .agg(fu_hit_median=("fu_hit", "median"), outstanding_median=("outstanding_mean", "median"), n=("seed", "count"))
                .reset_index())
 
+    # 300-s bins per run (FU-hit pooled over the five 60-s bins, weighted by their follow-up counts) and, per rescue run,
+    # the first 60-s bin after the engage whose FU-hit is >= 0.5 and >= 0.8 (hit onset; descriptive)
+    t5 = tr_df.copy()
+    t5["bin300"] = np.floor(t5["t_start"] / 300.0) * 300.0
+    t5["hits"] = t5["fu_hit"].fillna(0.0) * t5["fu_n"]
+    b300 = (t5.groupby(["profile", "rate_mult", "seed", "arm", "bin300"])
+            .agg(hits=("hits", "sum"), fu_n=("fu_n", "sum"), outstanding_mean=("outstanding_mean", "mean"),
+                 gated_mean=("gated_mean", "mean"), paused_mean=("paused_mean", "mean"),
+                 t_engage=("t_engage", "first"), t_release=("t_release", "first")).reset_index())
+    b300["fu_hit"] = np.where(b300["fu_n"] > 0, b300["hits"] / b300["fu_n"].where(b300["fu_n"] > 0, 1), np.nan)
+    b300 = b300.drop(columns=["hits"])
+    onset = []
+    for (prof, m, s), g in tr_df[tr_df["arm"] == "rescue"].groupby(["profile", "rate_mult", "seed"]):
+        g = g.sort_values("t_start")
+        after = g[g["t_start"] >= g["t_engage"].iloc[0]]
+        row = {"profile": prof, "rate_mult": m, "seed": s, "t_engage": g["t_engage"].iloc[0], "t_release": g["t_release"].iloc[0]}
+        for thr in (0.5, 0.8):
+            hit = after[after["fu_hit"] >= thr]
+            row[f"t_first_60s_bin_fu_hit_ge_{thr}"] = float(hit["t_start"].iloc[0]) if len(hit) else np.nan
+        row["max_outstanding_60s_after_engage"] = float(after["outstanding_mean"].max())
+        onset.append(row)
+
     out = new_result_dir(a.out_root, a.name)
+    b300.to_csv(out / "trace_300s.csv", index=False)
+    pd.DataFrame(onset).to_csv(out / "hit_onset.csv", index=False)
     pers_df.to_csv(out / "persistence.csv", index=False)
     cost_df.to_csv(out / "costs.csv", index=False)
     pd.DataFrame(summ).to_csv(out / "costs_summary.csv", index=False)
