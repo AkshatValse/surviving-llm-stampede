@@ -1,6 +1,6 @@
 # Llama-3.1-8B cell: live state (branch `r12/llama31`)
 
-Cell: SGLang 0.5.22 + NousResearch/Meta-Llama-3.1-8B-Instruct @ d10aef7 (shards byte-identical to meta-llama 0e9e39f2), 300k-token pool, one A100 80GB PCIe, label `sglang-fcfs-r1-llama31`. Owner: the Llama session started 2026-10-30 22:15 CDT by the lead ("arXiv paper draft for NOVA"). Rules: `Nova-Research-wt/COORD/COORDINATION.md`; plan: `COORD/llama31_wave1_handoff.md`, `COORD/model2/commands_corrected.sh` (step by step), checker problems in `COORD/model2_scope_and_check.md`.
+Cell: SGLang 0.5.22 + NousResearch/Meta-Llama-3.1-8B-Instruct @ d10aef7 (shards byte-identical to meta-llama 0e9e39f2), 300k-token pool, one A100 80GB PCIe, label `sglang-fcfs-r1-llama31`. Owner: the Llama session started 2026-10-30 22:15 CDT by the lead ("arXiv paper draft for NOVA"). LEAD CHANGE (Sat ~15:45 CDT): report to `nova-lead-2` (session `local_8c823c00-db19-4b39-b611-f9ce5f65891f`); the old lead ran out of context. Rules: `Nova-Research-wt/COORD/COORDINATION.md`; plan: `COORD/llama31_wave1_handoff.md`, `COORD/model2/commands_corrected.sh` (step by step), checker problems in `COORD/model2_scope_and_check.md`.
 
 ## Nova
 - Clone `$W/repo_llama31` at `5a6fbcd` (branch `gen/llama31`, push URL disabled). Submit log `$W/submit_llama31.log` (PD=2026-10-30-llama31).
