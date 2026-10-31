@@ -2,7 +2,7 @@
 
 \begin{table}[htbp]
 \centering\footnotesize
-\caption{Real-engine stages (SLURM job IDs on Nova). Submit, start, end and node of every job through the vLLM E0b are in \fpath{provenance/sacct_cited_jobs_2026-10-30.txt}, start, end and node of the vLLM paired test in its data directory (\fpath{sacct_17166121-17166138.txt}); the records of the later jobs are \pending{refreshed accounting export}.}\label{tab:stages}
+\caption{Real-engine stages (SLURM job IDs on Nova). Submit, start, end and node of every job through the vLLM E0b are in \fpath{provenance/sacct_cited_jobs_2026-10-30.txt}, start, end and node of the vLLM paired test in its data directory (\fpath{sacct_17166121-17166138.txt}); those of the B1 and fresh-seed jobs in theirs (\fpath{sacct_17168500-17168507.txt}); the records of the other later jobs are \pending{refreshed accounting export}.}\label{tab:stages}
 \begin{tabular}{@{}l l p{3.6cm}@{}}
 \toprule
 Stage & Jobs & What it measures\\
@@ -29,7 +29,7 @@ vLLM C & 17162959 & $\mu(n)$, vLLM, 300k pool, $n\in\{16,20,24\}$ (gpu-3)\\
 vLLM E0b & 17162962--63 & from-empty stability, vLLM\\
 vLLM E2 & 17166121--38 & registered paired test, vLLM, 2 rates $\times$ 3 seeds $\times$ 3 arms\\
 \midrule
-\multicolumn{3}{@{}l}{\emph{Outcomes pending (Table~\ref{tab:frozen})}}\\
+\multicolumn{3}{@{}l}{\emph{Rounds 11 to 14 (Tables~\ref{tab:frozen} and~\ref{tab:frozen2}; some outcomes pending)}}\\
 H200 & 17166807 & smoke, H200 NVL, 300k pool\\
  & 17166810--13 & E0a and its 64-session check\\
  & 17166818--22 & Stage C, $n=16$--300 (nine runs, with the next row)\\
@@ -45,7 +45,13 @@ Llama & 17166808 & smoke, Llama-3.1-8B\\
  & 17169565--70 & E0b\\
 pools & 17168864--69 & Stage C, 150k and 600k pools\\
  & 17168870--81 & E0b, 150k and 600k pools\\
-others & \pending{job IDs} & B1, B2, E0F, R1, R4, LPM-INF, TOOLSLOW and SHED\\
+B1 & 17168500--05 & bursts of 100, then 25\\
+E0F & 17168506--07 & from-empty, seeds 3--5\\
+LPM-INF & 17168743--45 & BURST, no LPM fallback\\
+B2 & 17169893--901 & bursts of 40, 60, then 50\\
+TOOLSLOW & 17169902--07 & $\delta=10$, then 30\,s\\
+SHED & 17169908--11 & $\tau=600$, then 3600\,s\\
+R1, R4 & \pending{job IDs} & rescue\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -86,6 +92,8 @@ Table~\ref{tab:workload} lists the workload and engine settings of the real-engi
 
 \paragraph{E0b.} Poisson session arrivals from an empty cache and queue at 1.25, 1.5, 1.75, 2.0, 2.5 and 3.0 $\lref$; one 3000\,s run per rate; stable if the final queue is below 50 and the fitted rise of the queue over the last 1500\,s is at most 10. All runs used arrival seed 0, so they share one random-number stream and the arrivals at each rate are a subset of those at the next higher rate. The six runs received 302, 359, 416, 472, 585 and 697 sessions, 8.3--12.6\% above $\lambda T$ and about 2.1 Poisson standard deviations above it in every run. Native E0b used the same rule at 1.5, 2.5, 3.5, 4.5, 5.5 and 6.5 times the native $\lref$ (361, 587, 811, 1034, 1257 and 1478 sessions, 5.6--11.7\% above $\lambda T$), and vLLM E0b the multiples of the 300k runs of vLLM's $\lref$ (279, 331, 383, 435, 539 and 642 sessions, 8.6--13.3\% above $\lambda T$; stable through 2.0, final queue 81.6 and 247.1 at 2.5 and 3.0).
 
+The fresh-seed E0b (E0F; jobs 17168506--07) repeated 2.0 and 2.5 $\lref$ on the 300k pool with arrival seeds 3, 4 and 5 under the same rule. All six runs were stable, with final queue 0, so the frozen replication rule, which needed 2.0 $\lref$ stable in all three seeds and 2.5 $\lref$ unstable in at least two, is not met. The nominal bracket of 2.0 to 2.5 $\lref$ therefore comes from the single seed-0 grid: over seeds 0 and 3--5, 2.0 $\lref$ is stable in 4 of 4 runs and 2.5 $\lref$ in 3 of 4. Measured instead in realized arrival rates (base arrivals in the 3000\,s run over $3000\,\mathrm{s}\times\lref$), the twelve from-empty runs of seeds 0 and 3--5 are stable up to 2.665 $\lref$ and unstable from 2.726 $\lref$, monotone in the realized rate, so the edge lies between 2.665 and 2.726 $\lref$. The seed-0 run at 2.5 $\lref$ is the one at 2.726: it received 9\% more arrivals than its nominal rate. Either way, the registered rates of 1.35 and 1.65 $\lref$ lie inside the window. The simulator's blind prediction was stable in all six runs; the heuristic F2 of \S\ref{sec:fp-heur} gave each 2.5 $\lref$ run a probability of 0.69 of being unstable and was too pessimistic. This test is exploratory: it has no registration of its own and does not change the E2 registration, whose window was fixed by the seed-0 bracket.
+
 \paragraph{E2.} One arm per 8700\,s job, each on a fresh server; burst of 200 fresh sessions within 60\,s at $t_b=1200$\,s for BURST and CAPPED; CAPPED gate $\ncap=20$; evaluation window $[t_b+4500,\,8700]$\,s. The registered rule (Table~\ref{tab:rule}) was applied by the analysis tool frozen at the registration commit, with the same parameter overrides that the jobs themselves used. Native E2 used the same protocol with the native registration's rates, reference rates and gate $\ncap=64$. Twelve of its 18 runs started after the cluster checkout moved from the registration commit to \texttt{a78ce07}, which adds only the vLLM registration, its input file and two notes files (the research log and the status notes), with no code change, and its verdict ran on that commit; two of its 18 servers sized the pool one token smaller, at 955,756. The vLLM paired test uses the same protocol with the vLLM registration and $\ncap=20$. It uses the same seeds, rates and reference rate as the exploratory vLLM BURST runs, so its BURST arm repeats their workloads rather than replicating them independently.
 
 \begin{table}[htbp]
@@ -122,7 +130,7 @@ The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FIL
 
 \begin{itemize}
 \item \textbf{Cell and inputs.} Engine cell \texttt{sglang-fcfs-r1} (SGLang FCFS, waiting-prefix refresh on); committed copies of the Stage~C curve, the E0a calibration and the E0b bracket under \fpath{prereg/inputs/2026-10-23/}; protocol 8700\,s, burst of 200 within 60\,s at 1200\,s.
-\item \textbf{Measured.} $\mu(n)$ in sessions/s: 0.1756 ($n=16$), 0.2239 (20), 0.2333 (24), 0.1150 (32), 0.0489 (48), 0.0611 (96), 0.1078 (300). $\mu^*=0.2333$; $\ncap=20$ by the smallest-within-5\% rule (argmax 24; flagged ambiguous). $\lmiss=0.07167$ (sessions) and 0.07153 (turns-based, $=\lref$); all-miss rate 11,243 tokens/s; E0b largest all-stable multiple 2.0, first unstable 2.5, monotone; hardware A100 80GB PCIe.
+\item \textbf{Measured.} $\mu(n)$ in sessions/s: 0.1756 ($n=16$), 0.2239 (20), 0.2333 (24), 0.1150 (32), 0.0489 (48), 0.0611 (96), 0.1078 (300). $\mu^*=0.2333$; $\ncap=20$ by the smallest-within-5\% rule (argmax 24; flagged ambiguous). $\lmiss=0.07167$ (sessions) and 0.07153 (turns-based, $=\lref$); all-miss rate 11,243 tokens/s; E0b largest all-stable multiple 2.0, first unstable 2.5, monotone (arrival seed 0 only; the fresh seeds of Appendix~\ref{app:protocol} came later); hardware A100 80GB PCIe.
 \item \textbf{Predicted boundaries.} Recovery threshold $\lref$ (not $\mu(300)$, which a synchronized start biases upward). Window $(0.0715,\,0.1431)$\sps{} $=(1.0,\,2.0)\,\lref$, upper edge from E0b. CAPPED drain must fit within 80\% of the 7200\,s available after the burst (5760\,s), which holds for $\lambda$ up to 2.64 $\lref$; predicted drain 1571\,s at 1.35 and 1889\,s at 1.65.
 \item \textbf{Rates.} 1.35 and 1.65 $\lref$ by the one-third/two-thirds rule, rounded to 0.05, inside the margin band $(1.1,\,1.8)$; seeds 0, 1, 2. On 2026-10-22 the runbook proposed the rate rule and a cap of 20, with keeping 24 as the alternative (\texttt{288b801}, 13:13 CDT); both rules were adopted in the project status notes at 13:50 (\texttt{4435c51}) and reached GitHub at 17:45, before E0b was submitted on 2026-10-23; the registration's own text dates them 2026-10-23.
 \item \textbf{Predictions.} Inside the window: BURST trapped, NOBURST good through the run horizon, CAPPED recovered if the drain fits. Below $\lref$: BURST not trapped. Above the window: NOBURST may escape, so no such rate was registered.
@@ -140,7 +148,7 @@ The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FIL
 
 The verdict, \fpath{results/agentload_analysis_burst2/20261031-020837/} in the paired test's data directory (\fpath{results/nova/e2_vllm_1716612x_pulled_20261031-020956/}), reports a pass at both rates; all 18 runs' \fpath{meta.json} files carry the registration's SHA-256. The tool also prints the labels pre-registered and decisive, which it assigns by commit order; by the definition of \S\ref{sec:prereg} the test is registered, not pre-registered. The frozen mechanism predictions for this test (\fpath{configs/r11_mechanism_predict.yaml}, \fpath{notes/PREDICTIONS_r11_mechanism.md}; commit \texttt{f1338e3}, pushed at 18:20:13 CDT on 2026-10-30, when three of the 18 jobs were running and none had ended; the first ended at 18:55:07) were evaluated with the frozen scripts, run unchanged. Byte copies of the frozen files and their outputs are under \fpath{r11_mechanism/} in the same directory, and the scored decision is \fpath{derived/r11_mechanism_decision.json}, which records two detector false alarms in CAPPED runs, one more than the frozen rule allows (\S\ref{sec:vllm}).
 
-\paragraph{Ledger of registrations.} Table~\ref{tab:ledger} lists every registration file we filled, with its status. Commit times are the committer's; push times come from GitHub's push log (\fpath{provenance/push_times_2026-10.tsv}, or the archived log itself for the grid cells).
+\paragraph{Ledger of registrations.} Table~\ref{tab:ledger} lists every registration file we filled, with its status. Commit times are the committer's; push times come from GitHub's push log (\fpath{provenance/push_times_2026-10.tsv}, or the archived log itself for the grid cells; for the registrations of 10-30 evening and 10-31, the live activity log as read on 10-31, which the archived copy does not yet include). Each is the first branch update that contains the commit; the B1 push also carried \texttt{9b67c26}, the commit of tag \texttt{r11-basin-reg}.
 \par\endgroup
 
 \begin{table*}[tbp]
@@ -155,13 +163,14 @@ File (\fpath{configs/agentload_prereg_*}) & status & committed & on GitHub & run
 \fpath{2026-10-25_native.yaml} (native E2) & FILLED & \texttt{b8c19ec} 10-25 17:31:16 & 17:31:56 & 18 runs; pass (\S\ref{sec:e2native})\\
 \fpath{2026-10-24_grid_vllm-fcfs.yaml} & EXPLORATORY & \texttt{a78ce07} 10-25 18:06:18 & 18:06:33 & 6 BURST runs (\S\ref{sec:vllm})\\
 \fpath{2026-10-30_vllm.yaml} (vLLM E2) & FILLED & \texttt{5a6fbcd} 10-30 16:23:59 & 16:26:35, after two jobs started & 18 runs; pass; registered, not pre-registered\\
-\fpath{2026-10-30_b100.yaml}, \fpath{_b25.yaml} (B1) & FILLED & \texttt{9128995} 10-30 19:51:20 & \pending{push} & \pending{B1}\\
-\fpath{2026-10-30_grid_sglang-lpminf.yaml} & EXPLORATORY & \texttt{5064580} 10-30 21:02:19 & \pending{push} & \pending{LPM-INF}\\
+\fpath{2026-10-30_b100.yaml}, \fpath{_b25.yaml} (B1) & FILLED & \texttt{9128995} 10-30 19:51:20 & 20:04:30 & 6 BURST runs; pass (Table~\ref{tab:frozen})\\
+\fpath{2026-10-30_grid_sglang-lpminf.yaml} & EXPLORATORY & \texttt{5064580} 10-30 21:02:19 & 21:02:46 & 3 BURST runs; no collapse on the two informative seeds, no recovery (Table~\ref{tab:frozen2})\\
 \fpath{2026-10-31_rescue.yaml} (R1), \fpath{_rescue_native.yaml} (R4), \fpath{_rescue_smoke.yaml} & FILLED & \texttt{f0bc3ad} 10-30 22:10:47 & \pending{push} & \pending{R1, R4}; the smoke job is never decisive\\
-\fpath{2026-10-31_b40.yaml}, \fpath{_b50.yaml}, \fpath{_b60.yaml} (B2) & FILLED & \texttt{621d88f} 10-31 01:58:38 & \pending{push} & \pending{B2}\\
-\fpath{2026-10-31_toolslow_d10.yaml}, \fpath{_d30.yaml} & FILLED & \texttt{b006291} 10-31 02:27:40 & \pending{push} & \pending{TOOLSLOW}\\
-\fpath{2026-10-31_shed_t600.yaml}, \fpath{_t3600.yaml} & FILLED & \texttt{b006291} 10-31 02:27:40 & \pending{push} & \pending{SHED}\\
-H200 cell, Llama-3.1-8B cell & \pending{status} & & & \\
+\fpath{2026-10-31_b40.yaml}, \fpath{_b50.yaml}, \fpath{_b60.yaml} (B2) & FILLED & \texttt{621d88f} 10-31 01:58:38 & 02:10:48 & 9 runs, submitted 04:21; \pending{B2}\\
+\fpath{2026-10-31_toolslow_d10.yaml}, \fpath{_d30.yaml} & FILLED & \texttt{b006291} 10-31 02:27:40 & 02:28:09 & 6 runs, submitted 04:21; \pending{TOOLSLOW}\\
+\fpath{2026-10-31_shed_t600.yaml}, \fpath{_t3600.yaml} & FILLED & \texttt{b006291} 10-31 02:27:40 & 02:28:09 & 4 runs, submitted 04:21; \pending{SHED}\\
+H200 cell & none & & & window $(1,\,1.3)\,\lref$ too narrow: the rule's rates 1.10 and 1.20 fall outside its margin band $(1.1,\,1.17)$, and the fill returns INCOMPLETE; no test\\
+Llama-3.1-8B cell & \pending{status} & & & \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -247,37 +256,53 @@ In the third round (\fpath{notes/PREDICTIONS_vllm.md}), an LLM agent in a separa
 
 \paragraph{Rounds 11 to 14.} Table~\ref{tab:timeline-r11} gives the time record of the later rounds. Round 11 froze the mechanism checks for the registered vLLM test (\S\ref{sec:vllm}) and the simulator's predictions for the basin, fresh-seed, LPM-INF and rescue tests; round 12 the simulator's predictions for the Llama-3.1-8B cell, with its token costs scaled to the cell's measured all-miss rate (a fit); round 13 the first-principles model of \S\ref{sec:fp}; round 14 registered the B2, TOOLSLOW and SHED tests. LLM agents ran the simulator rounds in separate copies of the repository. The round-11 rescue predictions were revised after two adversarial reviews and before any rescue run, and every registered quantity was bit-identical before and after the revision (\fpath{notes/PREDICTIONS_r11_rescue.md}). The agents that derived the first-principles model read every committed result of the three measured cells and the registered protocols of B1, R1 and R4, and no H200, Llama, pool-sweep, basin, fresh-seed, LPM-INF or rescue result (\fpath{notes/PREDICTIONS_r13_theory.md}, ``Blindness scope''). When they froze the basin and rescue predictions they also knew the simulator's burst-size sweep of \S\ref{sec:robust} (bursts of 25 never trapped, 50 about half the time and 100 always) and the registered simulator rescue prediction (R1 rescued in 20 of 20 seeds at both rates). Their only H200 inputs were its E0a measurements. The session that operated the H200 cell had shown its closed-curve values for $n\le32$ to the first author before the freeze; the agents that derived the model did not see them.
 
-\begin{table}[htbp]
+Table~\ref{tab:timeline-r11} also gives what each prediction is blind to. The simulator's B1 and fresh-seed predictions reached GitHub before those jobs were submitted, and its LPM-INF predictions before the LPM-INF jobs, so all three are blind in time. For the theory, B1's 25-session runs ended after the freeze and are blind in time. The three 100-session runs had ended 0.2 to 1.6\,h before it, so for them the prediction is blind only by access: no one is known to have read them before the push, and the first recorded reading of any B1 or fresh-seed outcome was at about 04:07, but no file-access record can show this, because the cluster's class storage is mounted without access times. The same holds for the H200 cell's closed runs at $n=40$, 48, 96 and 300 and its original E0b runs. They had ended before the freeze, and they were first read after it, when the curve and the bracket were combined at 02:30. The runs at $n=36$, 44 and 52 were submitted after the freeze and are blind in time. No blind simulator prediction exists for the H200 cell. The second theory set (pred2) reached GitHub at 04:20:20, before the B2, TOOLSLOW and SHED jobs were submitted (04:21:40 to 04:21:43), so its predictions for them are blind in time. The 600k H200 jobs had been submitted at 02:50 but could not start before 05:00 and first started at 05:27, so its 600k predictions are blind in the sense that no result existed. Its table for the fresh seeds is not blind in time: it was committed at 04:20:05, after the last fresh-seed run had ended (03:57:56), although by its record its agents read no result.
+
+\begin{table*}[tbp]
 \centering\footnotesize
-\caption{Order of the round-11 to round-14 events, 2026-10-30 and 10-31 (times CDT; commit and tag times by the committer). Push times marked * were read from GitHub's activity log at the time and recorded in \fpath{notes/PREDICTIONS_r11_mechanism.md}, \fpath{notes/PREDICTIONS_r13_theory.md}, \fpath{notes/PREDICTIONS_r13_pred2.md} and \fpath{notes/STATE_llama31.md}; they are not yet in the archived copy of the log in \fpath{provenance/}.}\label{tab:timeline-r11}
-\begin{tabular}{@{}p{1.75cm} >{\raggedright\arraybackslash}p{5.6cm}@{}}
+\caption{Order of the round-11 to round-14 events, 2026-10-30 and 10-31 (times CDT; commit and tag times by the committer; submission, start and end times of jobs by Slurm's accounting, run end times by each run's \fpath{meta.json}). Push times marked * were read from GitHub's activity log, at the time (recorded in \fpath{notes/PREDICTIONS_r11_mechanism.md}, \fpath{notes/PREDICTIONS_r13_theory.md}, \fpath{notes/PREDICTIONS_r13_pred2.md} and \fpath{notes/STATE_llama31.md}) or on 10-31; they are not yet in the archived copy of the log in \fpath{provenance/}.}\label{tab:timeline-r11}
+\begin{tabular}{@{}p{2.3cm} >{\raggedright\arraybackslash}p{14.4cm}@{}}
 \toprule
 When & Event\\
 \midrule
 10-30 18:20 & r11 mechanism predictions for the vLLM test committed (\texttt{f1338e3}, 18:20:11) and pushed (18:20:13*); three of its 18 jobs running, none ended\\
 10-30 18:55 & first vLLM paired-test job ends (17166121, 18:55:07)\\
-10-30 19:50 & B1 and fresh-seed predictions (\texttt{c600fd7}); B1 registrations (\texttt{9128995}, 19:51); tag \texttt{r11-basin-reg} 20:04\\
-10-30 21:01 & LPM-INF predictions (\texttt{e2e8474}) and registration (\texttt{5064580}, 21:02); tag \texttt{r11-lpminf-pred} 21:02\\
+10-30 19:50 & B1 and fresh-seed predictions (\texttt{c600fd7}); B1 registrations (\texttt{9128995}, 19:51); tag \texttt{r11-basin-reg} 20:04; all pushed 20:04:30*\\
+10-30 21:01 & LPM-INF predictions (\texttt{e2e8474}) and registration (\texttt{5064580}, 21:02); tag \texttt{r11-lpminf-pred} 21:02; pushed 21:02:46*\\
+10-30 21:12 & B1 and fresh-seed jobs submitted (17168500--07, 21:12:45--46)\\
 10-30 21:28 & rescue predictions (\texttt{72501f0}); tag \texttt{r11-rescue-pred} 21:30\\
+10-30 22:07 & LPM-INF jobs submitted (17168743--45, 22:07:40)\\
 10-30 22:10 & R1 and R4 registrations (\texttt{f0bc3ad}); tag \texttt{r11-rescue-reg} 22:38\\
+10-30 22:28 & the H200 operator reads the closed-curve values for $n\le32$ (17166818--22) and shows them to the first author\\
+10-30 22:38 to 23:52 & H200 closed runs at $n=40$, 48, 96 and 300 end (17166828--34; not read until 02:30)\\
+10-31 00:14 to 01:08 & H200 E0b jobs end (17168377--82; not read until 02:30)\\
 10-31 00:20 & last vLLM paired-test job ends\\
-10-31 01:58 & B2 registrations (\texttt{621d88f}); tag \texttt{r14-basin2-reg} 02:10\\
+10-31 00:28 to 01:51 & the three 100-session B1 runs end (00:27:56, 00:29:27, 01:50:54)\\
+10-31 01:58 & B2 registrations (\texttt{621d88f}); tag \texttt{r14-basin2-reg} 02:10; pushed 02:10:48*\\
 10-31 02:05 & theory frozen (\texttt{997d2c4}, 02:04:55) and pushed (02:05:30*); tag \texttt{r13-theory-pred}\\
+10-31 02:05 to 03:58 & the six fresh-seed runs end (the first at 02:04:59, 31\,s before the theory push)\\
 10-31 02:08 & registered vLLM verdict computed on the cluster; pulled 02:09:56, committed 02:22 (\texttt{cacf833})\\
 10-31 02:14 & Llama simulator predictions (\texttt{a62aea9}) pushed (02:14:06*); tag \texttt{r12-llama31-predictions-frozen}\\
-10-31 02:27 & TOOLSLOW and SHED registrations (\texttt{b006291}); tag \texttt{r14-extra-reg} 02:27:59\\
+10-31 02:20 to 02:47 & the three 25-session B1 runs end\\
+10-31 02:27 & TOOLSLOW and SHED registrations (\texttt{b006291}); tag \texttt{r14-extra-reg} 02:27:59; pushed 02:28:09*\\
+10-31 02:30 & H200 nine-point curve and E0b bracket combined on the cluster: first reading of $n\ge40$ and of the edge\\
+10-31 02:33 & H200 closed runs at $n=36$, 44 and 52 submitted (17169612--14, 02:33:06); they end 03:25 to 04:01\\
+10-31 02:50 & H200 E0b reseeds (17169668--71, 02:50:20) and 600k jobs (17169672--80, 17169682--87, 02:50:32 to 02:51:20, not eligible to start before 05:00) submitted\\
+10-31 03:49 to 04:21 & the three LPM-INF runs end\\
+10-31 04:07 & first recorded reading of the B1 and fresh-seed outcomes (about 04:07)\\
 10-31 04:20 & second theory set for B2, TOOLSLOW, SHED and the H200 600k cell committed (\texttt{cfa7712}, 04:20:05) and pushed (04:20:20*); tag \texttt{r13-theory-pred2}\\
+10-31 04:21 & B2, TOOLSLOW and SHED jobs submitted (17169893--911, 04:21:40 to 04:21:43) from clones at the registration tags, by scripts that require the pred2 commit\\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \section{Provenance}\label{app:prov}
 Every number in the paper is listed with its source file and commit or job in \fpath{paper/NUMBERS.md}. Table~\ref{tab:prov} gives the data directory and commit behind each result. The commit hashes cited are those of the development repository; the public repository's history is a redacted copy of it, and \fpath{provenance/registration-proofs/} maps each cited registration and prediction commit to its public counterpart (availability statement). The 103 commits made before 17:45 CDT on 2026-10-22, including \texttt{288b801}, \texttt{4435c51} and \texttt{d0235a7} cited here, predate a history rewrite on that day that removed the AI co-author trailers from their commit messages and changed nothing else: trees, authors, dates and parent relations are unchanged. \fpath{provenance/commit-map.tsv} maps their old hashes, which notes and run records written before the rewrite cite, to the current ones; the repository the old hashes belong to is not on GitHub, so they can be checked only against this map. Their earliest server record is the repository's first push to GitHub, at 17:45:50 CDT on 2026-10-22, with which 97 of them arrived, these three among them, before E0b was submitted on 2026-10-23; one more (\texttt{fc870c2}) arrived 2\,s later, and five are reachable only from archive tags, which have no push record.
 
-\begin{table}[htbp]
+\begin{table*}[tbp]
 \centering\footnotesize
 \caption{Data behind each result (paths relative to the repository root at tag \texttt{arxiv-v1}).}\label{tab:prov}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}p{6.2cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{14.7cm}@{}}
 \toprule
 Result & Directory (commit)\\
 \midrule
@@ -297,6 +322,10 @@ B1n--B4n & \fpath{results/r8_native_report/20261025-150146/}, \fpath{notes/PREDI
 B1v--B4v & \fpath{results/r9_vllm_report/20261030-122723/}, \fpath{notes/PREDICTIONS_vllm.md} (\texttt{cc01dbf})\\
 vLLM E2 & \fpath{results/nova/e2_vllm_1716612x_pulled_20261031-020956/} (\texttt{cacf833}); mechanism checks in its \fpath{r11_mechanism/} and \fpath{derived/}\\
 theory & \fpath{results/theory/merged/}, \fpath{notes/PREDICTIONS_r13_theory.md}, \fpath{notes/THEORY_r13_scoring.md}, \fpath{configs/r13_theory_predict.yaml} (\texttt{997d2c4}, tag \texttt{r13-theory-pred}); \fpath{results/theory/paper/}, \fpath{figures/theory/} (\texttt{5271ff6})\\
+H200 & \fpath{results/nova/h200_wave1_pulled_20261031-023416/} and \fpath{prereg/inputs/2026-10-31-h200/} (\texttt{d108056}); \fpath{results/nova/h200_stageC_extra_1716961x_pulled_20261031-040933/} (\texttt{748900b}); \fpath{results/nova/h200_e0b_reseeds_1716966x_pulled_20261031-050308/} (\texttt{4e27364})\\
+B1, E0F & \fpath{results/nova/b1_e0f_1716850x_pulled_20261031-040517/} (\texttt{4dd21e0})\\
+LPM-INF & \fpath{results/nova/lpminf_1716874x_pulled_20261031-042548/}, \fpath{results/r11_lpminf_eval/20261031-eval/} (\texttt{fc8b028})\\
+pred2 & \fpath{results/theory/pred2/}, \fpath{configs/r13_theory_pred2.yaml}, \fpath{notes/PREDICTIONS_r13_pred2.md} (\texttt{cfa7712}, tag \texttt{r13-theory-pred2})\\
 rounds 11, 12 & \fpath{results/r11_predict_basin/20261030-194539/} (\texttt{c600fd7}), \fpath{results/r11_predict_lpminf/20261030-194911/} (\texttt{e2e8474}), \fpath{results/r11_predict_rescue/20261030-195231/} (\texttt{72501f0}), \fpath{results/r12_llama31_report/20261031-021057/} (\texttt{a62aea9})\\
 gap$/R_M$ & \fpath{paper/derived/loopvars_*.csv} (frozen script of \texttt{f1338e3})\\
 robustness & \fpath{results/r7_report/20261024-233554/} (\texttt{c653498}); \fpath{results/r7_traces_sim/r7_report/20261025-012451/}, \fpath{results/r7_traces_sim_adj/r7_report/20261025-012453/} (\texttt{b530e55})\\
@@ -306,7 +335,7 @@ figures & \fpath{figures/paper/}, \fpath{paper/figs/README.md}\\
 derived & \fpath{paper/derived/}, \fpath{figures/paper/derived_numbers.py}\\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \paragraph{Derived numbers.} Quantities that no committed analysis reports directly are computed from committed run data by \fpath{figures/paper/derived_numbers.py} and written to \fpath{paper/derived/}: the CAPPED drain times; the BURST backlog after the burst and over the window; the E0b hit fractions and realized arrival rates; the arm counts and the post-hoc sign test that counts each seed once; per BURST run, the hit fraction before the burst and the first 100\,s window from which no turn hit; and, per run of every arm, the client-side cost (gate waits, turn latency, unfinished sessions) and the realized arrival and completion rates over the window. They cover E0b, E2, native E0b, native E2, vLLM E0b and the exploratory vLLM BURST runs. Each derived file names a run both by its path on the cluster and by its path from the repository root.
 
