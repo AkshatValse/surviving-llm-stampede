@@ -1,0 +1,5 @@
+mode,mult,engine_n,engine_stable,engine_by_seed,reference_n,reference_stable,reference_by_seed,extra_n,extra_stable,extra_stable_frac,extra_stable_r6_rule
+mixed,2.0,3,3,s3:stable s4:stable s5:stable,1,1,s0:stable,20,18,0.9,18
+mixed,2.5,3,3,s3:stable s4:stable s5:stable,1,0,s0:UNSTABLE,20,11,0.55,11
+separate,2.0,3,3,s3:stable s4:stable s5:stable,1,1,s0:stable,20,19,0.95,19
+separate,2.5,3,3,s3:stable s4:stable s5:stable,1,0,s0:UNSTABLE,20,12,0.6,12

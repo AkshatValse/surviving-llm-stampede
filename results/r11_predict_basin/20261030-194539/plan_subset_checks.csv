@@ -1,0 +1,7 @@
+seed,burst_n,plan_equals_cell_config_plan,cell_config,base_identical_to_n200,n_burst,burst_times_subset_of_n200,burst_window,first_prompt_tokens_of_burst
+0,25,True,configs/agentload_e2_burst_n25.yaml,True,25,True,"[1200.3514822532811, 1258.0760142183447]",50000
+0,100,True,configs/agentload_e2_burst_n100.yaml,True,100,True,"[1200.3514822532811, 1259.887801838668]",200000
+1,25,True,configs/agentload_e2_burst_n25.yaml,True,25,True,"[1201.2788470250941, 1251.8308956900685]",50000
+1,100,True,configs/agentload_e2_burst_n100.yaml,True,100,True,"[1200.9484701451956, 1259.716364014355]",200000
+2,25,True,configs/agentload_e2_burst_n25.yaml,True,25,True,"[1204.605549378664, 1259.1346297801242]",50000
+2,100,True,configs/agentload_e2_burst_n100.yaml,True,100,True,"[1200.8339032982065, 1259.1346297801242]",200000
