@@ -31,6 +31,13 @@ Decision (per seed, CRN pairs, no pooled intervals): basin shown (PASS) iff n = 
 GOOD in >= 2/3 seeds; n = 100 STUCK >= 2/3 but TRAPPED < 2/3 -> 'stuck, slope-indeterminate'; n = 100 GOOD >= 2/3 -> the
 simulator's critical size is refuted, the basin edge lies between 100 and 200; n = 25 STUCK >= 2/3 -> 'even 25 traps'.
 
+B2 (r14, remedy N1: the basin dose-response) adds burst sizes n = 40, 50 and 60 with the same design (BURST arm, 1.65 x, seeds
+0-2, CRN with the runs above), the same frozen endpoints (configs/r11_basin_predict.yaml, unchanged) and the registrations
+configs/agentload_prereg_2026-10-31_b40.yaml / _b50.yaml / _b60.yaml (``fill --n 40|50|60``; n = 100 / 25 fill byte-identically
+as before). Frozen B2 rule: the basin boundary is bracketed iff n = 40 is GOOD in >= 2/3 seeds and n = 60 is STUCK in >= 2/3
+seeds (:func:`bracket_decision`); n = 50 does not enter the rule. The seven-point curve n = 0, 25, 40, 50, 60, 100, 200
+(per seed, :func:`curve_table`) is reported against the frozen committor of the theory predictions.
+
 CLI:  python -m analysis.basin fill --n 100 --out configs/agentload_prereg_2026-10-30_b100.yaml
       python -m analysis.basin classify --endpoints configs/r11_basin_predict.yaml --run-dirs RUN [RUN ...]
                                         [--baseline-dirs RUN ...] [--prereg FILE ...] [--out-root results]
@@ -57,6 +64,9 @@ REPO = Path(__file__).resolve().parent.parent
 MEASURED_CELL = "sglang-fcfs-r1"
 CELL_LABEL = "sglang-fcfs-r1-b{n}"
 BASIN_NS = (25, 100)
+BASIN2_NS = (40, 50, 60)                  # B2 (r14, N1): the dose-response cells
+BASIN2_BRACKET = (40, 60)                 # the frozen bracketing rule: n=40 GOOD >= 2/3 and n=60 STUCK >= 2/3
+CURVE_NS = (0, 25, 40, 50, 60, 100, 200)  # the seven-point curve reported against the frozen committor
 BASIN_MULT = 1.65
 BASIN_SEEDS = (0, 1, 2)
 INPUTS = "prereg/inputs/2026-10-23"
@@ -79,11 +89,17 @@ _HYP = {
           "rule called only 8/10 TRAPPED at 1.65 x and 5/10 at 1.35 x), and STUCK with TRAPPED in < 2/3 "
           "is reported as 'stuck, slope-indeterminate'"),
     25: "n=25 GOOD in >= 2/3 seeds",
+    40: "n=40 GOOD in >= 2/3 seeds (the lower half of the bracket)",
+    50: ("none for n=50 alone: it is a point of the seven-point curve, reported per seed, and does not enter the bracketing "
+         "rule"),
+    60: "n=60 STUCK in >= 2/3 seeds (the upper half of the bracket)",
 }
 
 
 def rule_text(n: int) -> str:
     """lambda_selection.rule of the n-cell registration: why 1.65, what is paired, and the frozen primary endpoints."""
+    if n in BASIN2_NS:
+        return _rule_text_b2(n)
     return (
         f"Single point {BASIN_MULT:g} x lambda_ref: the upper registered point (m2) of {PARENT_PREREG}, same inputs "
         f"({INPUTS}: mu_curve, calibration, E0b bracket), same window (1, 2.0) x lambda_ref and the same 1/3-2/3 rule written "
@@ -103,6 +119,33 @@ def rule_text(n: int) -> str:
         "seeds; statistics per seed (CRN pairs), no pooled intervals. The pass_rule and kill_conditions below are the "
         "template's three-arm rule, inherited unchanged so the rule keys match the analysis; this one-arm cell is judged by "
         "the endpoints above (analysis/basin.py), not by the paired PASS rule.")
+
+
+def _rule_text_b2(n: int) -> str:
+    """lambda_selection.rule of a B2 (dose-response) cell: the B1 text's design and endpoints plus the frozen N1 rule."""
+    return (
+        f"Single point {BASIN_MULT:g} x lambda_ref: the upper registered point (m2) of {PARENT_PREREG}, same inputs "
+        f"({INPUTS}: mu_curve, calibration, E0b bracket), same window (1, 2.0) x lambda_ref and the same 1/3-2/3 rule written "
+        "on 2026-10-23 before E0b was read; reused unchanged so that each run pairs by seed (common random numbers: identical "
+        "base sessions; the burst start times are the first n of the n=200 draw) with the committed 300k E2 NOBURST (n=0) and "
+        "BURST (n=200) runs at 1.65 x (jobs 17093387-404) and with the B1 runs n=25 and n=100 (registrations "
+        "configs/agentload_prereg_2026-10-30_b25.yaml / _b100.yaml, tag r11-basin-reg). The measured values are those of cell "
+        f"{MEASURED_CELL} (same hardware, pool, policy and refresh flag; filled by analysis.basin fill, which runs "
+        f"analysis.prereg.fill under {MEASURED_CELL} and then sets only inputs.engine_cell_label), so these runs stay out of "
+        f"the {MEASURED_CELL} verdict. Only the burst size differs: protocol.burst_n = {n} from {e2_config_path(n)}, a byte "
+        f"copy of {DEFAULT_E2_CONFIG} except arrivals.burst.n (the research_question's '200-session burst' is template text; "
+        "this cell's burst is protocol.burst_n). Basin dose-response test B2 (r14, remedy N1): BURST arm only, burst sizes "
+        "n = 40, 50, 60, seeds 0, 1, 2. FROZEN PRIMARY ENDPOINTS (the B1 definitions frozen in configs/r11_basin_predict.yaml, "
+        "unchanged; per run, over the registered evaluation window [t_burst_s + eval_from_s, duration_s) = [5700, 8700) s, "
+        "hit = pass_rule.hit_metric): STUCK := hit_eval < 0.2 (the registered constant burst.trap_hit_below); GOOD := trap_v2 "
+        "RECOVERED (pass_rule recovered_*), or (hit_eval > 0.8 and backlog slope <= slope_frac x (lambda - lambda_miss), the "
+        f"registered trap_v2 slope threshold). Hypothesis: {_HYP[n]}. FROZEN DECISION RULE (N1): the basin boundary is "
+        "bracketed iff b=40 is GOOD in >=2/3 seeds and b=60 STUCK in >=2/3 seeds; the seven-point curve 0,25,40,50,60,100,200 "
+        "is reported against the frozen committor (the theory predictions, committed and pushed before the first B2 job is "
+        "submitted). b=50 does not enter the bracketing rule. Statistics per seed (CRN pairs), no pooled intervals; a missing "
+        "seed counts as not meeting a criterion. The pass_rule and kill_conditions below are the template's three-arm rule, "
+        "inherited unchanged so the rule keys match the analysis; this one-arm cell is judged by the endpoints and the rule "
+        "above (analysis/basin.py), not by the paired PASS rule.")
 
 
 def fill_registration(n: int, *, repo: Path = REPO, params: Optional[AnalysisParams] = None) -> Dict[str, Any]:
@@ -298,6 +341,52 @@ def decision(by_n: Dict[int, List[Dict[str, Any]]], seeds: Sequence[int] = BASIN
     return out
 
 
+def bracket_decision(by_n: Dict[int, List[Dict[str, Any]]], seeds: Sequence[int] = BASIN_SEEDS,
+                     bracket: Sequence[int] = BASIN2_BRACKET) -> Dict[str, Any]:
+    """The frozen B2 (N1) rule: the basin boundary is bracketed iff n=bracket[0] (40) is GOOD in >= 2/3 seeds AND
+    n=bracket[1] (60) is STUCK in >= 2/3 seeds. Tri-state like :func:`decision`: True / False once the present seeds decide
+    it, None while missing seeds could still change it. A missing seed counts as not meeting a criterion."""
+    need = math.ceil(2 * len(seeds) / 3)
+    lo, hi = int(bracket[0]), int(bracket[1])
+    cells: Dict[str, Any] = {}
+    for n in (lo, hi):
+        recs = [r for r in by_n.get(n, []) if r["seed"] in seeds]
+        got = sorted(r["seed"] for r in recs)
+        cells[str(n)] = {"n_runs": len(recs), "seeds_present": got, "missing_seeds": [s for s in seeds if s not in got],
+                         "stuck": _count(recs, "stuck"), "good": _count(recs, "good")}
+    clo, chi = cells[str(lo)], cells[str(hi)]
+    lo_ok, hi_ok = clo["good"] >= need, chi["stuck"] >= need
+    if lo_ok and hi_ok:
+        bracketed: Optional[bool] = True
+    elif clo["good"] + len(clo["missing_seeds"]) < need or chi["stuck"] + len(chi["missing_seeds"]) < need:
+        bracketed = False
+    else:
+        bracketed = None
+    notes = []
+    if clo["stuck"] >= need:
+        notes.append(f"n={lo}: STUCK >= 2/3: the boundary lies below {lo}")
+    if chi["good"] >= need:
+        notes.append(f"n={hi}: GOOD >= 2/3: the boundary lies above {hi}")
+    return {"rule": f"bracketed iff n={lo} GOOD >= {need}/{len(seeds)} seeds and n={hi} STUCK >= {need}/{len(seeds)} seeds",
+            "seeds": list(seeds), "need_of_seeds": need, "cells": cells, f"good_majority_{lo}": lo_ok,
+            f"stuck_majority_{hi}": hi_ok, "bracketed": bracketed, "notes": notes,
+            "incomplete": [n for n, c in cells.items() if c["missing_seeds"]]}
+
+
+def curve_table(by_n: Dict[int, List[Dict[str, Any]]], seeds: Sequence[int] = BASIN_SEEDS,
+                ns: Sequence[int] = CURVE_NS) -> Dict[str, Any]:
+    """The seven-point dose-response curve: per burst size, the per-seed basin_state / hit_eval and the STUCK / GOOD counts."""
+    out: Dict[str, Any] = {}
+    for n in ns:
+        recs = {r["seed"]: r for r in by_n.get(n, []) if r["seed"] in seeds}
+        out[str(n)] = {"per_seed": {str(s): (None if s not in recs else
+                                             {"basin_state": recs[s].get("basin_state"), "hit_eval": recs[s].get("hit_eval"),
+                                              "stuck": recs[s].get("stuck"), "good": recs[s].get("good")}) for s in seeds},
+                       "stuck": _count(list(recs.values()), "stuck"), "good": _count(list(recs.values()), "good"),
+                       "n_seeds": len(recs)}
+    return out
+
+
 def find_baselines(root: str | Path, rate_mult: float = BASIN_MULT, label: str = MEASURED_CELL,
                    seeds: Sequence[int] = BASIN_SEEDS) -> List[Path]:
     """Run dirs of the committed 300k E2 NOBURST (n=0) and BURST (n=200) arms at ``rate_mult`` for ``seeds``."""
@@ -340,6 +429,7 @@ def classify(run_dirs: Iterable[str | Path], baseline_dirs: Iterable[str | Path]
         pairs[str(s)] = {str(n): next((r["basin_state"] for r in rs if r["seed"] == s), None) for n, rs in sorted(by_n.items())}
     return {"rows": rows, "by_n": by_n, "duplicate_seed_runs": dup, "by_seed": pairs,
             "decision": decision({n: by_n.get(n, []) for n in BASIN_NS}, co_primary_n=ep["trapped_co_primary_n"]),
+            "b2_bracket": bracket_decision(by_n), "curve": curve_table(by_n),
             "endpoint_problems": endpoint_problems(ep, p),
             "window_mismatch_runs": [r["run_dir"] for r in rows if not r["window_matches_endpoints"]]}
 
@@ -354,12 +444,12 @@ _COLS = ("role", "burst_n", "seed", "label", "rate_mult", "arm", "basin_state", 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m analysis.basin")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    f = sub.add_parser("fill", help="write the B1 registration of burst size n (refuses to overwrite)")
+    f = sub.add_parser("fill", help="write the B1 / B2 registration of burst size n (refuses to overwrite)")
     f.add_argument("--n", type=int, required=True, choices=sorted(_HYP))
     f.add_argument("--out", required=True)
-    c = sub.add_parser("classify", help="per-run STUCK / GOOD and the B1 decision")
+    c = sub.add_parser("classify", help="per-run STUCK / GOOD, the B1 decision and the B2 bracket")
     c.add_argument("--endpoints", required=True, help="the frozen yaml (configs/r11_basin_predict.yaml)")
-    c.add_argument("--run-dirs", nargs="+", required=True, help="the B1 runs (n=100 and n=25)")
+    c.add_argument("--run-dirs", nargs="+", required=True, help="the B1 (n=100, 25) and / or B2 (n=40, 50, 60) runs")
     c.add_argument("--baseline-dirs", nargs="*", default=None,
                    help=f"the n=0 / n=200 runs to join (default: the 1.65 x seeds 0-2 runs under {BASELINE_RUN_ROOT})")
     c.add_argument("--prereg", nargs="*", default=[], help="registrations to check the binding of each run against (by label)")
@@ -387,7 +477,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     d = new_result_dir(args.out_root, "agentload_analysis_basin")
     df = pd.DataFrame(res["rows"])
     df[[k for k in _COLS if k in df.columns]].sort_values(["burst_n", "seed", "role"]).to_csv(d / "basin_runs.csv", index=False)
-    verdict = {k: res[k] for k in ("by_seed", "decision", "duplicate_seed_runs", "endpoint_problems", "window_mismatch_runs")}
+    verdict = {k: res[k] for k in ("by_seed", "decision", "b2_bracket", "curve", "duplicate_seed_runs", "endpoint_problems",
+                                   "window_mismatch_runs")}
     verdict["endpoints"] = ep
     (d / "basin_verdict.json").write_text(json.dumps(verdict, indent=2, default=json_default))
     (d / "endpoints.yaml").write_text(Path(args.endpoints).read_text())
@@ -396,7 +487,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                              t_start=t0, t_end=datetime.now(), status="finished",
                              extra={"run_dirs": [str(x) for x in args.run_dirs], "baseline_dirs": [str(x) for x in base],
                                     "prereg": list(args.prereg)}))
-    print(json.dumps(verdict["decision"], indent=2, default=json_default))
+    print(json.dumps({"decision": verdict["decision"], "b2_bracket": verdict["b2_bracket"]}, indent=2, default=json_default))
     for msg in res["endpoint_problems"]:
         print(f"ENDPOINT PROBLEM: {msg}", file=sys.stderr)
     print(f"basin outputs: {d}")
