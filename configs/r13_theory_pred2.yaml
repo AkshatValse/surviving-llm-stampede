@@ -1,0 +1,3871 @@
+# configs/r13_theory_pred2.yaml -- SECOND blind prediction set of the round-13 theory (pred2), branch r13/pred2.
+# Model frozen at tag r13-theory-pred (997d2c4): no function or parameter under analysis/theory that existed there changed;
+# new drivers only (analysis/theory/pred2/).  Written before any B2, TOOLSLOW, SHED or N2 run exists and without reading any
+# B1, H200, Llama, E0F, LPM-INF, rescue or pool-sweep result.  Prose, blindness scope, inputs and approximations:
+# notes/PREDICTIONS_r13_pred2.md.  Generated from results/theory/pred2/*.json by analysis/theory/pred2/freeze_table.py.
+model: 'r13-merged-2 at tag r13-theory-pred (997d2c4), UNCHANGED: drivers in analysis/theory/pred2/ only'
+frozen_code_check:
+  ok: true
+  modified_tracked: []
+  added_committed:
+  - analysis/theory/paper/__init__.py
+  - analysis/theory/paper/figs.py
+  untracked_new:
+  - analysis/theory/cells/h200_600k.yaml
+  - analysis/theory/pred2/__init__.py
+  - analysis/theory/pred2/b2.py
+  - analysis/theory/pred2/blind_tables.py
+  - analysis/theory/pred2/common.py
+  - analysis/theory/pred2/conditional.py
+  - analysis/theory/pred2/e0f.py
+  - analysis/theory/pred2/freeze_table.py
+  - analysis/theory/pred2/h200_n2.py
+  - analysis/theory/pred2/prop_e.py
+  - analysis/theory/pred2/run_all.py
+  - analysis/theory/pred2/shed.py
+  - analysis/theory/pred2/toolslow.py
+reproduce:
+  env: Windows Git Bash; python = "C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe"; PYTHONPATH="src;."
+  all: PYTHONPATH="src;." python -m analysis.theory.pred2.run_all
+  this_file: PYTHONPATH="src;." python -m analysis.theory.pred2.freeze_table
+  deterministic: true
+  conditional_h200: PYTHONPATH="src;." python -m analysis.theory.pred2.conditional --cell h200_300k --registration <the pushed H200 E2 registration>
+  conditional_llama: PYTHONPATH="src;." python -m analysis.theory.pred2.conditional --cell llama31_8b_300k --registration <the pushed Llama E2
+    registration>
+b2:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.b2
+  cell: a100_300k
+  multiple: 1.65
+  lam: 0.118031
+  seeds:
+  - 0
+  - 1
+  - 2
+  stuck_by_s: 6344.0
+  good_from_s: 8274.0
+  S_bar_n1: 1.326
+  critical:
+    b_crit_deterministic: 53.4
+    b_committor_50: 49.5
+    b_p_stuck_50: 49.3
+    b_stat: 21.3
+    n1: 10.43
+    n_u: 31.77
+    composition_averaged_b_p_stuck_50: 48.4
+    composition_averaged_b_p_stuck_50_raw: 46.6
+  calibration:
+    rule: 'b_cal = b_eff * b / E_synth[b_eff(b)] (per burst size b, over the synthetic seeds), so that E_synth[b_cal] = b: the plan statistic
+      on the frozen layer''s scale (the frozen layer maps b to D_live(n1) + b * cpk)'
+    seeds:
+    - 1000
+    - 1399
+    factor_time_resolved:
+      '10': 1.2871
+      '25': 1.1057
+      '30': 1.0901
+      '35': 1.0767
+      '40': 1.0564
+      '45': 1.0451
+      '50': 1.0302
+      '55': 1.0227
+      '60': 1.0192
+      '65': 1.015
+      '70': 1.0102
+      '75': 1.0076
+      '100': 0.9872
+      '150': 0.9715
+      '200': 0.9622
+    factor_lockstep:
+      '10': 1.3215
+      '25': 1.157
+      '30': 1.1419
+      '35': 1.1279
+      '40': 1.1084
+      '45': 1.1002
+      '50': 1.0891
+      '55': 1.085
+      '60': 1.0824
+      '65': 1.079
+      '70': 1.0728
+      '75': 1.0706
+      '100': 1.0538
+      '150': 1.0397
+      '200': 1.0323
+  dose_response_exchangeable_frozen_layer:
+    '0':
+      p_stuck: 0.032
+      p_good: 0.957
+      committor: 0.0
+      X0: 10.43
+      note: frozen function's b = 0 row (post-burst horizon); the NOBURST protocol row is noburst_protocol
+    '10':
+      p_stuck: 0.033
+      p_good: 0.955
+      committor: 0.0017
+      X0: 14.54
+    '25':
+      p_stuck: 0.042
+      p_good: 0.946
+      committor: 0.0109
+      X0: 20.69
+    '40':
+      p_stuck: 0.139
+      p_good: 0.85
+      committor: 0.1115
+      X0: 26.66
+    '50':
+      p_stuck: 0.547
+      p_good: 0.447
+      committor: 0.5327
+      X0: 30.48
+    '60':
+      p_stuck: 1.0
+      p_good: 0.0
+      committor: 1.0
+      X0: 32.7
+    '75':
+      p_stuck: 1.0
+      p_good: 0.0
+      committor: 1.0
+      X0: 32.7
+    '100':
+      p_stuck: 1.0
+      p_good: 0.0
+      committor: 1.0
+      X0: 32.7
+    '150':
+      p_stuck: 1.0
+      p_good: 0.0
+      committor: 1.0
+      X0: 32.7
+    '200':
+      p_stuck: 1.0
+      p_good: 0.0
+      committor: 1.0
+      X0: 32.7
+  noburst_protocol:
+    p_stuck: 0.04
+    p_good: 0.949
+  dose_response_composition_averaged:
+    primary_calibrated:
+      b_p_stuck_50: 48.4
+      p_rule_three_random_seeds: 0.84
+      rows:
+        '10':
+          p_stuck: 0.033
+          p_good: 0.955
+          b_eff_mean: 10.0
+          b_eff_sd: 3.2
+        '25':
+          p_stuck: 0.046
+          p_good: 0.942
+          b_eff_mean: 25.0
+          b_eff_sd: 5.1
+        '30':
+          p_stuck: 0.066
+          p_good: 0.922
+          b_eff_mean: 30.0
+          b_eff_sd: 5.6
+        '35':
+          p_stuck: 0.118
+          p_good: 0.872
+          b_eff_mean: 35.0
+          b_eff_sd: 6.6
+        '40':
+          p_stuck: 0.212
+          p_good: 0.779
+          b_eff_mean: 40.0
+          b_eff_sd: 7.0
+        '45':
+          p_stuck: 0.365
+          p_good: 0.627
+          b_eff_mean: 45.0
+          b_eff_sd: 7.4
+        '50':
+          p_stuck: 0.561
+          p_good: 0.434
+          b_eff_mean: 50.0
+          b_eff_sd: 7.7
+        '55':
+          p_stuck: 0.748
+          p_good: 0.249
+          b_eff_mean: 55.0
+          b_eff_sd: 8.2
+        '60':
+          p_stuck: 0.886
+          p_good: 0.112
+          b_eff_mean: 60.0
+          b_eff_sd: 8.5
+        '65':
+          p_stuck: 0.955
+          p_good: 0.044
+          b_eff_mean: 65.0
+          b_eff_sd: 9.0
+        '70':
+          p_stuck: 0.987
+          p_good: 0.013
+          b_eff_mean: 70.0
+          b_eff_sd: 9.5
+        '75':
+          p_stuck: 0.998
+          p_good: 0.002
+          b_eff_mean: 75.0
+          b_eff_sd: 9.8
+        '100':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 100.0
+          b_eff_sd: 11.1
+        '150':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 150.0
+          b_eff_sd: 13.7
+        '200':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 200.0
+          b_eff_sd: 15.7
+    band_realized_background_at_peak_calibrated:
+      b_p_stuck_50: 48.0
+      p_rule_three_random_seeds: 0.669
+      rows:
+        '10':
+          p_stuck: 0.039
+          p_good: 0.949
+          b_eff_mean: 10.4
+          b_eff_sd: 10.4
+        '25':
+          p_stuck: 0.08
+          p_good: 0.909
+          b_eff_mean: 25.1
+          b_eff_sd: 11.0
+        '30':
+          p_stuck: 0.125
+          p_good: 0.864
+          b_eff_mean: 30.2
+          b_eff_sd: 11.4
+        '35':
+          p_stuck: 0.202
+          p_good: 0.788
+          b_eff_mean: 35.3
+          b_eff_sd: 12.0
+        '40':
+          p_stuck: 0.301
+          p_good: 0.691
+          b_eff_mean: 40.1
+          b_eff_sd: 12.1
+        '45':
+          p_stuck: 0.415
+          p_good: 0.577
+          b_eff_mean: 45.1
+          b_eff_sd: 12.3
+        '50':
+          p_stuck: 0.556
+          p_good: 0.439
+          b_eff_mean: 50.0
+          b_eff_sd: 12.3
+        '55':
+          p_stuck: 0.674
+          p_good: 0.322
+          b_eff_mean: 54.5
+          b_eff_sd: 12.7
+        '60':
+          p_stuck: 0.795
+          p_good: 0.202
+          b_eff_mean: 59.9
+          b_eff_sd: 13.0
+        '65':
+          p_stuck: 0.878
+          p_good: 0.121
+          b_eff_mean: 65.0
+          b_eff_sd: 13.4
+        '70':
+          p_stuck: 0.934
+          p_good: 0.065
+          b_eff_mean: 70.1
+          b_eff_sd: 13.8
+        '75':
+          p_stuck: 0.975
+          p_good: 0.025
+          b_eff_mean: 75.3
+          b_eff_sd: 14.1
+        '100':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 100.1
+          b_eff_sd: 15.1
+        '150':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 150.1
+          b_eff_sd: 16.7
+        '200':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 200.2
+          b_eff_sd: 18.6
+    band_raw_time_maximum:
+      b_p_stuck_50: 46.6
+      p_rule_three_random_seeds: 0.778
+      rows:
+        '10':
+          p_stuck: 0.034
+          p_good: 0.954
+          b_eff_mean: 12.9
+          b_eff_sd: 4.1
+        '25':
+          p_stuck: 0.055
+          p_good: 0.933
+          b_eff_mean: 27.6
+          b_eff_sd: 5.7
+        '30':
+          p_stuck: 0.089
+          p_good: 0.9
+          b_eff_mean: 32.7
+          b_eff_sd: 6.1
+        '35':
+          p_stuck: 0.166
+          p_good: 0.824
+          b_eff_mean: 37.7
+          b_eff_sd: 7.1
+        '40':
+          p_stuck: 0.276
+          p_good: 0.715
+          b_eff_mean: 42.3
+          b_eff_sd: 7.4
+        '45':
+          p_stuck: 0.441
+          p_good: 0.552
+          b_eff_mean: 47.0
+          b_eff_sd: 7.8
+        '50':
+          p_stuck: 0.62
+          p_good: 0.375
+          b_eff_mean: 51.5
+          b_eff_sd: 8.0
+        '55':
+          p_stuck: 0.785
+          p_good: 0.213
+          b_eff_mean: 56.2
+          b_eff_sd: 8.4
+        '60':
+          p_stuck: 0.905
+          p_good: 0.094
+          b_eff_mean: 61.2
+          b_eff_sd: 8.7
+        '65':
+          p_stuck: 0.962
+          p_good: 0.037
+          b_eff_mean: 66.0
+          b_eff_sd: 9.2
+        '70':
+          p_stuck: 0.989
+          p_good: 0.011
+          b_eff_mean: 70.7
+          b_eff_sd: 9.6
+        '75':
+          p_stuck: 0.998
+          p_good: 0.002
+          b_eff_mean: 75.6
+          b_eff_sd: 9.9
+        '100':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 98.7
+          b_eff_sd: 10.9
+        '150':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 145.7
+          b_eff_sd: 13.3
+        '200':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 192.4
+          b_eff_sd: 15.1
+    band_raw_realized_background_at_peak:
+      b_p_stuck_50: 46.2
+      p_rule_three_random_seeds: 0.625
+      rows:
+        '10':
+          p_stuck: 0.044
+          p_good: 0.945
+          b_eff_mean: 13.3
+          b_eff_sd: 10.7
+        '25':
+          p_stuck: 0.101
+          p_good: 0.888
+          b_eff_mean: 27.7
+          b_eff_sd: 11.2
+        '30':
+          p_stuck: 0.164
+          p_good: 0.825
+          b_eff_mean: 33.0
+          b_eff_sd: 11.7
+        '35':
+          p_stuck: 0.252
+          p_good: 0.739
+          b_eff_mean: 37.9
+          b_eff_sd: 12.3
+        '40':
+          p_stuck: 0.35
+          p_good: 0.642
+          b_eff_mean: 42.3
+          b_eff_sd: 12.4
+        '45':
+          p_stuck: 0.47
+          p_good: 0.523
+          b_eff_mean: 47.1
+          b_eff_sd: 12.5
+        '50':
+          p_stuck: 0.597
+          p_good: 0.398
+          b_eff_mean: 51.6
+          b_eff_sd: 12.5
+        '55':
+          p_stuck: 0.704
+          p_good: 0.292
+          b_eff_mean: 55.8
+          b_eff_sd: 12.8
+        '60':
+          p_stuck: 0.817
+          p_good: 0.18
+          b_eff_mean: 61.1
+          b_eff_sd: 13.2
+        '65':
+          p_stuck: 0.889
+          p_good: 0.11
+          b_eff_mean: 66.0
+          b_eff_sd: 13.5
+        '70':
+          p_stuck: 0.941
+          p_good: 0.059
+          b_eff_mean: 70.8
+          b_eff_sd: 13.9
+        '75':
+          p_stuck: 0.977
+          p_good: 0.023
+          b_eff_mean: 75.8
+          b_eff_sd: 14.1
+        '100':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 98.8
+          b_eff_sd: 15.0
+        '150':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 145.8
+          b_eff_sd: 16.4
+        '200':
+          p_stuck: 1.0
+          p_good: 0.0
+          b_eff_mean: 192.6
+          b_eff_sd: 18.1
+  per_seed_exact_plans:
+    seed_0:
+      '0':
+        realized_rate_mult_post_burst: 1.753
+        secondary_level_crossing: GOOD
+      '10':
+        b_eff_calibrated: 10.2
+        b_eff_raw: 13.1
+        calibration_factor: 1.2871
+        p_stuck_PRIMARY: 0.033
+        p_good_PRIMARY: 0.955
+        band_p_stuck:
+          lockstep: 0.033
+          service_2p5s: 0.033
+          realized_background_at_peak: 0.032
+          raw_time_maximum: 0.034
+          raw_lockstep: 0.034
+          raw_service_2p5s: 0.034
+          raw_realized_background_at_peak: 0.032
+        band_p_good:
+          lockstep: 0.955
+          service_2p5s: 0.955
+          realized_background_at_peak: 0.957
+          raw_time_maximum: 0.954
+          raw_lockstep: 0.955
+          raw_service_2p5s: 0.954
+          raw_realized_background_at_peak: 0.956
+        band_p_stuck_realized_post_burst_rate: 0.066
+        b_eff_bands:
+          lockstep: 8.6
+          service_2p5s: 10.0
+          realized_background_at_peak: -2.0
+          raw_time_maximum: 13.1
+          raw_lockstep: 11.4
+          raw_service_2p5s: 12.9
+          raw_realized_background_at_peak: 1.0
+        secondary_level_crossing: GOOD
+      '25':
+        b_eff_calibrated: 28.0
+        b_eff_raw: 31.0
+        calibration_factor: 1.1057
+        p_stuck_PRIMARY: 0.048
+        p_good_PRIMARY: 0.941
+        band_p_stuck:
+          lockstep: 0.041
+          service_2p5s: 0.048
+          realized_background_at_peak: 0.042
+          raw_time_maximum: 0.057
+          raw_lockstep: 0.047
+          raw_service_2p5s: 0.057
+          raw_realized_background_at_peak: 0.048
+        band_p_good:
+          lockstep: 0.948
+          service_2p5s: 0.94
+          realized_background_at_peak: 0.946
+          raw_time_maximum: 0.932
+          raw_lockstep: 0.942
+          raw_service_2p5s: 0.931
+          raw_realized_background_at_peak: 0.941
+        band_p_stuck_realized_post_burst_rate: 0.091
+        b_eff_bands:
+          lockstep: 23.8
+          service_2p5s: 28.2
+          realized_background_at_peak: 25.1
+          raw_time_maximum: 31.0
+          raw_lockstep: 27.6
+          raw_service_2p5s: 31.2
+          raw_realized_background_at_peak: 28.0
+        secondary_level_crossing: GOOD
+      '40':
+        b_eff_calibrated: 53.0
+        b_eff_raw: 56.0
+        calibration_factor: 1.0564
+        p_stuck_PRIMARY: 0.778
+        p_good_PRIMARY: 0.219
+        band_p_stuck:
+          lockstep: 0.411
+          service_2p5s: 0.744
+          realized_background_at_peak: 0.425
+          raw_time_maximum: 1.0
+          raw_lockstep: 0.777
+          raw_service_2p5s: 0.977
+          raw_realized_background_at_peak: 0.625
+        band_p_good:
+          lockstep: 0.582
+          service_2p5s: 0.253
+          realized_background_at_peak: 0.568
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.22
+          raw_service_2p5s: 0.023
+          raw_realized_background_at_peak: 0.37
+        band_p_stuck_realized_post_burst_rate: 0.923
+        b_eff_bands:
+          lockstep: 47.8
+          service_2p5s: 52.6
+          realized_background_at_peak: 48.1
+          raw_time_maximum: 56.0
+          raw_lockstep: 53.0
+          raw_service_2p5s: 55.6
+          raw_realized_background_at_peak: 51.1
+        secondary_level_crossing: GOOD
+      '50':
+        b_eff_calibrated: 54.1
+        b_eff_raw: 55.7
+        calibration_factor: 1.0302
+        p_stuck_PRIMARY: 0.862
+        p_good_PRIMARY: 0.136
+        band_p_stuck:
+          lockstep: 0.461
+          service_2p5s: 0.772
+          realized_background_at_peak: 0.292
+          raw_time_maximum: 0.987
+          raw_lockstep: 0.777
+          raw_service_2p5s: 0.9
+          raw_realized_background_at_peak: 0.367
+        band_p_good:
+          lockstep: 0.533
+          service_2p5s: 0.225
+          realized_background_at_peak: 0.699
+          raw_time_maximum: 0.013
+          raw_lockstep: 0.22
+          raw_service_2p5s: 0.099
+          raw_realized_background_at_peak: 0.625
+        band_p_stuck_realized_post_burst_rate: 0.991
+        b_eff_bands:
+          lockstep: 48.7
+          service_2p5s: 53.0
+          realized_background_at_peak: 45.4
+          raw_time_maximum: 55.7
+          raw_lockstep: 53.0
+          raw_service_2p5s: 54.6
+          raw_realized_background_at_peak: 47.0
+        secondary_level_crossing: GOOD
+      '60':
+        b_eff_calibrated: 62.6
+        b_eff_raw: 63.8
+        calibration_factor: 1.0192
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 59.5
+          service_2p5s: 62.3
+          realized_background_at_peak: 57.4
+          raw_time_maximum: 63.8
+          raw_lockstep: 64.4
+          raw_service_2p5s: 63.5
+          raw_realized_background_at_peak: 58.6
+        secondary_level_crossing: STUCK
+      '75':
+        b_eff_calibrated: 81.2
+        b_eff_raw: 81.8
+        calibration_factor: 1.0076
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 77.8
+          service_2p5s: 81.8
+          realized_background_at_peak: 77.6
+          raw_time_maximum: 81.8
+          raw_lockstep: 83.3
+          raw_service_2p5s: 82.4
+          raw_realized_background_at_peak: 78.2
+        secondary_level_crossing: STUCK
+      '100':
+        b_eff_calibrated: 104.9
+        b_eff_raw: 103.6
+        calibration_factor: 0.9872
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 102.6
+          service_2p5s: 107.1
+          realized_background_at_peak: 96.8
+          raw_time_maximum: 103.6
+          raw_lockstep: 108.1
+          raw_service_2p5s: 105.8
+          raw_realized_background_at_peak: 95.5
+        secondary_level_crossing: STUCK
+      '150':
+        b_eff_calibrated: 150.4
+        b_eff_raw: 146.1
+        calibration_factor: 0.9715
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 141.3
+          service_2p5s: 147.9
+          realized_background_at_peak: 141.7
+          raw_time_maximum: 146.1
+          raw_lockstep: 147.0
+          raw_service_2p5s: 143.7
+          raw_realized_background_at_peak: 137.4
+        secondary_level_crossing: STUCK
+      '200':
+        b_eff_calibrated: 207.9
+        b_eff_raw: 200.1
+        calibration_factor: 0.9622
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 205.8
+          service_2p5s: 205.5
+          realized_background_at_peak: 197.9
+          raw_time_maximum: 200.1
+          raw_lockstep: 212.5
+          raw_service_2p5s: 197.8
+          raw_realized_background_at_peak: 190.0
+        secondary_level_crossing: STUCK
+    seed_1:
+      '0':
+        realized_rate_mult_post_burst: 1.696
+        secondary_level_crossing: GOOD
+      '10':
+        b_eff_calibrated: 12.1
+        b_eff_raw: 15.5
+        calibration_factor: 1.2871
+        p_stuck_PRIMARY: 0.034
+        p_good_PRIMARY: 0.954
+        band_p_stuck:
+          lockstep: 0.034
+          service_2p5s: 0.034
+          realized_background_at_peak: 0.032
+          raw_time_maximum: 0.035
+          raw_lockstep: 0.035
+          raw_service_2p5s: 0.035
+          raw_realized_background_at_peak: 0.033
+        band_p_good:
+          lockstep: 0.955
+          service_2p5s: 0.954
+          realized_background_at_peak: 0.956
+          raw_time_maximum: 0.953
+          raw_lockstep: 0.953
+          raw_service_2p5s: 0.953
+          raw_realized_background_at_peak: 0.955
+        band_p_stuck_realized_post_burst_rate: 0.046
+        b_eff_bands:
+          lockstep: 11.5
+          service_2p5s: 12.2
+          realized_background_at_peak: 5.5
+          raw_time_maximum: 15.5
+          raw_lockstep: 15.2
+          raw_service_2p5s: 15.7
+          raw_realized_background_at_peak: 9.0
+        secondary_level_crossing: GOOD
+      '25':
+        b_eff_calibrated: 30.6
+        b_eff_raw: 33.9
+        calibration_factor: 1.1057
+        p_stuck_PRIMARY: 0.055
+        p_good_PRIMARY: 0.933
+        band_p_stuck:
+          lockstep: 0.059
+          service_2p5s: 0.054
+          realized_background_at_peak: 0.056
+          raw_time_maximum: 0.071
+          raw_lockstep: 0.093
+          raw_service_2p5s: 0.069
+          raw_realized_background_at_peak: 0.071
+        band_p_good:
+          lockstep: 0.929
+          service_2p5s: 0.934
+          realized_background_at_peak: 0.933
+          raw_time_maximum: 0.918
+          raw_lockstep: 0.896
+          raw_service_2p5s: 0.919
+          raw_realized_background_at_peak: 0.917
+        band_p_stuck_realized_post_burst_rate: 0.074
+        b_eff_bands:
+          lockstep: 31.6
+          service_2p5s: 30.4
+          realized_background_at_peak: 30.7
+          raw_time_maximum: 33.9
+          raw_lockstep: 36.6
+          raw_service_2p5s: 33.6
+          raw_realized_background_at_peak: 34.0
+        secondary_level_crossing: GOOD
+      '40':
+        b_eff_calibrated: 46.9
+        b_eff_raw: 49.5
+        calibration_factor: 1.0564
+        p_stuck_PRIMARY: 0.36
+        p_good_PRIMARY: 0.632
+        band_p_stuck:
+          lockstep: 0.513
+          service_2p5s: 0.405
+          realized_background_at_peak: 0.174
+          raw_time_maximum: 0.515
+          raw_lockstep: 0.924
+          raw_service_2p5s: 0.577
+          raw_realized_background_at_peak: 0.251
+        band_p_good:
+          lockstep: 0.481
+          service_2p5s: 0.588
+          realized_background_at_peak: 0.816
+          raw_time_maximum: 0.479
+          raw_lockstep: 0.075
+          raw_service_2p5s: 0.418
+          raw_realized_background_at_peak: 0.739
+        band_p_stuck_realized_post_burst_rate: 0.422
+        b_eff_bands:
+          lockstep: 49.5
+          service_2p5s: 47.7
+          realized_background_at_peak: 41.7
+          raw_time_maximum: 49.5
+          raw_lockstep: 54.9
+          raw_service_2p5s: 50.4
+          raw_realized_background_at_peak: 44.3
+        secondary_level_crossing: GOOD
+      '50':
+        b_eff_calibrated: 58.2
+        b_eff_raw: 60.0
+        calibration_factor: 1.0302
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 0.955
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.044
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 60.9
+          service_2p5s: 59.1
+          realized_background_at_peak: 55.3
+          raw_time_maximum: 60.0
+          raw_lockstep: 66.3
+          raw_service_2p5s: 60.9
+          raw_realized_background_at_peak: 57.0
+        secondary_level_crossing: STUCK
+      '60':
+        b_eff_calibrated: 71.6
+        b_eff_raw: 73.0
+        calibration_factor: 1.0192
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 69.7
+          service_2p5s: 73.9
+          realized_background_at_peak: 68.7
+          raw_time_maximum: 73.0
+          raw_lockstep: 75.4
+          raw_service_2p5s: 75.3
+          raw_realized_background_at_peak: 70.0
+        secondary_level_crossing: STUCK
+      '75':
+        b_eff_calibrated: 82.4
+        b_eff_raw: 83.0
+        calibration_factor: 1.0076
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 85.4
+          service_2p5s: 82.9
+          realized_background_at_peak: 78.4
+          raw_time_maximum: 83.0
+          raw_lockstep: 91.4
+          raw_service_2p5s: 83.6
+          raw_realized_background_at_peak: 79.0
+        secondary_level_crossing: STUCK
+      '100':
+        b_eff_calibrated: 111.3
+        b_eff_raw: 109.8
+        calibration_factor: 0.9872
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 116.9
+          service_2p5s: 114.8
+          realized_background_at_peak: 103.6
+          raw_time_maximum: 109.8
+          raw_lockstep: 123.1
+          raw_service_2p5s: 113.3
+          raw_realized_background_at_peak: 102.1
+        secondary_level_crossing: STUCK
+      '150':
+        b_eff_calibrated: 154.1
+        b_eff_raw: 149.7
+        calibration_factor: 0.9715
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 152.7
+          service_2p5s: 157.5
+          realized_background_at_peak: 152.5
+          raw_time_maximum: 149.7
+          raw_lockstep: 158.7
+          raw_service_2p5s: 153.0
+          raw_realized_background_at_peak: 148.1
+        secondary_level_crossing: STUCK
+      '200':
+        b_eff_calibrated: 217.7
+        b_eff_raw: 209.4
+        calibration_factor: 0.9622
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 214.8
+          service_2p5s: 220.7
+          realized_background_at_peak: 215.5
+          raw_time_maximum: 209.4
+          raw_lockstep: 221.7
+          raw_service_2p5s: 212.4
+          raw_realized_background_at_peak: 207.2
+        secondary_level_crossing: STUCK
+    seed_2:
+      '0':
+        realized_rate_mult_post_burst: 1.758
+        secondary_level_crossing: GOOD
+      '10':
+        b_eff_calibrated: 8.3
+        b_eff_raw: 10.7
+        calibration_factor: 1.2871
+        p_stuck_PRIMARY: 0.033
+        p_good_PRIMARY: 0.955
+        band_p_stuck:
+          lockstep: 0.033
+          service_2p5s: 0.033
+          realized_background_at_peak: 0.033
+          raw_time_maximum: 0.033
+          raw_lockstep: 0.034
+          raw_service_2p5s: 0.034
+          raw_realized_background_at_peak: 0.033
+        band_p_good:
+          lockstep: 0.955
+          service_2p5s: 0.955
+          realized_background_at_peak: 0.955
+          raw_time_maximum: 0.955
+          raw_lockstep: 0.954
+          raw_service_2p5s: 0.954
+          raw_realized_background_at_peak: 0.955
+        band_p_stuck_realized_post_burst_rate: 0.068
+        b_eff_bands:
+          lockstep: 9.2
+          service_2p5s: 9.4
+          realized_background_at_peak: 8.2
+          raw_time_maximum: 10.7
+          raw_lockstep: 12.2
+          raw_service_2p5s: 12.1
+          raw_realized_background_at_peak: 10.6
+        secondary_level_crossing: GOOD
+      '25':
+        b_eff_calibrated: 20.8
+        b_eff_raw: 23.0
+        calibration_factor: 1.1057
+        p_stuck_PRIMARY: 0.038
+        p_good_PRIMARY: 0.951
+        band_p_stuck:
+          lockstep: 0.04
+          service_2p5s: 0.038
+          realized_background_at_peak: 0.04
+          raw_time_maximum: 0.04
+          raw_lockstep: 0.046
+          raw_service_2p5s: 0.041
+          raw_realized_background_at_peak: 0.042
+        band_p_good:
+          lockstep: 0.948
+          service_2p5s: 0.95
+          realized_background_at_peak: 0.949
+          raw_time_maximum: 0.949
+          raw_lockstep: 0.942
+          raw_service_2p5s: 0.947
+          raw_realized_background_at_peak: 0.946
+        band_p_stuck_realized_post_burst_rate: 0.077
+        b_eff_bands:
+          lockstep: 23.7
+          service_2p5s: 21.8
+          realized_background_at_peak: 23.0
+          raw_time_maximum: 23.0
+          raw_lockstep: 27.4
+          raw_service_2p5s: 24.0
+          raw_realized_background_at_peak: 25.2
+        secondary_level_crossing: GOOD
+      '40':
+        b_eff_calibrated: 36.1
+        b_eff_raw: 38.2
+        calibration_factor: 1.0564
+        p_stuck_PRIMARY: 0.088
+        p_good_PRIMARY: 0.9
+        band_p_stuck:
+          lockstep: 0.104
+          service_2p5s: 0.104
+          realized_background_at_peak: 0.075
+          raw_time_maximum: 0.111
+          raw_lockstep: 0.175
+          raw_service_2p5s: 0.135
+          raw_realized_background_at_peak: 0.092
+        band_p_good:
+          lockstep: 0.885
+          service_2p5s: 0.885
+          realized_background_at_peak: 0.914
+          raw_time_maximum: 0.878
+          raw_lockstep: 0.815
+          raw_service_2p5s: 0.854
+          raw_realized_background_at_peak: 0.897
+        band_p_stuck_realized_post_burst_rate: 0.158
+        b_eff_bands:
+          lockstep: 37.6
+          service_2p5s: 37.6
+          realized_background_at_peak: 34.5
+          raw_time_maximum: 38.2
+          raw_lockstep: 41.7
+          raw_service_2p5s: 39.8
+          raw_realized_background_at_peak: 36.5
+        secondary_level_crossing: GOOD
+      '50':
+        b_eff_calibrated: 43.3
+        b_eff_raw: 44.6
+        calibration_factor: 1.0302
+        p_stuck_PRIMARY: 0.217
+        p_good_PRIMARY: 0.773
+        band_p_stuck:
+          lockstep: 0.19
+          service_2p5s: 0.317
+          realized_background_at_peak: 0.18
+          raw_time_maximum: 0.261
+          raw_lockstep: 0.322
+          raw_service_2p5s: 0.385
+          raw_realized_background_at_peak: 0.216
+        band_p_good:
+          lockstep: 0.8
+          service_2p5s: 0.675
+          realized_background_at_peak: 0.81
+          raw_time_maximum: 0.73
+          raw_lockstep: 0.67
+          raw_service_2p5s: 0.608
+          raw_realized_background_at_peak: 0.775
+        band_p_stuck_realized_post_burst_rate: 0.336
+        b_eff_bands:
+          lockstep: 42.3
+          service_2p5s: 46.0
+          realized_background_at_peak: 41.9
+          raw_time_maximum: 44.6
+          raw_lockstep: 46.1
+          raw_service_2p5s: 47.3
+          raw_realized_background_at_peak: 43.2
+        secondary_level_crossing: GOOD
+      '60':
+        b_eff_calibrated: 53.4
+        b_eff_raw: 54.4
+        calibration_factor: 1.0192
+        p_stuck_PRIMARY: 0.81
+        p_good_PRIMARY: 0.188
+        band_p_stuck:
+          lockstep: 0.772
+          service_2p5s: 1.0
+          realized_background_at_peak: 0.533
+          raw_time_maximum: 0.892
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 0.606
+        band_p_good:
+          lockstep: 0.225
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.461
+          raw_time_maximum: 0.107
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.389
+        band_p_stuck_realized_post_burst_rate: 0.955
+        b_eff_bands:
+          lockstep: 53.0
+          service_2p5s: 56.2
+          realized_background_at_peak: 49.8
+          raw_time_maximum: 54.4
+          raw_lockstep: 57.3
+          raw_service_2p5s: 57.2
+          raw_realized_background_at_peak: 50.8
+        secondary_level_crossing: STUCK
+      '75':
+        b_eff_calibrated: 67.2
+        b_eff_raw: 67.7
+        calibration_factor: 1.0076
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 70.5
+          service_2p5s: 68.3
+          realized_background_at_peak: 62.9
+          raw_time_maximum: 67.7
+          raw_lockstep: 75.5
+          raw_service_2p5s: 68.8
+          raw_realized_background_at_peak: 63.4
+        secondary_level_crossing: STUCK
+      '100':
+        b_eff_calibrated: 96.9
+        b_eff_raw: 95.7
+        calibration_factor: 0.9872
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 104.0
+          service_2p5s: 100.6
+          realized_background_at_peak: 103.7
+          raw_time_maximum: 95.7
+          raw_lockstep: 109.6
+          raw_service_2p5s: 99.3
+          raw_realized_background_at_peak: 102.5
+        secondary_level_crossing: STUCK
+      '150':
+        b_eff_calibrated: 154.7
+        b_eff_raw: 150.3
+        calibration_factor: 0.9715
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 157.0
+          service_2p5s: 157.1
+          realized_background_at_peak: 155.7
+          raw_time_maximum: 150.3
+          raw_lockstep: 163.2
+          raw_service_2p5s: 152.6
+          raw_realized_background_at_peak: 151.3
+        secondary_level_crossing: STUCK
+      '200':
+        b_eff_calibrated: 187.6
+        b_eff_raw: 180.5
+        calibration_factor: 0.9622
+        p_stuck_PRIMARY: 1.0
+        p_good_PRIMARY: 0.0
+        band_p_stuck:
+          lockstep: 1.0
+          service_2p5s: 1.0
+          realized_background_at_peak: 1.0
+          raw_time_maximum: 1.0
+          raw_lockstep: 1.0
+          raw_service_2p5s: 1.0
+          raw_realized_background_at_peak: 1.0
+        band_p_good:
+          lockstep: 0.0
+          service_2p5s: 0.0
+          realized_background_at_peak: 0.0
+          raw_time_maximum: 0.0
+          raw_lockstep: 0.0
+          raw_service_2p5s: 0.0
+          raw_realized_background_at_peak: 0.0
+        band_p_stuck_realized_post_burst_rate: 1.0
+        b_eff_bands:
+          lockstep: 188.8
+          service_2p5s: 191.5
+          realized_background_at_peak: 186.9
+          raw_time_maximum: 180.5
+          raw_lockstep: 194.9
+          raw_service_2p5s: 184.3
+          raw_realized_background_at_peak: 179.8
+        secondary_level_crossing: STUCK
+  bracketing_rule:
+    primary:
+      p_rule: 0.656
+      p_rule_shared_susceptibility: 0.656
+      p_good_40_per_seed:
+      - 0.219
+      - 0.632
+      - 0.9
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 0.81
+    band_raw_time_maximum:
+      p_rule: 0.421
+      p_rule_shared_susceptibility: 0.421
+      p_good_40_per_seed:
+      - 0.0
+      - 0.479
+      - 0.878
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 0.892
+    band_lockstep:
+      p_rule: 0.725
+      p_rule_shared_susceptibility: 0.725
+      p_good_40_per_seed:
+      - 0.582
+      - 0.481
+      - 0.885
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 0.772
+    band_service_2p5s:
+      p_rule: 0.629
+      p_rule_shared_susceptibility: 0.629
+      p_good_40_per_seed:
+      - 0.253
+      - 0.588
+      - 0.885
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 1.0
+    band_realized_background_at_peak:
+      p_rule: 0.881
+      p_rule_shared_susceptibility: 0.881
+      p_good_40_per_seed:
+      - 0.568
+      - 0.816
+      - 0.914
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 0.533
+    band_raw_lockstep:
+      p_rule: 0.23
+      p_rule_shared_susceptibility: 0.23
+      p_good_40_per_seed:
+      - 0.22
+      - 0.075
+      - 0.815
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 1.0
+    band_raw_service_2p5s:
+      p_rule: 0.369
+      p_rule_shared_susceptibility: 0.369
+      p_good_40_per_seed:
+      - 0.023
+      - 0.418
+      - 0.854
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 1.0
+    band_raw_realized_background_at_peak:
+      p_rule: 0.778
+      p_rule_shared_susceptibility: 0.778
+      p_good_40_per_seed:
+      - 0.37
+      - 0.739
+      - 0.897
+      p_stuck_60_per_seed:
+      - 1.0
+      - 1.0
+      - 0.606
+    exchangeable_frozen_layer:
+      p_rule: 0.939
+    exchangeable_not_trapped_as_good:
+      p_rule: 0.947
+    secondary_level_crossing_deterministic:
+      labels_40:
+      - GOOD
+      - GOOD
+      - GOOD
+      labels_60:
+      - STUCK
+      - STUCK
+      - STUCK
+      rule_holds: true
+  frozen_check_max_abs_diff: 0.0
+  row_1p35x:
+    critical:
+      b_crit_deterministic: 59.4
+      b_stat: 23.8
+      n1: 8.5
+      n_u: 32.2
+      b_committor_50: 55.6
+      b_p_stuck_50: 55.6
+    exchangeable:
+      '0': 0.003
+      '10': 0.003
+      '25': 0.004
+      '40': 0.024
+      '50': 0.178
+      '60': 0.931
+      '75': 1.0
+      '100': 1.0
+      '150': 1.0
+      '200': 1.0
+    composition_averaged_b_p_stuck_50: 54.8
+    composition_averaged_b_p_stuck_50_raw: 53.6
+n2_h200:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.h200_n2
+  rule: T3(c) supported iff hit(36) >= 0.5 and hit(44) < 0.5
+  primary_variant: h200_300k
+  primary_probability: fluid n_half center, sigma = RMS of the fluid n_half error on the three validated cells
+  error_model:
+    sigma_all_cells: 1.589
+    sigma_sglang_cells: 0.525
+    errors_pred_minus_meas:
+      a100_300k: -0.67
+      a100_native: 0.32
+      vllm_300k: 2.65
+  p_rule_PRIMARY: 0.797
+  p_rule_band:
+  - 0.456
+  - 0.996
+  deterministic_band: '9/10 variant x estimator combinations hold; failing: h200_300k_e0a2/annealed'
+  variants:
+    h200_300k:
+      n_half_fluid: 37.32
+      n_half_annealed: 36.52
+      n_b: 41.31
+      points:
+        '28':
+          hit_fluid: 0.803
+          hit_annealed: 0.795
+          mu_fluid: 0.3538
+          mu_annealed: 0.3513
+        '32':
+          hit_fluid: 0.696
+          hit_annealed: 0.69
+          mu_fluid: 0.3769
+          mu_annealed: 0.3714
+        '36':
+          hit_fluid: 0.564
+          hit_annealed: 0.527
+          mu_fluid: 0.3594
+          mu_annealed: 0.3484
+        '40':
+          hit_fluid: 0.265
+          hit_annealed: 0.277
+          mu_fluid: 0.2566
+          mu_annealed: 0.2783
+        '44':
+          hit_fluid: 0.0
+          hit_annealed: 0.083
+          mu_fluid: 0.197
+          mu_annealed: 0.2209
+        '48':
+          hit_fluid: 0.0
+          hit_annealed: 0.013
+          mu_fluid: 0.197
+          mu_annealed: 0.2009
+        '52':
+          hit_fluid: 0.0
+          hit_annealed: 0.002
+          mu_fluid: 0.197
+          mu_annealed: 0.1975
+      rule_deterministic:
+        fluid: true
+        annealed: true
+      p_rule:
+        fluid_n_half|sigma_all_cells: 0.797
+        fluid_n_half|sigma_sglang_cells: 0.994
+        annealed_n_half|sigma_all_cells: 0.628
+        annealed_n_half|sigma_sglang_cells: 0.838
+      frozen_curve_max_abs_diff: 0.0
+    h200_300k_ratiofit:
+      n_half_fluid: 37.2
+      n_half_annealed: 36.38
+      n_b: 41.12
+      points:
+        '28':
+          hit_fluid: 0.803
+          hit_annealed: 0.795
+          mu_fluid: 0.3528
+          mu_annealed: 0.3501
+        '32':
+          hit_fluid: 0.696
+          hit_annealed: 0.688
+          mu_fluid: 0.3747
+          mu_annealed: 0.3689
+        '36':
+          hit_fluid: 0.56
+          hit_annealed: 0.521
+          mu_fluid: 0.3541
+          mu_annealed: 0.3434
+        '40':
+          hit_fluid: 0.24
+          hit_annealed: 0.264
+          mu_fluid: 0.246
+          mu_annealed: 0.2715
+        '44':
+          hit_fluid: 0.0
+          hit_annealed: 0.076
+          mu_fluid: 0.1942
+          mu_annealed: 0.2161
+        '48':
+          hit_fluid: 0.0
+          hit_annealed: 0.012
+          mu_fluid: 0.1942
+          mu_annealed: 0.1979
+        '52':
+          hit_fluid: 0.0
+          hit_annealed: 0.002
+          mu_fluid: 0.1942
+          mu_annealed: 0.1946
+      rule_deterministic:
+        fluid: true
+        annealed: true
+      p_rule:
+        fluid_n_half|sigma_all_cells: 0.776
+        fluid_n_half|sigma_sglang_cells: 0.989
+        annealed_n_half|sigma_all_cells: 0.595
+        annealed_n_half|sigma_sglang_cells: 0.768
+      frozen_curve_max_abs_diff: 0.0
+    h200_300k_lamratiofit:
+      n_half_fluid: 37.38
+      n_half_annealed: 36.57
+      n_b: 41.4
+      points:
+        '28':
+          hit_fluid: 0.803
+          hit_annealed: 0.795
+          mu_fluid: 0.3542
+          mu_annealed: 0.3518
+        '32':
+          hit_fluid: 0.697
+          hit_annealed: 0.69
+          mu_fluid: 0.3779
+          mu_annealed: 0.3725
+        '36':
+          hit_fluid: 0.566
+          hit_annealed: 0.53
+          mu_fluid: 0.3618
+          mu_annealed: 0.3509
+        '40':
+          hit_fluid: 0.276
+          hit_annealed: 0.283
+          mu_fluid: 0.2616
+          mu_annealed: 0.2814
+        '44':
+          hit_fluid: 0.0
+          hit_annealed: 0.086
+          mu_fluid: 0.1983
+          mu_annealed: 0.2231
+        '48':
+          hit_fluid: 0.0
+          hit_annealed: 0.013
+          mu_fluid: 0.1983
+          mu_annealed: 0.2023
+        '52':
+          hit_fluid: 0.0
+          hit_annealed: 0.002
+          mu_fluid: 0.1983
+          mu_annealed: 0.1988
+      rule_deterministic:
+        fluid: true
+        annealed: true
+      p_rule:
+        fluid_n_half|sigma_all_cells: 0.807
+        fluid_n_half|sigma_sglang_cells: 0.996
+        annealed_n_half|sigma_all_cells: 0.641
+        annealed_n_half|sigma_sglang_cells: 0.863
+      frozen_curve_max_abs_diff: 0.0
+    h200_300k_decode2:
+      n_half_fluid: 37.0
+      n_half_annealed: 36.3
+      n_b: 41.46
+      points:
+        '28':
+          hit_fluid: 0.804
+          hit_annealed: 0.794
+          mu_fluid: 0.3389
+          mu_annealed: 0.3362
+        '32':
+          hit_fluid: 0.691
+          hit_annealed: 0.683
+          mu_fluid: 0.3569
+          mu_annealed: 0.3523
+        '36':
+          hit_fluid: 0.549
+          hit_annealed: 0.516
+          mu_fluid: 0.3378
+          mu_annealed: 0.3305
+        '40':
+          hit_fluid: 0.256
+          hit_annealed: 0.272
+          mu_fluid: 0.2521
+          mu_annealed: 0.2703
+        '44':
+          hit_fluid: 0.0
+          hit_annealed: 0.083
+          mu_fluid: 0.1988
+          mu_annealed: 0.2205
+        '48':
+          hit_fluid: 0.0
+          hit_annealed: 0.012
+          mu_fluid: 0.1988
+          mu_annealed: 0.2023
+        '52':
+          hit_fluid: 0.0
+          hit_annealed: 0.002
+          mu_fluid: 0.1988
+          mu_annealed: 0.1993
+      rule_deterministic:
+        fluid: true
+        annealed: true
+      p_rule:
+        fluid_n_half|sigma_all_cells: 0.735
+        fluid_n_half|sigma_sglang_cells: 0.971
+        annealed_n_half|sigma_all_cells: 0.575
+        annealed_n_half|sigma_sglang_cells: 0.717
+      frozen_curve_max_abs_diff: 0.0
+    h200_300k_e0a2:
+      n_half_fluid: 36.43
+      n_half_annealed: 35.94
+      n_b: 41.74
+      points:
+        '28':
+          hit_fluid: 0.805
+          hit_annealed: 0.792
+          mu_fluid: 0.3107
+          mu_annealed: 0.3081
+        '32':
+          hit_fluid: 0.68
+          hit_annealed: 0.671
+          mu_fluid: 0.3225
+          mu_annealed: 0.3197
+        '36':
+          hit_fluid: 0.521
+          hit_annealed: 0.497
+          mu_fluid: 0.3051
+          mu_annealed: 0.3022
+        '40':
+          hit_fluid: 0.242
+          hit_annealed: 0.262
+          mu_fluid: 0.2449
+          mu_annealed: 0.2577
+        '44':
+          hit_fluid: 0.0
+          hit_annealed: 0.082
+          mu_fluid: 0.2022
+          mu_annealed: 0.2199
+        '48':
+          hit_fluid: 0.0
+          hit_annealed: 0.012
+          mu_fluid: 0.2022
+          mu_annealed: 0.205
+        '52':
+          hit_fluid: 0.0
+          hit_annealed: 0.002
+          mu_fluid: 0.2022
+          mu_annealed: 0.2026
+      rule_deterministic:
+        fluid: true
+        annealed: false
+      p_rule:
+        fluid_n_half|sigma_all_cells: 0.606
+        fluid_n_half|sigma_sglang_cells: 0.793
+        annealed_n_half|sigma_all_cells: 0.485
+        annealed_n_half|sigma_sglang_cells: 0.456
+      frozen_curve_max_abs_diff: 0.0
+  rival_capacity_ratio:
+    M_over_E_S: 27.76
+    M_over_E_bar: 28.39
+    M_over_E_lb: 28.46
+    prediction: 'crossing near M/E_S = 27.8 (28-30): hit(36) < 0.5; the rival is refuted by hit(36) >= 0.5, T3(c) by hit(36) < 0.5'
+toolslow:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.toolslow
+  cell: a100_300k
+  multiple: 1.35
+  slowdown:
+  - 1200
+  - 2100
+  critical_delta:
+    delta_mu_max_equals_lambda: 13.72
+    delta_star_fluid: 16.78
+    delta_star_switch_at_2100_plus_delta: 16.66
+    delta_50_stochastic_PRIMARY: 16.41
+    delta_50_stochastic_crossings:
+    - delta: 16.41
+      direction: up
+    delta_50_band_target_n_u_first: 11.37
+    delta_50_band_target_n_u_crossings:
+    - delta: 11.37
+      direction: up
+    - delta: 13.55
+      direction: down
+    - delta: 16.41
+      direction: up
+    note: 'P(STUCK) is not monotone in delta: above delta_mu no slowed good state exists, P_slow = 0 and no noise is added during the passage,
+      so the layer drops at delta_mu; the primary 50% point is the last upward crossing (the committor branch); the band (escape target n_u) first
+      crosses 0.5 below delta_mu'
+  p_stuck_scan:
+    '4':
+    - 0.026
+    - 0.041
+    '4.25':
+    - 0.03
+    - 0.048
+    '4.5':
+    - 0.036
+    - 0.057
+    '4.75':
+    - 0.042
+    - 0.066
+    '5':
+    - 0.048
+    - 0.077
+    '5.25':
+    - 0.056
+    - 0.088
+    '5.5':
+    - 0.064
+    - 0.101
+    '5.75':
+    - 0.073
+    - 0.115
+    '6':
+    - 0.082
+    - 0.129
+    '6.25':
+    - 0.093
+    - 0.145
+    '6.5':
+    - 0.104
+    - 0.161
+    '6.75':
+    - 0.116
+    - 0.178
+    '7':
+    - 0.128
+    - 0.195
+    '7.25':
+    - 0.14
+    - 0.213
+    '7.5':
+    - 0.154
+    - 0.232
+    '7.75':
+    - 0.167
+    - 0.25
+    '8':
+    - 0.181
+    - 0.269
+    '8.25':
+    - 0.195
+    - 0.288
+    '8.5':
+    - 0.209
+    - 0.307
+    '8.75':
+    - 0.223
+    - 0.325
+    '9':
+    - 0.236
+    - 0.344
+    '9.25':
+    - 0.25
+    - 0.362
+    '9.5':
+    - 0.264
+    - 0.38
+    '9.75':
+    - 0.277
+    - 0.397
+    '10':
+    - 0.29
+    - 0.414
+    '10.25':
+    - 0.302
+    - 0.431
+    '10.5':
+    - 0.315
+    - 0.447
+    '10.75':
+    - 0.327
+    - 0.463
+    '11':
+    - 0.338
+    - 0.478
+    '11.25':
+    - 0.349
+    - 0.493
+    '11.5':
+    - 0.36
+    - 0.507
+    '11.75':
+    - 0.37
+    - 0.521
+    '12':
+    - 0.38
+    - 0.535
+    '12.25':
+    - 0.39
+    - 0.548
+    '12.5':
+    - 0.4
+    - 0.561
+    '12.75':
+    - 0.409
+    - 0.574
+    '13':
+    - 0.418
+    - 0.586
+    '13.25':
+    - 0.427
+    - 0.598
+    '13.5':
+    - 0.437
+    - 0.61
+    '13.75':
+    - 0.046
+    - 0.046
+    '14':
+    - 0.054
+    - 0.054
+    '14.25':
+    - 0.065
+    - 0.065
+    '14.5':
+    - 0.078
+    - 0.078
+    '14.75':
+    - 0.095
+    - 0.095
+    '15':
+    - 0.116
+    - 0.116
+    '15.25':
+    - 0.143
+    - 0.143
+    '15.5':
+    - 0.179
+    - 0.179
+    '15.75':
+    - 0.227
+    - 0.227
+    '16':
+    - 0.293
+    - 0.293
+    '16.25':
+    - 0.392
+    - 0.392
+    '16.5':
+    - 0.56
+    - 0.56
+    '16.75':
+    - 0.838
+    - 0.838
+    '17':
+    - 1.0
+    - 1.0
+    '17.25':
+    - 1.0
+    - 1.0
+    '17.5':
+    - 1.0
+    - 1.0
+    '17.75':
+    - 1.0
+    - 1.0
+    '18':
+    - 1.0
+    - 1.0
+    '18.25':
+    - 1.0
+    - 1.0
+    '18.5':
+    - 1.0
+    - 1.0
+    '18.75':
+    - 1.0
+    - 1.0
+    '19':
+    - 1.0
+    - 1.0
+    '19.25':
+    - 1.0
+    - 1.0
+    '19.5':
+    - 1.0
+    - 1.0
+    '19.75':
+    - 1.0
+    - 1.0
+    '20':
+    - 1.0
+    - 1.0
+  p_stuck_scan_columns:
+  - primary (escape target n_b(delta))
+  - band (escape target n_u)
+  deltas:
+    '10':
+      fluid_verdict: GOOD
+      n_at_2100: 21.5
+      n_u_normal: 32.23
+      slowed_curve:
+        mu_max: 0.1164
+        n1: 21.76
+        n_u: 30.78
+        n_b: 42.58
+      p_escape_during_slowdown: 0.285
+      committor_after: 0.0041
+      p_stuck_PRIMARY: 0.29
+      p_good_PRIMARY: 0.709
+      band_target_n_u:
+        p_stuck: 0.414
+        p_good: 0.585
+      switch_at_2100_plus_delta: GOOD
+      sensitivity_exp_same_mean: GOOD
+      per_seed:
+        seed_0:
+          X0: 22
+          max_alive_slowdown: 28
+          p_stuck: 0.291
+          p_good: 0.709
+        seed_1:
+          X0: 15
+          max_alive_slowdown: 27
+          p_stuck: 0.287
+          p_good: 0.712
+        seed_2:
+          X0: 15
+          max_alive_slowdown: 23
+          p_stuck: 0.287
+          p_good: 0.712
+    '30':
+      fluid_verdict: STUCK
+      n_at_2100: 46.89
+      n_u_normal: 32.23
+      slowed_curve:
+        mu_max: 0.0718
+        n1: null
+        n_u: null
+        n_b: 62.36
+      p_escape_during_slowdown: 0.0
+      committor_after: 1.0
+      p_stuck_PRIMARY: 1.0
+      p_good_PRIMARY: 0.0
+      band_target_n_u:
+        p_stuck: 1.0
+        p_good: 0.0
+      switch_at_2100_plus_delta: STUCK
+      sensitivity_exp_same_mean: STUCK
+      per_seed:
+        seed_0:
+          X0: 49
+          max_alive_slowdown: 51
+          p_stuck: 1.0
+          p_good: 0.0
+        seed_1:
+          X0: 37
+          max_alive_slowdown: 44
+          p_stuck: 1.0
+          p_good: 0.0
+        seed_2:
+          X0: 39
+          max_alive_slowdown: 39
+          p_stuck: 1.0
+          p_good: 0.0
+    '16.78':
+      fluid_verdict: STUCK
+      n_at_2100: 32.24
+      n_u_normal: 32.23
+      slowed_curve:
+        mu_max: 0.0847
+        n1: null
+        n_u: null
+        n_b: 49.29
+      p_escape_during_slowdown: 0.0
+      committor_after: 0.8721
+      p_stuck_PRIMARY: 0.872
+      p_good_PRIMARY: 0.128
+      band_target_n_u:
+        p_stuck: 0.872
+        p_good: 0.128
+      switch_at_2100_plus_delta: STUCK
+      sensitivity_exp_same_mean: GOOD
+      per_seed:
+        seed_0:
+          X0: 27
+          max_alive_slowdown: 38
+          p_stuck: 0.074
+          p_good: 0.925
+        seed_1:
+          X0: 26
+          max_alive_slowdown: 38
+          p_stuck: 0.044
+          p_good: 0.955
+        seed_2:
+          X0: 25
+          max_alive_slowdown: 28
+          p_stuck: 0.026
+          p_good: 0.973
+  rule:
+    statement: delta = 10 GOOD in >= 2/3 seeds and delta = 30 STUCK in >= 2/3
+    p_rule_PRIMARY: 0.798
+    p_rule_exchangeable: 0.796
+  delta_table_shifted:
+    '0':
+      mu_max: 0.2478
+      n1: 8.47
+      n_u: 32.23
+      n_at_2100: 8.5
+      verdict: GOOD
+    '2':
+      mu_max: 0.2044
+      n1: 11.13
+      n_u: 32.0
+      n_at_2100: 11.1
+      verdict: GOOD
+    '4':
+      mu_max: 0.1726
+      n1: 13.78
+      n_u: 31.75
+      n_at_2100: 13.8
+      verdict: GOOD
+    '6':
+      mu_max: 0.1489
+      n1: 16.44
+      n_u: 31.48
+      n_at_2100: 16.4
+      verdict: GOOD
+    '8':
+      mu_max: 0.1307
+      n1: 19.1
+      n_u: 31.17
+      n_at_2100: 19.0
+      verdict: GOOD
+    '10':
+      mu_max: 0.1164
+      n1: 21.76
+      n_u: 30.78
+      n_at_2100: 21.5
+      verdict: GOOD
+    '12':
+      mu_max: 0.1048
+      n1: 24.43
+      n_u: 30.19
+      n_at_2100: 23.9
+      verdict: GOOD
+    '13':
+      mu_max: 0.0999
+      n1: 25.92
+      n_u: 29.64
+      n_at_2100: 25.2
+      verdict: GOOD
+    '14':
+      mu_max: 0.0954
+      n1: null
+      n_u: null
+      n_at_2100: 26.4
+      verdict: GOOD
+    '15':
+      mu_max: 0.0912
+      n1: null
+      n_u: null
+      n_at_2100: 27.8
+      verdict: GOOD
+    '16':
+      mu_max: 0.0874
+      n1: null
+      n_u: null
+      n_at_2100: 29.6
+      verdict: GOOD
+    '18':
+      mu_max: 0.0807
+      n1: null
+      n_u: null
+      n_at_2100: 35.9
+      verdict: STUCK
+    '20':
+      mu_max: 0.075
+      n1: null
+      n_u: null
+      n_at_2100: 39.4
+      verdict: STUCK
+    '25':
+      mu_max: 0.0718
+      n1: null
+      n_u: null
+      n_at_2100: 44.0
+      verdict: STUCK
+    '30':
+      mu_max: 0.0718
+      n1: null
+      n_u: null
+      n_at_2100: 46.9
+      verdict: STUCK
+  delta_table_exp_same_mean:
+    '0':
+      n_at_2100: 8.5
+      verdict: GOOD
+    '2':
+      n_at_2100: 11.1
+      verdict: GOOD
+    '4':
+      n_at_2100: 13.8
+      verdict: GOOD
+    '6':
+      n_at_2100: 16.4
+      verdict: GOOD
+    '8':
+      n_at_2100: 19.0
+      verdict: GOOD
+    '10':
+      n_at_2100: 21.5
+      verdict: GOOD
+    '12':
+      n_at_2100: 24.0
+      verdict: GOOD
+    '13':
+      n_at_2100: 25.3
+      verdict: GOOD
+    '14':
+      n_at_2100: 26.5
+      verdict: GOOD
+    '15':
+      n_at_2100: 27.7
+      verdict: GOOD
+    '16':
+      n_at_2100: 28.9
+      verdict: GOOD
+    '18':
+      n_at_2100: 31.2
+      verdict: GOOD
+    '20':
+      n_at_2100: 33.3
+      verdict: STUCK
+    '25':
+      n_at_2100: 38.2
+      verdict: STUCK
+    '30':
+      n_at_2100: 42.4
+      verdict: STUCK
+shed:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.shed
+  cell: a100_300k
+  multiple: 1.35
+  x0_n_at_1800: 161.3
+  n_u: 32.23
+  n_b: 32.7
+  mu_b: 0.07184
+  tau_min_prop_S_PRIMARY: 1795.0
+  tau_min_partial_cuts:
+    '0': 1795.0
+    '0.25': 2393.0
+    '0.5': 3589.0
+    '0.75': 7175.0
+  tau_min_round_robin_band: 1928.0
+  round_robin_completion_rate:
+    at_1800_over_lambda_ref: 1.71
+    mean: 0.0669
+    at_n_b: 0.0341
+  tau_50_committor:
+    quasi_static: 1807.0
+    round_robin: 1940.0
+  taus:
+    '600':
+      resume_s: 2400.0
+      expected_refused: 57.9
+      quasi_static:
+        n_at_resume: 118.2
+        verdict: STUCK
+        p_stuck: 1.0
+        p_good: 0.0
+      round_robin:
+        n_at_resume: 102.6
+        verdict: STUCK
+        p_stuck: 1.0
+    '3600':
+      resume_s: 5400.0
+      expected_refused: 347.7
+      quasi_static:
+        n_at_resume: 0.0
+        verdict: GOOD
+        p_stuck: 0.0
+        p_good: 0.998
+      round_robin:
+        n_at_resume: 0.0
+        verdict: GOOD
+        p_stuck: 0.0
+    '1800':
+      resume_s: 3600.0
+      expected_refused: 173.8
+      quasi_static:
+        n_at_resume: 31.7
+        verdict: GOOD
+        p_stuck: 0.736
+        p_good: 0.263
+      round_robin:
+        n_at_resume: 37.3
+        verdict: STUCK
+        p_stuck: 1.0
+  per_seed:
+    seed_0:
+      '600':
+        refused: 59
+        n_at_1800: 179.1
+        n_at_resume: 112.6
+        verdict: STUCK
+      '3600':
+        refused: 355
+        n_at_1800: 179.1
+        n_at_resume: 0.0
+        verdict: GOOD
+      '1800':
+        refused: 184
+        n_at_1800: 179.1
+        n_at_resume: 48.0
+        verdict: STUCK
+    seed_1:
+      '600':
+        refused: 56
+        n_at_1800: 178.1
+        n_at_resume: 117.7
+        verdict: STUCK
+      '3600':
+        refused: 378
+        n_at_1800: 178.1
+        n_at_resume: 0.0
+        verdict: GOOD
+      '1800':
+        refused: 194
+        n_at_1800: 178.1
+        n_at_resume: 40.9
+        verdict: STUCK
+    seed_2:
+      '600':
+        refused: 61
+        n_at_1800: 171.1
+        n_at_resume: 100.5
+        verdict: STUCK
+      '3600':
+        refused: 377
+        n_at_1800: 171.1
+        n_at_resume: 0.0
+        verdict: GOOD
+      '1800':
+        refused: 188
+        n_at_1800: 171.1
+        n_at_resume: 36.8
+        verdict: STUCK
+  cap_comparison:
+    refused_sessions: 0
+    note: R1 (cap 20 at 1800 s) defers arrivals at its gate; frozen release 3,830 s at 1.35 x (r13-theory-pred); the stop refuses lambda tau
+  rule:
+    statement: tau600 STUCK in >= 2/3 and tau3600 GOOD in >= 2/3 of the registered seeds 0, 1 (2 of 2 each)
+    registration: configs/agentload_prereg_2026-10-31_shed_t600.yaml, _t3600.yaml (commit b006291)
+    registered_seeds:
+    - 0
+    - 1
+    p_rule_PRIMARY: 0.997
+    p_rule_if_three_seeds: 0.9955
+    refused_counts_role: protocol check (fixed by the client plans, not a model prediction)
+e0f:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.e0f
+  cell: a100_300k
+  horizon_s: 3000
+  seeds:
+  - 3
+  - 4
+  - 5
+  rows:
+    '2.0':
+      p_unstable_PRIMARY: 0.15
+      binomial_k_unstable_0_to_3:
+      - 0.6136
+      - 0.3255
+      - 0.0576
+      - 0.0034
+      poisson_binomial_realized:
+      - 0.526
+      - 0.3835
+      - 0.0846
+      - 0.0058
+      per_seed:
+        seed_3:
+          role: prediction
+          realized_mult: 2.013
+          p_unstable_realized_rate: 0.16
+          secondary_level_crossing: stable
+        seed_4:
+          role: prediction
+          realized_mult: 2.148
+          p_unstable_realized_rate: 0.28
+          secondary_level_crossing: stable
+        seed_5:
+          role: prediction
+          realized_mult: 1.971
+          p_unstable_realized_rate: 0.131
+          secondary_level_crossing: stable
+        seed_0:
+          role: retrodiction (outcome known)
+          realized_mult: 2.199
+          p_unstable_realized_rate: 0.335
+          secondary_level_crossing: stable
+    '2.5':
+      p_unstable_PRIMARY: 0.691
+      binomial_k_unstable_0_to_3:
+      - 0.0296
+      - 0.1982
+      - 0.4427
+      - 0.3295
+      poisson_binomial_realized:
+      - 0.0164
+      - 0.1555
+      - 0.4403
+      - 0.3879
+      per_seed:
+        seed_3:
+          role: prediction
+          realized_mult: 2.512
+          p_unstable_realized_rate: 0.703
+          secondary_level_crossing: stable
+        seed_4:
+          role: prediction
+          realized_mult: 2.665
+          p_unstable_realized_rate: 0.839
+          secondary_level_crossing: stable
+        seed_5:
+          role: prediction
+          realized_mult: 2.47
+          p_unstable_realized_rate: 0.658
+          secondary_level_crossing: stable
+        seed_0:
+          role: retrodiction (outcome known)
+          realized_mult: 2.726
+          p_unstable_realized_rate: 0.878
+          secondary_level_crossing: unstable
+  replication_rule:
+    statement: replicated iff 2.0 x stable 3/3 AND 2.5 x unstable >= 2/3
+    PRIMARY:
+      p_2x_stable_3of3: 0.614
+      p_2p5x_unstable_ge2of3: 0.772
+      p_replicated: 0.474
+    band_realized_rate:
+      p_2x_stable_3of3: 0.526
+      p_2p5x_unstable_ge2of3: 0.828
+      p_replicated: 0.436
+    secondary_level_crossing:
+      unstable_2x: 0
+      unstable_2p5x: 0
+      replicated: false
+prop_e_cor_c:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.prop_e
+  prop_e:
+    a100_300k:
+      label: sglang-fcfs-r1
+      pool: 300000.0
+      points:
+        '16':
+          requested: false
+          measured_hit: 0.932
+          measured_mu_turns: 0.1758
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.932
+          che_W_eq_Z: 0.932
+          bound_K0: 0.828
+          K_needed_fraction_of_M: 0.2892
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.932
+        '20':
+          requested: false
+          measured_hit: 0.927
+          measured_mu_turns: 0.215
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.929
+          che_W_eq_Z: 0.932
+          bound_K0: 0.776
+          K_needed_fraction_of_M: 0.2798
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.922
+        '24':
+          requested: false
+          measured_hit: 0.888
+          measured_mu_turns: 0.2255
+          measured_queue_mean: 0.2
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.889
+          che_W_eq_Z: 0.932
+          bound_K0: 0.763
+          K_needed_fraction_of_M: 0.355
+          merged_frozen_fluid: 0.91
+          merged_frozen_annealed: 0.872
+        '32':
+          requested: true
+          measured_hit: 0.505
+          measured_mu_turns: 0.1158
+          measured_queue_mean: 7.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.723
+          che_W_eq_Z: 0.827
+          bound_K0: 0.899
+          K_needed_fraction_of_M: 0.8318
+          merged_frozen_fluid: 0.371
+          merged_frozen_annealed: 0.357
+        '48':
+          requested: true
+          measured_hit: 0.0
+          measured_mu_turns: 0.0629
+          measured_queue_mean: 23.9
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.499
+          che_W_eq_Z: 0.551
+          bound_K0: 0.93
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.001
+        '96':
+          requested: true
+          measured_hit: 0.0
+          measured_mu_turns: 0.073
+          measured_queue_mean: 66.1
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.254
+          che_W_eq_Z: 0.276
+          bound_K0: 0.927
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.0
+        '300':
+          requested: true
+          measured_hit: 0.0
+          measured_mu_turns: 0.1114
+          measured_queue_mean: 269.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.082
+          che_W_eq_Z: 0.088
+          bound_K0: 0.903
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.0
+    a100_native:
+      label: sglang-fcfs-r1-native
+      pool: 955757.0
+      points:
+        '24':
+          requested: false
+          measured_hit: 0.929
+          measured_mu_turns: 0.2516
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.932
+          che_W_eq_Z: 0.932
+          bound_K0: 0.925
+          K_needed_fraction_of_M: 0.7286
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.932
+        '48':
+          requested: false
+          measured_hit: 0.929
+          measured_mu_turns: 0.4145
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.932
+          che_W_eq_Z: 0.932
+          bound_K0: 0.884
+          K_needed_fraction_of_M: 0.5477
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.932
+        '64':
+          requested: false
+          measured_hit: 0.93
+          measured_mu_turns: 0.4655
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.929
+          che_W_eq_Z: 0.932
+          bound_K0: 0.865
+          K_needed_fraction_of_M: 0.4805
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.932
+        '80':
+          requested: false
+          measured_hit: 0.922
+          measured_mu_turns: 0.4637
+          measured_queue_mean: 0.1
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.868
+          che_W_eq_Z: 0.932
+          bound_K0: 0.866
+          K_needed_fraction_of_M: 0.5309
+          merged_frozen_fluid: 0.92
+          merged_frozen_annealed: 0.888
+        '96':
+          requested: true
+          measured_hit: 0.419
+          measured_mu_turns: 0.116
+          measured_queue_mean: 12.6
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.761
+          che_W_eq_Z: 0.878
+          bound_K0: 0.932
+          K_needed_fraction_of_M: 0.9565
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.355
+        '128':
+          requested: true
+          measured_hit: 0.007
+          measured_mu_turns: 0.073
+          measured_queue_mean: 43.7
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.59
+          che_W_eq_Z: 0.659
+          bound_K0: 0.932
+          K_needed_fraction_of_M: 0.9995
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.0
+        '300':
+          requested: false
+          measured_hit: 0.0
+          measured_mu_turns: 0.1074
+          measured_queue_mean: 226.7
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.259
+          che_W_eq_Z: 0.281
+          bound_K0: 0.932
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.0
+    vllm_300k:
+      label: vllm-fcfs
+      pool: 300000.0
+      points:
+        '16':
+          requested: true
+          measured_hit: 0.932
+          measured_mu_turns: 0.174
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.932
+          che_W_eq_Z: 0.932
+          bound_K0: 0.83
+          K_needed_fraction_of_M: 0.3308
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.932
+        '20':
+          requested: true
+          measured_hit: 0.926
+          measured_mu_turns: 0.2108
+          measured_queue_mean: 0.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.929
+          che_W_eq_Z: 0.932
+          bound_K0: 0.782
+          K_needed_fraction_of_M: 0.2996
+          merged_frozen_fluid: 0.932
+          merged_frozen_annealed: 0.923
+        '24':
+          requested: true
+          measured_hit: 0.879
+          measured_mu_turns: 0.2096
+          measured_queue_mean: 0.4
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.889
+          che_W_eq_Z: 0.932
+          bound_K0: 0.783
+          K_needed_fraction_of_M: 0.4118
+          merged_frozen_fluid: 0.91
+          merged_frozen_annealed: 0.877
+        '28':
+          requested: true
+          measured_hit: 0.658
+          measured_mu_turns: 0.1228
+          measured_queue_mean: 2.0
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.806
+          che_W_eq_Z: 0.932
+          bound_K0: 0.892
+          K_needed_fraction_of_M: 0.7627
+          merged_frozen_fluid: 0.812
+          merged_frozen_annealed: 0.717
+        '32':
+          requested: true
+          measured_hit: 0.083
+          measured_mu_turns: 0.0544
+          measured_queue_mean: 5.8
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.723
+          che_W_eq_Z: 0.827
+          bound_K0: 0.931
+          K_needed_fraction_of_M: 0.9874
+          merged_frozen_fluid: 0.441
+          merged_frozen_annealed: 0.381
+        '40':
+          requested: true
+          measured_hit: 0.007
+          measured_mu_turns: 0.0555
+          measured_queue_mean: 11.9
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.592
+          che_W_eq_Z: 0.662
+          bound_K0: 0.931
+          K_needed_fraction_of_M: 0.9988
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.028
+        '48':
+          requested: true
+          measured_hit: 0.0
+          measured_mu_turns: 0.0592
+          measured_queue_mean: 19.4
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.499
+          che_W_eq_Z: 0.551
+          bound_K0: 0.931
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.001
+        '96':
+          requested: true
+          measured_hit: 0.0
+          measured_mu_turns: 0.0686
+          measured_queue_mean: 63.7
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.254
+          che_W_eq_Z: 0.276
+          bound_K0: 0.929
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.0
+        '300':
+          requested: true
+          measured_hit: 0.0
+          measured_mu_turns: 0.1047
+          measured_queue_mean: 253.1
+          yao_thm31_measured_rate: 0.932
+          yao_little_no_service: 0.082
+          che_W_eq_Z: 0.088
+          bound_K0: 0.909
+          K_needed_fraction_of_M: 1.0
+          merged_frozen_fluid: 0.0
+          merged_frozen_annealed: 0.0
+  cor_c:
+    a100_300k:
+      blind: false
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.45
+      M_over_E_S: 27.76
+      n_b: 32.7
+      tool_call_part: 4.94
+      n_half_fluid: 31.49
+      measured_n_half: 32.16
+      measured_bracket:
+      - 32.0
+      - 48.0
+      errors_vs_measured:
+        M_over_E_bar: -3.78
+        M_over_E_lb: -3.72
+        M_over_E_S: -4.41
+        n_b: 0.53
+        n_half_fluid: -0.67
+    a100_native:
+      blind: false
+      M_over_E_bar: 90.43
+      M_over_E_lb: 90.57
+      M_over_E_S: 89.79
+      n_b: 94.86
+      tool_call_part: 5.07
+      n_half_fluid: 93.74
+      measured_n_half: 93.42
+      measured_bracket:
+      - 80.0
+      - 96.0
+      errors_vs_measured:
+        M_over_E_bar: -2.99
+        M_over_E_lb: -2.85
+        M_over_E_S: -3.64
+        n_b: 1.44
+        n_half_fluid: 0.32
+    vllm_300k:
+      blind: false
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.45
+      M_over_E_S: 28.22
+      n_b: 32.83
+      tool_call_part: 4.61
+      n_half_fluid: 31.75
+      measured_n_half: 29.1
+      measured_bracket:
+      - 28.0
+      - 32.0
+      errors_vs_measured:
+        M_over_E_bar: -0.72
+        M_over_E_lb: -0.65
+        M_over_E_S: -0.88
+        n_b: 3.73
+        n_half_fluid: 2.65
+    a100_pool150k:
+      blind: true
+      M_over_E_bar: 14.19
+      M_over_E_lb: 14.23
+      M_over_E_S: 13.59
+      n_b: 18.32
+      tool_call_part: 4.73
+      n_half_fluid: 16.91
+      rival_prediction_crossing:
+        M_over_E_S: 13.59
+        M_over_E_lb: 14.23
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    a100_pool600k:
+      blind: true
+      M_over_E_bar: 56.77
+      M_over_E_lb: 56.88
+      M_over_E_S: 56.13
+      n_b: 61.17
+      tool_call_part: 5.04
+      n_half_fluid: 60.03
+      rival_prediction_crossing:
+        M_over_E_S: 56.13
+        M_over_E_lb: 56.88
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    h200_300k:
+      blind: true
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.76
+      n_b: 41.31
+      tool_call_part: 13.55
+      n_half_fluid: 37.32
+      rival_prediction_crossing:
+        M_over_E_S: 27.76
+        M_over_E_lb: 28.46
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    h200_300k_ratiofit:
+      blind: true
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.76
+      n_b: 41.12
+      tool_call_part: 13.36
+      n_half_fluid: 37.2
+      rival_prediction_crossing:
+        M_over_E_S: 27.76
+        M_over_E_lb: 28.46
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    h200_300k_lamratiofit:
+      blind: true
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.76
+      n_b: 41.4
+      tool_call_part: 13.65
+      n_half_fluid: 37.38
+      rival_prediction_crossing:
+        M_over_E_S: 27.76
+        M_over_E_lb: 28.46
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    h200_300k_decode2:
+      blind: true
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.78
+      n_b: 41.46
+      tool_call_part: 13.68
+      n_half_fluid: 37.0
+      rival_prediction_crossing:
+        M_over_E_S: 27.78
+        M_over_E_lb: 28.46
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    h200_300k_e0a2:
+      blind: true
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.45
+      M_over_E_S: 27.83
+      n_b: 41.74
+      tool_call_part: 13.91
+      n_half_fluid: 36.43
+      rival_prediction_crossing:
+        M_over_E_S: 27.83
+        M_over_E_lb: 28.45
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+    llama31_8b_300k:
+      blind: true
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.44
+      M_over_E_S: 27.76
+      n_b: 32.02
+      tool_call_part: 4.26
+      n_half_fluid: 30.92
+      rival_prediction_crossing:
+        M_over_E_S: 27.76
+        M_over_E_lb: 28.44
+      scoring: 'when the cell''s Stage C is read: the predictor (M/E_S, M/E_lb, frozen n_half) nearest the measured 0.5-hit crossing wins; T3(b)''s
+        tool-call term is supported iff the measured crossing exceeds M/E_S by more than half the predicted gap n_b - M/E_S'
+blind_tables:
+  command: PYTHONPATH="src;." python -m analysis.theory.pred2.blind_tables
+  json: results/theory/pred2/blind_tables.json
+  h200_600k:
+    spec: analysis/theory/cells/h200_600k.yaml
+    json: results/theory/pred2/h200_600k.json
+    n_half_fluid: 66.58
+    n_half_annealed: 64.78
+    n_b: 69.94
+    peak_n: 53.7
+    mu_max: 0.6335
+    window_vs_lambda_ref: 3.268
+    edge_mult: 2.574
+    predicted_bracket:
+    - 2.5
+    - 3.0
+    secondary_edge50: 2.736
+    p_escape_registered:
+      '1.25': 0.0
+      '1.5': 0.0
+      '1.75': 0.0
+      '2.0': 0.007
+      '2.5': 0.368
+      '3.0': 0.969
+    registration_consequence:
+      hi_mult: 2.5
+      hi_capped: 2.5
+      lambda_points:
+      - 1.5
+      - 2.0
+      n_cap: 48.0
+      grid_argmax: 56.0
+    grid_points:
+      '32.0':
+        hit_fluid: 0.932
+        hit_annealed: 0.932
+        mu_fluid: 0.4188
+        mu_annealed: 0.4188
+      '40.0':
+        hit_fluid: 0.93
+        hit_annealed: 0.925
+        mu_fluid: 0.5193
+        mu_annealed: 0.5181
+      '48.0':
+        hit_fluid: 0.897
+        hit_annealed: 0.885
+        mu_fluid: 0.6065
+        mu_annealed: 0.5995
+      '56.0':
+        hit_fluid: 0.805
+        hit_annealed: 0.789
+        mu_fluid: 0.627
+        mu_annealed: 0.6085
+      '60.0':
+        hit_fluid: 0.739
+        hit_annealed: 0.7
+        mu_fluid: 0.5776
+        mu_annealed: 0.5554
+      '64.0':
+        hit_fluid: 0.631
+        hit_annealed: 0.55
+        mu_fluid: 0.4686
+        mu_annealed: 0.46
+      '68.0':
+        hit_fluid: 0.373
+        hit_annealed: 0.336
+        mu_fluid: 0.3052
+        mu_annealed: 0.3477
+      '72.0':
+        hit_fluid: 0.0
+        hit_annealed: 0.147
+        mu_fluid: 0.2007
+        mu_annealed: 0.262
+      '80.0':
+        hit_fluid: 0.0
+        hit_annealed: 0.019
+        mu_fluid: 0.2007
+        mu_annealed: 0.2069
+      '96.0':
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+        mu_fluid: 0.2007
+        mu_annealed: 0.2007
+      '192.0':
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+        mu_fluid: 0.2007
+        mu_annealed: 0.2007
+      '300.0':
+        hit_fluid: 0.0
+        hit_annealed: 0.0
+        mu_fluid: 0.2007
+        mu_annealed: 0.2007
+    e2_arms:
+      '1.5':
+        n1: 22.04
+        n_u: 68.29
+        b_stat: 46.2
+        backlog: 457.9
+        gap_over_R: 7.06
+        capped_drain_s: 551.0
+        b_crit: 114.3
+      '2.0':
+        n1: 29.57
+        n_u: 66.15
+        b_stat: 36.6
+        backlog: 867.3
+        gap_over_R: 11.9
+        capped_drain_s: 830.0
+        b_crit: 90.6
+  trapped_tables_in_this_file:
+    h200_300k:
+      lambda_ref: 0.19388
+      window: 1.949
+      caps:
+      - 20
+      - 22
+      - 24
+      - 26
+      - 28
+      - 30
+      - 32
+      rows:
+        '1.05':
+          lam: 0.20357
+          in_window: true
+          n1: 15.36
+          n_u: 41.18
+          b_stat: 25.8
+          noburst_hit: 0.932
+          backlog: 134.0
+          token_ratio: 1.0191
+          gap_over_R: 4.72
+          R: 9.8
+          b_crit: 64.5
+          capped_drain_s:
+            '20': 3225.0
+            '22': 2248.0
+            '24': 1740.0
+            '26': 1439.0
+            '28': 1247.0
+            '30': 1125.0
+            '32': 1058.0
+        '1.10':
+          lam: 0.21327
+          in_window: true
+          n1: 16.1
+          n_u: 40.98
+          b_stat: 24.9
+          noburst_hit: 0.932
+          backlog: 170.7
+          token_ratio: 1.0208
+          gap_over_R: 5.91
+          R: 9.7
+          b_crit: 62.2
+          capped_drain_s:
+            '20': 3854.0
+            '22': 2543.0
+            '24': 1916.0
+            '26': 1560.0
+            '28': 1339.0
+            '30': 1200.0
+            '32': 1125.0
+        '1.15':
+          lam: 0.22296
+          in_window: true
+          n1: 16.84
+          n_u: 40.78
+          b_stat: 23.9
+          noburst_hit: 0.932
+          backlog: 207.8
+          token_ratio: 1.0224
+          gap_over_R: 7.06
+          R: 9.7
+          b_crit: 59.9
+          capped_drain_s:
+            '20': 4780.0
+            '22': 2925.0
+            '24': 2129.0
+            '26': 1701.0
+            '28': 1443.0
+            '30': 1285.0
+            '32': 1201.0
+        '1.20':
+          lam: 0.23266
+          in_window: true
+          n1: 17.58
+          n_u: 40.56
+          b_stat: 23.0
+          noburst_hit: 0.932
+          backlog: 245.2
+          token_ratio: 1.024
+          gap_over_R: 8.2
+          R: 9.7
+          b_crit: 57.6
+          capped_drain_s:
+            '20': 6275.0
+            '22': 3436.0
+            '24': 2394.0
+            '26': 1869.0
+            '28': 1565.0
+            '30': 1382.0
+            '32': 1286.0
+        '1.25':
+          lam: 0.24235
+          in_window: true
+          n1: 18.32
+          n_u: 40.34
+          b_stat: 22.0
+          noburst_hit: 0.932
+          backlog: 283.0
+          token_ratio: 1.0254
+          gap_over_R: 9.32
+          R: 9.7
+          b_crit: 55.2
+          capped_drain_s:
+            '20': 9100.0
+            '22': 4156.0
+            '24': 2730.0
+            '26': 2073.0
+            '28': 1708.0
+            '30': 1494.0
+            '32': 1384.0
+        '1.30':
+          lam: 0.25204
+          in_window: true
+          n1: 19.07
+          n_u: 40.11
+          b_stat: 21.0
+          noburst_hit: 0.932
+          backlog: 321.2
+          token_ratio: 1.0269
+          gap_over_R: 10.41
+          R: 9.7
+          b_crit: 52.8
+          capped_drain_s:
+            '20': 16451.0
+            '22': 5249.0
+            '24': 3172.0
+            '26': 2324.0
+            '28': 1878.0
+            '30': 1625.0
+            '32': 1498.0
+        '1.35':
+          lam: 0.26174
+          in_window: true
+          n1: 19.81
+          n_u: 39.87
+          b_stat: 20.1
+          noburst_hit: 0.931
+          backlog: 359.7
+          token_ratio: 1.0284
+          gap_over_R: 11.48
+          R: 9.7
+          b_crit: 50.4
+          capped_drain_s:
+            '20': 83021.0
+            '22': 7104.0
+            '24': 3781.0
+            '26': 2641.0
+            '28': 2084.0
+            '30': 1780.0
+            '32': 1630.0
+        '1.40':
+          lam: 0.27143
+          in_window: true
+          n1: 20.57
+          n_u: 39.62
+          b_stat: 19.1
+          noburst_hit: 0.929
+          backlog: 398.5
+          token_ratio: 1.0299
+          gap_over_R: 12.53
+          R: 9.7
+          b_crit: 47.9
+          capped_drain_s:
+            '20': null
+            '22': 10939.0
+            '24': 4669.0
+            '26': 3054.0
+            '28': 2338.0
+            '30': 1965.0
+            '32': 1787.0
+        '1.45':
+          lam: 0.28113
+          in_window: true
+          n1: 21.33
+          n_u: 39.35
+          b_stat: 18.0
+          noburst_hit: 0.925
+          backlog: 437.7
+          token_ratio: 1.0313
+          gap_over_R: 13.57
+          R: 9.6
+          b_crit: 45.3
+          capped_drain_s:
+            '20': null
+            '22': 23566.0
+            '24': 6089.0
+            '26': 3617.0
+            '28': 2661.0
+            '30': 2192.0
+            '32': 1976.0
+        '1.50':
+          lam: 0.29082
+          in_window: true
+          n1: 22.1
+          n_u: 39.06
+          b_stat: 17.0
+          noburst_hit: 0.92
+          backlog: 477.3
+          token_ratio: 1.0326
+          gap_over_R: 14.59
+          R: 9.6
+          b_crit: 42.7
+          capped_drain_s:
+            '20': null
+            '22': null
+            '24': 8723.0
+            '26': 4425.0
+            '28': 3083.0
+            '30': 2476.0
+            '32': 2208.0
+        '1.55':
+          lam: 0.30051
+          in_window: true
+          n1: 22.89
+          n_u: 38.75
+          b_stat: 15.9
+          noburst_hit: 0.912
+          backlog: 517.3
+          token_ratio: 1.0339
+          gap_over_R: 15.59
+          R: 9.6
+          b_crit: 40.0
+          capped_drain_s:
+            '20': null
+            '22': null
+            '24': 15280.0
+            '26': 5687.0
+            '28': 3659.0
+            '30': 2841.0
+            '32': 2498.0
+        '1.60':
+          lam: 0.31021
+          in_window: true
+          n1: 23.71
+          n_u: 38.42
+          b_stat: 14.7
+          noburst_hit: 0.9
+          backlog: 557.7
+          token_ratio: 1.035
+          gap_over_R: 16.58
+          R: 9.6
+          b_crit: 37.1
+          capped_drain_s:
+            '20': null
+            '22': null
+            '24': 60105.0
+            '26': 7932.0
+            '28': 4491.0
+            '30': 3329.0
+            '32': 2873.0
+        '1.65':
+          lam: 0.3199
+          in_window: true
+          n1: 24.57
+          n_u: 38.06
+          b_stat: 13.5
+          noburst_hit: 0.884
+          backlog: 598.7
+          token_ratio: 1.0357
+          gap_over_R: 17.57
+          R: 9.6
+          b_crit: 34.1
+          capped_drain_s:
+            '20': null
+            '22': null
+            '24': null
+            '26': 13035.0
+            '28': 5802.0
+            '30': 4012.0
+            '32': 3377.0
+    llama31_8b_300k:
+      lambda_ref: 0.06186
+      window: 3.593
+      caps:
+      - 20
+      - 22
+      - 24
+      - 26
+      - 28
+      - 30
+      - 32
+      rows:
+        '1.35':
+          lam: 0.08351
+          in_window: true
+          n1: 7.51
+          n_u: 31.55
+          b_stat: 24.0
+          noburst_hit: 0.932
+          backlog: 203.7
+          token_ratio: 1.0062
+          gap_over_R: 6.54
+          R: 30.9
+          b_crit: 60.1
+          capped_drain_s:
+            '20': 1617.0
+            '22': 1424.0
+            '24': 1324.0
+            '26': 1374.0
+            '28': 1704.0
+            '30': 3145.0
+            '32': null
+        '1.40':
+          lam: 0.0866
+          in_window: true
+          n1: 7.8
+          n_u: 31.48
+          b_stat: 23.7
+          noburst_hit: 0.932
+          backlog: 216.4
+          token_ratio: 1.008
+          gap_over_R: 6.84
+          R: 30.8
+          b_crit: 59.2
+          capped_drain_s:
+            '20': 1664.0
+            '22': 1461.0
+            '24': 1356.0
+            '26': 1409.0
+            '28': 1759.0
+            '30': 3333.0
+            '32': null
+        '1.45':
+          lam: 0.0897
+          in_window: true
+          n1: 8.1
+          n_u: 31.41
+          b_stat: 23.3
+          noburst_hit: 0.932
+          backlog: 229.3
+          token_ratio: 1.0096
+          gap_over_R: 7.14
+          R: 30.8
+          b_crit: 58.2
+          capped_drain_s:
+            '20': 1713.0
+            '22': 1499.0
+            '24': 1390.0
+            '26': 1446.0
+            '28': 1817.0
+            '30': 3544.0
+            '32': null
+        '1.50':
+          lam: 0.09279
+          in_window: true
+          n1: 8.39
+          n_u: 31.33
+          b_stat: 22.9
+          noburst_hit: 0.932
+          backlog: 242.3
+          token_ratio: 1.0111
+          gap_over_R: 7.43
+          R: 30.7
+          b_crit: 57.3
+          capped_drain_s:
+            '20': 1766.0
+            '22': 1540.0
+            '24': 1426.0
+            '26': 1485.0
+            '28': 1878.0
+            '30': 3783.0
+            '32': null
+        '1.55':
+          lam: 0.09588
+          in_window: true
+          n1: 8.69
+          n_u: 31.26
+          b_stat: 22.6
+          noburst_hit: 0.932
+          backlog: 255.4
+          token_ratio: 1.0124
+          gap_over_R: 7.73
+          R: 30.7
+          b_crit: 56.4
+          capped_drain_s:
+            '20': 1821.0
+            '22': 1583.0
+            '24': 1463.0
+            '26': 1526.0
+            '28': 1944.0
+            '30': 4055.0
+            '32': null
+        '1.60':
+          lam: 0.09897
+          in_window: true
+          n1: 8.99
+          n_u: 31.18
+          b_stat: 22.2
+          noburst_hit: 0.932
+          backlog: 268.7
+          token_ratio: 1.0137
+          gap_over_R: 8.02
+          R: 30.6
+          b_crit: 55.4
+          capped_drain_s:
+            '20': 1880.0
+            '22': 1628.0
+            '24': 1502.0
+            '26': 1569.0
+            '28': 2014.0
+            '30': 4368.0
+            '32': null
+        '1.65':
+          lam: 0.10207
+          in_window: true
+          n1: 9.29
+          n_u: 31.1
+          b_stat: 21.8
+          noburst_hit: 0.932
+          backlog: 282.0
+          token_ratio: 1.0148
+          gap_over_R: 8.31
+          R: 30.6
+          b_crit: 54.5
+          capped_drain_s:
+            '20': 1943.0
+            '22': 1676.0
+            '24': 1544.0
+            '26': 1614.0
+            '28': 2090.0
+            '30': 4733.0
+            '32': null
+        '1.70':
+          lam: 0.10516
+          in_window: true
+          n1: 9.6
+          n_u: 31.02
+          b_stat: 21.4
+          noburst_hit: 0.932
+          backlog: 295.5
+          token_ratio: 1.0158
+          gap_over_R: 8.59
+          R: 30.5
+          b_crit: 53.5
+          capped_drain_s:
+            '20': 2010.0
+            '22': 1726.0
+            '24': 1587.0
+            '26': 1662.0
+            '28': 2171.0
+            '30': 5163.0
+            '32': null
+        '1.75':
+          lam: 0.10825
+          in_window: true
+          n1: 9.9
+          n_u: 30.94
+          b_stat: 21.0
+          noburst_hit: 0.932
+          backlog: 309.1
+          token_ratio: 1.0167
+          gap_over_R: 8.88
+          R: 30.5
+          b_crit: 52.6
+          capped_drain_s:
+            '20': 2082.0
+            '22': 1780.0
+            '24': 1633.0
+            '26': 1713.0
+            '28': 2258.0
+            '30': 5676.0
+            '32': null
+        '1.80':
+          lam: 0.11135
+          in_window: true
+          n1: 10.21
+          n_u: 30.85
+          b_stat: 20.6
+          noburst_hit: 0.932
+          backlog: 322.8
+          token_ratio: 1.0175
+          gap_over_R: 9.16
+          R: 30.5
+          b_crit: 51.6
+          capped_drain_s:
+            '20': 2158.0
+            '22': 1837.0
+            '24': 1681.0
+            '26': 1766.0
+            '28': 2352.0
+            '30': 6300.0
+            '32': null
+        '1.85':
+          lam: 0.11444
+          in_window: true
+          n1: 10.52
+          n_u: 30.77
+          b_stat: 20.3
+          noburst_hit: 0.932
+          backlog: 336.5
+          token_ratio: 1.0183
+          gap_over_R: 9.44
+          R: 30.5
+          b_crit: 50.6
+          capped_drain_s:
+            '20': 2240.0
+            '22': 1897.0
+            '24': 1732.0
+            '26': 1823.0
+            '28': 2454.0
+            '30': 7076.0
+            '32': null
+        '1.90':
+          lam: 0.11753
+          in_window: true
+          n1: 10.83
+          n_u: 30.68
+          b_stat: 19.9
+          noburst_hit: 0.932
+          backlog: 350.4
+          token_ratio: 1.0189
+          gap_over_R: 9.71
+          R: 30.4
+          b_crit: 49.6
+          capped_drain_s:
+            '20': 2329.0
+            '22': 1961.0
+            '24': 1787.0
+            '26': 1884.0
+            '28': 2564.0
+            '30': 8067.0
+            '32': null
+        '1.95':
+          lam: 0.12063
+          in_window: true
+          n1: 11.14
+          n_u: 30.59
+          b_stat: 19.5
+          noburst_hit: 0.932
+          backlog: 364.3
+          token_ratio: 1.0195
+          gap_over_R: 9.99
+          R: 30.4
+          b_crit: 48.6
+          capped_drain_s:
+            '20': 2424.0
+            '22': 2030.0
+            '24': 1844.0
+            '26': 1949.0
+            '28': 2685.0
+            '30': 9374.0
+            '32': null
+        '2.00':
+          lam: 0.12372
+          in_window: true
+          n1: 11.45
+          n_u: 30.5
+          b_stat: 19.1
+          noburst_hit: 0.932
+          backlog: 378.4
+          token_ratio: 1.0201
+          gap_over_R: 10.26
+          R: 30.4
+          b_crit: 47.6
+          capped_drain_s:
+            '20': 2527.0
+            '22': 2103.0
+            '24': 1905.0
+            '26': 2018.0
+            '28': 2818.0
+            '30': 11180.0
+            '32': null
+        '2.05':
+          lam: 0.12681
+          in_window: true
+          n1: 11.77
+          n_u: 30.41
+          b_stat: 18.6
+          noburst_hit: 0.932
+          backlog: 392.5
+          token_ratio: 1.0205
+          gap_over_R: 10.53
+          R: 30.4
+          b_crit: 46.6
+          capped_drain_s:
+            '20': 2639.0
+            '22': 2181.0
+            '24': 1970.0
+            '26': 2092.0
+            '28': 2963.0
+            '30': 13836.0
+            '32': null
+        '2.10':
+          lam: 0.1299
+          in_window: true
+          n1: 12.09
+          n_u: 30.32
+          b_stat: 18.2
+          noburst_hit: 0.932
+          backlog: 406.7
+          token_ratio: 1.0209
+          gap_over_R: 10.8
+          R: 30.4
+          b_crit: 45.6
+          capped_drain_s:
+            '20': 2761.0
+            '22': 2265.0
+            '24': 2040.0
+            '26': 2171.0
+            '28': 3124.0
+            '30': 18128.0
+            '32': null
+        '2.15':
+          lam: 0.133
+          in_window: true
+          n1: 12.41
+          n_u: 30.22
+          b_stat: 17.8
+          noburst_hit: 0.932
+          backlog: 421.0
+          token_ratio: 1.0213
+          gap_over_R: 11.06
+          R: 30.3
+          b_crit: 44.6
+          capped_drain_s:
+            '20': 2894.0
+            '22': 2356.0
+            '24': 2114.0
+            '26': 2256.0
+            '28': 3303.0
+            '30': 26240.0
+            '32': null
+        '2.20':
+          lam: 0.13609
+          in_window: true
+          n1: 12.73
+          n_u: 30.12
+          b_stat: 17.4
+          noburst_hit: 0.932
+          backlog: 435.3
+          token_ratio: 1.0216
+          gap_over_R: 11.33
+          R: 30.3
+          b_crit: 43.5
+          capped_drain_s:
+            '20': 3040.0
+            '22': 2454.0
+            '24': 2194.0
+            '26': 2348.0
+            '28': 3503.0
+            '30': 47356.0
+            '32': null
+        '2.25':
+          lam: 0.13918
+          in_window: true
+          n1: 13.05
+          n_u: 30.03
+          b_stat: 17.0
+          noburst_hit: 0.932
+          backlog: 449.7
+          token_ratio: 1.0218
+          gap_over_R: 11.59
+          R: 30.3
+          b_crit: 42.5
+          capped_drain_s:
+            '20': 3202.0
+            '22': 2560.0
+            '24': 2280.0
+            '26': 2447.0
+            '28': 3728.0
+            '30': 239084.0
+            '32': null
+        '2.30':
+          lam: 0.14228
+          in_window: true
+          n1: 13.38
+          n_u: 29.92
+          b_stat: 16.5
+          noburst_hit: 0.932
+          backlog: 464.2
+          token_ratio: 1.022
+          gap_over_R: 11.85
+          R: 30.3
+          b_crit: 41.4
+          capped_drain_s:
+            '20': 3380.0
+            '22': 2675.0
+            '24': 2372.0
+            '26': 2555.0
+            '28': 3983.0
+            '30': null
+            '32': null
+        '2.35':
+          lam: 0.14537
+          in_window: true
+          n1: 13.71
+          n_u: 29.82
+          b_stat: 16.1
+          noburst_hit: 0.932
+          backlog: 478.8
+          token_ratio: 1.0222
+          gap_over_R: 12.11
+          R: 30.3
+          b_crit: 40.3
+          capped_drain_s:
+            '20': 3580.0
+            '22': 2801.0
+            '24': 2472.0
+            '26': 2672.0
+            '28': 4274.0
+            '30': null
+            '32': null
+        '2.40':
+          lam: 0.14846
+          in_window: true
+          n1: 14.04
+          n_u: 29.71
+          b_stat: 15.7
+          noburst_hit: 0.932
+          backlog: 493.4
+          token_ratio: 1.0223
+          gap_over_R: 12.37
+          R: 30.3
+          b_crit: 39.2
+          capped_drain_s:
+            '20': 3803.0
+            '22': 2938.0
+            '24': 2581.0
+            '26': 2800.0
+            '28': 4609.0
+            '30': null
+            '32': null
+        '2.45':
+          lam: 0.15156
+          in_window: true
+          n1: 14.38
+          n_u: 29.6
+          b_stat: 15.2
+          noburst_hit: 0.932
+          backlog: 508.1
+          token_ratio: 1.0224
+          gap_over_R: 12.62
+          R: 30.3
+          b_crit: 38.1
+          capped_drain_s:
+            '20': 4056.0
+            '22': 3090.0
+            '24': 2698.0
+            '26': 2940.0
+            '28': 5001.0
+            '30': null
+            '32': null
+        '2.50':
+          lam: 0.15465
+          in_window: true
+          n1: 14.72
+          n_u: 29.49
+          b_stat: 14.8
+          noburst_hit: 0.932
+          backlog: 522.9
+          token_ratio: 1.0224
+          gap_over_R: 12.88
+          R: 30.3
+          b_crit: 37.0
+          capped_drain_s:
+            '20': 4343.0
+            '22': 3257.0
+            '24': 2827.0
+            '26': 3095.0
+            '28': 5463.0
+            '30': null
+            '32': null
+  trapped_tables_variants_in_json:
+  - h200_300k_ratiofit
+  - h200_300k_lamratiofit
+  - h200_300k_decode2
+  - h200_300k_e0a2
+  rivals:
+    a100_pool150k:
+      M_over_E_bar: 14.19
+      M_over_E_lb: 14.23
+      M_over_E_S: 13.59
+      n_b: 18.32
+      n_half_fluid: 16.91
+      che_W_eq_Z_half_crossing: 26.47
+      yao_little_half_crossing: 23.94
+      b_stat_at_frozen_e2_points: {}
+    a100_pool600k:
+      M_over_E_bar: 56.77
+      M_over_E_lb: 56.88
+      M_over_E_S: 56.13
+      n_b: 61.17
+      n_half_fluid: 60.03
+      che_W_eq_Z_half_crossing: 105.85
+      yao_little_half_crossing: 95.75
+      b_stat_at_frozen_e2_points:
+        '2.15': 45.9
+        '3.35': 35.0
+    h200_300k:
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.76
+      n_b: 41.31
+      n_half_fluid: 37.32
+      che_W_eq_Z_half_crossing: 52.93
+      yao_little_half_crossing: 47.87
+      b_stat_at_frozen_e2_points:
+        '1.1': 24.9
+        '1.15': 23.9
+    h200_300k_ratiofit:
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.76
+      n_b: 41.12
+      n_half_fluid: 37.2
+      che_W_eq_Z_half_crossing: 52.93
+      yao_little_half_crossing: 47.87
+      b_stat_at_frozen_e2_points:
+        '1.1': 24.6
+        '1.15': 23.7
+    h200_300k_lamratiofit:
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.76
+      n_b: 41.4
+      n_half_fluid: 37.38
+      che_W_eq_Z_half_crossing: 52.93
+      yao_little_half_crossing: 47.87
+      b_stat_at_frozen_e2_points:
+        '1.1': 25.0
+        '1.15': 24.1
+    h200_300k_decode2:
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.46
+      M_over_E_S: 27.78
+      n_b: 41.46
+      n_half_fluid: 37.0
+      che_W_eq_Z_half_crossing: 52.93
+      yao_little_half_crossing: 47.87
+      b_stat_at_frozen_e2_points:
+        '1.1': 24.5
+        '1.15': 23.4
+    h200_300k_e0a2:
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.45
+      M_over_E_S: 27.83
+      n_b: 41.74
+      n_half_fluid: 36.43
+      che_W_eq_Z_half_crossing: 52.93
+      yao_little_half_crossing: 47.87
+      b_stat_at_frozen_e2_points: {}
+    h200_600k:
+      M_over_E_bar: 56.77
+      M_over_E_lb: 56.92
+      M_over_E_S: 56.13
+      n_b: 69.94
+      n_half_fluid: 66.58
+      che_W_eq_Z_half_crossing: 105.85
+      yao_little_half_crossing: 95.75
+      b_stat_at_frozen_e2_points:
+        '1.5': 46.2
+        '2.0': 36.6
+    llama31_8b_300k:
+      M_over_E_bar: 28.39
+      M_over_E_lb: 28.44
+      M_over_E_S: 27.76
+      n_b: 32.02
+      n_half_fluid: 30.92
+      che_W_eq_Z_half_crossing: 52.93
+      yao_little_half_crossing: 47.87
+      b_stat_at_frozen_e2_points:
+        '1.35': 24.0
+        '1.65': 21.8
+  rival_exogenous_gap_curves_in_json: rivals.<cell>.che_W_eq_Z_hit / yao_little_no_service_hit (every integer n)
+  pool_lookup_in_json:
+    a100_pool150k:
+      frozen_check:
+        curve_max_abs_diff: 0.0
+        escape_max_abs_diff_at_0p05: 0.0
+      n_range:
+      - 2.0
+      - 300.0
+      mult_range:
+      - 1.01
+      - 1.96
+    a100_pool600k:
+      frozen_check:
+        curve_max_abs_diff: 0.0
+        escape_max_abs_diff_at_0p05: 0.0
+      n_range:
+      - 2.0
+      - 300.0
+      mult_range:
+      - 1.01
+      - 5.71
+    h200_600k:
+      frozen_check:
+        curve_max_abs_diff: 0.0
+        escape_max_abs_diff_at_0p05: 0.0
+      n_range:
+      - 2.0
+      - 300.0
+      mult_range:
+      - 1.01
+      - 3.26

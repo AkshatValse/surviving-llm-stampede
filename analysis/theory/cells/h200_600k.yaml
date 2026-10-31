@@ -1,0 +1,23 @@
+# OUT-OF-SAMPLE (blind), NEW in pred2 (remedy 2a.2, for the contingent N6). The h200_300k cell (same engine, model, workload,
+# H200 speed factor fitted to the H200 300k E0a all-miss token rate, lambda_ref of the H200 300k E0a) with a 600,000-token KV
+# pool, as a100_pool600k is to a100_300k. Zero new fitted parameters. No H200 Stage C / E0b / E2 result is used.
+base: h200_300k.yaml
+name: h200_600k
+description: "SGLang 0.5.22 FCFS, Qwen2.5-7B-Instruct, 1x NVIDIA H200 NVL, KV pool 600,000 tokens (blind prediction, pred2)"
+blind: true
+pool_tokens: 600000
+pool_source: "--max-total-tokens 600000 (remedy plan N6, contingent)"
+lambda_ref:
+  value: 0.19388
+  source: "h200_300k E0a lambda_miss_turns_based (reference for multiples; a 600k cell would have no E0a of its own unless run)"
+stage_c:
+  grid: [32, 40, 48, 56, 60, 64, 68, 72, 80, 96, 192, 300]   # around the predicted cliff (fluid n_half 66.6, n_b 69.9)
+  window_s: [900, 2700]
+e0b:
+  multiples: [1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+  horizon_s: 3000
+e2:
+  multiples: auto
+  burst: {n: 200, t_s: 1200, width_s: 60}
+  window_s: [5700, 8700]
+  cap: auto
