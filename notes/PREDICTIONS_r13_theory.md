@@ -91,3 +91,9 @@ Full list: `notes/THEORY_r13_merged.md` §10.
 6. **The registered workload is fold-free,** but dispersed tool times (CV ≳ 1.2 for two-phase mixtures, lognormal CV ≥ 2) fold the closed curve (Proposition F). The paper's experiments use exponential tool times only.
 7. **The relapse probability** is F2 escape to n_b. It is mapped to the registered relapse event (any 300 s window with follow-up hit < 0.2 after t_rel + 300 s) by identification, not derived.
 8. **H200 and Llama E2 predictions** use the model's own registration consequence (H200 points 1.10/1.15× and cap 32; Llama 1.35/1.65× and cap 24), not the cells' actual registrations. Predictions at the registered rates follow by the frozen conditional rule in `notes/THEORY_r13_scoring.md`.
+
+## Freeze record (follow-up commit; nothing above this section changed after the tag)
+
+- Freeze commit `997d2c4d9d25b1d2ef26fdbc8c7b35a9860ceff0` (committer time 2026-10-31T02:04:55-05:00), annotated tag `r13-theory-pred` (tag object `b900d1926d82d11a79156c1bd28ebc7824699088`).
+- GitHub push time of branch `r13/theory` at that commit: **2026-10-31T07:05:30Z (02:05:30 CDT)**, from `gh api repos/AkshatValse/Nova-Research/activity` (activity_type branch_creation, after = 997d2c4). The tag was pushed immediately afterwards (02:05:31 CDT local clock); the activity API does not list tag pushes, and `gh api repos/AkshatValse/Nova-Research/git/refs/tags/r13-theory-pred` resolves to the tag object above.
+- Tests at the freeze: tests/test_theory_{r13_freeze,predict,fluid_rigorous,che_endogenous}.py, 51 passed.
