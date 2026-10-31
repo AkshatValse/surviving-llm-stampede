@@ -32,9 +32,8 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
   - Each runs with `--time=03:10:00 --deadline=2026-11-01T11:40:00`, nice 0, `--gres=gpu:h200:1`; about 2 h 29 min per job. Slurm drops any job not started by Sun 08:30.
   - Submit script `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `$W/h200_jobs.env`. Each job's run dir is listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`.
   - **Pulled already (part A):** 17171020–22 (seed 0, 1.5 ×, all three arms; COMPLETED 0:0, ended 11:56–12:03) in `results/nova/h200p600k_e2_partA_1717102x_pulled_20261031-120927/` (archive sha256 `c492385e…`; each run's `meta.json` carries PREREG_SHA256 `6be6e232…`). Not yet analysed.
-  - **Still on Nova:**
-    - 17171023–25 (seed 0, 2.0 ×), running since 11:57 / 11:57 / 12:04; due ≈ 14:30.
-    - 17171026–37 (seeds 1–2), pending.
+  - **Pulled (part A2):** 17171023–25 (seed 0, 2.0 ×; COMPLETED 0:0, ended 14:26–14:33) in `results/nova/h200p600k_e2_partA2_1717102x_pulled_20261031-154207/` (archive sha256 `b867996b…`; PREREG_SHA256 `6be6e232…` in each `meta.json`).
+  - **Still on Nova (15:50 CDT):** 17171026–28 running since 14:27 / 14:27 / 14:33; 17171029–37 pending.
   - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
 - **Staging dirs** `/work/classtmp/avalse/swapp/pull_staging_h200*` (uncompressed copies; each archive deleted after its hash check).
 
@@ -45,6 +44,10 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
    Parse the printed `out_dir`.
 3. **Pull read-only:** the remaining 15 run dirs (17171023–37; part A already holds 17171020–22), their job-log dirs, `logs/pm-e2h6-*.out`, `sacct` for all 18 and the verdict dir. Use tar + `xz -T2`, sha256 on both ends, `tar --force-local`, then delete the remote archive. Put it in `results/nova/h200p600k_e2_partB_1717102x_pulled_<ts>/`, before 11:30. If some jobs have not finished, pull what has and say which are missing; the verdict needs all 18.
 4. **Write it up:** a LOG entry (verdict table, against the pred2 E2 block, verified vs. not), a verdict section in `notes/PAPER_INPUT_h200.md`, and an update here. Commit, push `r12/h200`, and message the lead.
+
+## Lead change and reconnect (2026-10-31 ~15:40 CDT)
+- Report to the new lead session **nova-lead-2** (`local_8c823c00-db19-4b39-b611-f9ce5f65891f`) from now on; the old lead ran out of context.
+- Nova's VPN was reconnected Sat 15:38 CDT. Assuming the same ~12 h window, it drops around 03:38 Sun. E2 jobs are pulled in batches as they finish, and the verdict runs once all 18 have ended (expected ≈ 00:30 Sun).
 
 ## Nova access window
 - Lead, 2026-10-31 ~02:10 CDT: Nova is reachable over a VPN that Akshat reconnected. It drops automatically around 14:00 CDT Sat. Pull every finished result before 13:30; anything that ends later waits for the next reconnect.
