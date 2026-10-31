@@ -1,0 +1,98 @@
+{
+  "run_dir": "results/agentload_e2_burst/20261031-042858",
+  "e2_config": "configs/agentload_e2_rescue_native.yaml",
+  "checks": [
+    {
+      "name": "arm",
+      "ok": true,
+      "detail": "meta.arm = 'rescue'"
+    },
+    {
+      "name": "gate_mode_config",
+      "ok": true,
+      "detail": "config gate.mode = 'rescue'"
+    },
+    {
+      "name": "gate_mode_meta",
+      "ok": true,
+      "detail": "meta records {'meta.outcome.gate.mode': 'rescue', 'meta.gate_mode': 'rescue', 'meta.gate.mode': 'rescue'}"
+    },
+    {
+      "name": "e2_config_gate",
+      "ok": true,
+      "detail": "gate block, cap, run length and burst match"
+    },
+    {
+      "name": "engage",
+      "ok": true,
+      "detail": "1 engage event(s); t_engage=2100.0011801226065, t_on=2100.0"
+    },
+    {
+      "name": "engage_cap",
+      "ok": true,
+      "detail": "engage cap 64.0, resolved cap 64"
+    },
+    {
+      "name": "pause_order",
+      "ok": true,
+      "detail": "pauses only while engaged, resumes follow pauses"
+    },
+    {
+      "name": "pause_when_over_cap",
+      "ok": true,
+      "detail": "303 active at the engage vs cap 64; 220 pause / 220 resume events"
+    },
+    {
+      "name": "gate_counts",
+      "ok": true,
+      "detail": "0 engage / pause / resume / cap rows without active, waiting and paused counts"
+    },
+    {
+      "name": "gate_pause_rows",
+      "ok": true,
+      "detail": "every pause row has a cap and active >= cap"
+    },
+    {
+      "name": "gate_no_lost_wakeup",
+      "ok": true,
+      "detail": "no session waited while a slot was free"
+    },
+    {
+      "name": "gate_cap_held",
+      "ok": true,
+      "detail": "once at the cap, active never exceeded it"
+    },
+    {
+      "name": "gate_uncap_rule",
+      "ok": true,
+      "detail": "cap-removal rule respected"
+    },
+    {
+      "name": "gate_uncap_hold",
+      "ok": true,
+      "detail": "hold rule respected"
+    },
+    {
+      "name": "gate_outcome_counts",
+      "ok": true,
+      "detail": "meta pause / resume counts equal the events"
+    },
+    {
+      "name": "gate_end_state",
+      "ok": true,
+      "detail": "no slot held and no session queued after the end-of-run cancel; no controller error"
+    },
+    {
+      "name": "conservation",
+      "ok": true,
+      "detail": "planned 2796, arrived 2796, started 2796: every session ended or was still outstanding at the end"
+    },
+    {
+      "name": "not_aborted",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "failures": [],
+  "ok": true
+}
