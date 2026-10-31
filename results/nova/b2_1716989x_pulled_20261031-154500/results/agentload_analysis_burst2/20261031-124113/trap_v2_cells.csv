@@ -1,0 +1,2 @@
+label,rate_mult,lambda,lambda_miss,n_seeds_seen,n_seeds_complete,n_pass,frac_pass,burst_trapped_frac,noburst_good_frac,capped_recovered_frac,enough_seeds,meets,diagnosis,in_registered_window,meets_valid_pairing,registered_label,registered_lambda,decisive_eligible,exploratory
+sglang-fcfs-r1-b40,1.65,0.11803113466516725,0.07153402100919228,1,0,0,0.0,0.0,,,False,False,INSUFFICIENT: 1 seeds < min_seeds,True,False,True,True,True,False

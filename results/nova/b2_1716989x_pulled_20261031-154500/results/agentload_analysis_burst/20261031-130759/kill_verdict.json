@@ -1,0 +1,32 @@
+{
+  "interval": [
+    1.2,
+    2.0
+  ],
+  "fraction_min": 0.6666666666666666,
+  "min_runs_per_cell": 3,
+  "cells": {
+    "sglang-fcfs-r1-b60": {
+      "rate_mults_tested_in_interval": [
+        1.65
+      ],
+      "strict_meets_at": [],
+      "loose_meets_at": []
+    }
+  },
+  "n_fcfs_cells_with_data": 1,
+  "mechanism_transfers_any_fcfs_cell_strict": false,
+  "mechanism_transfers_any_fcfs_cell_loose": false,
+  "kill_strict": true,
+  "kill_loose": true,
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  },
+  "skipped_no_burst": [],
+  "arms_in_kill_table": [
+    "burst"
+  ],
+  "role": "SECONDARY: hit-rate criterion of the first draft. The pre-registered kill-test verdict is kill_verdict_v2.json (`summarize burst2`: throughput criterion, paired arms)"
+}
