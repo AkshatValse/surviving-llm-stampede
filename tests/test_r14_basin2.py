@@ -3,6 +3,8 @@ bracketing rule of analysis/basin.py.
 
 No engine anywhere: plans come from the generator's own plan code and check-job is the real CLI. The B1 cells (n=100 / 25)
 keep their own tests in tests/test_r11_basin.py; here they are only checked to fill byte-identically after the B2 change."""
+import hashlib
+
 import yaml
 import pytest
 
@@ -249,3 +251,41 @@ def test_fill_cli_offers_the_b2_cells_and_refuses_others(tmp_path):
     assert basin.main(["fill", "--n", "40", "--out", str(out)]) == 2      # refuses to overwrite
     with pytest.raises(SystemExit):
         basin.main(["fill", "--n", "45", "--out", str(tmp_path / "y.yaml")])
+
+
+# ---------------------------------------------------------------- review fixes: one vote per seed, only bound runs count
+def test_bracket_decision_refuses_to_count_a_seed_twice():
+    G, S = (lambda s: _rec(s, good=True)), (lambda s: _rec(s, stuck=True))
+    d = basin.bracket_decision({40: [G(0), G(0), S(1), S(2)], 60: [S(0), S(1), S(2)]})   # a resubmitted seed 0
+    assert d["bracketed"] is None and d["cells"]["40"]["duplicate_seeds"] == [0]
+    assert any("duplicate seed" in x for x in d["notes"])
+    d = basin.bracket_decision({40: [G(0), G(1), S(2)], 60: [S(0), S(1), S(2)]})
+    assert d["bracketed"] is True and d["cells"]["40"]["duplicate_seeds"] == []
+
+
+def _b2rec(tmp_path, n=40, cfg_bytes=None, **kw):
+    d = tmp_path / f"run{n}_{len(list(tmp_path.iterdir()))}"
+    d.mkdir()
+    (d / "config.yaml").write_bytes(cfg_path(n).read_bytes() if cfg_bytes is None else cfg_bytes)
+    rec = {"run_dir": str(d), "burst_n": n, "role": "new", "label": f"sglang-fcfs-r1-b{n}", "arm": "burst",
+           "rate_mult": 1.65, "aborted": False, "window_matches_endpoints": True, "prereg_bound": True, "prereg_blockers": ""}
+    rec.update(kw)
+    return rec
+
+
+def test_b2_eligibility(tmp_path):
+    for n in (40, 50, 60):
+        assert basin.B2_CONFIG_SHA256[n] == hashlib.sha256(cfg_path(n).read_bytes()).hexdigest()
+        assert basin.b2_eligibility(_b2rec(tmp_path, n)) == (True, "")
+    crlf = cfg_path(40).read_bytes().replace(b"\n", b"\r\n")
+    assert basin.b2_eligibility(_b2rec(tmp_path, cfg_bytes=crlf))[0] is True          # CRLF read as LF
+    for kw, msg in (({"prereg_bound": None, "prereg_blockers": None}, "no --prereg"),
+                    ({"prereg_bound": False, "prereg_blockers": "run not bound"}, "run not bound"),
+                    ({"label": "sglang-fcfs-r1"}, "label"), ({"arm": "noburst"}, "arm"), ({"rate_mult": 1.35}, "rate_mult"),
+                    ({"aborted": True, "abort_reason": "x"}, "aborted"), ({"window_matches_endpoints": False}, "window"),
+                    ({"role": "baseline"}, "role")):
+        ok, why = basin.b2_eligibility(_b2rec(tmp_path, **kw))
+        assert ok is False and msg in why, (kw, why)
+    ok, why = basin.b2_eligibility(_b2rec(tmp_path, cfg_bytes=cfg_path(60).read_bytes()))   # n60 bytes under n=40
+    assert ok is False and "config.yaml sha256" in why
+    assert basin.b2_eligibility({"burst_n": 100}) == (False, "")                              # B1 / baselines untouched

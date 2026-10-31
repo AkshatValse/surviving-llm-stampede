@@ -37,6 +37,11 @@ configs/agentload_prereg_2026-10-31_b40.yaml / _b50.yaml / _b60.yaml (``fill --n
 as before). Frozen B2 rule: the basin boundary is bracketed iff n = 40 is GOOD in >= 2/3 seeds and n = 60 is STUCK in >= 2/3
 seeds (:func:`bracket_decision`); n = 50 does not enter the rule. The seven-point curve n = 0, 25, 40, 50, 60, 100, 200
 (per seed, :func:`curve_table`) is reported against the frozen committor of the theory predictions.
+A B2 run enters the rule and its curve points only if :func:`b2_eligibility` passes: the cell label, the BURST arm at 1.65 x,
+not aborted, the frozen window, bound to its registration (``--prereg`` with the B2 files; ``prereg.run_blockers`` empty) and
+a config.yaml equal to the tagged cell config (``B2_CONFIG_SHA256``; the B2 registrations predate the e2_config_sha256
+binding). Two runs of one seed leave the rule undecided (None) rather than letting the seed vote twice. Runs that fail are
+listed in ``b2_not_counted``. (Review fix after r14-basin2-reg, before any B2 job: stricter only; the B1 decision is unchanged.)
 
 CLI:  python -m analysis.basin fill --n 100 --out configs/agentload_prereg_2026-10-30_b100.yaml
       python -m analysis.basin classify --endpoints configs/r11_basin_predict.yaml --run-dirs RUN [RUN ...]
@@ -45,6 +50,7 @@ CLI:  python -m analysis.basin fill --n 100 --out configs/agentload_prereg_2026-
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import sys
@@ -67,6 +73,11 @@ BASIN_NS = (25, 100)
 BASIN2_NS = (40, 50, 60)                  # B2 (r14, N1): the dose-response cells
 BASIN2_BRACKET = (40, 60)                 # the frozen bracketing rule: n=40 GOOD >= 2/3 and n=60 STUCK >= 2/3
 CURVE_NS = (0, 25, 40, 50, 60, 100, 200)  # the seven-point curve reported against the frozen committor
+# sha256 of the B2 cell configs as tagged (r14-basin2-reg). The B2 registrations predate the e2_config_sha256 binding, so
+# classify binds each B2 run's config.yaml (CRLF read as LF) to these bytes itself before the run enters the B2 rule.
+B2_CONFIG_SHA256 = {40: "33257fb768ce8420e78278c9dfd9e0cce0f91e2cdc802e952a0b3d24fcc3036b",
+                    50: "7f5710cfeec5bdbe41c4d0b8e711c459d0e05b96b0841a6de8b53a287e5ce909",
+                    60: "284cc2d75c6e9cdb686ff73c6363a93168d2aa3cafc9b48651cf43e4d131eb2c"}
 BASIN_MULT = 1.65
 BASIN_SEEDS = (0, 1, 2)
 INPUTS = "prereg/inputs/2026-10-23"
@@ -353,16 +364,24 @@ def bracket_decision(by_n: Dict[int, List[Dict[str, Any]]], seeds: Sequence[int]
         recs = [r for r in by_n.get(n, []) if r["seed"] in seeds]
         got = sorted(r["seed"] for r in recs)
         cells[str(n)] = {"n_runs": len(recs), "seeds_present": got, "missing_seeds": [s for s in seeds if s not in got],
+                         "duplicate_seeds": sorted({s for s in got if got.count(s) > 1}),
                          "stuck": _count(recs, "stuck"), "good": _count(recs, "good")}
     clo, chi = cells[str(lo)], cells[str(hi)]
     lo_ok, hi_ok = clo["good"] >= need, chi["stuck"] >= need
-    if lo_ok and hi_ok:
-        bracketed: Optional[bool] = True
+    if clo["duplicate_seeds"] or chi["duplicate_seeds"]:
+        # two runs of one seed (a resubmission): one seed must not vote twice; left undecided for a human to resolve
+        lo_ok = hi_ok = False
+        bracketed: Optional[bool] = None
+    elif lo_ok and hi_ok:
+        bracketed = True
     elif clo["good"] + len(clo["missing_seeds"]) < need or chi["stuck"] + len(chi["missing_seeds"]) < need:
         bracketed = False
     else:
         bracketed = None
     notes = []
+    for c in (clo, chi):
+        if c["duplicate_seeds"]:
+            notes.append(f"duplicate seed runs {c['duplicate_seeds']}: undecided until resolved (first registered run per seed)")
     if clo["stuck"] >= need:
         notes.append(f"n={lo}: STUCK >= 2/3: the boundary lies below {lo}")
     if chi["good"] >= need:
@@ -401,6 +420,41 @@ def find_baselines(root: str | Path, rate_mult: float = BASIN_MULT, label: str =
     return out
 
 
+def _config_text_sha256(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def b2_eligibility(rec: Dict[str, Any]) -> tuple:
+    """(counted, problem) of a run for the B2 rule: a NEW run of burst size 40 / 50 / 60 counts only if it carries the
+    cell label, ran the BURST arm at 1.65 x, completed over the frozen window, is bound to its registration
+    (prereg.run_blockers empty; --prereg is required) and its config.yaml is the tagged cell config byte for byte."""
+    n = int(rec.get("burst_n") or 0)
+    if n not in BASIN2_NS:
+        return False, ""
+    probs = []
+    if rec.get("role") != "new":
+        probs.append(f"role {rec.get('role')!r} is not a new run")
+    if rec.get("label") != CELL_LABEL.format(n=n):
+        probs.append(f"label {rec.get('label')!r} != {CELL_LABEL.format(n=n)!r}")
+    if rec.get("arm") != "burst":
+        probs.append(f"arm {rec.get('arm')!r} != 'burst'")
+    rm = rec.get("rate_mult")
+    if rm is None or not math.isclose(float(rm), BASIN_MULT):
+        probs.append(f"rate_mult {rm} != {BASIN_MULT}")
+    if rec.get("aborted"):
+        probs.append(f"aborted ({rec.get('abort_reason')})")
+    if not rec.get("window_matches_endpoints"):
+        probs.append("evaluation window does not match the frozen endpoints")
+    if rec.get("prereg_bound") is not True:
+        probs.append("not bound to its registration: " + (rec.get("prereg_blockers") or "no --prereg for this label"))
+    cfile = Path(rec["run_dir"]) / "config.yaml"
+    if not cfile.is_file():
+        probs.append("run dir has no config.yaml")
+    elif _config_text_sha256(cfile) != B2_CONFIG_SHA256[n]:
+        probs.append(f"config.yaml sha256 {_config_text_sha256(cfile)} != the tagged cell config {B2_CONFIG_SHA256[n]}")
+    return (not probs), "; ".join(probs)
+
+
 def classify(run_dirs: Iterable[str | Path], baseline_dirs: Iterable[str | Path], ep: Dict[str, Any], p: AnalysisParams,
              preregs: Sequence[str | Path] = ()) -> Dict[str, Any]:
     pr_by_label = {}
@@ -422,6 +476,9 @@ def classify(run_dirs: Iterable[str | Path], baseline_dirs: Iterable[str | Path]
     for rec in rows:
         if rec["arm"] in ("burst", "noburst"):
             by_n.setdefault(int(rec["burst_n"]), []).append(rec)
+    for rec in rows:
+        rec["b2_counted"], rec["b2_problem"] = b2_eligibility(rec)
+    by_n_b2 = {n: ([r for r in rs if r["b2_counted"]] if n in BASIN2_NS else rs) for n, rs in by_n.items()}
     dup = {n: [s for s in {r["seed"] for r in rs} if sum(r["seed"] == s for r in rs) > 1] for n, rs in by_n.items()}
     dup = {n: s for n, s in dup.items() if s}
     pairs = {}
@@ -429,7 +486,9 @@ def classify(run_dirs: Iterable[str | Path], baseline_dirs: Iterable[str | Path]
         pairs[str(s)] = {str(n): next((r["basin_state"] for r in rs if r["seed"] == s), None) for n, rs in sorted(by_n.items())}
     return {"rows": rows, "by_n": by_n, "duplicate_seed_runs": dup, "by_seed": pairs,
             "decision": decision({n: by_n.get(n, []) for n in BASIN_NS}, co_primary_n=ep["trapped_co_primary_n"]),
-            "b2_bracket": bracket_decision(by_n), "curve": curve_table(by_n),
+            "b2_bracket": bracket_decision(by_n_b2), "curve": curve_table(by_n_b2),
+            "b2_not_counted": [{"run_dir": r["run_dir"], "problem": r["b2_problem"]} for r in rows
+                               if int(r.get("burst_n") or 0) in BASIN2_NS and not r["b2_counted"]],
             "endpoint_problems": endpoint_problems(ep, p),
             "window_mismatch_runs": [r["run_dir"] for r in rows if not r["window_matches_endpoints"]]}
 
@@ -437,7 +496,7 @@ def classify(run_dirs: Iterable[str | Path], baseline_dirs: Iterable[str | Path]
 _COLS = ("role", "burst_n", "seed", "label", "rate_mult", "arm", "basin_state", "stuck", "good", "good_by_recovered",
          "good_by_hit_slope", "state", "trapped", "recovered", "hit_eval", "backlog_slope", "slope_threshold", "hit_end",
          "outstanding_end", "rate_rel_dev", "eval_from", "t_end_s", "window_matches_endpoints", "prereg_bound",
-         "prereg_blockers", "run_dir")
+         "prereg_blockers", "b2_counted", "b2_problem", "run_dir")
 
 
 # ---------------------------------------------------------------- CLI
@@ -477,7 +536,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     d = new_result_dir(args.out_root, "agentload_analysis_basin")
     df = pd.DataFrame(res["rows"])
     df[[k for k in _COLS if k in df.columns]].sort_values(["burst_n", "seed", "role"]).to_csv(d / "basin_runs.csv", index=False)
-    verdict = {k: res[k] for k in ("by_seed", "decision", "b2_bracket", "curve", "duplicate_seed_runs", "endpoint_problems",
+    verdict = {k: res[k] for k in ("by_seed", "decision", "b2_bracket", "curve", "b2_not_counted", "duplicate_seed_runs",
+                                   "endpoint_problems",
                                    "window_mismatch_runs")}
     verdict["endpoints"] = ep
     (d / "basin_verdict.json").write_text(json.dumps(verdict, indent=2, default=json_default))
