@@ -1,0 +1,119 @@
+# Round 11, B1 (BASIN) and E0F: FROZEN primary endpoints and decision rules, written before any B1 or E0F run exists.
+#
+# B1 = registered two-sided burst-size test on the real engine (SGLang FCFS, 300k pool, Qwen2.5-7B, A100 80GB PCIe): one BURST arm per job,
+#      burst n = 100 and n = 25 (60 s wide at t = 1200 s), 1.65 x lambda_ref, seeds 0-2, 8700 s runs. Plan item B1 (protocol, decision_rule).
+# E0F = exploratory E0b replication on fresh seeds 3-5 at 2.0 x and 2.5 x lambda_ref, from empty, 3000 s, label sglang-fcfs-r1-e0bfresh.
+#
+# Every constant below is a REGISTERED constant of configs/agentload_prereg_2026-10-24.yaml (pass_rule block) or of the registered E0b rule
+# (configs/agentload_analysis.yaml `stability:` block, the rule that made prereg/inputs/2026-10-23/lambda_cap_bracket.json); none is chosen here.
+# The B1 registrations (configs/agentload_prereg_2026-10-30_b100.yaml / _b25.yaml) are made by `analysis.basin fill` (which runs
+# analysis.prereg.fill under the measured cell sglang-fcfs-r1 from the same inputs, then sets only inputs.engine_cell_label). They may differ
+# from the 2026-10-24 file only in inputs.engine_cell_label, inputs.e2_config, protocol.burst_n, lambda_selection.lambda_mults and .rule,
+# and the predicted_boundaries.capped_drain numbers fill derives from burst_n and the lambda list (analysis.basin.registration_diff;
+# tests/test_r11_basin.py); their measured, pass_rule and kill_conditions blocks are identical, so the constants below are theirs as well.
+# An evaluator must check that (registration_diff 'forbidden' empty) and stop if it fails.
+#
+# Machine-readable: analysis/basin.py (per-run STUCK / GOOD) and experiments/r11_predict_basin.py (the blind simulator predictions) read this
+# file. Do not edit it after the tag r11-basin-reg; a change is a new file with a new date and the reason.
+status: FROZEN
+frozen:
+  rule: commit with the blind simulator predictions (results/r11_predict_basin/<ts>/, notes/PREDICTIONS_r11_basin.md) and the B1
+    registrations, tag r11-basin-reg, before the first B1 / E0F job is submitted
+  written: 2026-10-30
+  blind_scope: no B1 (burst n = 100 or 25) or E0F (seeds 3-5) run exists anywhere when this file is written; the committed n = 200 BURST
+    and n = 0 NOBURST runs of the same seeds (jobs 17093387-17093404, results/nova/e2_170933xx_pulled_20261025-144558) are known to the lead
+registered_sources:
+  prereg: configs/agentload_prereg_2026-10-24.yaml
+  e0b_rule: configs/agentload_analysis.yaml#stability
+  e0b_bracket: prereg/inputs/2026-10-23/lambda_cap_bracket.json
+
+# ------------------------------------------------------------------ flat summary of the B1 endpoint constants (read by analysis/basin.py load_endpoints;
+# identical to the b1 block below, which the simulator driver reads)
+endpoints:
+  stuck_hit_below: 0.2                       # = b1.stuck.trap_hit_below
+  good_hit_above: 0.8                        # = b1.trap_v2.recovered_hit_above (the hit part of GOOD's second clause)
+  eval_window_s: [5700, 8700]                # = b1.window_s
+  trapped_co_primary_n: [100]                # the registered trap_v2 label is co-primary for n = 100 only
+
+# ------------------------------------------------------------------ B1 per-run endpoints (BURST arm only; all times are seconds from run start)
+b1:
+  cells:
+    b100:
+      engine_cell_label: sglang-fcfs-r1-b100
+      e2_config: configs/agentload_e2_burst_n100.yaml
+      prereg_file: configs/agentload_prereg_2026-10-30_b100.yaml
+      burst_n: 100
+      co_primary: [stuck, trap_v2_trapped]     # STUCK decides the basin claim; the registered trap_v2 label is co-primary for n = 100 only
+    b25:
+      engine_cell_label: sglang-fcfs-r1-b25
+      e2_config: configs/agentload_e2_burst_n25.yaml
+      prereg_file: configs/agentload_prereg_2026-10-30_b25.yaml
+      burst_n: 25
+      co_primary: [good]
+  arm: burst
+  lambda_mult: 1.65
+  lambda_ref: 0.07153402100919228            # prereg measured.lambda_ref (lambda_miss_turns_based of prereg/inputs/2026-10-23/calibration.json)
+  seeds: [0, 1, 2]
+  burst_t_s: 1200
+  burst_width_s: 60
+  duration_s: 8700
+  eval_from_s: 4500                          # prereg pass_rule.eval_from_s; W = [t_burst + eval_from_s, duration_s) = [5700, 8700)
+  window_s: [5700, 8700]
+  hit_metric: frac_turns_cached_gt50         # prereg pass_rule.hit_metric: a turn is a hit if cached_tokens / prompt_tokens > 0.5
+  cached_frac_threshold: 0.5
+  attribute_by: complete                     # a turn belongs to W by its completion time
+  stuck:
+    definition: hit_eval < trap_hit_below, hit_eval = hit fraction (hit_metric) of the ok turns completing in W
+    trap_hit_below: 0.2                      # registered constant (configs/agentload_analysis.yaml burst.trap_hit_below; simulator e2 trap_hit_below)
+  trap_v2:                                   # the registered label: analysis.trap_v2.trap_v2_run with the prereg pass_rule, unchanged
+    rate_estimator: uncached_tokens
+    rate_tolerance: 0.15                     # (a) |uncached prefill tokens/s over W / uncached_tokens_ref - 1| <= 0.15
+    uncached_tokens_ref: 11243.179816372982  # prereg measured.all_miss_uncached_tokens_per_s
+    slope_frac: 0.5                          # (b) OLS slope of sessions-in-system (incl. gate) bin means over W > 0.5 (lambda - lambda_ref)
+    slope_dt_s: 10.0
+    slope_threshold_sessions_per_s: 0.0232486  # 0.5 * (1.65 - 1) * 0.07153402100919228 (the evaluator recomputes it from the run's resolved lambda)
+    recovered_hit_above: 0.8                 # RECOVERED: hit fraction > 0.8 AND outstanding backlog < 20, both over the last end_window_s
+    recovered_backlog_below: 20.0
+    recovered_backlog_metric: outstanding
+    end_window_s: 300.0
+    min_eval_s: 600.0
+    state_order: [trapped, recovered, draining, indeterminate]
+  good:
+    definition: trap_v2 state == recovered, OR (hit_eval > recovered_hit_above AND backlog_slope <= slope_threshold), with the trap_v2 numbers above
+  decision_rule:
+    statistics: per seed (common-random-number pairs with the committed n = 0 and n = 200 runs of the same seed); no pooled intervals
+    need: 2                                  # of 3 seeds
+    pass: basin shown on the engine (PASS) iff n100 STUCK in >= 2/3 seeds AND n25 GOOD in >= 2/3 seeds
+    pre_stated_outcomes:
+      - id: stuck_slope_indeterminate
+        when: n100 STUCK in >= 2/3 seeds but trap_v2 TRAPPED in < 2/3 seeds
+        report: "stuck, slope-indeterminate"
+      - id: critical_size_refuted
+        when: n100 GOOD in >= 2/3 seeds
+        report: the simulator's critical burst size is refuted on the engine; the basin edge lies between 100 and 200
+      - id: basin_smaller
+        when: n25 STUCK in >= 2/3 seeds
+        report: the basin is smaller than predicted; the claim becomes "even 25 traps"
+    missing: a seed without a completed run is not counted; a single completed seed is reported as one CRN pair
+  fallback_exploratory: if the runs are made under `prereg derive-exploratory` with GEN_EXTRA instead of E2_CONFIG, the same endpoints apply and
+    the result is labelled "exploratory with pre-committed prediction"
+
+# ------------------------------------------------------------------ E0F per-run endpoint (from-empty stability, registered E0b rule)
+e0f:
+  engine_cell_label: sglang-fcfs-r1-e0bfresh
+  mode: cap
+  lambda_mults: [2.0, 2.5]
+  lambda_ref: 0.07153402100919228
+  seeds: [3, 4, 5]
+  duration_s: 3000
+  stable:
+    definition: not aborted AND final queue < 50 AND OLS rise of the fine (100 s) queue means over the last min(5000, duration / 2) s <= 10
+      (analysis.hysteresis.stable_verdict, `summarize cap`, applied to these run dirs only)
+    stable_final_queue_below: 50
+    stable_trend_window_s: 5000.0            # min(5000, 3000 / 2) = 1500 s for a 3000 s run
+    stable_trend_max_rise: 10.0
+    fine_window_s: 100.0
+  decision_rule:
+    replicated: 2.0 x stable in 3/3 AND 2.5 x unstable in >= 2/3
+    otherwise: restate the from-empty bracket in realized arrival rates over all runs, seed 0 included
+    always: quote realized rates (base arrivals / duration, and the multiple of lambda_ref) per run, from analysis/seed_effects.py

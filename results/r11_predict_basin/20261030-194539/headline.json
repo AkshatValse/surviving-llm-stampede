@@ -1,0 +1,321 @@
+{
+  "primary_mode": "mixed",
+  "b1": {
+    "mixed": {
+      "25": {
+        "engine_seeds": {
+          "0": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9339019189765458
+          },
+          "1": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9343732166634963
+          },
+          "2": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9283756623424082
+          }
+        },
+        "engine_stuck": 0,
+        "engine_good": 3,
+        "engine_trapped": 0,
+        "extra_n": 30,
+        "extra_stuck": 2,
+        "extra_good": 28,
+        "extra_trapped": 2,
+        "extra_recovered": 28
+      },
+      "100": {
+        "engine_seeds": {
+          "0": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "1": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "2": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          }
+        },
+        "engine_stuck": 3,
+        "engine_good": 0,
+        "engine_trapped": 3,
+        "extra_n": 30,
+        "extra_stuck": 30,
+        "extra_good": 0,
+        "extra_trapped": 24,
+        "extra_recovered": 0
+      },
+      "0": {
+        "engine_seeds": {
+          "0": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9339136613963404
+          },
+          "1": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9343732166634963
+          },
+          "2": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9287410926365796
+          }
+        },
+        "engine_stuck": 0,
+        "engine_good": 3,
+        "engine_trapped": 0,
+        "extra_n": 30,
+        "extra_stuck": 0,
+        "extra_good": 30,
+        "extra_trapped": 0,
+        "extra_recovered": 30
+      },
+      "200": {
+        "engine_seeds": {
+          "0": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "1": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "2": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          }
+        },
+        "engine_stuck": 3,
+        "engine_good": 0,
+        "engine_trapped": 3,
+        "extra_n": 30,
+        "extra_stuck": 30,
+        "extra_good": 0,
+        "extra_trapped": 24,
+        "extra_recovered": 0
+      },
+      "predicted_basin_pass": true,
+      "predicted_n100_trap_v2_trapped_ge_2of3": true
+    },
+    "separate": {
+      "25": {
+        "engine_seeds": {
+          "0": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9339019189765458
+          },
+          "1": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9343732166634963
+          },
+          "2": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9294590643274854
+          }
+        },
+        "engine_stuck": 0,
+        "engine_good": 3,
+        "engine_trapped": 0,
+        "extra_n": 30,
+        "extra_stuck": 2,
+        "extra_good": 28,
+        "extra_trapped": 2,
+        "extra_recovered": 28
+      },
+      "100": {
+        "engine_seeds": {
+          "0": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "1": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "2": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          }
+        },
+        "engine_stuck": 3,
+        "engine_good": 0,
+        "engine_trapped": 3,
+        "extra_n": 30,
+        "extra_stuck": 30,
+        "extra_good": 0,
+        "extra_trapped": 25,
+        "extra_recovered": 0
+      },
+      "0": {
+        "engine_seeds": {
+          "0": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9338901723831526
+          },
+          "1": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9343856979840244
+          },
+          "2": {
+            "state": "recovered",
+            "stuck": false,
+            "good": true,
+            "hit_eval": 0.9301900584795322
+          }
+        },
+        "engine_stuck": 0,
+        "engine_good": 3,
+        "engine_trapped": 0,
+        "extra_n": 30,
+        "extra_stuck": 0,
+        "extra_good": 30,
+        "extra_trapped": 0,
+        "extra_recovered": 30
+      },
+      "200": {
+        "engine_seeds": {
+          "0": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "1": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          },
+          "2": {
+            "state": "trapped",
+            "stuck": true,
+            "good": false,
+            "hit_eval": 0.0
+          }
+        },
+        "engine_stuck": 3,
+        "engine_good": 0,
+        "engine_trapped": 3,
+        "extra_n": 30,
+        "extra_stuck": 30,
+        "extra_good": 0,
+        "extra_trapped": 25,
+        "extra_recovered": 0
+      },
+      "predicted_basin_pass": true,
+      "predicted_n100_trap_v2_trapped_ge_2of3": true
+    }
+  },
+  "e0f": {
+    "mixed": {
+      "2.0": {
+        "engine_seeds": {
+          "3": true,
+          "4": true,
+          "5": true
+        },
+        "engine_stable": 3,
+        "extra_n": 20,
+        "extra_stable": 18,
+        "engine_realized_mult": {
+          "3": 2.0130281783194555,
+          "4": 2.1481620143640487,
+          "5": 1.9710900912711335
+        }
+      },
+      "2.5": {
+        "engine_seeds": {
+          "3": true,
+          "4": true,
+          "5": true
+        },
+        "engine_stable": 3,
+        "extra_n": 20,
+        "extra_stable": 11,
+        "engine_realized_mult": {
+          "3": 2.5116254354495062,
+          "4": 2.6653984212933537,
+          "5": 2.4696873484011843
+        }
+      },
+      "predicted_replicated": false
+    },
+    "separate": {
+      "2.0": {
+        "engine_seeds": {
+          "3": true,
+          "4": true,
+          "5": true
+        },
+        "engine_stable": 3,
+        "extra_n": 20,
+        "extra_stable": 19,
+        "engine_realized_mult": {
+          "3": 2.0130281783194555,
+          "4": 2.1481620143640487,
+          "5": 1.9710900912711335
+        }
+      },
+      "2.5": {
+        "engine_seeds": {
+          "3": true,
+          "4": true,
+          "5": true
+        },
+        "engine_stable": 3,
+        "extra_n": 20,
+        "extra_stable": 12,
+        "engine_realized_mult": {
+          "3": 2.5116254354495062,
+          "4": 2.6653984212933537,
+          "5": 2.4696873484011843
+        }
+      },
+      "predicted_replicated": false
+    }
+  }
+}

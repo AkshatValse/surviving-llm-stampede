@@ -11,6 +11,17 @@ set -u -o pipefail
 log() { echo "[$(date +%H:%M:%S)] $*"; }
 die() { echo "FATAL: $*" >&2; exit 1; }
 
+# sha256 of a file (GNU coreutils on Nova, shasum on macOS)
+file_sha256() {
+  local h
+  if command -v sha256sum >/dev/null 2>&1; then h=$(sha256sum < "$1") || return 1
+  elif command -v shasum >/dev/null 2>&1; then h=$(shasum -a 256 < "$1") || return 1
+  else return 1; fi
+  echo "${h%% *}"
+}
+
+E2_CONFIG_DEFAULT=configs/agentload_e2_burst.yaml     # MODE=burst run config when E2_CONFIG is unset (job_main)
+
 # Fail loudly if a variable still holds a "<placeholder>" (paths we cannot know until the Nova quota check).
 require_set() {
   local name="$1" val
@@ -72,12 +83,17 @@ banner() {
   echo "PREREG_FILE=${PREREG_FILE:-} PREREG_ALLOW_UNCOMMITTED=${PREREG_ALLOW_UNCOMMITTED:-0}"
   echo "OUTPUT_FEEDBACK=$OUTPUT_FEEDBACK REQUEST_TOKEN_IDS=$REQUEST_TOKEN_IDS STRICT_FLUSH=$STRICT_FLUSH STRICT_FLAGS=${STRICT_FLAGS:-1}"
   echo "ENGINE_LABEL=$ENGINE_LABEL  CALIB_FILE=${CALIB_FILE:-}"
+  echo "E2_CONFIG=${E2_CONFIG:-$E2_CONFIG_DEFAULT} sha256=${E2_CONFIG_SHA256:-unknown} (MODE=burst runs use it; default $E2_CONFIG_DEFAULT)"
   echo "MODEL=${MODEL:-} SERVED_MODEL=$SERVED_MODEL HF_REVISION=${HF_REVISION:-unpinned} HF_HOME=${HF_HOME:-}"
   echo "HW=$HW"
   echo "--- configs (verbatim)"
+  local e2_extra="" E2_CONFIG="${E2_CONFIG:-$E2_CONFIG_DEFAULT}"
+  if [ "$E2_CONFIG" != "$E2_CONFIG_DEFAULT" ]; then
+    case "$E2_CONFIG" in /*) e2_extra="$E2_CONFIG" ;; *) e2_extra="$REPO_DIR/$E2_CONFIG" ;; esac
+  fi
   for f in "$REPO_DIR"/configs/agentload_c_closed.yaml "$REPO_DIR"/configs/agentload_e0_miss.yaml \
            "$REPO_DIR"/configs/agentload_e0_cap.yaml "$REPO_DIR"/configs/agentload_e2_burst.yaml \
-           "$REPO_DIR"/configs/agentload_analysis.yaml; do
+           ${e2_extra:+"$e2_extra"} "$REPO_DIR"/configs/agentload_analysis.yaml; do
     [ -f "$f" ] && { echo "##### $f"; cat "$f"; }
   done
   echo "============================================"
@@ -379,8 +395,10 @@ mode_cap() {   # E0b: caching on, open loop from empty at several multiples of l
 }
 
 e2_run() {   # e2_run ARM MULT SEED [extra agentload args...]: one run of one arm (common arguments of all three arms)
+  # E2_CONFIG (default configs/agentload_e2_burst.yaml) is the run config; the output name stays agentload_e2_burst so every
+  # E2 run lands under results/agentload_e2_burst/ whatever its burst size (the registration and check-job pin the protocol)
   local arm="$1" m="$2" seed="$3"; shift 3
-  run_gen configs/agentload_e2_burst.yaml "agentload_e2_burst" --seed "$seed" \
+  run_gen "${E2_CONFIG:-$E2_CONFIG_DEFAULT}" "agentload_e2_burst" --seed "$seed" \
       --set "arrivals.rate_mult=$m" --set "arrivals.lambda_ref=\"$CALIB_FILE:lambda_miss_turns_based\"" \
       --set "arrivals.uncached_tokens_ref=\"$CALIB_FILE:all_miss_uncached_tokens_per_s\"" \
       --set "meta.prereg_sha256=\"$PREREG_SHA256\"" --set "meta.prereg_file=\"$PREREG_FILE\"" \
@@ -457,8 +475,9 @@ validate_mode_inputs() {
       require_set PREREG_FILE; require_set CALIB_FILE; require_set MULTS
       [ -f "$PREREG_FILE" ] || die "PREREG_FILE not found: $PREREG_FILE (a COMMITTED filled or exploratory registration)"
       [ -f "$CALIB_FILE" ] || die "CALIB_FILE not found: $CALIB_FILE"
+      # --e2-config: the config the runs will use, so check-job compares ITS burst.n / width / duration with the registration
       local pc_args=(--label "$ENGINE_LABEL" --arms "$ARMS" --mults "$MULTS" --calib "$CALIB_FILE" --hardware "$HW" \
-                     --duration-s "$BURST_RUN_S" --t-burst-s "$T_BURST")
+                     --e2-config "${E2_CONFIG:-$E2_CONFIG_DEFAULT}" --duration-s "$BURST_RUN_S" --t-burst-s "$T_BURST")
       [ -n "$RESOLVED_N_CAP" ] && pc_args+=(--n-cap "$RESOLVED_N_CAP")
       [ "${ALLOW_HW_MISMATCH:-0}" = "1" ] && pc_args+=(--allow-hw-mismatch)
       if [ "${PREREG_ALLOW_UNCOMMITTED:-0}" = "1" ]; then
@@ -502,6 +521,15 @@ job_main() {
   : "${TRAP_MIN_S:=3000}"; : "${HIT_EVAL_FROM_S:=4500}"      # short protocol (deviation D1); simulator: 10000 / 10000
   : "${RUN_OVERHEAD_S:=150}"; : "${TIME_MARGIN_S:=600}"; : "${STARTUP_ALLOW_S:=600}"
   : "${SERVED_MODEL:=${MODEL:-Qwen/Qwen2.5-7B-Instruct}}"
+  # MODE=burst run config (repo-relative or absolute). The default reproduces the registered 200-session E2; another file
+  # (e.g. configs/agentload_e2_burst_n100.yaml) must be authorised by PREREG_FILE, which check-job verifies against it.
+  : "${E2_CONFIG:=$E2_CONFIG_DEFAULT}"
+  [ -f "$E2_CONFIG" ] || die "E2_CONFIG not found: $E2_CONFIG (relative to REPO_DIR=$REPO_DIR)"
+  E2_CONFIG_SHA256=$(file_sha256 "$E2_CONFIG") || die "cannot hash E2_CONFIG $E2_CONFIG"
+  log "E2_CONFIG=$E2_CONFIG sha256=$E2_CONFIG_SHA256"
+  if [ "$MODE" != "burst" ] && [ "$E2_CONFIG" != "$E2_CONFIG_DEFAULT" ]; then
+    log "WARNING: E2_CONFIG=$E2_CONFIG is only used by MODE=burst; MODE=$MODE ignores it"
+  fi
   case "$MODE" in
     smoke) : "${STRICT_FLUSH:=0}" ;;       # Stage 0 exists to find out whether the check can work: report, do not abort
     *)     : "${STRICT_FLUSH:=1}" ;;

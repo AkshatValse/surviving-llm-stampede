@@ -1,0 +1,7 @@
+label,seed,rate_mult,stable,final_queue,trend_rise,aborted,queue_source,run_dir
+sglang-fcfs-r1-e0bfresh,3,2.0,True,0.0,0.0,False,engine_waiting,results\nova\b1_e0f_1716850x_pulled_20261031-040517\results\agentload_e0_cap\20261031-011458
+sglang-fcfs-r1-e0bfresh,4,2.0,True,0.0,0.0,False,engine_waiting,results\nova\b1_e0f_1716850x_pulled_20261031-040517\results\agentload_e0_cap\20261031-020801
+sglang-fcfs-r1-e0bfresh,5,2.0,True,0.0,0.0,False,engine_waiting,results\nova\b1_e0f_1716850x_pulled_20261031-040517\results\agentload_e0_cap\20261031-030104
+sglang-fcfs-r1-e0bfresh,3,2.5,True,0.0,-0.004945074925878709,False,engine_waiting,results\nova\b1_e0f_1716850x_pulled_20261031-040517\results\agentload_e0_cap\20261031-012149
+sglang-fcfs-r1-e0bfresh,4,2.5,True,0.0,0.0,False,engine_waiting,results\nova\b1_e0f_1716850x_pulled_20261031-040517\results\agentload_e0_cap\20261031-021452
+sglang-fcfs-r1-e0bfresh,5,2.5,True,0.0,0.0,False,engine_waiting,results\nova\b1_e0f_1716850x_pulled_20261031-040517\results\agentload_e0_cap\20261031-030755

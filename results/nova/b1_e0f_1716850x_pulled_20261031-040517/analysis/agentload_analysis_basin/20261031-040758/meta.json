@@ -1,0 +1,70 @@
+{
+  "experiment": "agentload_analysis_basin",
+  "status": "finished",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+    "-m",
+    "analysis.basin",
+    "classify",
+    "--endpoints",
+    "configs/r11_basin_predict.yaml",
+    "--run-dirs",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-220255",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-220426",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-232552",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-235523",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261031-001011",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261031-002140",
+    "--prereg",
+    "configs/agentload_prereg_2026-10-30_b100.yaml",
+    "configs/agentload_prereg_2026-10-30_b25.yaml",
+    "--out-root",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/analysis"
+  ],
+  "git": {
+    "commit": "19c58e935c53b37b5758649ed9649e67f295a89a",
+    "dirty": true,
+    "branch": "r11/strengthen",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-31T04:07:50",
+  "end_time": "2026-10-31T04:07:58",
+  "wall_s": 7.707971,
+  "slurm_env": {},
+  "run_dirs": [
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-220255",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-220426",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-232552",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261030-235523",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261031-001011",
+    "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/20261031-002140"
+  ],
+  "baseline_dirs": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\strengthen\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst\\20261024-155120",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\strengthen\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst\\20261024-160218",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\strengthen\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst\\20261024-184132",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\strengthen\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst\\20261024-184259",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\strengthen\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst\\20261025-000043",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\strengthen\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst\\20261025-000053"
+  ],
+  "prereg": [
+    "configs/agentload_prereg_2026-10-30_b100.yaml",
+    "configs/agentload_prereg_2026-10-30_b25.yaml"
+  ]
+}

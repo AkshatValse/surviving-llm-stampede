@@ -1,0 +1,4 @@
+label,seed,rate_mult,stable,final_queue,trend_rise,aborted,queue_source,run_dir
+sglang-fcfs-r1-e0bfresh,3,2.5,True,0.0,-0.004945074925878706,False,engine_waiting,results/agentload_e0_cap/20261031-012149
+sglang-fcfs-r1-e0bfresh,4,2.5,True,0.0,0.0,False,engine_waiting,results/agentload_e0_cap/20261031-021452
+sglang-fcfs-r1-e0bfresh,5,2.5,True,0.0,0.0,False,engine_waiting,results/agentload_e0_cap/20261031-030755

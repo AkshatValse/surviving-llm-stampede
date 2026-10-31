@@ -1,0 +1,57 @@
+# Round 11, S1 bundle 1: blind simulator predictions for B1 (burst n = 25 and 100 at 1.65 x) and E0F (from empty, 2.0 x and 2.5 x, seeds 3-5).
+#
+# Driver: experiments/r11_predict_basin.py (python experiments/r11_predict_basin.py run). Frozen endpoints: configs/r11_basin_predict.yaml.
+# Engine: the round-6 calibrated engine, INHERITED unchanged from configs/r6_predict.yaml (its `engine:` block is the
+# calibration/round6_server_log_fit/calibration.yaml engine block plus `batching: mixed`); the driver asserts that the effective engine equals
+# r6_predict.yaml's. PRIMARY column mixed batching, SECONDARY column the same runs with engine.batching = separate_prefill_priority.
+# Workload: the Stage C workload of r6_predict.yaml (identical to the agentload configs' workload block).
+# Rates are in ENGINE lambda units: lambda = mult x lambda_ref, lambda_ref = 0.07153402100919228 sessions/s (the registered 300k lambda_ref,
+# prereg/inputs/2026-10-23/calibration.json lambda_miss_turns_based), NOT the simulator's own lambda_miss (0.072187).
+#
+# Arrival and session streams: every run is driven by the CLIENT's plan, i.e. agentload.workload.build_open_plan on the agentload config the job
+# will use (configs/agentload_e2_burst.yaml for B1, configs/agentload_e0_cap.yaml for E0F) with the job's seed, rate, burst and duration. For the
+# engine seeds (B1: 0-2; E0F: 3-5) these are the exact arrival times, turn counts and tool times the real jobs will send. The extra seeds use the
+# same generator with seeds no engine run uses. (The round-6 predictions used the simulator's own Poisson streams with the same seed numbers, which
+# are not the client's streams; this round replaces them with the client plans.)
+base_config: configs/r6_predict.yaml
+
+r11_basin:
+  lambda_ref: 0.07153402100919228
+  modes:                                   # column name -> engine.batching
+    mixed: mixed
+    separate: separate_prefill_priority
+  primary_mode: mixed
+  policy: fcfs_lru
+  references:                              # the simulator's own all-miss uncached prefill token rate (r6 B1, POP = 32, 3-seed mean), per mode:
+    all_miss_tok_per_s:                    # criterion (a) of the simulated trap_v2 label compares with it, as r6 B3 and r7 did. The registered
+      mixed: 11219.72185185185             # engine value is 11243.18 (0.2% above mixed); the driver also records the ratio to that value.
+      separate: 11146.80037037037          # source: results/r6_predict_report/20261024-034707/summary.json (b1.*.token_rate)
+  basin:
+    agentload_config: configs/agentload_e2_burst.yaml
+    lambda_mult: 1.65
+    burst_ns: [25, 100]                    # the predicted cells
+    reference_burst_ns: [0, 200]           # the committed NOBURST and BURST-200 cells on the same plans (retrodictions; outcomes known to the lead)
+    t_burst_s: 1200
+    width_s: 60
+    duration_s: 8700
+    engine_seeds: [0, 1, 2]
+    extra_seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119,
+                  120, 121, 122, 123, 124, 125, 126, 127, 128, 129]
+  e0b:
+    agentload_config: configs/agentload_e0_cap.yaml
+    lambda_mults: [2.0, 2.5]
+    duration_s: 3000
+    engine_seeds: [3, 4, 5]
+    reference_seeds: [0]                   # the committed E0b runs (seed 0; outcome known: 2.0 x stable, 2.5 x unstable); retrodiction only
+    extra_seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119]
+    unstable_backlog_stop: 3000            # early stop (counts as unstable), as the r6 B2 probe
+  plan_checks:                             # committed real runs whose plan.csv the driver must reproduce exactly (inputs only; no outcome is read)
+    - {dir: results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-155120, kind: basin, seed: 0, mult: 1.65, burst_n: 200}
+    - {dir: results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-184132, kind: basin, seed: 1, mult: 1.65, burst_n: 200}
+    - {dir: results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261025-000043, kind: basin, seed: 2, mult: 1.65, burst_n: 200}
+    - {dir: results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-160218, kind: basin, seed: 0, mult: 1.65, burst_n: 0}
+    - {dir: results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-184259, kind: basin, seed: 1, mult: 1.65, burst_n: 0}
+    - {dir: results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261025-000053, kind: basin, seed: 2, mult: 1.65, burst_n: 0}
+    - {dir: results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_e0_cap/20261023-151556, kind: e0b, seed: 0, mult: 2.0, burst_n: 0}
+    - {dir: results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_e0_cap/20261023-151551-1, kind: e0b, seed: 0, mult: 2.5, burst_n: 0}
+  endpoints: configs/r11_basin_predict.yaml

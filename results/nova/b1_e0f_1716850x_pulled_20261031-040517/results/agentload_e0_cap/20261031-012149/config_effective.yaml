@@ -1,0 +1,55 @@
+research_question: 'E0b (real engine): up to which arrival rate (multiple of lambda_miss)
+  is the cache-aware engine (SGLang LPM) stable when started from an empty cache and
+  empty queue, i.e. what is lambda_cap and R = lambda_cap / lambda_miss?'
+assumptions_note: 'Open-loop Poisson sessions at rate_mult * lambda_ref, simulator
+  workload constants. lambda_ref MUST be set to the calibration.json produced by `python
+  -m analysis.summarize miss` (the placeholder below fails loudly). Stability is judged
+  by analysis (stable subcommand), with the simulator''s rule: final queue < 50, no
+  upward trend over the last min(5000, run/2) s. Like the simulator''s lambda_cap
+  this is a finite-horizon (lifetime) criterion; with 3000 s runs it cannot see escapes
+  that take longer.'
+server:
+  base_url: http://127.0.0.1:28507
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  extra_body:
+    ignore_eos: true
+    repetition_penalty: 1.0
+    top_p: 1.0
+  request_token_ids: true
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: server
+  content_salt: 1
+arrivals:
+  kind: constant
+  rate_mult: 2.5
+  lambda_ref: prereg/inputs/2026-10-23/calibration.json:lambda_miss_turns_based
+run:
+  duration_s: 3000
+  seed: 3
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+metrics:
+  enabled: true
+  interval_s: 5.0
+meta:
+  hardware: NVIDIA A100 80GB PCIe, 81920 MiB
+  engine_label: sglang-fcfs-r1-e0bfresh
+  notes: E0b lambda_cap from empty
+  start_state_verified: true
+  start_state_detail: 'canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed,
+    3 unverifiable); see canary_1_*.json'
+output:
+  root: results
+  name: agentload_e0_cap
