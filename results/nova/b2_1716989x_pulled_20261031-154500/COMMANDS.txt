@@ -1,0 +1,87 @@
+B2 / BASIN-2 (jobs 17169893-17169901) pulled read-only from Nova clone $W/repo_r14_basin2 (HEAD 621d88f = tag r14-basin2-reg, git status clean), 2026-10-31 ~15:42 CDT.
+All nine jobs: submitted 04:21:40-41 CDT, COMPLETED 0:0 (sacct_17169893-17169901.txt). Every run's meta.json: git commit 621d88f, dirty False, status finished,
+start_state_verified True, not aborted; every canary (2 prime + 2 check per job, nova_job_logs/<job>-*/canary.log) ok, exit_code 0.
+
+Run dirs (from results/nova_job_logs/<job>-*/run_dirs_burst.txt; checked against each run's meta.json slurm_env.SLURM_JOB_ID, seeds,
+engine_label, prereg_file and config.yaml arrivals.burst; config_effective.yaml rate_mult 1.65, duration 8700 s, burst t_s 1200, width_s 60):
+  17169893 b40 seed 0  results/agentload_e2_burst/20261031-101139  (sglang-fcfs-r1-b40, prereg configs/agentload_prereg_2026-10-31_b40.yaml)
+  17169894 b40 seed 1  results/agentload_e2_burst/20261031-101245
+  17169895 b40 seed 2  results/agentload_e2_burst/20261031-101308
+  17169896 b60 seed 0  results/agentload_e2_burst/20261031-101444  (sglang-fcfs-r1-b60, prereg configs/agentload_prereg_2026-10-31_b60.yaml)
+  17169897 b60 seed 1  results/agentload_e2_burst/20261031-102650
+  17169898 b60 seed 2  results/agentload_e2_burst/20261031-103956
+  17169899 b50 seed 0  results/agentload_e2_burst/20261031-105804  (sglang-fcfs-r1-b50, prereg configs/agentload_prereg_2026-10-31_b50.yaml)
+  17169900 b50 seed 1  results/agentload_e2_burst/20261031-110506
+  17169901 b50 seed 2  results/agentload_e2_burst/20261031-124223
+config.yaml sha256 per size = B2_CONFIG_SHA256 in analysis/basin.py = the tagged configs/agentload_e2_burst_n{40,50,60}.yaml at 621d88f
+(33257fb7... / 7f5710cf... / 284cc2d7...; also printed as E2_CONFIG sha256 at the top of each logs/pm-b2n*-<job>.out).
+Plans: the base sessions of every run equal the same seed's committed n = 0 plan (results/nova/e2_170933xx_pulled_20261025-144558); the burst
+arrival times of n = 25, 40, 50, 60, 100 are nested subsets of the n = 200 draw, and the k-th burst session spec (turns, tool time) is the k-th of
+the n = 200 plan's, assigned to the k-th earliest burst arrival.
+Per-job analyses (in-job, not the registered verdict): results/agentload_analysis_burst/ and agentload_analysis_burst2/ (one dir per job, stamps
+20261031-123942 ... -151028); their trap_v2_runs.csv agree run by run with the registered classification below (state, hit_eval, slope, outstanding).
+
+Pull: tar on Nova of the 9 run dirs results/agentload_e2_burst/20261031-1*, results/nova_job_logs/<job>-*, the per-job analyses
+  results/agentload_analysis_burst/20261031-1* and agentload_analysis_burst2/20261031-1*, logs/pm-b2n*-<job>.out and sacct (sacct_17169893-17169901.txt),
+  xz -T2, sha256 58e77d7eec6263de0f677b98c489d665e225f66d829b4b608bab056830cebf3e (22,205,520 bytes) on both ends, scp, tar --force-local -x,
+  remote archive deleted. Re-checked on the PC: the local archive copy has that sha256 and size, and its 388 files extract byte-identical to this dir.
+  The local archive copy is kept only in the session scratchpad
+  (C:\Users\Akshat\AppData\Local\Temp\claude\C--Users-Akshat-Desktop-Claude-Code\ebe78110-49cc-4b14-8d64-613717176b77\scratchpad\b2pull\b2_pull_lead.tar.xz),
+  not in this dir and not committed; re-checked again at ~16:20 CDT (sha256 and size match; extracted into a fresh scratch dir, 388 files, cmp
+  identical to this dir). The Nova-side hash and the clone's git status are the pull-time record; neither can be re-checked now (remote deleted).
+
+Registered classification on the PC (Windows, shared venv, PYTHONPATH="src;."), branch r11/strengthen at 4dd21e0 (contains the analysis-only fix 19c58e9):
+  python -m analysis.basin classify --endpoints configs/r11_basin_predict.yaml \
+      --run-dirs <the nine B2 run dirs above, under this pull's results/> \
+                 results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e2_burst/{20261030-220255,20261030-220426,20261030-232552,20261030-235523,20261031-001011,20261031-002140} \
+      --prereg configs/agentload_prereg_2026-10-31_b40.yaml configs/agentload_prereg_2026-10-31_b50.yaml configs/agentload_prereg_2026-10-31_b60.yaml \
+               configs/agentload_prereg_2026-10-30_b100.yaml configs/agentload_prereg_2026-10-30_b25.yaml \
+      --out-root results/nova/b2_1716989x_pulled_20261031-154500/analysis
+    -> analysis/agentload_analysis_basin/20261031-154526 (basin_runs.csv, basin_verdict.json, endpoints.yaml, meta.json). Baselines (n = 0: jobs
+       17093391/97/403, runs 20261024-160218, 20261024-184259, 20261025-000053; n = 200: jobs 17093390/96/402, runs 20261024-155120,
+       20261024-184132, 20261025-000043; job IDs from each run's meta.json), found by the tool itself under
+       results/nova/e2_170933xx_pulled_20261025-144558 (the other 12 runs of that pull are not used). b2_bracket.bracketed = true.
+       meta.json records git dirty = true: git status --porcelain counts untracked files, and this pull dir was untracked; git diff HEAD is empty
+       for analysis/, src/ and configs/.
+  Cross-checks (outputs in the session scratchpad, not committed):
+    the same command re-run at 4dd21e0 -> basin_runs.csv and basin_verdict.json identical (CR stripped);
+    analysis/basin.py as tagged (621d88f; git archive of analysis src configs prereg into a scratch dir, same run dirs, baselines passed with
+    --baseline-dirs) -> bracketed true, decision, by_seed and curve identical, every per-run number identical; only prereg_bound differs (False in a
+    git-less export, which cannot read the registration's commit time) and the b2_counted / b2_problem columns that 19c58e9 added are absent.
+  registration_diff(configs/agentload_prereg_2026-10-24.yaml, _b40/_b50/_b60): forbidden list empty for all three; the three registrations and
+    configs/r11_basin_predict.yaml are unchanged between 621d88f and 4dd21e0.
+
+Derived, DESCRIPTIVE (not registered), added after the verdict:
+  python experiments/r14_b2_derived.py results/nova/b2_1716989x_pulled_20261031-154500 \
+      results/nova/b2_1716989x_pulled_20261031-154500/analysis/agentload_analysis_basin/20261031-154526/basin_runs.csv \
+      --out results/nova/b2_1716989x_pulled_20261031-154500/analysis/derived
+    -> analysis/derived/b2_time_course_descriptive.csv (per run; analysis.r11_b1_e0f_derived.time_course reused unchanged, plus hit_eval minus the
+       same seed's n = 0 run, max_inflight_seen, the burst turns' last completion time and count inside W, and the same seed's n = 0 run's lowest
+       100 s window) and b2_time_course_windows.csv (the 100 s window series of the nine B2 runs and the three n = 0 runs)
+  python experiments/r14_b2_score.py \
+      --basin-dir results/nova/b2_1716989x_pulled_20261031-154500/analysis/agentload_analysis_basin/20261031-154526 \
+      --out results/nova/b2_1716989x_pulled_20261031-154500/analysis/derived
+    -> analysis/derived/b2_scoring.json and b2_scoring.csv: the engine outcome scored against the frozen pred2 predictions, read from git at tag
+       r13-theory-pred2 (cfa7712): results/theory/pred2/b2_basin.json (sha256 205268c3967c491d8abf67b9f43f713f537f8355c5c500e4c7edd3c09fe5c089) and
+       configs/r13_theory_pred2.yaml (sha256 a1e3b8d1e437f5c7d1fc9ecb006eff28567fbb1a2c777bc1ae2f91f3f9d7120c), as declared in
+       notes/PREDICTIONS_r13_pred2.md "Scoring, declared now" (B2). Both files are byte-identical to the r13/pred2 worktree copies.
+       declared_scores_b2_nine_runs holds only the predictors the declaration names (primary, each band, the frozen exchangeable layer, A's labels).
+       Under not_declared, scored after the fact: the composition-averaged column (a separate frozen column, not a band) and the P = 0.5
+       reference (scores_b2_nine_runs_not_declared), the BASIN-1 sizes (b1_sizes_not_blind: pred2 was pushed at 04:20:20, after the B1 outcomes
+       were first read at about 04:07) and the threshold checks. b2_scoring.csv marks each predictor with declared True/False.
+       (Re-run ~16:20 CDT after this split; every number is unchanged from the first run, only keys and labels moved.)
+
+Independent recompute (not committed; scripts and outputs in
+  C:\Users\Akshat\AppData\Local\Temp\claude\C--Users-Akshat-Desktop-Claude-Code\ebe78110-49cc-4b14-8d64-613717176b77\scratchpad\b2_recompute):
+  recompute.py, recompute2.py (raw requests.csv / sessions.csv / meta.json only, no repo code, python -I), compare.py, prov.py.
+  -> hit_eval identical and STUCK identical in all 21 runs (9 B2, 6 B1, 6 baselines); backlog slope within 2e-17 /s; for the nine B2 runs GOOD
+     identical, outstanding_end (time-mean requests in flight over [8400, 8700) s) within 5e-4, uncached-token rel. dev. within 5e-6. Every B2
+     run's config.yaml byte-identical to 621d88f, its meta.json prereg_sha256 equal to the registration file at 621d88f, git commit 621d88f,
+     dirty False, status finished, start state verified, no request errors, failed sessions or prompt-token mismatches. No failures.
+
+Times (CDT): registration 621d88f committed 01:58:38, on GitHub 02:10:48 (gh api repos/AkshatValse/Nova-Research/activity: 07:10:48Z push
+  9b67c26..621d88f on r11/strengthen); fix 19c58e9 committed 03:12:56, pushed 03:12:59; pred2 cfa7712 on GitHub 04:20:20 (09:20:20Z, branch_creation
+  r13/pred2); jobs submitted 04:21:40-41; runs (meta.json) started 10:11:39-12:42:23 and ended 12:36:40-15:07:25; sacct End 12:39:49-15:10:34.
+  These are the branch pushes of the tagged commits. The activity API shows no tag events, so the tags' own push times cannot be observed.
+  git ls-remote origin (~16:20 CDT): r14-basin2-reg = tag object 692450e -> 621d88f, r13-theory-pred2 = 6f0b504 -> cfa7712, the same objects as
+  the local tags; tagger dates 02:10:35 and 04:20:17 CDT.

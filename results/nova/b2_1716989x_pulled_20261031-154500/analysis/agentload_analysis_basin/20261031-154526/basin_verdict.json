@@ -1,0 +1,306 @@
+{
+  "by_seed": {
+    "0": {
+      "0": "good",
+      "25": "good",
+      "40": "good",
+      "50": "good",
+      "60": "stuck",
+      "100": "stuck",
+      "200": "stuck"
+    },
+    "1": {
+      "0": "good",
+      "25": "good",
+      "40": "good",
+      "50": "stuck",
+      "60": "stuck",
+      "100": "stuck",
+      "200": "stuck"
+    },
+    "2": {
+      "0": "good",
+      "25": "good",
+      "40": "good",
+      "50": "good",
+      "60": "stuck",
+      "100": "stuck",
+      "200": "stuck"
+    }
+  },
+  "decision": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "need_of_seeds": 2,
+    "cells": {
+      "25": {
+        "n_runs": 3,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "stuck": 0,
+        "good": 3,
+        "trapped": 0,
+        "stuck_majority": false,
+        "good_majority": true
+      },
+      "100": {
+        "n_runs": 3,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "stuck": 3,
+        "good": 0,
+        "trapped": 3,
+        "stuck_majority": true,
+        "good_majority": false,
+        "trapped_majority": true
+      }
+    },
+    "basin_pass": true,
+    "incomplete": [],
+    "notes": []
+  },
+  "b2_bracket": {
+    "rule": "bracketed iff n=40 GOOD >= 2/3 seeds and n=60 STUCK >= 2/3 seeds",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "need_of_seeds": 2,
+    "cells": {
+      "40": {
+        "n_runs": 3,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 0,
+        "good": 3
+      },
+      "60": {
+        "n_runs": 3,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 3,
+        "good": 0
+      }
+    },
+    "good_majority_40": true,
+    "stuck_majority_60": true,
+    "bracketed": true,
+    "notes": [],
+    "incomplete": []
+  },
+  "curve": {
+    "0": {
+      "per_seed": {
+        "0": {
+          "basin_state": "good",
+          "hit_eval": 0.933522929257021,
+          "stuck": false,
+          "good": true
+        },
+        "1": {
+          "basin_state": "good",
+          "hit_eval": 0.9343357441948992,
+          "stuck": false,
+          "good": true
+        },
+        "2": {
+          "basin_state": "good",
+          "hit_eval": 0.9211777615215802,
+          "stuck": false,
+          "good": true
+        }
+      },
+      "stuck": 0,
+      "good": 3,
+      "n_seeds": 3
+    },
+    "25": {
+      "per_seed": {
+        "0": {
+          "basin_state": "good",
+          "hit_eval": 0.933214920071048,
+          "stuck": false,
+          "good": true
+        },
+        "1": {
+          "basin_state": "good",
+          "hit_eval": 0.934323243860651,
+          "stuck": false,
+          "good": true
+        },
+        "2": {
+          "basin_state": "good",
+          "hit_eval": 0.9233723482077542,
+          "stuck": false,
+          "good": true
+        }
+      },
+      "stuck": 0,
+      "good": 3,
+      "n_seeds": 3
+    },
+    "40": {
+      "per_seed": {
+        "0": {
+          "basin_state": "good",
+          "hit_eval": 0.933570159857904,
+          "stuck": false,
+          "good": true
+        },
+        "1": {
+          "basin_state": "good",
+          "hit_eval": 0.9343357441948992,
+          "stuck": false,
+          "good": true
+        },
+        "2": {
+          "basin_state": "good",
+          "hit_eval": 0.9248766221897277,
+          "stuck": false,
+          "good": true
+        }
+      },
+      "stuck": 0,
+      "good": 3,
+      "n_seeds": 3
+    },
+    "50": {
+      "per_seed": {
+        "0": {
+          "basin_state": "good",
+          "hit_eval": 0.9333688699360341,
+          "stuck": false,
+          "good": true
+        },
+        "1": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "2": {
+          "basin_state": "good",
+          "hit_eval": 0.9241038771031456,
+          "stuck": false,
+          "good": true
+        }
+      },
+      "stuck": 1,
+      "good": 2,
+      "n_seeds": 3
+    },
+    "60": {
+      "per_seed": {
+        "0": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "1": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "2": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        }
+      },
+      "stuck": 3,
+      "good": 0,
+      "n_seeds": 3
+    },
+    "100": {
+      "per_seed": {
+        "0": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "1": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "2": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        }
+      },
+      "stuck": 3,
+      "good": 0,
+      "n_seeds": 3
+    },
+    "200": {
+      "per_seed": {
+        "0": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "1": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        },
+        "2": {
+          "basin_state": "stuck",
+          "hit_eval": 0.0,
+          "stuck": true,
+          "good": false
+        }
+      },
+      "stuck": 3,
+      "good": 0,
+      "n_seeds": 3
+    }
+  },
+  "b2_not_counted": [],
+  "duplicate_seed_runs": {},
+  "endpoint_problems": [],
+  "window_mismatch_runs": [],
+  "endpoints": {
+    "stuck_hit_below": 0.2,
+    "good_hit_above": 0.8,
+    "eval_window_s": [
+      5700.0,
+      8700.0
+    ],
+    "trapped_co_primary_n": [
+      100
+    ],
+    "source": "configs/r11_basin_predict.yaml"
+  }
+}
