@@ -1,0 +1,32 @@
+B1 (jobs 17168500-17168505) and E0F (jobs 17168506-17168507) pulled read-only from Nova clone $W/repo_r11_basin (HEAD 9b67c26 = tag r11-basin-reg, git status clean), 2026-10-31 04:05 CDT.
+
+Run dirs (from results/nova_job_logs/<job>-*/run_dirs_{burst,cap}.txt):
+  17168500 b100 seed 0  results/agentload_e2_burst/20261030-220255
+  17168501 b100 seed 1  results/agentload_e2_burst/20261030-220426
+  17168502 b100 seed 2  results/agentload_e2_burst/20261030-232552
+  17168503 b25  seed 0  results/agentload_e2_burst/20261030-235523
+  17168504 b25  seed 1  results/agentload_e2_burst/20261031-001011
+  17168505 b25  seed 2  results/agentload_e2_burst/20261031-002140
+  17168506 2.0x seeds 3 4 5  results/agentload_e0_cap/20261031-011458 20261031-020801 20261031-030104
+  17168507 2.5x seeds 3 4 5  results/agentload_e0_cap/20261031-012149 20261031-021452 20261031-030755
+Per-job analyses: agentload_analysis_burst/ and agentload_analysis_burst2/ (one per B1 job), agentload_analysis_stable/20261031-035407 (17168506), -040058 (17168507).
+
+Pull: tar on Nova (run dirs, job-log dirs, per-job analyses, logs/pm-sglang-1716850[0-7].out, sacct_17168500-17168507.txt), xz -T2,
+  sha256 aaa04afb072ec6064f4954e48f19dbc2813d90283b96b8f518f51a67a4e5cf02 (21,036,064 bytes) on both ends, scp, tar --force-local -x, remote archive deleted.
+
+Analyses on the PC (Windows, shared venv, PYTHONPATH="src;."), from branch r11/strengthen at 19c58e9:
+  python -m analysis.basin classify --endpoints configs/r11_basin_predict.yaml \
+      --run-dirs <the six B1 run dirs above, under this pull's results/> \
+      --prereg configs/agentload_prereg_2026-10-30_b100.yaml configs/agentload_prereg_2026-10-30_b25.yaml \
+      --out-root results/nova/b1_e0f_1716850x_pulled_20261031-040517/analysis
+    -> analysis/agentload_analysis_basin/20261031-040758 (baselines found by the tool itself: the six committed 1.65 x n = 0 / n = 200 runs
+       under results/nova/e2_170933xx_pulled_20261025-144558). Cross-check with analysis/basin.py as tagged (9b67c26, git archive into a
+       scratch dir, same run and baseline dirs): decision and every per-run number identical; only prereg_bound differs there, because a
+       git-less export cannot read the registration's commit time.
+  python -m analysis.summarize stable --run-dirs <the six E0F run dirs> --out-root results/nova/b1_e0f_1716850x_pulled_20261031-040517/analysis
+    -> analysis/agentload_analysis_stable/20261031-040957
+  python -m analysis.r11_b1_e0f_derived results/nova/b1_e0f_1716850x_pulled_20261031-040517 \
+      results/nova/b1_e0f_1716850x_pulled_20261031-040517/analysis/agentload_analysis_stable/20261031-040957/stable_runs.csv \
+      results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_analysis_stable/20261024-150720/stable_runs.csv \
+      --root results/nova/e0b_1708475x_pulled_20261024-150639 --out results/nova/b1_e0f_1716850x_pulled_20261031-040517/analysis/derived
+    -> analysis/derived/e0f_realized_rates.csv, b1_time_course_descriptive.csv (descriptive, not registered)
