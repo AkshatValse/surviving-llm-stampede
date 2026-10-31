@@ -1,0 +1,512 @@
+{
+  "primary_mode": "mixed",
+  "predicted_arm": "lpminf",
+  "informative_seeds": [
+    0,
+    1
+  ],
+  "modes": {
+    "mixed": {
+      "fcfs": {
+        "engine_seeds": {
+          "0": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 263.82133485472457,
+            "miss_lat_p99_W_s": 263.82133485472457,
+            "unfinished_sessions": 366,
+            "token_ratio": 1.0403545489623782,
+            "backlog_slope": 0.030636482627584755,
+            "time_queue_over_128_s": 6400.0
+          },
+          "1": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 233.22913090555656,
+            "miss_lat_p99_W_s": 233.22913090555656,
+            "unfinished_sessions": 318,
+            "token_ratio": 1.0394792450291486,
+            "backlog_slope": 0.027820211335681508,
+            "time_queue_over_128_s": 6500.0
+          },
+          "2": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 247.61445131601727,
+            "miss_lat_p99_W_s": 247.61445131601727,
+            "unfinished_sessions": 355,
+            "token_ratio": 1.0432935998380368,
+            "backlog_slope": 0.03622424249158324,
+            "time_queue_over_128_s": 6400.0
+          }
+        },
+        "engine_collapse": 3,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "against",
+        "extra_n": 10,
+        "extra_collapse": 10,
+        "extra_states": {
+          "trapped": 7,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 3
+        },
+        "extra_token_hit_W": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "lpm128": {
+        "engine_seeds": {
+          "0": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 261.17076468032633,
+            "miss_lat_p99_W_s": 261.17076468032633,
+            "unfinished_sessions": 364,
+            "token_ratio": 1.0400887075532905,
+            "backlog_slope": 0.030321721352459474,
+            "time_queue_over_128_s": 6400.0
+          },
+          "1": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 231.56305101572332,
+            "miss_lat_p99_W_s": 231.56305101572332,
+            "unfinished_sessions": 317,
+            "token_ratio": 1.0379701167081816,
+            "backlog_slope": 0.028169561884020936,
+            "time_queue_over_128_s": 6200.0
+          },
+          "2": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 246.37071403747927,
+            "miss_lat_p99_W_s": 246.37071403747927,
+            "unfinished_sessions": 353,
+            "token_ratio": 1.0418258272660028,
+            "backlog_slope": 0.036566937410415674,
+            "time_queue_over_128_s": 6400.0
+          }
+        },
+        "engine_collapse": 3,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "against",
+        "extra_n": 10,
+        "extra_collapse": 10,
+        "extra_states": {
+          "trapped": 6,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 4
+        },
+        "extra_token_hit_W": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "lpminf": {
+        "engine_seeds": {
+          "0": {
+            "collapse": false,
+            "state": "trapped",
+            "token_hit_W": 0.09303777255175218,
+            "turn_hit_W": 0.13671418555737322,
+            "lat_p99_W_s": 263.1505170957106,
+            "miss_lat_p99_W_s": 263.86945092448474,
+            "unfinished_sessions": 334,
+            "token_ratio": 1.0211188968208729,
+            "backlog_slope": 0.025218071311903477,
+            "time_queue_over_128_s": 6200.0
+          },
+          "1": {
+            "collapse": false,
+            "state": "trapped",
+            "token_hit_W": 0.08021922802440856,
+            "turn_hit_W": 0.12481892805408015,
+            "lat_p99_W_s": 233.76008725871398,
+            "miss_lat_p99_W_s": 234.1459255563336,
+            "unfinished_sessions": 295,
+            "token_ratio": 1.0214020886303745,
+            "backlog_slope": 0.026222055800620005,
+            "time_queue_over_128_s": 6300.0
+          },
+          "2": {
+            "collapse": false,
+            "state": "trapped",
+            "token_hit_W": 0.1003063308373043,
+            "turn_hit_W": 0.142433234421365,
+            "lat_p99_W_s": 245.5328382950698,
+            "miss_lat_p99_W_s": 245.72984667874843,
+            "unfinished_sessions": 321,
+            "token_ratio": 1.0215474873626136,
+            "backlog_slope": 0.03430311447904977,
+            "time_queue_over_128_s": 6400.0
+          }
+        },
+        "engine_collapse": 0,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "consistent",
+        "extra_n": 10,
+        "extra_collapse": 0,
+        "extra_states": {
+          "trapped": 6,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 4
+        },
+        "extra_token_hit_W": [
+          0.0690650052235857,
+          0.09687418176903248,
+          0.11759828296774595
+        ]
+      },
+      "lpm128s": {
+        "engine_seeds": {
+          "0": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 261.17076468032633,
+            "miss_lat_p99_W_s": 261.17076468032633,
+            "unfinished_sessions": 364,
+            "token_ratio": 1.0400887075532905,
+            "backlog_slope": 0.030321721352459474,
+            "time_queue_over_128_s": 6400.0
+          },
+          "1": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 231.56305101572332,
+            "miss_lat_p99_W_s": 231.56305101572332,
+            "unfinished_sessions": 317,
+            "token_ratio": 1.0379701167081816,
+            "backlog_slope": 0.028169561884020936,
+            "time_queue_over_128_s": 6200.0
+          },
+          "2": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 246.37071403747927,
+            "miss_lat_p99_W_s": 246.37071403747927,
+            "unfinished_sessions": 353,
+            "token_ratio": 1.0418258272660028,
+            "backlog_slope": 0.036566937410415674,
+            "time_queue_over_128_s": 6400.0
+          }
+        },
+        "engine_collapse": 3,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "against",
+        "extra_n": 10,
+        "extra_collapse": 10,
+        "extra_states": {
+          "trapped": 6,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 4
+        },
+        "extra_token_hit_W": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "lpminf_minus_lpm128_unfinished_by_seed": {
+        "0": -30,
+        "1": -22,
+        "2": -32
+      }
+    },
+    "separate": {
+      "fcfs": {
+        "engine_seeds": {
+          "0": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 274.69270182728906,
+            "miss_lat_p99_W_s": 274.69270182728906,
+            "unfinished_sessions": 367,
+            "token_ratio": 1.036222020329966,
+            "backlog_slope": 0.03157342414915721,
+            "time_queue_over_128_s": 6900.0
+          },
+          "1": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 242.94395872432366,
+            "miss_lat_p99_W_s": 242.94395872432366,
+            "unfinished_sessions": 321,
+            "token_ratio": 1.0333133231622258,
+            "backlog_slope": 0.027888803208924545,
+            "time_queue_over_128_s": 6700.0
+          },
+          "2": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 252.29459331491861,
+            "miss_lat_p99_W_s": 252.29459331491861,
+            "unfinished_sessions": 358,
+            "token_ratio": 1.0383396384699133,
+            "backlog_slope": 0.03634761941799354,
+            "time_queue_over_128_s": 6500.0
+          }
+        },
+        "engine_collapse": 3,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "against",
+        "extra_n": 10,
+        "extra_collapse": 10,
+        "extra_states": {
+          "trapped": 7,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 3
+        },
+        "extra_token_hit_W": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "lpm128": {
+        "engine_seeds": {
+          "0": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 257.48035716353496,
+            "miss_lat_p99_W_s": 257.48035716353496,
+            "unfinished_sessions": 354,
+            "token_ratio": 1.0280093197978317,
+            "backlog_slope": 0.033149266102956695,
+            "time_queue_over_128_s": 5500.0
+          },
+          "1": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 238.45848089121748,
+            "miss_lat_p99_W_s": 238.45848089121748,
+            "unfinished_sessions": 312,
+            "token_ratio": 1.029620843529887,
+            "backlog_slope": 0.03063857376193069,
+            "time_queue_over_128_s": 5900.0
+          },
+          "2": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 246.29771939513932,
+            "miss_lat_p99_W_s": 246.29771939513932,
+            "unfinished_sessions": 351,
+            "token_ratio": 1.033575461166219,
+            "backlog_slope": 0.038721068011866804,
+            "time_queue_over_128_s": 6300.0
+          }
+        },
+        "engine_collapse": 3,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "against",
+        "extra_n": 10,
+        "extra_collapse": 7,
+        "extra_states": {
+          "trapped": 6,
+          "recovered": 0,
+          "draining": 2,
+          "indeterminate": 2
+        },
+        "extra_token_hit_W": [
+          0.0,
+          0.12332670102997956,
+          0.4999208610968734
+        ]
+      },
+      "lpminf": {
+        "engine_seeds": {
+          "0": {
+            "collapse": false,
+            "state": "indeterminate",
+            "token_hit_W": 0.4224830565831317,
+            "turn_hit_W": 0.4420871559633027,
+            "lat_p99_W_s": 224.9834266829925,
+            "miss_lat_p99_W_s": 226.95947946185134,
+            "unfinished_sessions": 211,
+            "token_ratio": 0.9292118804662131,
+            "backlog_slope": 0.0007427304747830639,
+            "time_queue_over_128_s": 5400.0
+          },
+          "1": {
+            "collapse": false,
+            "state": "trapped",
+            "token_hit_W": 0.3825810049480855,
+            "turn_hit_W": 0.4056343994916331,
+            "lat_p99_W_s": 190.95892386738998,
+            "miss_lat_p99_W_s": 191.64805999337614,
+            "unfinished_sessions": 194,
+            "token_ratio": 0.936586134117676,
+            "backlog_slope": 0.02535343503816709,
+            "time_queue_over_128_s": 4000.0
+          },
+          "2": {
+            "collapse": false,
+            "state": "indeterminate",
+            "token_hit_W": 0.40007867970501776,
+            "turn_hit_W": 0.42218384187296104,
+            "lat_p99_W_s": 147.78302683039627,
+            "miss_lat_p99_W_s": 148.48268830428717,
+            "unfinished_sessions": 164,
+            "token_ratio": 0.9429135701821227,
+            "backlog_slope": 0.01169872776364182,
+            "time_queue_over_128_s": 1400.0
+          }
+        },
+        "engine_collapse": 0,
+        "engine_states": {
+          "trapped": 1,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 2
+        },
+        "decision_rule_on_simulated_seeds": "consistent",
+        "extra_n": 10,
+        "extra_collapse": 0,
+        "extra_states": {
+          "trapped": 0,
+          "recovered": 0,
+          "draining": 6,
+          "indeterminate": 4
+        },
+        "extra_token_hit_W": [
+          0.34887652164054767,
+          0.4391011868094196,
+          0.5647808529861892
+        ]
+      },
+      "lpm128s": {
+        "engine_seeds": {
+          "0": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 265.3878202279201,
+            "miss_lat_p99_W_s": 265.3878202279201,
+            "unfinished_sessions": 355,
+            "token_ratio": 1.028545796616408,
+            "backlog_slope": 0.032771506350070555,
+            "time_queue_over_128_s": 5500.0
+          },
+          "1": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 233.40274203548572,
+            "miss_lat_p99_W_s": 233.40274203548572,
+            "unfinished_sessions": 311,
+            "token_ratio": 1.0317540715304419,
+            "backlog_slope": 0.030609080100890005,
+            "time_queue_over_128_s": 5800.0
+          },
+          "2": {
+            "collapse": true,
+            "state": "trapped",
+            "token_hit_W": 0.0,
+            "turn_hit_W": 0.0,
+            "lat_p99_W_s": 247.1597972247966,
+            "miss_lat_p99_W_s": 247.1597972247966,
+            "unfinished_sessions": 350,
+            "token_ratio": 1.032445630220876,
+            "backlog_slope": 0.03869995222169135,
+            "time_queue_over_128_s": 6300.0
+          }
+        },
+        "engine_collapse": 3,
+        "engine_states": {
+          "trapped": 3,
+          "recovered": 0,
+          "draining": 0,
+          "indeterminate": 0
+        },
+        "decision_rule_on_simulated_seeds": "against",
+        "extra_n": 10,
+        "extra_collapse": 7,
+        "extra_states": {
+          "trapped": 6,
+          "recovered": 0,
+          "draining": 3,
+          "indeterminate": 1
+        },
+        "extra_token_hit_W": [
+          0.0,
+          0.14197027119943248,
+          0.4999208610968734
+        ]
+      },
+      "lpminf_minus_lpm128_unfinished_by_seed": {
+        "0": -143,
+        "1": -118,
+        "2": -187
+      }
+    }
+  }
+}

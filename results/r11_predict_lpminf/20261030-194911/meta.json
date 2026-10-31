@@ -1,0 +1,222 @@
+{
+  "experiment": "r11_predict_lpminf",
+  "argv": [
+    "experiments/r11_predict_lpminf.py",
+    "run",
+    "--workers",
+    "6",
+    "--plan-root",
+    "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/lpminf"
+  ],
+  "started": "2026-10-30T19:49:11",
+  "ended": "2026-10-30T19:49:17",
+  "wall_s": 6.741716146469116,
+  "sim_wall_s": 5.229560136795044,
+  "n_simulations": 104,
+  "workers": 6,
+  "quick": false,
+  "sets": [],
+  "plan_root": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\lpminf",
+  "engine_effective": {
+    "iter_fixed_s": 0.00924,
+    "iter_floor_s": 0.00126,
+    "per_token_s": 6.26e-05,
+    "decode_attn_s": 0.00031,
+    "attn_ctx_norm": 8192,
+    "prefill_attn_s": 2.24e-09,
+    "prefill_attn_ctx": "mid",
+    "prefill_chunk_budget": 8192,
+    "max_running_seqs": 256,
+    "kv_memory_tokens": 300000,
+    "cache_enabled": true,
+    "skip_ahead": false,
+    "admission_limited_by_prefill_budget": true,
+    "batch_decode_iterations": true,
+    "free_kv_on_session_end": true,
+    "batching": "mixed"
+  },
+  "workload_effective": {
+    "initial_context_tokens": 2000,
+    "new_prompt_tokens": 550,
+    "decode_tokens": 100,
+    "mean_turns": 15,
+    "max_turns": 60,
+    "tool_time_mean_s": 5.0,
+    "tool_time_dist": "exp",
+    "tool_time_cv": 1.5
+  },
+  "metrics_effective": {
+    "window_s": 100.0,
+    "fine_window_s": 100.0,
+    "tail_window_s": 2500.0,
+    "track_memory": true
+  },
+  "policies_effective": {
+    "fcfs_lru": {
+      "kind": "fcfs",
+      "eviction": "lru"
+    },
+    "lpm128_lru": {
+      "kind": "lpm_fallback",
+      "threshold": 128,
+      "eviction": "lru"
+    },
+    "lpm_lru": {
+      "kind": "lpm",
+      "eviction": "lru"
+    },
+    "lpm128s_lru": {
+      "kind": "lpm_fallback",
+      "threshold": 128,
+      "eviction": "lru",
+      "sticky": true
+    }
+  },
+  "r11_lpminf": {
+    "lambda_ref": 0.07153402100919228,
+    "lambda_ref_source": "prereg/inputs/2026-10-23/calibration.json:lambda_miss_turns_based",
+    "modes": {
+      "mixed": "mixed",
+      "separate": "separate_prefill_priority"
+    },
+    "primary_mode": "mixed",
+    "arms": {
+      "fcfs": {
+        "policy": "fcfs_lru",
+        "role": "reference (FCFS BURST; outcome of the engine cell known to the lead)"
+      },
+      "lpm128": {
+        "policy": "lpm128_lru",
+        "role": "stock LPM (128-request FCFS fallback; engine outcomes known to the lead - retrodiction)"
+      },
+      "lpminf": {
+        "policy": "lpm_lru",
+        "role": "PREDICTED cell (pure LPM = LPM-INF; no engine run exists)"
+      },
+      "lpm128s": {
+        "policy": "lpm128s_lru",
+        "role": "labelled sensitivity (stock LPM with SGLang's sticky fallback order)"
+      }
+    },
+    "predicted_arm": "lpminf",
+    "fallback_threshold": 128,
+    "references": {
+      "all_miss_tok_per_s": {
+        "mixed": 11219.72185185185,
+        "separate": 11146.80037037037
+      },
+      "source": "results/r6_predict_report/20261024-034707/summary.json"
+    },
+    "burst": {
+      "agentload_config": "configs/agentload_e2_burst.yaml",
+      "lambda_mult": 1.65,
+      "burst_n": 200,
+      "t_burst_s": 1200,
+      "width_s": 60,
+      "duration_s": 8700,
+      "engine_seeds": [
+        0,
+        1,
+        2
+      ],
+      "extra_seeds": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109
+      ]
+    },
+    "plan_checks": [
+      {
+        "dir": "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-061332",
+        "label": "sglang-lpm-r1",
+        "seed": 0
+      },
+      {
+        "dir": "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-074047",
+        "label": "sglang-lpm-r0",
+        "seed": 0
+      },
+      {
+        "dir": "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-084258",
+        "label": "sglang-lpm-r1",
+        "seed": 1
+      },
+      {
+        "dir": "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-090204",
+        "label": "sglang-lpm-r0",
+        "seed": 1
+      },
+      {
+        "dir": "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-105152",
+        "label": "sglang-lpm-r1",
+        "seed": 2
+      },
+      {
+        "dir": "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-112253",
+        "label": "sglang-lpm-r0",
+        "seed": 2
+      }
+    ],
+    "endpoints": "configs/r11_lpminf_predict.yaml"
+  },
+  "git_head": "f02fa4bfd0f863144f2aa42a7fdc703fd669ab9a",
+  "git_branch": "HEAD",
+  "git_status_porcelain": [],
+  "simulation_inputs_clean_vs_head": true,
+  "simulation_inputs_status": [],
+  "sha256": {
+    "src/prefixmeta/__init__.py": "5d1b858850a6b2f41ea5856191a80418ca77a93dcbef4d63de49d277dd76efc1",
+    "src/prefixmeta/engine.py": "5e881b4eb5a1e63eab3a51c053d405661d77b67f4a04ee47433c99a5fc1e68b1",
+    "src/prefixmeta/eviction.py": "1ac4c9dbed47873d19a5c684ce73f8629b2546d2de1bdb155cd0719c65a9cff5",
+    "src/prefixmeta/fluid.py": "5549ea0bc94cd51a22d05d1163652283f1c813e95af07a0bececbf895a3aa1d7",
+    "src/prefixmeta/mech_runner.py": "9206f13ed449f86b71b64949f8c0d51341f99781a3cbb52057fcac29ceff93ae",
+    "src/prefixmeta/mechanisms.py": "83925466fc30eed0bdf2db435456c58773686048a43bda683a73a3760169b134",
+    "src/prefixmeta/metrics.py": "8a1022bb68ec63474753e8eae5dab1faea30944a6022f37d332064056903bd07",
+    "src/prefixmeta/policies.py": "78ec16c408e758f61f9a11341f79498fd2991d56122222c816e9718c4bdc40ed",
+    "src/prefixmeta/prereg_eval.py": "7af34092439425d14810516b4bb1c7d20c912cbd05d6a3c1c8cd9d11251e36d1",
+    "src/prefixmeta/probe.py": "395a8964f880eada13f30bc243b1140f13324f2a6005e308e77911a4d8d09b31",
+    "src/prefixmeta/r11_lpm_sim.py": "f77ce563c3319985122f0faff856b13c4a227d84b2bc83906fb9591fe8a548a2",
+    "src/prefixmeta/r4_boot.py": "050872d53cd455bea02e7227e9c14c4f0e403cdd378d856613553b8093c4aa19",
+    "src/prefixmeta/r4_eval.py": "7c601a33c5d165657afbeb56095ca4a6b90ca875d266a4ac7fed07b821eb7ddc",
+    "src/prefixmeta/r4_runner.py": "27049d25eb2d096b3e38a7bfa4953a2c1566900a61b3ad4909cda0ee2465c0eb",
+    "src/prefixmeta/r5_eval.py": "31fc5c736019ec85383f79c4ac5cdb86ce9427177a69df3275bb1369ae05675b",
+    "src/prefixmeta/r5_runner.py": "36d96c5c08e31bdfa6116fb155ced29dc3f8519b352fd256c2604fe0163a8e7a",
+    "src/prefixmeta/r6_predict.py": "c8dbbfa38bf48b96333ec45679d6b1963504865018bc8fdc2d8cf37ad872ee1e",
+    "src/prefixmeta/r6_validate.py": "d24b7213bedb464a33a617c959abd417cb21cde110ef3568290e2771aff56c2a",
+    "src/prefixmeta/r7_posthoc.py": "56587302eb7eebecec3b4b363f12cc5c24eab040da310ba24ac1960110c7b6a0",
+    "src/prefixmeta/r7_report.py": "2a73edbd7089c3100c856bf8d8aee38acfdbc1ba33e8be78dfa81f5fad41e558",
+    "src/prefixmeta/r7_robustness.py": "a86b2b0d6f8860bafdac84b9c0799fbc74d31c6a618f9e6c549d4f911de38887",
+    "src/prefixmeta/r8_native_report.py": "7e4c38e72f35b7153ea714cf4eb3d76bed903d2eeefdbcbea38f9f0b77ee66cd",
+    "src/prefixmeta/r9_vllm_predict.py": "01ad1615af9a3c4428fedfe506a319c2ae23d0e271f382ccbd45be6ebd85078d",
+    "src/prefixmeta/report.py": "f58c9a502a486ac9e7deb69adc574ea81421193ae2b2771faa05cb550cff3589",
+    "src/prefixmeta/report_r3.py": "b8b66338728948650fe19b579484410a3ebff2660ee41ec4d28ab8b174139880",
+    "src/prefixmeta/report_r4.py": "65e525f48ddc719225f7d634bccfcd8f92db2de32b9c05201c091fdcdcbaaf8a",
+    "src/prefixmeta/report_r5.py": "69ef5bf90a403c17a8839eb2af17b8b3b0a1371447a4714cf2f980189254f035",
+    "src/prefixmeta/runner.py": "be4099d54782730de0c541460324cad5bc248849542d5df5a9f67dc0f2b9e436",
+    "src/prefixmeta/sim.py": "14be194ad94aa08b530c8c030b14ad64f944102035c5db2d41bdc6de771a4a5b",
+    "src/prefixmeta/survival.py": "682b7233f07eafd946048774b7de6faff6409930baeec8006810298b43e9383d",
+    "src/prefixmeta/workload.py": "5758a5d31074dcf67ff207acac514d0024866c7b267b384bb027d062f54d8c26",
+    "src/agentload/workload.py": "b848f31d198b2f87063f36ecff1197ae89414432402985878439af6bb5946c60",
+    "src/agentload/config.py": "e1c598af65765cca2ed64846cf665e015e01c650b14ab121816c4e6275f68314",
+    "configs/r6_predict.yaml": "15240ebec2d58946592015df5a0ffc663f80debfe8cc5f69b8f6eb7f6f57bdb4",
+    "configs/prefix_meta_r5.yaml": "697b4266c5407cfc17eb77198681289f27b32bc6650a49f4107a628439fcb756",
+    "configs/prefix_meta.yaml": "3ae11c34e65237c33a9ae2e78a8477b63bbb489c13635c9767f3b185c25ae64b",
+    "configs/agentload_e2_burst.yaml": "608bec40913eb2450d2204bbc6ff07cb890ae5bfba4dd0c6bdcc177bbee9b4ba",
+    "configs/r11_predict_lpminf.yaml": "baab4f0f1296233e65b59195d9240dee6d9ce6b16c377111568303992f10689a",
+    "configs/r11_lpminf_predict.yaml": "3e159ae70953ec5fb4e8dd8ac43a29787dc63d178fd04b533e03190dfa0d0543",
+    "experiments/r11_predict_lpminf.py": "bf481a23264b2927e1c04bd49f74fb188ec1dc7db46b94612b67e09683ccfa3a"
+  },
+  "hostname": "Akshat-PC",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "numpy": "1.26.4",
+  "pandas": "2.2.2",
+  "blindness": "no LPM-INF (sglang-lpminf) engine run exists when this runs; the fcfs and lpm128 rows are retrodictions of committed engine cells whose outcomes are known to the lead (stock LPM at 1.65 x trapped or stuck in 4 of 6 runs)"
+}

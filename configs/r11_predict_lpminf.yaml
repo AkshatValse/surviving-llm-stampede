@@ -1,0 +1,55 @@
+# Round 11, S1 bundle 2: blind simulator predictions for L1 (LPM-INF): FCFS, stock LPM (128-request fallback) and pure LPM (fallback disabled)
+# at 1.65 x lambda_ref, 300k KV pool, E2 protocol (200-session burst in 60 s at t = 1200 s, 8700 s), BURST arm.
+#
+# Driver: experiments/r11_predict_lpminf.py (PYTHONPATH="src;." python experiments/r11_predict_lpminf.py run). Frozen endpoints:
+# configs/r11_lpminf_predict.yaml. Instrumented runs: src/prefixmeta/r11_lpm_sim.py (simulate_instrumented; no default changed).
+# Engine: the round-6 calibrated engine INHERITED unchanged from configs/r6_predict.yaml (the calibration/round6_server_log_fit/calibration.yaml
+# engine block plus `batching: mixed`); the driver asserts the effective engine, workload and metrics equal r6_predict.yaml's. PRIMARY column mixed
+# batching; SECONDARY (labelled) column the same runs with engine.batching = separate_prefill_priority.
+# Rates in ENGINE lambda units: lambda = 1.65 x lambda_ref, lambda_ref = 0.07153402100919228 sessions/s (the registered 300k lambda_ref,
+# prereg/inputs/2026-10-23/calibration.json lambda_miss_turns_based), NOT the simulator's own lambda_miss (0.072187).
+# Arrival and session streams: every run serves the CLIENT's plan (agentload.workload.build_open_plan on configs/agentload_e2_burst.yaml with the
+# job's seed, 1.65 x lambda_ref, burst 200 at 1200 s, 8700 s). For the engine seeds 0-2 these are the exact arrival times, turn counts and tool
+# times the LPM-INF jobs will send (the same plans as the committed stock-LPM and FCFS 1.65 x BURST runs, which the driver reproduces first).
+# The 10 extra seeds use the same generator with seeds no engine run uses.
+base_config: configs/r6_predict.yaml
+
+policies:                                   # merged over the r5 policies (fcfs_lru, lpm_lru, lpm128_lru unchanged)
+  lpm128s_lru: {kind: lpm_fallback, threshold: 128, eviction: lru, sticky: true}   # LABELLED SENSITIVITY: SGLang's real fallback order (r11_lpm_sim.py)
+
+r11_lpminf:
+  lambda_ref: 0.07153402100919228
+  lambda_ref_source: "prereg/inputs/2026-10-23/calibration.json:lambda_miss_turns_based"
+  modes:                                   # column name -> engine.batching
+    mixed: mixed
+    separate: separate_prefill_priority
+  primary_mode: mixed
+  arms:                                    # arm name -> simulator policy; role
+    fcfs: {policy: fcfs_lru, role: reference (FCFS BURST; outcome of the engine cell known to the lead)}
+    lpm128: {policy: lpm128_lru, role: stock LPM (128-request FCFS fallback; engine outcomes known to the lead - retrodiction)}
+    lpminf: {policy: lpm_lru, role: PREDICTED cell (pure LPM = LPM-INF; no engine run exists)}
+    lpm128s: {policy: lpm128s_lru, role: labelled sensitivity (stock LPM with SGLang's sticky fallback order)}
+  predicted_arm: lpminf
+  fallback_threshold: 128                  # counted for every arm: passes with more than 128 waiting requests (where stock LPM falls back)
+  references:                              # the simulator's own all-miss uncached prefill token rate (r6 B1, POP = 32, 3-seed mean), per mode
+    all_miss_tok_per_s:                    # (criterion (a) of the simulated trap_v2 label compares with it, as r6 B3, r7 and bundle 1 did)
+      mixed: 11219.72185185185
+      separate: 11146.80037037037
+    source: results/r6_predict_report/20261024-034707/summary.json   # modes.<batching>.b1.token_rate; the driver checks the two values
+  burst:
+    agentload_config: configs/agentload_e2_burst.yaml
+    lambda_mult: 1.65
+    burst_n: 200
+    t_burst_s: 1200
+    width_s: 60
+    duration_s: 8700
+    engine_seeds: [0, 1, 2]
+    extra_seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+  plan_checks:                             # committed real runs whose plan.csv the driver must reproduce exactly (inputs only; no outcome file is read)
+    - {dir: results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-061332, label: sglang-lpm-r1, seed: 0}
+    - {dir: results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-074047, label: sglang-lpm-r0, seed: 0}
+    - {dir: results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-084258, label: sglang-lpm-r1, seed: 1}
+    - {dir: results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-090204, label: sglang-lpm-r0, seed: 1}
+    - {dir: results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-105152, label: sglang-lpm-r1, seed: 2}
+    - {dir: results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_e2_burst/20261025-112253, label: sglang-lpm-r0, seed: 2}
+  endpoints: configs/r11_lpminf_predict.yaml
