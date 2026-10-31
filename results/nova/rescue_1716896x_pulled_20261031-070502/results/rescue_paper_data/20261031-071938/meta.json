@@ -1,0 +1,60 @@
+{
+  "experiment": "rescue_paper_data",
+  "status": "finished",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\rescue\\figures\\rescue_paper_data.py",
+    "--verdict-dirs",
+    "results/nova/rescue_1716896x_pulled_20261031-070502/results/agentload_analysis_rescue_r1/20261031-071720",
+    "results/nova/rescue_1716896x_pulled_20261031-070502/results/agentload_analysis_rescue_r4/20261031-071748",
+    "--capped-runs",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-155130",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-161207",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-182448",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-184758",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-213121",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261025-000819",
+    "results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-175810",
+    "results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-201337",
+    "results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-224304",
+    "--out-root",
+    "results/nova/rescue_1716896x_pulled_20261031-070502/results"
+  ],
+  "git": {
+    "commit": "6dcd9d939503886b0ace05592b78aae702439fd0",
+    "dirty": false,
+    "branch": "r11/rescue",
+    "captured_at": "run start"
+  },
+  "seeds": [],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-31T07:19:27",
+  "end_time": "2026-10-31T07:19:38",
+  "wall_s": 10.482747,
+  "slurm_env": {},
+  "inputs": [
+    "results/nova/rescue_1716896x_pulled_20261031-070502/results/agentload_analysis_rescue_r1/20261031-071720",
+    "results/nova/rescue_1716896x_pulled_20261031-070502/results/agentload_analysis_rescue_r4/20261031-071748",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-155130",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-161207",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-182448",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-184758",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-213121",
+    "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261025-000819",
+    "results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-175810",
+    "results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-201337",
+    "results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-224304"
+  ],
+  "post_hoc": true,
+  "note": "descriptive tables; the registered verdict is rescue_verdict.json in the input dirs"
+}

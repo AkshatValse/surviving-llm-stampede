@@ -1,0 +1,108 @@
+research_question: 'Analysis parameters for real-engine prefix-cache metastability
+  runs (and mock-server tests): per-window hit rate, throughput, queue and latency;
+  burst trap / recovery / hysteresis detection with the same definitions as the simulator
+  (configs/prefix_meta.yaml on branch pilot/prefix-meta) unless noted.'
+assumptions_note: Engine metric names below are CANDIDATES from memory of vLLM/SGLang
+  naming (first present wins). They are not verified against v0.5.22 / v0.32.0; run
+  `python -m agentload probe` (or read metrics_first.txt of the first Nova test job)
+  and edit this list. If no candidate is present the engine-queue columns are NaN
+  and the client-side in-flight count is used as the queue proxy (queue_source column
+  says which).
+windows:
+  window_s: 1000.0
+  fine_window_s: 100.0
+  attribute_by: complete
+  cached_frac_threshold: 0.5
+  hit_metric: frac_turns_cached_gt50
+engine_metrics:
+  waiting:
+    names:
+    - vllm:num_requests_waiting
+    - sglang:num_queue_reqs
+    - sglang:num_waiting_reqs
+    agg: sum
+  running:
+    names:
+    - vllm:num_requests_running
+    - sglang:num_running_reqs
+    agg: sum
+  cache_usage:
+    names:
+    - vllm:kv_cache_usage_perc
+    - vllm:gpu_cache_usage_perc
+    - sglang:token_usage
+    agg: mean
+  hit_gauge:
+    names:
+    - sglang:cache_hit_rate
+    - vllm:gpu_prefix_cache_hit_rate
+    agg: mean
+  hit_counter:
+    names:
+    - vllm:prefix_cache_hits_total
+    - vllm:prefix_cache_hits
+    agg: sum
+  query_counter:
+    names:
+    - vllm:prefix_cache_queries_total
+    - vllm:prefix_cache_queries
+    agg: sum
+client_queue_proxy: agentload:inflight_requests
+burst:
+  trap_hit_below: 0.2
+  trap_min_s: 10000.0
+  hit_eval_from_s: 10000.0
+  recovered_hit_above: 0.8
+  recovered_queue_below: 20.0
+  tail_window_s: 5000.0
+  good_before_hit_above: 0.5
+  good_before_queue_below: 20.0
+  good_before_from_s: 0.0
+  aborted_trap_last_windows: 3
+stability:
+  stable_final_queue_below: 50
+  stable_trend_window_s: 5000.0
+  stable_trend_max_rise: 10.0
+escape:
+  escape_queue_above: 128
+  reentry_queue_below: 20
+  reentry_bins: 5
+kill:
+  lam_mult_open_interval:
+  - 1.2
+  - 2.0
+  trapped_fraction_min: 0.6666666666666666
+  min_runs_per_cell: 3
+trap_v2:
+  eval_from_s: 4500.0
+  min_eval_s: 600.0
+  rate_estimator: uncached_tokens
+  rate_tolerance: 0.15
+  slope_frac: 0.5
+  slope_dt_s: 10.0
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  recovered_backlog_metric: outstanding
+  end_window_s: 300.0
+  pass_fraction_min: 0.6666666666666666
+  min_seeds: 3
+  trace_bin_s: 50.0
+closed:
+  warmup_s: 900.0
+  n_grid:
+  - 16
+  - 20
+  - 24
+  - 32
+  - 48
+  - 96
+  - 300
+  lpm_n:
+  - 48
+  - 300
+  n_inf: 300
+  mu_estimator: sessions
+  argmax_margin_warn: 0.05
+output:
+  root: results
+  name: agentload_analysis
