@@ -1,0 +1,22 @@
+{
+  "largest_all_stable_mult": 2.5,
+  "first_unstable_mult_above": 3.0,
+  "monotone": true,
+  "n_rates": 6,
+  "by_label": {
+    "sglang-fcfs-r1-h200-p600k": {
+      "largest_all_stable_mult": 2.5,
+      "first_unstable_mult_above": 3.0,
+      "monotone": true,
+      "n_rates": 6,
+      "hardware": [
+        "NVIDIA H200 NVL, 143771 MiB"
+      ]
+    }
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}
