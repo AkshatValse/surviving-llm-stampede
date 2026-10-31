@@ -1,0 +1,96 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst2",
+    "--run-dirs",
+    "results/agentload_e2_burst/20261031-152713",
+    "--out-root",
+    "results",
+    "--set",
+    "burst.trap_min_s=3000",
+    "--set",
+    "burst.hit_eval_from_s=4500",
+    "--set",
+    "trap_v2.eval_from_s=4500",
+    "--prereg",
+    "configs/agentload_prereg_2026-10-30_llama31.yaml"
+  ],
+  "git": {
+    "commit": "1559f8e33bed9d5944e3ef1eb6f05c905fb04f2c",
+    "dirty": false,
+    "branch": "gen/llama31",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    1
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova22-gpu-3",
+  "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+  "start_time": "2026-10-31T17:55:17",
+  "end_time": "2026-10-31T17:55:18",
+  "wall_s": 0.473558,
+  "slurm_env": {
+    "SLURM_JOB_ID": "17170416",
+    "SLURM_JOB_NAME": "pm-l31-e2",
+    "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+    "SLURM_JOB_PARTITION": "instruction",
+    "SLURM_JOB_QOS": "instruction",
+    "SLURM_JOB_NODELIST": "nova22-gpu-3",
+    "SLURM_CPUS_PER_TASK": "16",
+    "SLURM_MEM_PER_NODE": "49152",
+    "SLURM_GPUS_ON_NODE": "1",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+  },
+  "inputs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261031-152713",
+      "label": "sglang-fcfs-r1-llama31",
+      "seed": 1,
+      "run_git": {
+        "commit": "1559f8e33bed9d5944e3ef1eb6f05c905fb04f2c",
+        "dirty": false,
+        "branch": "gen/llama31",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T15:27:13",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17170416",
+        "SLURM_JOB_NAME": "pm-l31-e2",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "n_runs": 1,
+  "kill_verdict_v2": {
+    "pre_registered": true,
+    "kill_test_pass_rule_only": false,
+    "kill_test_pass_decisive": false,
+    "fcfs_cells_meeting_rule": [],
+    "decisive_cells": [],
+    "pairing_problems": {}
+  },
+  "guard_problems": []
+}
