@@ -1,0 +1,279 @@
+{
+ "cell": "a100_300k",
+ "mult": 1.35,
+ "lam": 0.0965709,
+ "n1": 8.467829605453247,
+ "n_u": 32.23478548024156,
+ "n_b": 32.69811827670201,
+ "mu_b": 0.07183952770933337,
+ "x0_n_at_1800": 161.27873208198622,
+ "round_robin_regression_max_abs_diff": 0.0,
+ "stuck_by_s": 6343.601308026308,
+ "good_from_s": 8274.405232105231,
+ "tau_min": {
+  "0": {
+   "rescues": true,
+   "tau_min": 1795.351355136425,
+   "all_miss_part": 1789.8310011937765,
+   "good_branch_part": 5.5204354516709895
+  },
+  "0.25": {
+   "rescues": true,
+   "tau_min": 2393.4823773385233,
+   "all_miss_part": 2386.441334925036,
+   "good_branch_part": 7.041182319763905
+  },
+  "0.5": {
+   "rescues": true,
+   "tau_min": 3589.406591190583,
+   "all_miss_part": 3579.662002387553,
+   "good_branch_part": 9.74488749070631
+  },
+  "0.75": {
+   "rescues": true,
+   "tau_min": 7175.354965931768,
+   "all_miss_part": 7159.324004775105,
+   "good_branch_part": 16.032059984247002
+  },
+  "note": "keys: lambda' as a fraction of mu_b = lambda_miss; tau_min diverges as lambda' -> mu_b"
+ },
+ "round_robin_drain": {
+  "t_reach_n_b": 3722.0,
+  "tau_min": 1927.520435451671,
+  "completion_rate_at_1800": 0.12209109273029439,
+  "completion_rate_at_1800_over_lambda_ref": 1.706756126181877,
+  "completion_rate_at_n_b": 0.034051440754113246,
+  "mean_completion_rate": 0.06689938283313435
+ },
+ "taus": {
+  "600": {
+   "tau": 600.0,
+   "resume_s": 2400.0,
+   "expected_sessions_refused": 57.94254,
+   "quasi_static": {
+    "n_at_resume": 118.17501545637546,
+    "verdict": "STUCK",
+    "committor": 1.0,
+    "p_stuck": 1.0,
+    "p_good": 0.0
+   },
+   "round_robin": {
+    "n_at_resume": 102.58768434209233,
+    "verdict": "STUCK",
+    "committor": 1.0,
+    "p_stuck": 1.0,
+    "p_good": 0.0
+   }
+  },
+  "3600": {
+   "tau": 3600.0,
+   "resume_s": 5400.0,
+   "expected_sessions_refused": 347.65524,
+   "quasi_static": {
+    "n_at_resume": 0.0,
+    "verdict": "GOOD",
+    "committor": 0.0,
+    "p_stuck": 0.0004970190027443477,
+    "p_good": 0.9984867468150953
+   },
+   "round_robin": {
+    "n_at_resume": 0.0,
+    "verdict": "GOOD",
+    "committor": 0.0,
+    "p_stuck": 0.0004970190027443477,
+    "p_good": 0.9984867468150953
+   }
+  },
+  "1800": {
+   "tau": 1800.0,
+   "resume_s": 3600.0,
+   "expected_sessions_refused": 173.82762,
+   "quasi_static": {
+    "n_at_resume": 31.747555161857182,
+    "verdict": "GOOD",
+    "committor": 0.7358714849898149,
+    "p_stuck": 0.7362530028326115,
+    "p_good": 0.2634788351718172
+   },
+   "round_robin": {
+    "n_at_resume": 37.25388346742444,
+    "verdict": "STUCK",
+    "committor": 1.0,
+    "p_stuck": 1.0,
+    "p_good": 0.0
+   }
+  }
+ },
+ "committor_50_point_X": 30.79631193303797,
+ "tau_50_quasi_static": 1807.0,
+ "tau_50_round_robin": 1939.5,
+ "per_seed": {
+  "0": {
+   "600": {
+    "refused_sessions": 59,
+    "base_arrivals_in_stop_window": 59,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 179.09000577479574,
+    "t_reach_n_b": null,
+    "n_at_resume": 112.64171780851875,
+    "verdict": "STUCK",
+    "committor": 1.0
+   },
+   "3600": {
+    "refused_sessions": 355,
+    "base_arrivals_in_stop_window": 355,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 179.09000577479574,
+    "t_reach_n_b": 4059.0,
+    "n_at_resume": 0.0,
+    "verdict": "GOOD",
+    "committor": 0.0
+   },
+   "1800": {
+    "refused_sessions": 184,
+    "base_arrivals_in_stop_window": 184,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 179.09000577479574,
+    "t_reach_n_b": null,
+    "n_at_resume": 48.04322730262412,
+    "verdict": "STUCK",
+    "committor": 1.0
+   }
+  },
+  "1": {
+   "600": {
+    "refused_sessions": 56,
+    "base_arrivals_in_stop_window": 56,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 178.1266702228621,
+    "t_reach_n_b": null,
+    "n_at_resume": 117.65635534371668,
+    "verdict": "STUCK",
+    "committor": 1.0
+   },
+   "3600": {
+    "refused_sessions": 378,
+    "base_arrivals_in_stop_window": 378,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 178.1266702228621,
+    "t_reach_n_b": 3783.0,
+    "n_at_resume": 0.0,
+    "verdict": "GOOD",
+    "committor": 0.0
+   },
+   "1800": {
+    "refused_sessions": 194,
+    "base_arrivals_in_stop_window": 194,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 178.1266702228621,
+    "t_reach_n_b": null,
+    "n_at_resume": 40.910343848715996,
+    "verdict": "STUCK",
+    "committor": 1.0
+   }
+  },
+  "2": {
+   "600": {
+    "refused_sessions": 61,
+    "base_arrivals_in_stop_window": 61,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 171.10106541621047,
+    "t_reach_n_b": null,
+    "n_at_resume": 100.53786441427852,
+    "verdict": "STUCK",
+    "committor": 1.0
+   },
+   "3600": {
+    "refused_sessions": 377,
+    "base_arrivals_in_stop_window": 377,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 171.10106541621047,
+    "t_reach_n_b": 3631.0,
+    "n_at_resume": 0.0,
+    "verdict": "GOOD",
+    "committor": 0.0
+   },
+   "1800": {
+    "refused_sessions": 188,
+    "base_arrivals_in_stop_window": 188,
+    "ramp_plan_subset_of_constant": true,
+    "n_at_1800_plan_round_robin": 171.10106541621047,
+    "t_reach_n_b": null,
+    "n_at_resume": 36.808064282921585,
+    "verdict": "STUCK",
+    "committor": 1.0
+   }
+  }
+ },
+ "rule": {
+  "statement": "tau600 STUCK in >= 2/3 and tau3600 GOOD in >= 2/3 of the registered seeds 0, 1 (2 of 2 each)",
+  "registration": "configs/agentload_prereg_2026-10-31_shed_t600.yaml, _t3600.yaml (commit b006291)",
+  "registered_seeds": [
+   0,
+   1
+  ],
+  "p_stuck_600": 1.0,
+  "p_good_3600": 0.9984867468150953,
+  "p_rule": 0.9969757835653922,
+  "p_rule_if_three_seeds": 0.9954671067856391,
+  "refused_counts_role": "protocol check (fixed by the client plans, not a model prediction)"
+ },
+ "cap_comparison": {
+  "refused_sessions": 0,
+  "note": "R1 (cap 20 at 1800 s) defers arrivals at its gate; frozen release 3,830 s at 1.35 x (r13-theory-pred); the stop refuses lambda tau"
+ },
+ "provenance": {
+  "frozen_tag": "r13-theory-pred",
+  "frozen_commit": "997d2c4d9d25b1d2ef26fdbc8c7b35a9860ceff0",
+  "git_head": "5271ff6b207749058a893daa2426d9b05422cf7a",
+  "frozen_code_check": {
+   "ok": true,
+   "modified_tracked": [],
+   "added_committed": [
+    "analysis/theory/paper/__init__.py",
+    "analysis/theory/paper/figs.py"
+   ],
+   "untracked_new": [
+    "analysis/theory/cells/h200_600k.yaml",
+    "analysis/theory/pred2/__init__.py",
+    "analysis/theory/pred2/b2.py",
+    "analysis/theory/pred2/blind_tables.py",
+    "analysis/theory/pred2/common.py",
+    "analysis/theory/pred2/conditional.py",
+    "analysis/theory/pred2/e0f.py",
+    "analysis/theory/pred2/freeze_table.py",
+    "analysis/theory/pred2/h200_n2.py",
+    "analysis/theory/pred2/prop_e.py",
+    "analysis/theory/pred2/run_all.py",
+    "analysis/theory/pred2/shed.py",
+    "analysis/theory/pred2/toolslow.py"
+   ]
+  },
+  "sha256": {
+   "analysis/theory/predict.py": "e6f3d28949a0a0f81938d02437b38cf726ca081aead6018ccaaedbbb117a8d8c",
+   "analysis/theory/merged/spec.py": "99c58069dcf5622e2786e87975e9e3979ed22eb512a00ff79bcfa9e79fd57c02",
+   "analysis/theory/merged/extras.py": "fa22922b9bcae7fde0edf45d47ec749e9a089f0b993e7c6953065eab799efe42",
+   "analysis/theory/fluid_rigorous/model.py": "2303c1436eee20f159b3ba63a17f17b01fdd3867aad8fab44ae9368383b17ad0",
+   "analysis/theory/fluid_rigorous/edge.py": "2e38bd101ba605d0e87ee3c4b57fa26f5026621d93d0cdbf11be491efa892d86",
+   "analysis/theory/fluid_rigorous/trapped.py": "09e2f13f273fda826a1f249550ca3d0e4a65af9c889a070a0951ca1ea357593f",
+   "analysis/theory/fluid_rigorous/oos.py": "965bb5a8b0460f6025c77821d5f96a72d3df5bcc17966e1fbbe323b554d9e26d",
+   "analysis/theory/merged/fold.py": "d2e63bd96ca101fd5e335831ae691adc9f106aaa341fc46324f4703e4df4589a",
+   "analysis/theory/merged/scoring.yaml": "8ac558a6c7262839cb0d6013a57b26480be3bffc29c11cd74fb23870a1a99ecb",
+   "analysis/theory/pred2/__init__.py": "d9e126bbf2360296b42bb2f68d1e693edea2ef99734870d4c521e007107c0d1d",
+   "analysis/theory/pred2/common.py": "1ca52b632be238a016fb9136ea6fd1c9ec878d6d57a7f675f2c149b41c88a548",
+   "analysis/theory/pred2/b2.py": "33ec1bf7566c39ee1dcaa706835e97a432a3c22d5e22278efb5c6966a6df45bd",
+   "analysis/theory/pred2/h200_n2.py": "080df2939f1ae3f3211211d563a71f4dbcc98a4f081364357701fb7c45b83dd1",
+   "analysis/theory/pred2/toolslow.py": "2199075a663cb65cce81676e41e1442e77d87fafd26f10a4a05adfd7ccfae5e2",
+   "analysis/theory/pred2/shed.py": "b4cc9067e992c04d5a3011f95b6500d58f8abfc492c3ea122a3411448b9c9e86",
+   "analysis/theory/pred2/e0f.py": "94015645aaeb8e66c0767e4a94a90aaf07c0d7c1d546367cdd015e1b1b50e8b4",
+   "analysis/theory/pred2/prop_e.py": "b1862aba96e51c23744b3328723507623b53edf71e1461f3ca22f7da03e3ae94",
+   "analysis/theory/pred2/conditional.py": "95441c93da0527c7131f6457228f5812da93a1cf2bf2d5b49bd1a5702c32ac4c",
+   "analysis/theory/pred2/run_all.py": "62519f31af24085eca196c69e35a493ebf0fad84e6abc11fd27e9a794d325370",
+   "analysis/theory/pred2/freeze_table.py": "3ffc0889a26dec44d9e38cd6091916d90f501e19bb20a32b7d31661190fc97d4",
+   "analysis/theory/pred2/blind_tables.py": "8a49e4c67a5a36971f1a491ccc83882b8f20486ec721c3ceae60397691dc4474"
+  },
+  "python": "3.12.10",
+  "numpy": "1.26.4",
+  "created": "2026-10-31T04:06:20-0500"
+ }
+}

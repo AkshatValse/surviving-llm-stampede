@@ -1,0 +1,246 @@
+{
+ "cell": "a100_300k",
+ "horizon_s": 3000.0,
+ "mults": [
+  2.0,
+  2.5
+ ],
+ "seeds": [
+  3,
+  4,
+  5
+ ],
+ "rows": {
+  "2.0": {
+   "lam": 0.143068,
+   "p_unstable_exchangeable": 0.15025854876383238,
+   "per_seed": {
+    "3": {
+     "role": "prediction",
+     "n_sessions": 432,
+     "realized_mult": 2.0130281783194555,
+     "p_unstable_exchangeable": 0.15025854876383238,
+     "p_unstable_realized_rate": 0.15966466504431476,
+     "level_crossing": {
+      "V2": 334300.8037520829,
+      "S_good": 1.3875993851490083,
+      "t_lim": 2298.0335195740017,
+      "first_crossing_s": null,
+      "peak_live_kv": 267250.0,
+      "unstable": false
+     }
+    },
+    "4": {
+     "role": "prediction",
+     "n_sessions": 461,
+     "realized_mult": 2.1481620143640487,
+     "p_unstable_exchangeable": 0.15025854876383238,
+     "p_unstable_realized_rate": 0.27988587626510664,
+     "level_crossing": {
+      "V2": 334300.8037520829,
+      "S_good": 1.3875993851490083,
+      "t_lim": 2298.0335195740017,
+      "first_crossing_s": null,
+      "peak_live_kv": 253100.0,
+      "unstable": false
+     }
+    },
+    "5": {
+     "role": "prediction",
+     "n_sessions": 423,
+     "realized_mult": 1.9710900912711338,
+     "p_unstable_exchangeable": 0.15025854876383238,
+     "p_unstable_realized_rate": 0.13077352884583882,
+     "level_crossing": {
+      "V2": 334300.8037520829,
+      "S_good": 1.3875993851490083,
+      "t_lim": 2298.0335195740017,
+      "first_crossing_s": null,
+      "peak_live_kv": 224700.0,
+      "unstable": false
+     }
+    },
+    "0": {
+     "role": "retrodiction (outcome known)",
+     "n_sessions": 472,
+     "realized_mult": 2.1994196763119978,
+     "p_unstable_exchangeable": 0.15025854876383238,
+     "p_unstable_realized_rate": 0.33523425382130956,
+     "level_crossing": {
+      "V2": 334300.8037520829,
+      "S_good": 1.3875993851490083,
+      "t_lim": 2298.0335195740017,
+      "first_crossing_s": null,
+      "peak_live_kv": 322600.0,
+      "unstable": false
+     }
+    }
+   },
+   "binomial_exchangeable": [
+    0.6135647659981414,
+    0.32548730385242064,
+    0.05755544800923751,
+    0.00339248214020049
+   ],
+   "poisson_binomial_realized": [
+    0.5260013975455259,
+    0.3835171271305363,
+    0.08463748294708943,
+    0.005843992376848343
+   ],
+   "level_crossing_unstable_count": 0
+  },
+  "2.5": {
+   "lam": 0.178835,
+   "p_unstable_exchangeable": 0.6907021823486226,
+   "per_seed": {
+    "3": {
+     "role": "prediction",
+     "n_sessions": 539,
+     "realized_mult": 2.5116254354495062,
+     "p_unstable_exchangeable": 0.6907021823486226,
+     "p_unstable_realized_rate": 0.703004311953394,
+     "level_crossing": {
+      "V2": 321981.3465672725,
+      "S_good": 1.4852871313912483,
+      "t_lim": 2532.690506153674,
+      "first_crossing_s": null,
+      "peak_live_kv": 298750.0,
+      "unstable": false
+     }
+    },
+    "4": {
+     "role": "prediction",
+     "n_sessions": 572,
+     "realized_mult": 2.6653984212933532,
+     "p_unstable_exchangeable": 0.6907021823486226,
+     "p_unstable_realized_rate": 0.8392412216882018,
+     "level_crossing": {
+      "V2": 321981.3465672725,
+      "S_good": 1.4852871313912483,
+      "t_lim": 2532.690506153674,
+      "first_crossing_s": null,
+      "peak_live_kv": 304750.0,
+      "unstable": false
+     }
+    },
+    "5": {
+     "role": "prediction",
+     "n_sessions": 530,
+     "realized_mult": 2.469687348401184,
+     "p_unstable_exchangeable": 0.6907021823486226,
+     "p_unstable_realized_rate": 0.6575237356832404,
+     "level_crossing": {
+      "V2": 321981.3465672725,
+      "S_good": 1.4852871313912483,
+      "t_lim": 2532.690506153674,
+      "first_crossing_s": null,
+      "peak_live_kv": 295600.0,
+      "unstable": false
+     }
+    },
+    "0": {
+     "role": "retrodiction (outcome known)",
+     "n_sessions": 585,
+     "realized_mult": 2.7259756581409293,
+     "p_unstable_exchangeable": 0.6907021823486226,
+     "p_unstable_realized_rate": 0.8784202798685781,
+     "level_crossing": {
+      "V2": 321981.3465672725,
+      "S_good": 1.4852871313912483,
+      "t_lim": 2532.690506153674,
+      "first_crossing_s": 1464.0,
+      "peak_live_kv": 352200.0,
+      "unstable": true
+     }
+    }
+   },
+   "binomial_exchangeable": [
+    0.029589019028521214,
+    0.19822836292615054,
+    0.44266967001626756,
+    0.32951294802906067
+   ],
+   "poisson_binomial_realized": [
+    0.016351414158958164,
+    0.1554604611101079,
+    0.44025556597807347,
+    0.38793255875286037
+   ],
+   "level_crossing_unstable_count": 0
+  }
+ },
+ "replication_rule": {
+  "statement": "replicated iff 2.0 x stable 3/3 AND 2.5 x unstable >= 2/3",
+  "primary_exchangeable": {
+   "p_2x_stable_3of3": 0.6135647659981414,
+   "p_2p5x_unstable_ge2of3": 0.7721826180453282,
+   "p_replicated": 0.47378404734881396
+  },
+  "band_realized_rate": {
+   "p_2x_stable_3of3": 0.5260013975455259,
+   "p_2p5x_unstable_ge2of3": 0.8281881247309338,
+   "p_replicated": 0.4356281110390795
+  },
+  "secondary_level_crossing": {
+   "unstable_2x": 0,
+   "unstable_2p5x": 0,
+   "replicated": false
+  }
+ },
+ "provenance": {
+  "frozen_tag": "r13-theory-pred",
+  "frozen_commit": "997d2c4d9d25b1d2ef26fdbc8c7b35a9860ceff0",
+  "git_head": "5271ff6b207749058a893daa2426d9b05422cf7a",
+  "frozen_code_check": {
+   "ok": true,
+   "modified_tracked": [],
+   "added_committed": [
+    "analysis/theory/paper/__init__.py",
+    "analysis/theory/paper/figs.py"
+   ],
+   "untracked_new": [
+    "analysis/theory/cells/h200_600k.yaml",
+    "analysis/theory/pred2/__init__.py",
+    "analysis/theory/pred2/b2.py",
+    "analysis/theory/pred2/blind_tables.py",
+    "analysis/theory/pred2/common.py",
+    "analysis/theory/pred2/conditional.py",
+    "analysis/theory/pred2/e0f.py",
+    "analysis/theory/pred2/freeze_table.py",
+    "analysis/theory/pred2/h200_n2.py",
+    "analysis/theory/pred2/prop_e.py",
+    "analysis/theory/pred2/run_all.py",
+    "analysis/theory/pred2/shed.py",
+    "analysis/theory/pred2/toolslow.py"
+   ]
+  },
+  "sha256": {
+   "analysis/theory/predict.py": "e6f3d28949a0a0f81938d02437b38cf726ca081aead6018ccaaedbbb117a8d8c",
+   "analysis/theory/merged/spec.py": "99c58069dcf5622e2786e87975e9e3979ed22eb512a00ff79bcfa9e79fd57c02",
+   "analysis/theory/merged/extras.py": "fa22922b9bcae7fde0edf45d47ec749e9a089f0b993e7c6953065eab799efe42",
+   "analysis/theory/fluid_rigorous/model.py": "2303c1436eee20f159b3ba63a17f17b01fdd3867aad8fab44ae9368383b17ad0",
+   "analysis/theory/fluid_rigorous/edge.py": "2e38bd101ba605d0e87ee3c4b57fa26f5026621d93d0cdbf11be491efa892d86",
+   "analysis/theory/fluid_rigorous/trapped.py": "09e2f13f273fda826a1f249550ca3d0e4a65af9c889a070a0951ca1ea357593f",
+   "analysis/theory/fluid_rigorous/oos.py": "965bb5a8b0460f6025c77821d5f96a72d3df5bcc17966e1fbbe323b554d9e26d",
+   "analysis/theory/merged/fold.py": "d2e63bd96ca101fd5e335831ae691adc9f106aaa341fc46324f4703e4df4589a",
+   "analysis/theory/merged/scoring.yaml": "8ac558a6c7262839cb0d6013a57b26480be3bffc29c11cd74fb23870a1a99ecb",
+   "analysis/theory/pred2/__init__.py": "d9e126bbf2360296b42bb2f68d1e693edea2ef99734870d4c521e007107c0d1d",
+   "analysis/theory/pred2/common.py": "1ca52b632be238a016fb9136ea6fd1c9ec878d6d57a7f675f2c149b41c88a548",
+   "analysis/theory/pred2/b2.py": "33ec1bf7566c39ee1dcaa706835e97a432a3c22d5e22278efb5c6966a6df45bd",
+   "analysis/theory/pred2/h200_n2.py": "080df2939f1ae3f3211211d563a71f4dbcc98a4f081364357701fb7c45b83dd1",
+   "analysis/theory/pred2/toolslow.py": "2199075a663cb65cce81676e41e1442e77d87fafd26f10a4a05adfd7ccfae5e2",
+   "analysis/theory/pred2/shed.py": "b4cc9067e992c04d5a3011f95b6500d58f8abfc492c3ea122a3411448b9c9e86",
+   "analysis/theory/pred2/e0f.py": "94015645aaeb8e66c0767e4a94a90aaf07c0d7c1d546367cdd015e1b1b50e8b4",
+   "analysis/theory/pred2/prop_e.py": "b1862aba96e51c23744b3328723507623b53edf71e1461f3ca22f7da03e3ae94",
+   "analysis/theory/pred2/conditional.py": "95441c93da0527c7131f6457228f5812da93a1cf2bf2d5b49bd1a5702c32ac4c",
+   "analysis/theory/pred2/run_all.py": "62519f31af24085eca196c69e35a493ebf0fad84e6abc11fd27e9a794d325370",
+   "analysis/theory/pred2/freeze_table.py": "3ffc0889a26dec44d9e38cd6091916d90f501e19bb20a32b7d31661190fc97d4",
+   "analysis/theory/pred2/blind_tables.py": "8a49e4c67a5a36971f1a491ccc83882b8f20486ec721c3ceae60397691dc4474",
+   "configs/agentload_e0_cap.yaml": "e9ca2816dda43c825572a9d0919d960295cb7e6e91de625e909eb20cd4503ef1"
+  },
+  "python": "3.12.10",
+  "numpy": "1.26.4",
+  "created": "2026-10-31T04:06:20-0500"
+ }
+}
