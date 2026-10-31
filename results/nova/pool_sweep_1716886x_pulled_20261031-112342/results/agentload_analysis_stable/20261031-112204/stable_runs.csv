@@ -1,0 +1,7 @@
+label,seed,rate_mult,stable,final_queue,trend_rise,aborted,queue_source,run_dir
+sglang-fcfs-r1-p150k,0,1.1,True,0.0,0.0,False,engine_waiting,results/agentload_e0_cap/20261031-091834
+sglang-fcfs-r1-p150k,0,1.2,True,3.25,1.410994451667402,False,engine_waiting,results/agentload_e0_cap/20261031-092007
+sglang-fcfs-r1-p150k,0,1.3,False,24.15,11.915978736309826,False,engine_waiting,results/agentload_e0_cap/20261031-093158
+sglang-fcfs-r1-p150k,0,1.45,False,53.85,36.03971879833192,False,engine_waiting,results/agentload_e0_cap/20261031-094502
+sglang-fcfs-r1-p150k,0,1.6,False,74.3,50.17767560703646,False,engine_waiting,results/agentload_e0_cap/20261031-100310
+sglang-fcfs-r1-p150k,0,1.8,False,125.4,83.56033652577338,False,engine_waiting,results/agentload_e0_cap/20261031-101017

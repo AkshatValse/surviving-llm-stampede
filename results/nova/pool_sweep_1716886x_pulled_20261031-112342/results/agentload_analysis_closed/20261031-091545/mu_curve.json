@@ -1,0 +1,101 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "sglang-fcfs-r1-p600k": {
+      "n": [
+        24,
+        32,
+        40
+      ],
+      "n_runs": [
+        1,
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.2655533088608655,
+        0.3433307450643319,
+        0.388885901653199
+      ],
+      "mu_turns_based": [
+        0.2527650992394658,
+        0.32039774764233164,
+        0.37459395358313896
+      ],
+      "turns_per_s": [
+        3.7310795445806955,
+        4.7294087908295435,
+        5.529401970220413
+      ],
+      "hit_frac_turns": [
+        0.9288266825491364,
+        0.9275226124750382,
+        0.9296694463980709
+      ],
+      "hit_frac_followup": [
+        1.0,
+        1.0,
+        0.9998919386211368
+      ],
+      "cached_frac_tokens": [
+        0.9320754151031206,
+        0.9317841819855243,
+        0.9334584795573009
+      ],
+      "queue_mean": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 40,
+        "turns_based": 40
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 40,
+      "mu_max": 0.388885901653199,
+      "argmax_margin_rel": 0.11714273105609334,
+      "runner_up_n": 32,
+      "argmax_ambiguous": false,
+      "n_inf": 300,
+      "mu_n_inf": null,
+      "missing_n": [
+        16,
+        20,
+        48,
+        96,
+        300
+      ],
+      "complete_grid": false,
+      "extra_n": [
+        40
+      ],
+      "mu_by_n": {
+        "24": 0.2655533088608655,
+        "32": 0.3433307450643319,
+        "40": 0.388885901653199
+      },
+      "monotone_non_decreasing_to_argmax": true
+    }
+  },
+  "primary_label": "sglang-fcfs-r1-p600k",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 40,
+  "mu_300": null,
+  "mu_max": 0.388885901653199,
+  "notes": [
+    "primary cell sglang-fcfs-r1-p600k: n grid incomplete, missing [16, 20, 48, 96, 300]; n_cap is the argmax over the points that exist",
+    "mu(n=300) missing: the recovery threshold cannot be predicted"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

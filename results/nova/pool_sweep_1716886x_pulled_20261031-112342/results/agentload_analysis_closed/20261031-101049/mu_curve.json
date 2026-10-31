@@ -1,0 +1,97 @@
+{
+  "estimator": "sessions",
+  "cells": {
+    "sglang-fcfs-r1-p150k": {
+      "n": [
+        20,
+        24,
+        300
+      ],
+      "n_runs": [
+        1,
+        1,
+        1
+      ],
+      "mu_sessions": [
+        0.06222183395872415,
+        0.05611077595380652,
+        0.10666543729817064
+      ],
+      "mu_turns_based": [
+        0.06642814037482479,
+        0.062664523081294,
+        0.10805336147731798
+      ],
+      "turns_per_s": [
+        0.9805494369388227,
+        0.924994474882058,
+        1.5949816170992077
+      ],
+      "hit_frac_turns": [
+        0.13257790368271954,
+        0.04924924924924925,
+        0.0
+      ],
+      "hit_frac_followup": [
+        0.14138972809667674,
+        0.052496798975672214,
+        0.0
+      ],
+      "cached_frac_tokens": [
+        0.10298155602915253,
+        0.03710681045497962,
+        0.0
+      ],
+      "queue_mean": [
+        6.263888888888889,
+        11.68888888888889,
+        279.72222222222223
+      ],
+      "n_aborted_runs": 0,
+      "hardware": [
+        "NVIDIA A100 80GB PCIe, 81920 MiB"
+      ],
+      "argmax_n_by_estimator": {
+        "sessions": 300,
+        "turns_based": 300
+      },
+      "argmax_estimators_agree": true,
+      "estimator": "sessions",
+      "argmax_n": 300,
+      "mu_max": 0.10666543729817064,
+      "argmax_margin_rel": 0.41666358349246385,
+      "runner_up_n": 20,
+      "argmax_ambiguous": false,
+      "n_inf": 300,
+      "mu_n_inf": 0.10666543729817064,
+      "missing_n": [
+        16,
+        32,
+        48,
+        96
+      ],
+      "complete_grid": false,
+      "extra_n": [],
+      "mu_by_n": {
+        "20": 0.06222183395872415,
+        "24": 0.05611077595380652,
+        "300": 0.10666543729817064
+      },
+      "monotone_non_decreasing_to_argmax": false
+    }
+  },
+  "primary_label": "sglang-fcfs-r1-p150k",
+  "primary_label_explicit": true,
+  "primary_hardware": [
+    "NVIDIA A100 80GB PCIe, 81920 MiB"
+  ],
+  "fcfs_substr": "fcfs",
+  "n_cap": 300,
+  "mu_300": 0.10666543729817064,
+  "mu_max": 0.10666543729817064,
+  "notes": [
+    "primary cell sglang-fcfs-r1-p150k: n grid incomplete, missing [16, 32, 48, 96]; n_cap is the argmax over the points that exist"
+  ],
+  "warmup_s": 900.0,
+  "inputs_unverified_start": []
+}

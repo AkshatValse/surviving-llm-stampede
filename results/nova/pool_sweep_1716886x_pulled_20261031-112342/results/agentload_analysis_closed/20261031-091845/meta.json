@@ -1,0 +1,150 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "closed",
+    "--run-dirs",
+    "results/agentload_c_closed/20261031-065436",
+    "results/agentload_c_closed/20261031-074239",
+    "results/agentload_c_closed/20261031-083042",
+    "--warmup-s",
+    "900",
+    "--primary-label",
+    "sglang-fcfs-r1-p600k",
+    "--out-root",
+    "results"
+  ],
+  "git": {
+    "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+    "dirty": false,
+    "branch": "main",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    0,
+    0
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova22-gpu-1",
+  "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+  "start_time": "2026-10-31T09:18:45",
+  "end_time": "2026-10-31T09:18:45",
+  "wall_s": 0.539714,
+  "slurm_env": {
+    "SLURM_JOB_ID": "17168866",
+    "SLURM_JOB_NAME": "pm-pool-c",
+    "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+    "SLURM_JOB_PARTITION": "instruction",
+    "SLURM_JOB_QOS": "instruction",
+    "SLURM_JOB_NODELIST": "nova22-gpu-1",
+    "SLURM_CPUS_PER_TASK": "16",
+    "SLURM_MEM_PER_NODE": "49152",
+    "SLURM_GPUS_ON_NODE": "1",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+  },
+  "inputs": [
+    {
+      "run_dir": "results/agentload_c_closed/20261031-065436",
+      "label": "sglang-fcfs-r1-p600k",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T06:54:36",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168866",
+        "SLURM_JOB_NAME": "pm-pool-c",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-1",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_c_closed/20261031-074239",
+      "label": "sglang-fcfs-r1-p600k",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T07:42:39",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168866",
+        "SLURM_JOB_NAME": "pm-pool-c",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-1",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_c_closed/20261031-083042",
+      "label": "sglang-fcfs-r1-p600k",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T08:30:42",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168866",
+        "SLURM_JOB_NAME": "pm-pool-c",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-1",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "n_runs": 3,
+  "mu_curve": {
+    "estimator": "sessions",
+    "primary_label": "sglang-fcfs-r1-p600k",
+    "n_cap": 300,
+    "mu_300": 0.10222079131895138,
+    "mu_max": 0.10222079131895138,
+    "notes": [
+      "primary cell sglang-fcfs-r1-p600k: n grid incomplete, missing [16, 20, 24, 32, 48]; n_cap is the argmax over the points that exist"
+    ]
+  },
+  "guard_problems": []
+}
