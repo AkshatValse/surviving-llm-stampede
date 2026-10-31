@@ -532,6 +532,24 @@ def test_decision_rules():
     assert r14_cells.RULES["toolslow"] == r14_prereg.TOOLSLOW_RULE and r14_cells.RULES["shed"] == r14_prereg.SHED_RULE
 
 
+def test_decision_does_not_let_a_resubmitted_seed_vote_twice():
+    L = {k: v for k, v in ((c["key"], lab) for lab, c in r14_cells.CELLS.items())}
+    rows = ([_rec(L["d10"], 0, good=True), _rec(L["d10"], 0, good=True), _rec(L["d10"], 1, stuck=True),
+             _rec(L["d10"], 2, stuck=True)] + [_rec(L["d30"], s, stuck=True) for s in (0, 1, 2)])
+    d = r14_cells.decision(rows)
+    assert d["cells"]["d10"]["duplicate_seeds"] == [0] and d["toolslow"]["d10_good_majority"] is None
+    assert d["toolslow"]["pass"] is None
+    rows = rows[1:]                                                                          # drop the duplicate
+    assert r14_cells.decision(rows)["toolslow"]["pass"] is False                            # one vote for seed 0: 1 of 3
+
+
+def test_cli_checks_the_binding_of_every_cell_by_default():
+    ap_default = [str(REPO / c["out"]) for c in r14_prereg.CELLS.values()]
+    assert sorted(Path(x).name for x in ap_default) == sorted(Path(r14_cells.CELLS[lab]["e2"]).name.replace(
+        "agentload_e2_", "agentload_prereg_2026-10-31_") for lab in r14_cells.CELLS)
+    assert all(Path(x).is_file() for x in ap_default)
+
+
 def test_frozen_endpoints_are_the_basin_files_and_agree_with_the_registered_constants():
     ep = basin.load_endpoints(REPO / r14_cells.ENDPOINTS)
     assert ep["eval_window_s"] == [5700.0, 8700.0] and ep["stuck_hit_below"] == 0.2 and ep["good_hit_above"] == 0.8
