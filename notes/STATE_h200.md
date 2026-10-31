@@ -15,19 +15,15 @@ Cell `sglang-fcfs-r1-h200` (E0a `sglang-nocache-h200`):
 ## Blindness scope (agreed with the lead)
 The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell operator and Akshat at about 22:28 CDT, and not by the lead or the theory agents. n ≥ 40 and the E0b edge are fully blind. The read hold (lead, ~22:40 CDT Fri) lasted until "theory predictions frozen" (~02:25 CDT Sat; tag `r13-theory-pred` pushed 02:05:30). Only `sacct` states were read during the hold.
 
-## Still on Nova (not pulled)
-- **E0b reseeds** (lead's request (a), 2026-10-31 ~03:05 CDT), label `sglang-fcfs-r1-h200`, same CALIB_FILE, nice 0:
-  - 17169668: 1.3 ×, seed 1
-  - 17169669: 1.3 ×, seed 2
-  - 17169670: 1.4 ×, seed 1
-  - 17169671: 1.4 ×, seed 2
+- **E0b reseeds 17169668–71 (1.3 / 1.4 ×, seeds 1, 2): pulled.** `results/nova/h200_e0b_reseeds_1716966x_pulled_20261031-050308/`; ten-run bracket `agentload_analysis_stable_supp10/20261031-050254`. 1.3 × is stable 3/3 and 1.4 × is stable 2/3; hi stays 1.3. LOG entry "E0b reseeds".
 
-  They are supplementary: 1.4 × seed 0 is unstable, so hi cannot rise above 1.3.
+## Still on Nova (not pulled)
 - **New cell `sglang-fcfs-r1-h200-p600k`** (lead's request (b): the 2×2 test of the r13 window law; KV_TOKENS=600000; reuses the H200 E0a calibration):
   - Stage C 17169672–80 (n = 32, 40, 48, 56, 64, 72, 80, 96, 300), `--begin=2026-10-31T05:00:00`, nice 0.
   - E0b 17169682–87 (1.25, 1.5, 1.75, 2.0, 2.5, 3.0 ×, one multiple per job, same `--begin`, nice 0). Submitted ~03:15 CDT on the lead's instruction without waiting for `r13-theory-pred2`.
   - Grid reasoning (the lead's, recorded as asked): the grid is a design choice, not a prediction. The default grid applies when R_bound = (n_peak/68.8)/λ_ref ≥ 3, i.e. n_peak ≥ 3 × 68.8 × 0.19388 = 40.0. The frozen closed form n_b = λ_miss·z̄′·(E[T]−1) + M/E_S gives 13.55 + 2 × 27.76 ≈ 69 at 600k, and the 300k H200 peak was already at n = 32, so n_peak ≥ 40 comfortably.
-  - The `--begin` keeps every p600k result after the pred2 freeze; the lead will say if pred2 slips past 05:00.
+  - The `--begin` keeps every p600k result after the pred2 freeze. Tag `r13-theory-pred2` (tag object `6f0b504`, commit `cfa7712`, committed 04:20:05 CDT) was on GitHub by 04:21:51 CDT Sat (seen by `git ls-remote`); the lead reports GitHub's push record as 04:20:20 CDT, before 05:00. Its files are read only after the p600k combine. The lead's message of ~04:25 quoted the H200-600k headline predictions (0.5-hit crossing, n_b, edge, the theory's own registration consequence), so the operator knew them before any p600k result existed. That does not affect blindness in time, and the registration is mechanical (rule of `836063a`).
+- The n = 36/44/52 points (17169612–14) are blind in time against `r13-theory-pred`, whose curve already covered them.
   - If the window registers: register on `r12/h200` and submit the 18 E2 jobs at nice 58, `--time=03:10:00`, `--deadline=2026-11-01T11:40:00`, before ~14:00 Sat.
 - **`--deadline` on every job submitted from 03:00 Sat on** (2026-11-01T10:00 for the 1:30 jobs), so Slurm drops any that have not started by Sun 08:30.
 - **Staging dirs** `/work/classtmp/avalse/swapp/pull_staging_h200_*` (uncompressed copies; each archive deleted after its hash check).

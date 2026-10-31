@@ -53,7 +53,7 @@ Setup facts:
 | 1.99 (turns-based 1.89) | μ_max / λ_ref (A100: 3.26) | MU, CAL |
 | ≈ 38.8 (A100 ≈ 32.1) | 0.5-hit crossing, linear interpolation | MU |
 | 1.13 × λ_miss (A100: 0.68 ×) | minimum μ over the grid (sessions-based) | MU |
-| stable 1.1, 1.2, 1.3 × (final queue 0); unstable 1.4 × (50.4, rise +48.6), 1.55 × (177.7, +115.6), 1.75 × (272.6, +170.7) | E0b outcomes | BR `stable_runs.csv` |
+| stable 1.1, 1.2, 1.3 × (final queue 0); unstable 1.4 × (50.4, rise +48.6), 1.55 × (177.7, +115.6), 1.75 × (272.6, +170.7) (seed 0); reseeds 1.3 × seeds 1, 2 stable; 1.4 × seeds 1, 2 stable (final queue 0) | E0b outcomes (1.3 × stable 3/3, 1.4 × 2/3) | BR `stable_runs.csv`; reseeds `agentload_analysis_stable_supp10/20261031-050254` |
 | largest all-stable 1.3 × (0.252 sessions/s), first unstable 1.4 × (0.271), monotone | E0b bracket (A100: 2.0 ×, 2.5 ×) | BR |
 | (1, 1.3) × λ_ref = (0.194, 0.252) sessions/s; 0.3 λ_miss wide (A100: (0.0715, 0.143), 1.0 λ_miss wide) | metastable window, `hi_source: lambda_cap_e0b` | RC |
 | 1.10, 1.20 vs band (1.1, 1.17) | rule's points vs `boundary_margin_rel` band | RC `fill_problems` |
@@ -97,7 +97,8 @@ F2 P(unstable) at the six E0b multiples is 0.04, 0.12, 0.28, 0.52, 0.84 and 0.98
 
 ## Caveats
 
-- **One run per n and per multiple.** The 1.4 × run ended at queue 50.4, just above the threshold of 50 (its trend +48.6 is clearly rising). One more seed could move the edge, but even at hi = 1.4 the rule gives 1.15 and 1.25 against a band of (1.1, 1.26). That registers only because 1.25 < 1.26.
+- **The edge is stochastic.** The 1.4 × seed-0 run ended at queue 50.4, just above the threshold of 50 (its trend +48.6 is clearly rising). The reseeds 17169668–71 (pull `results/nova/h200_e0b_reseeds_1716966x_pulled_20261031-050308/`; ten-run bracket `agentload_analysis_stable_supp10/20261031-050254`) give 1.3 × stable in 3/3 seeds and 1.4 × stable in 2/3. So hi stays 1.3 under the all-stable rule, and the registration conclusion is unchanged. Quote the edge as "stable at 1.3 × in 3/3 seeds, at 1.4 × in 2/3". The frozen r13 F2 gives P(stable) 0.72 and 0.48 there. Even if 1.4 × had been all-stable, the rule would give 1.15 and 1.25 against a band of (1.1, 1.26), and that registers only because 1.25 < 1.26.
+- **One run per n** on the Stage C curve.
 - **Saturation.** POP 32 may not quite saturate the H200 in turns (POP-64 turns ratio 1.10; tokens 1.046 is within the runbook's 5 %). If λ_ref is low, the window in λ_miss units is narrower still.
 - **Backend.** fa3 on the H200 vs FlashInfer on the A100, the deployed default per GPU. The comparison is GPU-plus-default-backend, not GPU alone.
 - **Blindness.** The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell operator and Akshat at about 22:28 CDT, and not by the lead or the theory agents. n ≥ 40 and the E0b edge are fully blind.
@@ -106,8 +107,8 @@ F2 P(unstable) at the six E0b multiples is 0.04, 0.12, 0.28, 0.52, 0.84 and 0.98
 
 ## Suggested text (one paragraph, e.g. for the generality / limits section)
 
-> **A faster GPU at the same pool narrows the window.** We repeated the 300k-token SGLang cell on one H200 NVL (same model, revision, engine version, pool and workload; SGLang's Hopper-default fa3 attention). The all-miss rate rises 2.71 × (λ_miss = 0.194 sessions/s), but the peak of the closed-loop curve rises only 1.66 × (μ_max = 0.386 at n = 32), and the from-empty edge 1.76 × (stable at 1.3 λ_miss, unstable from 1.4 λ_miss). The metastable window therefore shrinks from (1, 2.0) λ_miss on the A100 to (1, 1.3) λ_miss on the H200. That is too narrow for our pre-registered rule to place two test points at least 10 % from its edges, so we ran no kill test on this GPU. The compression follows from the window being the gap between a pool-limited peak and a compute-limited all-miss rate: faster compute raises the floor more than the peak. Our first-principles model, frozen before the H200 curve was read, predicted μ_max = 0.372 (turns-based; measured 0.367), a peak at n ≈ 32.5 and an edge at 1.39 λ_miss.
+> **A faster GPU at the same pool narrows the window.** We repeated the 300k-token SGLang cell on one H200 NVL (same model, revision, engine version, pool and workload; SGLang's Hopper-default fa3 attention). The all-miss rate rises 2.71 × (λ_miss = 0.194 sessions/s), but the peak of the closed-loop curve rises only 1.66 × (μ_max = 0.386 at n = 32), and the from-empty edge 1.76 × (stable at 1.3 λ_miss in 3/3 seeds; at 1.4 λ_miss in 2/3; unstable at 1.55 and above). The metastable window therefore shrinks from (1, 2.0) λ_miss on the A100 to (1, 1.3) λ_miss on the H200. That is too narrow for our pre-registered rule to place two test points at least 10 % from its edges, so we ran no kill test on this GPU. The compression follows from the window being the gap between a pool-limited peak and a compute-limited all-miss rate: faster compute raises the floor more than the peak. Our first-principles model, frozen before the H200 curve was read, predicted μ_max = 0.372 (turns-based; measured 0.367), a peak at n ≈ 32.5 and an edge at 1.39 λ_miss.
 
 ## Suggested table row (cells table: GPU, pool, λ_miss, μ_max/λ_miss, peak n, edge, window, test)
 
-| H200 NVL | 300k | 0.194 | 1.99 | 32 | 1.3 × (1.4 × unstable) | (1, 1.3) | not registrable (rule's points 1.10/1.20 outside (1.1, 1.17)); no E2 |
+| H200 NVL | 300k | 0.194 | 1.99 | 32 | 1.3 × (3/3 stable; 1.4 × 2/3) | (1, 1.3) | not registrable (rule's points 1.10/1.20 outside (1.1, 1.17)); no E2 |
