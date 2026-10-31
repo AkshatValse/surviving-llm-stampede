@@ -43,7 +43,9 @@
 #              closed = Stage C, cache ON, one closed-population run per n in N_LIST)
 #  POLICY      fcfs | lpm                                   (default fcfs)
 #  REFRESH     1 | 0   SGLANG_ENABLE_WAITING_PREFIX_REFRESH (default 1 = shipped default)
-#  LPM_INF     1 -> use ENV_SGLANG_PATCHED (WAITING_QUEUE_PREFIX_MATCH_MAX patched to a huge value; patch NOT applied here)
+#  LPM_INF     1 -> stock ENV_SGLANG plus the job-local hook slurm/hooks/lpm_inf/sitecustomize.py on the server command only
+#              (WAITING_QUEUE_PREFIX_MATCH_MAX 128 -> 1e9: LPM never falls back to FCFS; requires POLICY=lpm; CPU self-test in
+#              the flag check, scheduler-child marker checked after /health). Default 0: commands identical to the stock cells
 #  SEEDS       space-separated seeds                        (default "0")
 #  MULTS       space-separated multiples of lambda_miss     (cap/burst)
 #  N_LIST      space-separated closed populations n         (closed; REQUIRED, no default)
@@ -68,7 +70,7 @@
 #  ALLOW_HW_MISMATCH=1  let cap/burst run on hardware different from the calibration's (default: refuse)
 #  PORT, GAP_S, POP, POP_CHECK, MISS_RUN_S, CAP_RUN_S, BURST_RUN_S, T_BURST, TRAP_MIN_S, HIT_EVAL_FROM_S, STRICT_FLAGS,
 #  STRICT_FLUSH (default 1; 0 for smoke), RUN_OVERHEAD_S, TIME_MARGIN_S, STARTUP_ALLOW_S (wall-time budget check)
-#  ENV_SGLANG / ENV_SGLANG_PATCHED / ENV_GEN / HF_HOME : env prefixes and cache dir (PLACEHOLDERS from notes/NOVA_ENV_PLAN.md)
+#  ENV_SGLANG / ENV_GEN / HF_HOME : env prefixes and cache dir (PLACEHOLDERS from notes/NOVA_ENV_PLAN.md; LPM_INF=1 uses ENV_SGLANG too)
 
 # ---- BILLING GUARD (identical in all .sbatch files; keep it before anything else) ----------------------------
 # SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is the
