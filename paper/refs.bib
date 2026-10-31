@@ -15,6 +15,11 @@
 % the USENIX presentation pages, the arXiv API (export.arxiv.org/api/query) and the venue
 % programmes named in each comment; new entries added with the source of each field and of the
 % claim the text makes; entries that no section cites were removed.
+%
+% Revised 2026-10-31 (second novelty review, first-principles model): 27 entries added at the end of
+% the file, each re-checked against a record fetched that day (see the note above that block); the
+% comments above rajib2026agentservesim and park2026servetwin now give the body-level facts the text
+% cites, from the novelty review's reading of the papers.
 
 % ---------------------------------------------------------------- classical theory
 
@@ -341,9 +346,11 @@
 }
 
 % added 2026-10-30. arXiv API: v3 of 22 Apr 2026, eight authors in this order ("Srivarshinee S" is a
-% single name). FULL for the claim (arXiv HTML v3, Sec. 3 Finding 3 and Fig. 5): the workload-agnostic
-% LRU eviction of vLLM and SGLang thrashes the contexts of first iterations that are waiting on tool
-% calls when agentic requests run concurrently, so hit rates collapse despite context reuse. The
+% single name). FULL for the claim (arXiv HTML v3, Secs. 3-5): built and evaluated on vLLM v0.11.0 only
+% (Sec. 4.4), under Poisson arrivals (Sec. 5.1); it observes that prefix hit rates collapse despite context
+% reuse (global hit rate 21.8% for the baseline, Sec. 5.4.3) and attributes this to workload-agnostic LRU
+% eviction, as used by vLLM and SGLang, of the contexts of first iterations waiting on tool calls (Sec. 3
+% Finding 3; Fig. 5 is a three-request schematic, not a measurement). No SGLang experiment. The
 % authors' Zenodo artifact record (doi 10.5281/zenodo.23270949, 9 Oct 2026) calls it the ASPLOS '27
 % paper with DOI 10.1145/3845814.3850086, which did not resolve on 2026-10-30; no venue is printed.
 @misc{biswas2026sutradhara,
@@ -747,6 +754,8 @@
 }
 
 % verified 2026-10-25 at https://arxiv.org/abs/2609.33762: ABSTRACT (v1, 27 Sep 2026; a stack-distance model sizes the host KV tier for the reuse working set of the agent pool)
+% 2026-10-31, the fix-up review's reading of https://arxiv.org/html/2609.33762v1: FULL for the claims (Secs. 1, 2, 4, 5.1: median turn gap 9.0 s from waiting behind other agents; closed loop with active pool A = 8-16; working-set principle and load control for the host tier)
+% 2026-10-31, fix-up 3: also FULL for Sec. 3.2 (LRU survival rule, Eq. 4; Eq. 5, the backlogged-pool working-set scale: with a call waiting for each of A agents, the other agents' contexts are referenced before one agent returns, so the reuse working set is about (A-1) mean contexts; pressure ratio A*Nbar/K_G) and App. D ("Relation to the backlogged-pool model"); Sec. 6 lists queue-stretched reuse distances among its new quantities. The paper credits Eq. 5 as the cycle argument behind its trapped identity
 @misc{shao2026efficientagent,
   author       = {Shao, Kunming and Chen, Jierun and Yu, Jiangnan and Li, Xiao-Hui and Tao, Chaofan and Wang, Yanli and Lin, Huanxin and Cheng, Kwang-Ting and Tsui, Chi Ying and Bai, Haoli},
   title        = {{EfficientAgent}: What Makes {KV} Cache Offloading Work for Concurrent Agents?},
@@ -811,6 +820,7 @@
   howpublished = {arXiv:2608.11152 (v1, 11 August 2026)},
 }
 
+% FULL for the claim (novelty review 2026-10-31, v3 Secs. 1, 3.4, 4-5): KV retained across tool gaps; successor turns released by simulated predecessor completions, so call timing depends on the policy; validated against vLLM 0.19 in 20 paired cells (within 5.5% mean JCT); no metastability or burst analysis. The v3 abstract (arxiv.org/abs/2606.09613v3, re-read 2026-10-31) states the 20 paired simulator-real cells and the 5.5% mean JCT error; the vLLM version is from the body.
 % verified 2026-10-25 at https://arxiv.org/abs/2606.09613: ABSTRACT (v3, 5 Sep 2026, "Preprint"; a Retention Plane governs KV state across tool gaps; validated against vLLM). The title is that of v3; ServeTwin's reference list cites v1 as "AgentServeSim: A Hardware-aware Simulator for Multi-Turn LLM Agent Serving".
 @misc{rajib2026agentservesim,
   author       = {Rajib, Rakibul Hasan and Zheng, Mengxin and Lou, Qian},
@@ -819,6 +829,7 @@
   howpublished = {arXiv:2606.09613 (v3, 5 September 2026)},
 }
 
+% FULL for the claim (novelty review 2026-10-31, v1 Sec. 5, W2 pool scaling): a 1.4x pool lifts the hit rate from 22% to 93% and cuts queueing from 10.46 s to about 0.01 s at fixed users; multi-turn sessions with tool delays and a prefix cache across rounds. These are body-level facts; the abstract (re-read 2026-10-31) does not state them.
 % verified 2026-10-25 at https://arxiv.org/abs/2610.02732: ABSTRACT (v1, 2 Oct 2026; a closed-loop simulator with a stateful serving loop that covers multi-turn agent workloads and KV-cache evolution). The paper text, read in part, models multi-turn sessions with optional tool-execution delays and a prefix cache across rounds, but the abstract does not say that KV is retained across tool gaps, so the draft cites only what the abstract says.
 @misc{park2026servetwin,
   author       = {Park, Sungjoon and Jung, Changue and Joo, Kyungno and Kang, Mincheol and Ahn, Jaehyung and Lee, Sehwan and Kim, Sangjoon},
@@ -863,4 +874,323 @@
   year      = {2024},
   doi       = {10.52202/079017-1601},
   note      = {arXiv:2405.15793},
+}
+
+% ---------------------------------------------------------------- added 2026-10-31 (second novelty review, first-principles model)
+%
+% Each entry below was re-checked on 2026-10-31 against a record fetched that day: Crossref
+% (api.crossref.org/works/<doi>) for every DOI; the arXiv API (export.arxiv.org/api/query) for every
+% arXiv identifier (title, authors, version and v1 date); the USENIX presentation page (Brooker); the
+% VLDB PDF (www.vldb.org/conf/1990/P419.PDF, Dan); the ITC 24 archive PDF (Fricker); the Open Library
+% record of the ISBN (Karlin). OpenReview's bot check blocked a fresh fetch of the AgentKV record; its
+% fields are from the OpenReview API record that the novelty review saved earlier the same day.
+% The evidence class says how much of each work was read for the claim the text makes.
+
+% FULL (novelty review, arXiv HTML v1: Secs. 3.1, 3.3-3.5, 6.2.4, 7, 8.1): vLLM v0.14.0 on one H100 NVL,
+% Qwen3-Coder-30B FP8, context caching on, Poisson arrivals (0.08 agent jobs/s); thrashing when the controller lowers the
+% GPU clock (Sec. 3.4) or the arrival rate rises (App. A.4); Eq. 13 bounds aggregate context at beta = 0.95 of capacity,
+% readmitting below gamma = 0.9, and defers new agents when bursty arrivals have already broken the bound (Sec. 6.2.4);
+% Eq. 12 (Sec. 6.2.3) sets the maximum clock when the minimum per-agent throughput falls below the SLO target. Sec. 8.1
+% (Figs. 10-11, 0.05 jobs/s, SLO 20 tokens/s): the no-control baseline at the maximum clock does not thrash; KAIROS without
+% thrashing avoidance (the SLO boost is a separate mechanism, so presumably still on) drops to 2.3 tokens/s P5 and 0.046 jobs/s, "a persistent thrashing regime ... making
+% recovery difficult"; Fig. 11 shows context usage, job throughput and pending agents, no frequency trace, so the clock
+% during the thrashing is not reported; one run per configuration, no burst trigger. Same first author as
+% yuan2026agentic: cite as "KAIROS" in prose. arXiv API 2026-10-31: v1 only, submitted 2026-04-17, no journal reference.
+@misc{yuan2026kairos,
+  author       = {Yuan, Yichao and Chowdhury, Mosharaf and Talati, Nishil},
+  title        = {{KAIROS}: Stateful, Context-Aware Power-Efficient Agentic Inference Serving},
+  year         = {2026},
+  howpublished = {arXiv:2604.16682 (v1, 17 April 2026)},
+}
+
+% ABSTRACT (OpenReview API record of note zLtopd1ATE: "ICLR 2027 Conference Submission", number 47397, created
+% 2026-09-18, opened 2026-10-03, modified 2026-10-05, readers "everyone", authors anonymous; PDF behind a browser check).
+% Not arXiv:2609.14872 and not OpenReview s80e8otSxP or a4Ub0JNzbj ("AgentKV: Phase-Aware KV Eviction for Agentic
+% LLMs", a different paper by other authors).
+@misc{anon2026agentkv,
+  author       = {Anonymous},
+  title        = {{AgentKV}: Predictive Admission Prevents {KV}-Cache Collapse in Agentic {LLM} Serving},
+  year         = {2026},
+  howpublished = {ICLR 2027 submission, \url{https://openreview.net/forum?id=zLtopd1ATE}},
+}
+
+% FULL (novelty review, Secs. 1, 2.2, 5.3): "revisit time > eviction time" for LLM prefix caches, revisit times set by
+% routing; a single characteristic-time model misses a 70B engine's hit rate by 14.3 points. arXiv API 2026-10-31: v1
+% only, 2026-08-20, single author Huang Cheng.
+@misc{cheng2026cacheroute,
+  author       = {Cheng, Huang},
+  title        = {{CacheRoute}: Planned Prefix-Affinity Routing for Large-Scale {LLM} Serving},
+  year         = {2026},
+  howpublished = {arXiv:2608.19677 (v1, 20 August 2026)},
+}
+
+% META (Crossref 10.1109/JSAC.2002.801752: vol. 20, no. 7, pp. 1305-1314, September 2002): the Che approximation.
+@article{che2002hierarchical,
+  author  = {Che, Hao and Tung, Ye and Wang, Zhijun},
+  title   = {Hierarchical {Web} Caching Systems: Modeling, Design and Experimental Results},
+  journal = {IEEE Journal on Selected Areas in Communications},
+  volume  = {20},
+  number  = {7},
+  pages   = {1305--1314},
+  year    = {2002},
+  doi     = {10.1109/JSAC.2002.801752},
+}
+
+% META (Crossref 10.1016/S0022-0000(77)80014-7: vol. 14, no. 2, pp. 222-250, April 1977)
+@article{fagin1977asymptotic,
+  author  = {Fagin, Ronald},
+  title   = {Asymptotic Miss Ratios over Independent References},
+  journal = {Journal of Computer and System Sciences},
+  volume  = {14},
+  number  = {2},
+  pages   = {222--250},
+  year    = {1977},
+  doi     = {10.1016/S0022-0000(77)80014-7},
+}
+
+% META (arXiv API: 1202.3974 v1 only, 17 Feb 2012, three authors in this order; the ITC 24 archive copy
+% archive.itc-conference.org/itc24/uploads/media/ITC24S2P4.pdf has the same title and authors, 6 pages). Not in Crossref.
+@misc{fricker2012versatile,
+  author       = {Fricker, Christine and Robert, Philippe and Roberts, James},
+  title        = {A Versatile and Accurate Approximation for {LRU} Cache Performance},
+  year         = {2012},
+  howpublished = {24th International Teletraffic Congress (ITC 24); arXiv:1202.3974 (v1, 17 February 2012)},
+}
+
+% META (Crossref 10.1109/INFOCOM.2014.6848145: pp. 2040-2048, April 2014): Che approximation for renewal request processes.
+@inproceedings{martina2014unified,
+  author    = {Martina, Valentina and Garetto, Michele and Leonardi, Emilio},
+  title     = {A Unified Approach to the Performance Analysis of Caching Systems},
+  booktitle = {IEEE INFOCOM 2014 -- IEEE Conference on Computer Communications},
+  pages     = {2040--2048},
+  year      = {2014},
+  doi       = {10.1109/INFOCOM.2014.6848145},
+}
+
+% META (Crossref 10.1145/2745844.2745850: Proceedings of the 2015 ACM SIGMETRICS International Conference, pp. 123-136,
+% 15 June 2015). Journal version, checked in Crossref the same day: Queueing Systems 83(3-4):293-328, 2016,
+% doi:10.1007/s11134-016-9487-9, same title and authors (the remedy plan listed it next to fricker2012versatile by mistake).
+@inproceedings{gast2015transient,
+  author    = {Gast, Nicolas and Van Houdt, Benny},
+  title     = {Transient and Steady-state Regime of a Family of List-based Cache Replacement Algorithms},
+  booktitle = {Proceedings of the 2015 ACM SIGMETRICS International Conference on Measurement and Modeling of Computer Systems},
+  pages     = {123--136},
+  year      = {2015},
+  doi       = {10.1145/2745844.2745850},
+}
+
+% META (Crossref 10.1145/28869.28878: vol. 34, no. 3, pp. 661-685, July 1987)
+@article{nelson1987stochastic,
+  author  = {Nelson, Randolph},
+  title   = {Stochastic Catastrophe Theory in Computer Performance Modeling},
+  journal = {Journal of the ACM},
+  volume  = {34},
+  number  = {3},
+  pages   = {661--685},
+  year    = {1987},
+  doi     = {10.1145/28869.28878},
+}
+
+% META (Crossref 10.1109/TCOM.1975.1092823: vol. 23, no. 4, pp. 401-410, April 1975)
+@article{carleial1975bistable,
+  author  = {Carleial, A. and Hellman, M.},
+  title   = {Bistable Behavior of {ALOHA}-Type Systems},
+  journal = {IEEE Transactions on Communications},
+  volume  = {23},
+  number  = {4},
+  pages   = {401--410},
+  year    = {1975},
+  doi     = {10.1109/TCOM.1975.1092823},
+}
+
+% META (Crossref 10.1002/scj.4690200607: vol. 20, no. 6, pp. 60-68, 1989)
+@article{yokohira1989catastrophic,
+  author  = {Yokohira, Tokumi and Miyahara, Hideo},
+  title   = {Analysis of Catastrophic Phenomena in a Multiprogramming System},
+  journal = {Systems and Computers in Japan},
+  volume  = {20},
+  number  = {6},
+  pages   = {60--68},
+  year    = {1989},
+  doi     = {10.1002/scj.4690200607},
+}
+
+% META (Crossref 10.1287/opre.2015.1346: vol. 63, no. 2, pp. 305-324, 2015)
+@article{dong2015slowdowns,
+  author  = {Dong, Jing and Feldman, Pnina and Yom-Tov, Galit B.},
+  title   = {Service Systems with Slowdowns: Potential Failures and Proposed Solutions},
+  journal = {Operations Research},
+  volume  = {63},
+  number  = {2},
+  pages   = {305--324},
+  year    = {2015},
+  doi     = {10.1287/opre.2015.1346},
+}
+
+% META (Crossref 10.1287/opre.2014.1258: vol. 62, no. 2, pp. 462-482, 2014)
+@article{chan2014speedup,
+  author  = {Chan, Carri W. and Yom-Tov, Galit and Escobar, Gabriel},
+  title   = {When to Use Speedup: An Examination of Service Systems with Returns},
+  journal = {Operations Research},
+  volume  = {62},
+  number  = {2},
+  pages   = {462--482},
+  year    = {2014},
+  doi     = {10.1287/opre.2014.1258},
+}
+
+% META (Crossref 10.1016/j.ejor.2019.11.041: vol. 283, no. 2, pp. 562-575, June 2020)
+@article{ingolfsson2020fluid,
+  author  = {Ingolfsson, Armann and Almehdawe, Eman and Pedram, Ali and Tran, Monica},
+  title   = {Comparison of Fluid Approximations for Service Systems with State-Dependent Service Rates and Return Probabilities},
+  journal = {European Journal of Operational Research},
+  volume  = {283},
+  number  = {2},
+  pages   = {562--575},
+  year    = {2020},
+  doi     = {10.1016/j.ejor.2019.11.041},
+}
+
+% META (Crossref 10.1093/comjnl/16.1.4: vol. 16, no. 1, pp. 4-9, 1973)
+@article{wilkes1973dynamics,
+  author  = {Wilkes, M. V.},
+  title   = {The Dynamics of Paging},
+  journal = {The Computer Journal},
+  volume  = {16},
+  number  = {1},
+  pages   = {4--9},
+  year    = {1973},
+  doi     = {10.1093/comjnl/16.1.4},
+}
+
+% META (Crossref 10.1109/71.207589: vol. 4, no. 2, pp. 131-143, 1993)
+@article{squillante1993affinity,
+  author  = {Squillante, M. S. and Lazowska, E. D.},
+  title   = {Using Processor-Cache Affinity Information in Shared-Memory Multiprocessor Scheduling},
+  journal = {IEEE Transactions on Parallel and Distributed Systems},
+  volume  = {4},
+  number  = {2},
+  pages   = {131--143},
+  year    = {1993},
+  doi     = {10.1109/71.207589},
+}
+
+% META (not in Crossref; title, authors, "Proceedings of the 16th VLDB Conference, Brisbane, Australia 1990" and the page
+% numbers 419 (first page) and 431 (last page) read from the VLDB PDF, www.vldb.org/conf/1990/P419.PDF, 13 pages)
+@inproceedings{dan1990skewed,
+  author    = {Dan, Asit and Dias, Daniel M. and Yu, Philip S.},
+  title     = {The Effect of Skewed Data Access on Buffer Hits and Data Contention in a Data Sharing Environment},
+  booktitle = {Proceedings of the 16th International Conference on Very Large Data Bases (VLDB)},
+  address   = {Brisbane, Australia},
+  pages     = {419--431},
+  year      = {1990},
+}
+
+% FULL for the claim (novelty review, Sec. 4.2, "Stability and Metastability"): an empty cache may fail to refill;
+% concurrency limit; cold-start tests at maximum concurrency. Authors, booktitle and pages 315-328 from the BibTeX on the
+% USENIX presentation page (usenix.org/conference/atc23/presentation/brooker); arXiv API: 2305.13162 v2 of 24 May 2023.
+@inproceedings{brooker2023ondemand,
+  author    = {Brooker, Marc and Danilov, Mike and Greenwood, Chris and Piwonka, Phil},
+  title     = {On-demand Container Loading in {AWS} {Lambda}},
+  booktitle = {2023 USENIX Annual Technical Conference (USENIX ATC 23)},
+  pages     = {315--328},
+  year      = {2023},
+  note      = {arXiv:2305.13162 (v2)},
+}
+
+% META (Crossref 10.1109/TC.2002.1009151: vol. 51, no. 6, pp. 669-685, June 2002)
+@article{cherkasova2002session,
+  author  = {Cherkasova, L. and Phaal, P.},
+  title   = {Session-Based Admission Control: A Mechanism for Peak Load Management of Commercial Web Sites},
+  journal = {IEEE Transactions on Computers},
+  volume  = {51},
+  number  = {6},
+  pages   = {669--685},
+  year    = {2002},
+  doi     = {10.1109/TC.2002.1009151},
+}
+
+% META only (Crossref 10.1145/2838344.2839461: Queue vol. 13, no. 8, pp. 30-46, September 2015); the content claims
+% (adaptive LIFO, concurrency control) come from a secondary summary: read the article before citing specifics.
+@article{maurer2015fail,
+  author  = {Maurer, Ben},
+  title   = {Fail at Scale},
+  journal = {ACM Queue},
+  volume  = {13},
+  number  = {8},
+  pages   = {30--46},
+  year    = {2015},
+  doi     = {10.1145/2838344.2839461},
+}
+
+% META (Crossref 10.1145/1070838.1070856: vol. 48, no. 7, pp. 19-24, July 2005)
+@article{denning2005locality,
+  author  = {Denning, Peter J.},
+  title   = {The Locality Principle},
+  journal = {Communications of the ACM},
+  volume  = {48},
+  number  = {7},
+  pages   = {19--24},
+  year    = {2005},
+  doi     = {10.1145/1070838.1070856},
+}
+
+% ABSTRACT: learned early anticipation of metastability. arXiv API 2026-10-31: v1 only, 2026-09-13, comment "HSCC'26".
+% The arXiv record lists DOI 10.1145/3801146.3805671, which Crossref did not resolve on 2026-10-31, so no DOI is given.
+@misc{majumdar2026learning,
+  author       = {Majumdar, Rupak and Salamati, Mahmoud and Singh, Nikhil and Soudjani, Sadegh},
+  title        = {Learning Metastable Dynamics},
+  year         = {2026},
+  howpublished = {arXiv:2609.14712 (v1, 13 September 2026); HSCC '26},
+}
+
+% ABSTRACT and an author's summary: bounded concurrency and load shedding against metastability, database simulation.
+% Crossref 10.1109/ICCCN69946.2026.11662935: 2026 35th ICCCN, pp. 1-9, July 2026, five authors in this order.
+@inproceedings{charapko2026execution,
+  author    = {Charapko, Aleksey and Demirbas, Murat and Broadstone, Matt and Ferro, Daniel Gomez and Vig, Akshat},
+  title     = {Towards Designing An Execution Control System with Metastability Resilience},
+  booktitle = {Proceedings of the 35th International Conference on Computer Communications and Networks (ICCCN)},
+  pages     = {1--9},
+  year      = {2026},
+  doi       = {10.1109/ICCCN69946.2026.11662935},
+}
+
+% ABSTRACT: cusp bistability, hysteretic recovery, load reduction alone insufficient, for an AI system's operating loop.
+% arXiv API 2026-10-31: v3 of 17 Aug 2026 (v1 23 June 2026; v3 changed the title; this is the v3 title).
+@misc{vanrooyen2026recoverability,
+  author       = {van Rooyen, Pieter},
+  title        = {First-Order Recoverability Collapse in Self-Referential Information Decoders: The Operating Loop of an {AI} System as a Driven Nonequilibrium Steady State},
+  year         = {2026},
+  howpublished = {arXiv:2606.24861 (v3; v1 23 June 2026)},
+}
+
+% ABSTRACT: FCFS and LPM limits under prefix reuse; k-LPM. arXiv API 2026-10-31: v3 of 1 Jan 2026 (v1 7 Feb 2025),
+% six authors in this order, no journal reference.
+@misc{dexter2025prefix,
+  author       = {Dexter, Gregory and Tang, Shao and Baarzi, Ata Fatahi and Song, Qingquan and Dharamsi, Tejas and Gupta, Aman},
+  title        = {{LLM} Query Scheduling with Prefix Reuse and Latency Constraints},
+  year         = {2025},
+  howpublished = {arXiv:2502.04677 (v3; v1 7 February 2025)},
+}
+
+% META (Open Library record of ISBN 0-12-398650-8, from Library of Congress MARC data: Academic Press, New York, 1981,
+% xviii + 542 pp., LC QA274 .K372; ISBN-13 978-0-12-398650-4 computed from it): splitting probabilities of one-dimensional
+% diffusions (the chapter number was not checked; the citation does not depend on it).
+@book{karlin1981second,
+  author    = {Karlin, Samuel and Taylor, Howard M.},
+  title     = {A Second Course in Stochastic Processes},
+  publisher = {Academic Press},
+  address   = {New York},
+  year      = {1981},
+  isbn      = {978-0-12-398650-4},
+}
+
+% ABSTRACT: a pre-registered negative result with a systems measurement study; cited as a precedent for registration
+% in ML-systems work. arXiv API 2026-10-31: v1 only, 18 Aug 2026, single author, this title; its comment gives the
+% repository of the frozen pre-registration.
+@misc{suram2026cacheable,
+  author       = {Suram, Shriniwas Ramesh},
+  title        = {Cacheable by Design? Training Mixture-of-Experts Routers for Locality Against the Edge Memory-Bandwidth Wall: A Pre-Registered Negative Result with a Systems Measurement Study},
+  year         = {2026},
+  howpublished = {arXiv:2608.18261 (v1, 18 August 2026)},
 }

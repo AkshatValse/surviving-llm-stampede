@@ -15,6 +15,7 @@
 \hypersetup{pdftitle={Thrashing Returns: Metastable Failures in Prefix-Cached Agent Serving},pdfauthor={Akshat Valse, Ali Jannesari}}
 
 \setlist{itemsep=1pt,topsep=3pt,parsep=0pt,leftmargin=*}
+\setlength{\belowcaptionskip}{3pt}
 \renewcommand{\topfraction}{0.85}
 \raggedbottom
 \makeatletter\setlength{\@fptop}{0pt}\makeatother
@@ -22,9 +23,8 @@
 \def\UrlBreaks{\do\/\do\-\do\_\do\.}
 \renewcommand{\bibfont}{\raggedright}
 \newcommand{\fpath}[1]{\nolinkurl{#1}}
-\newcommand{\repourl}{\url{https://github.com/AkshatValse/Nova-Research}}
-
 \newcommand{\pending}[1]{\textcolor{red}{[pending: #1]}}
+\newcommand{\repourl}{\pending{URL of the public repository}}
 
 \newcommand{\lmiss}{\lambda_{\mathrm{miss}}}
 \newcommand{\lref}{\lambda_{\mathrm{ref}}}
@@ -36,6 +36,9 @@
 \newcommand{\sps}{\,sessions/s}
 
 \newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem*{assumption}{Assumption MF}
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
 
@@ -49,14 +52,16 @@ Department of Computer Science, Iowa State University, Ames, IA, USA\\[2pt]
 \maketitle
 
 \begin{abstract}
-Prefix caching keeps an LLM agent session's KV across the tool calls between turns, so a turn that hits prefills only its new tokens. We show that this can make the engine's high-hit state metastable. On SGLang 0.5.22 with Qwen2.5-7B-Instruct, one A100 80GB and a 300k-token KV pool, closed-population throughput $\mu(n)$ peaks at 0.233\sps{} at $n=24$ and falls to all-miss by $n=48$, while an empty server stayed good in single 3000\,s runs at nominal rates up to 2.0 times $\lref=0.0715$\sps, the measured all-miss capacity, and was unstable at 2.5. In a pre-registered paired test at 1.35 and 1.65 $\lref$, a burst of 200 sessions trapped the server by the registered rule in 5 of 6 runs, and all 6 had zero cache hits over an evaluation window ending 7500\,s after it; without the burst 6 of 6 stayed good, and a client-side cap of 20 sessions recovered 6 of 6. A simulator whose cost model was fitted only to server-log timing predicted this outcome in a commit pushed before submission. vLLM 0.32.0's own curve and edge give the same window and cap, with a steeper cliff; exploratory burst-only runs had zero hits in 6 of 6, and a registered paired test is pending. With the pool SGLang sizes itself (955,757 tokens) the cliff moves out about threefold, the from-empty edge is between 5.5 and 6.5 $\lref$, and a second pre-registered test at 2.5 and 4.0 $\lref$ with a cap of 64 put all 18 runs in their predicted states. Rates are nominal; runs use one model, one GPU type and synthetic sessions with exponential tool times and no shared prefixes. We give a quasi-static model, prove that under request-level FCFS and stated assumptions no online eviction rule lets $\mu(n)$ exceed the all-miss capacity as $n\to\infty$, compare published mechanisms in an earlier, uncalibrated simulator, and give a diagnostic: measure $\mu(n)$ for the workload and cap sessions from it.
+Prefix caching keeps an LLM agent session's KV across its tool calls, so a turn that hits prefills only new tokens. We show that this can make the engine's high-hit state metastable. On SGLang 0.5.22 with Qwen2.5-7B-Instruct, one A100 and a 300k-token pool, an empty server stayed good for 3000\,s at nominal rates up to 2.0 times $\lref=0.0715$\sps, the measured all-miss capacity. In a pre-registered paired test at 1.35 and 1.65 $\lref$, a burst of 200 sessions left all 6 runs at zero hits over a window ending 7500\,s after it (5 trapped by the registered rule), without the burst 6 of 6 stayed good, and a client-side cap of 20 recovered 6 of 6. A second such test, with the 955,757-token pool SGLang sizes itself, put all 18 runs in their predicted states. On vLLM 0.32.0 the registered analysis passes at both rates, though a frozen mechanism check failed (a hit-rate detector also fired in 2 capped runs). In BURST runs a session's gap between turns, mostly turn latency, is 4 to 10 times the pool's rewrite time (0.01 to 0.03 in the good state). We derive the closed-population throughput $\mu(n)$ from first principles, fitting nothing to any $\mu(n)$, hit or trap measurement (a faster GPU or engine takes one speed factor); its all-miss onset is the sessions in tool calls plus one pool of running sessions. It reproduces the SGLang curves within 10\% at the peak but misses vLLM's earlier cliff. Its predictions for a faster GPU, other pools, a second model, burst sizes and a cap rescue were frozen; outcomes are pending. Under request-level FCFS and stated assumptions, including that the congested engine computes prompt tokens no faster than with caching disabled, no online eviction rule lets $\mu(n)$ exceed the all-miss capacity as $n\to\infty$. Rates are nominal; registered tests use one model, one GPU type and synthetic sessions (exponential tool times, no shared prefixes).
 \end{abstract}
 
 \input{sections/intro}
 \input{sections/background}
 \input{sections/model}
+\input{sections/theory}
 \input{sections/method}
 \input{sections/results}
+\input{sections/frozen}
 \input{sections/robustness}
 \input{sections/mechanisms}
 \input{sections/diagnostic}
@@ -65,10 +70,10 @@ Prefix caching keeps an LLM agent session's KV across the tool calls between tur
 \input{sections/conclusion}
 
 \section*{Code and data availability}
-{\raggedright The repository \repourl{} holds the code (simulator, load generator, analysis and Slurm job scripts), the experiment configurations, the registration files (\fpath{configs/agentload_prereg_*.yaml}), the frozen blind predictions (\fpath{notes/PREDICTIONS*.md}, with their tags), all real-engine data with the job logs (\fpath{results/nova/}), the research log (\fpath{notes/LOG.md}), the scripts behind every figure and derived table, and the source of every number in the paper (\fpath{paper/NUMBERS.md}); this version corresponds to tag \texttt{arxiv-v1}. The directory \fpath{provenance/} holds the archived GitHub push log (\fpath{github_activity_2026-10.json}), which is the external record of when each registration and prediction reached GitHub (\S\ref{sec:prereg}, Appendix~\ref{app:timeline}), the cluster's accounting records of every cited job (\fpath{sacct_cited_jobs_2026-10-30.txt}), and the evidence of the independent verifier of the first prediction round. Simulator outputs are not stored, apart from their summaries; each can be regenerated from the command, commit and configuration recorded with the run (\fpath{meta.json}, \fpath{config.yaml}). The derived tables in \fpath{paper/derived/} name each engine run by its path on the cluster, \fpath{results/agentload_*/<timestamp>}; the run is stored under the pull directory of its jobs in \fpath{results/nova/}, with the same final path components. The agents' tool-call transcripts (\S\ref{sec:sim}, Appendix~\ref{app:timeline}) are not in the repository.\par}
+{\raggedright The public repository \repourl{} holds the code (simulator, load generator, analysis, the first-principles model of \S\ref{sec:fp} and the Slurm job scripts), the experiment configurations, every registration file (\fpath{configs/agentload_prereg_*.yaml}), the frozen predictions with their tags (\fpath{notes/PREDICTIONS*.md}, \fpath{configs/r1*_predict.yaml}, \fpath{configs/r13_theory_pred2.yaml}, \fpath{results/theory/merged/}, \fpath{results/theory/pred2/}), all real-engine data with the job logs (\fpath{results/nova/}), the research log (\fpath{notes/LOG.md}), the scripts behind every figure and derived table, and the source of every number in the paper (\fpath{paper/NUMBERS.md}); this version corresponds to tag \texttt{arxiv-v1}. Its history is a redacted copy of the authors' development repository: passages unrelated to the paper were removed from four notes and agent-instruction files and one clause from each of two commit messages (all listed in \fpath{provenance/REDACTIONS.md}), and no code, configuration, registration, result or paper file changed in it. A final release commit adds licences and README text and replaces allocation names in some notes, job-script comments and tests (\fpath{provenance/}). Its commit hashes therefore differ from those cited in this paper, which are the development repository's. The directory \fpath{provenance/} maps every cited hash to its public counterpart and holds the timing evidence: GitHub's push log of the development repository (\fpath{github_activity_2026-10.json}), the external record of when each registration and prediction reached GitHub (\S\ref{sec:prereg}, Appendices~\ref{app:prereg} and~\ref{app:timeline}); for every registration and frozen prediction, the original commit, tree and tag objects, the push-log event that first carried them, and a script that recomputes the hash chains and checks that each registration file in the public repository is byte-identical to the registered one (\fpath{provenance/registration-proofs/}; \pending{the registrations and predictions pushed after 2026-10-30 are added at the final build}); the cluster's accounting records of the cited jobs (\pending{refreshed accounting export for the jobs after the vLLM paired test}); and the evidence of the independent verifier of the first prediction round. Simulator outputs are not stored, apart from their summaries; each can be regenerated from the command, commit and configuration recorded with the run (\fpath{meta.json}, \fpath{config.yaml}). The derived tables in \fpath{paper/derived/} name each engine run by its path on the cluster, \fpath{results/agentload_*/<timestamp>}; the run is stored under the pull directory of its jobs in \fpath{results/nova/}, with the same final path components. The agents' tool-call transcripts (\S\ref{sec:sim}, Appendix~\ref{app:timeline}) are not in the repository.\par}
 
 \section*{Use of AI tools}
-LLM coding agents (Anthropic Claude through Claude Code, including Claude Sonnet subagents, and OpenAI Codex sessions) were used extensively under the authors' direction. They wrote and tested much of the simulator, load generator and analysis code; prepared and submitted the cluster jobs, under authorizations the first author gave for each experiment or set of experiments; made the blind simulator predictions (\S\ref{sec:sim}); specified the prediction rounds and, afterwards, checked the first round's tool-call transcripts; made, in a separate Codex session, the independent verification of the first round, which reused the prediction agents' copy of the repository rather than a fresh one; audited the citations; read the engine sources, partly through a web tool that returns a language model's summary of each page; checked the model and reviewed the proofs; and drafted and revised the text. The proofs (\S\ref{sec:props}, Appendix~\ref{app:proofs}) were checked by AI review agents and have not been refereed. Every commit, including those the agents made, is recorded under the first author's identity; a history rewrite on 2026-10-22 removed the agents' co-author trailers from commit messages and changed nothing else (\fpath{provenance/commit-map.tsv} maps old hashes to new ones). The authors chose the research question and the experiments and take full responsibility for the content.
+LLM coding agents (Anthropic Claude through Claude Code, including Claude Sonnet subagents, and OpenAI Codex sessions) expedited this work under the authors' direction. They wrote and tested much of the simulator, load generator and analysis code; prepared and submitted the cluster jobs, under authorizations the first author gave for each experiment or set of experiments; made the blind simulator predictions (\S\ref{sec:sim}); derived the first-principles model of \S\ref{sec:fp}, wrote its code and proofs, and froze its predictions; specified the prediction rounds and, afterwards, checked the first round's tool-call transcripts; made, in a separate Codex session, the independent verification of the first round, which reused the prediction agents' copy of the repository rather than a fresh one; ran adversarial reviews of the claims, the proofs and their novelty against the literature; audited the citations; read the engine sources, partly through a web tool that returns a language model's summary of each page; and drafted and revised the text. The authors chose the research question and the experiments, reviewed the results, and read and checked the manuscript, including the proofs, before posting; they are the final decision makers on its content and take full responsibility for it. Every commit, including those the agents made, is recorded under the first author's identity; a history rewrite on 2026-10-22 removed the agents' co-author trailers from commit messages and changed nothing else (\fpath{provenance/commit-map.tsv} maps old hashes to new ones).
 
 \section*{Acknowledgments}
 The experiments ran on the Nova cluster at Iowa State University. The research reported in this paper is partially supported by the HPC@ISU equipment at Iowa State University, some of which has been purchased through funding provided by NSF under MRI grants number 1726447 and MRI2018594.
@@ -79,5 +84,7 @@ The experiments ran on the Nova cluster at Iowa State University. The research r
 \clearpage
 \appendix
 \input{sections/appendix}
+\input{sections/appendix_fp}
+\input{sections/appendix_supp}
 
 \end{document}

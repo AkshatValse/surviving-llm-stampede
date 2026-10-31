@@ -1,7 +1,9 @@
 # Paper figures
 
-Seven vector PDFs, one script each under `figures/paper/` (F7 reuses F1's drawing function). Every script reads only git-tracked, unmodified files
-(`figures/paper/_style.py::src` refuses anything else) and writes `paper/figs/<name>.pdf`. Rebuild all:
+Ten vector PDFs, one script each under `figures/paper/` (F7 reuses F1's drawing function; one script, `fig8_10_theory.py`, writes F8-F10
+with the drawing functions of `analysis/theory/paper/figs.py`). Every F1-F7 script reads only git-tracked, unmodified files
+(`figures/paper/_style.py::src` refuses anything else) and writes `paper/figs/<name>.pdf`; F8-F10 read the frozen theory JSONs and the
+measured files listed in their section below, without that check. Rebuild all:
 
 ```
 PY="C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe" bash figures/paper/build_all.sh
@@ -13,12 +15,17 @@ single column 3.4 in, double column 7.0 in. One Okabe-Ito palette. The same colo
 BURST vermillion, NOBURST blue, CAPPED green (a static session cap is also green); FCFS near-black, LPM purple, PEEK orange,
 Continuum pins sky blue, CONCUR dark yellow; real engine = black and filled, simulator = gray, open, dashed;
 per-run states (F6): trapped vermillion, recovered green, draining sky blue, indeterminate gray.
+F8-F10 keep the style of `analysis/theory/paper/figs.py` (matplotlib default DejaVu Sans, 6-8 pt, TrueType fonts embedded, 7.2 in wide,
+their own palette); restyling them to `_style.py` is optional and would change no plotted value.
 
 Checked for every figure: `pdfinfo` page size (below), `pdftoppm` render, and the paper build placing all seven at their
-native widths.
+native widths (F1-F7; F8-F10 were checked with `pdfinfo` and `pdftoppm` on 2026-10-31, and the paper build that places them is the
+lead's).
 
 File names are not the paper's figure numbers. In the 2026-10-26 build: Fig. 1 = F1, Fig. 2 = F2, Fig. 3 = F3, Fig. 4 = F7 (native E2),
-Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms).
+Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms). In the 2026-10-31 build planned by the integration:
+Fig. 1 = F1 (`fig:e2`), 2 = F8 (`fig:fpmu`), 3 = F2 (`fig:curve`), 4 = F3 (`fig:edge`), 5 = F7 (`fig:e2native`), 6 = F6 (`fig:grid`),
+7 = F9 (`fig:fpscale`), 8 = F5 (`fig:robust`), 9 = F4 (`fig:mech`), 10 = F10 (`fig:fixed`); check against the built PDF.
 
 | file | width x height (in) | column |
 |---|---|---|
@@ -29,6 +36,11 @@ Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms).
 | `fig5_robustness.pdf` | 3.40 x 4.09 | single |
 | `fig6_policy_grid.pdf` | 3.40 x 3.32 | single |
 | `fig7_e2_native_timeseries.pdf` | 7.00 x 3.60 | double |
+| `fig8_theory_curves.pdf` | 7.20 x 2.50 | double |
+| `fig9_theory_scaling.pdf` | 7.20 x 2.50 | double |
+| `fig10_theory_fixed_points.pdf` | 7.20 x 2.45 | double |
+
+F8-F10 are 7.20 in wide, so `\includegraphics[width=\textwidth]` scales them by 7.0 / 7.2 = 0.97 on a 7.0 in text block.
 
 Changed on 2026-10-26 (native pool and vLLM results): F2 gains the B4n curve and the native cap; F3 gains a native-pool panel
 (native E0b against B2n); F6 gains a vLLM row; F7 is new. F1 was refactored into a function (`draw`) that F7 calls; F1's PDF is
@@ -304,6 +316,41 @@ contains it, against 0.21-0.33 at 300k), then is at hit 0 from 300-600 s after t
 burst (155-231 sessions 100-200 s after it) and then grows without a plateau to 658-1379 over the last 300 s (`paper/derived/burst_hit_onset.csv`,
 `paper/derived/e2_native_burst_backlog.csv`). NOBURST and CAPPED sit at hit ~0.93 and backlog 16-34; the CAPPED gate's queue empties
 512-937 s after the burst (`paper/derived/e2_native_capped_drain.csv`).
+
+## F8-F10 `fig8_theory_curves.pdf`, `fig9_theory_scaling.pdf`, `fig10_theory_fixed_points.pdf` (script `figures/paper/fig8_10_theory.py`)
+
+**Script.** `figures/paper/fig8_10_theory.py` calls `fig_mu_validation`, `fig_fixed_points` and `fig_scaling` of
+`analysis/theory/paper/figs.py` (commit 5271ff6, written after the freeze tag `r13-theory-pred`) and saves their figures here, with
+no creation date (a rebuild is byte-identical; checked twice on 2026-10-31) and without rewriting the data CSVs. The same functions
+write `figures/theory/paper_{mu_validation,scaling,fixed_points}.{pdf,png}` when `python -m analysis.theory.paper.figs` is run; the
+three PDFs here render identically to those (`pdftoppm` at 100 dpi, byte-equal PNGs).
+
+**Label edit of 2026-10-31.** In `analysis/theory/paper/figs.py` only labels changed, no plotted value: the internal names "(T8)"
+and "(Proposition F)" left the panel titles, "result not read" left the legends of the frozen predictions, "window" became "peak
+ratio" (the paper's window is the interval of rates, bounded on the A100 at 300k by the from-empty edge), and the cost model is
+written $\mathcal{C}$ as in the paper. The script was rerun after the edit: `results/theory/paper/{mu_validation,scaling,fixed_points}.csv`
+are byte-identical to their committed versions (SHA-256 checked before and after).
+
+**Data.** `results/theory/paper/{mu_validation,scaling,fixed_points}.csv`, computed from the frozen theory at tag `r13-theory-pred`
+(`results/theory/merged/<cell>.json`; no frozen number changed after the tag) and, for the measured points, the files that
+`analysis/theory/fluid_rigorous/cells.py` names: the Stage C curves (SC, NAT, VSC of `paper/NUMBERS.md`) and the E0a calibrations
+(E0A, NATM, VE0A).
+
+**Shows.**
+- F8 (`fig:fpmu`, Section 4): the predicted closed curve mu(n), fluid and F1, against the measured Stage C points (sessions/s and
+  turns-based) for SGLang 300k, SGLang with the native pool and vLLM 300k; dotted line at the predicted all-miss onset n_b,
+  dash-dotted at lambda_ref. n = 300 is not drawn (a synchronized-start transient). No measured mu(n) point is an input of the curve.
+- F9 (`fig:fpscale`, Section 7): (a) the fluid peak ratio in model units, mu* / mu_b, against s zbar, with the A100's measured ratios
+  (turns-based and sessions/s; measured in units of lambda_ref = 0.07153 from E0a, which lies 0.4% below the model's mu_b = 0.07184) and the frozen
+  H200 prediction (s = 2.742); (b) the peak ratio against the pool M, with the two measured A100 pools and the frozen 150k and 600k
+  predictions. The diamonds are frozen predictions; no outcome of a pending test is plotted. The diamonds are at the fluid model-unit
+  ratio, 0.1% (H200) and 8.5% (150k) above the F1 values the paper quotes (`paper/NUMBERS.md`, "0.1%; 8.5%").
+- F10 (`fig:fixed`, Appendix F): (a) the open-system phase line dn/dt = lambda - mu(n) of the predicted 300k curve at 1.65 lambda_ref,
+  with n_1 = 10.4, n_2 = 31.8, n_b = 32.7 and the trap (n grows at lambda - mu_b); (b) the closed-system feedback map Phi_n(h) at
+  n = 33.5 > n_b for exponential 5 s tool times (one stationary state, all-miss) and for 0.5 Exp(1 s) + 0.5 Exp(9 s) of the same mean
+  (three: all-miss and good stable, one unstable); (c) the two closed curves, with the fold of the mixture above n_b (band
+  32.698-34.177 in `fixed_points.csv`). Panel (c) labels the band "bistable band", which is the closed system of Proposition 5 (a proof
+  sketch in the paper), not the open system.
 
 ---
 
