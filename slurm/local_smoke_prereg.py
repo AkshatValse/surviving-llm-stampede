@@ -7,6 +7,9 @@ job runs it with PREREG_ALLOW_UNCOMMITTED=1, so no verdict from such runs can be
                                        [--set k=v ...]      (the same analysis overrides the smoke analysis uses)
                                        [--rescue-config FILE]  (ARMS=rescue: write a mock-scale copy of
                                                                 configs/agentload_e2_rescue_smoke.yaml to FILE and register it)
+                                       [--r14-config FILE --r14-kind toolslow|shed]  (R14_CELL: write a mock-scale copy of
+                                                                configs/agentload_e2_toolslow_d10.yaml / _shed_t600.yaml to FILE
+                                                                and register it by sha256 with its one arm, as the r14 cells are)
 """
 from __future__ import annotations
 
@@ -44,6 +47,24 @@ def rescue_mock_config(duration_s: float, t_burst_s: float, n_cap: int) -> dict:
     return c
 
 
+def r14_mock_config(kind: str, duration_s: float, t_burst_s: float, mult: float) -> dict:
+    """The r14 cell configs scaled to a mock run (the workload stays the smoke's GEN_EXTRA): TOOLSLOW adds 1 s to tool calls
+    starting in [t_b - 3, t_b + 2); SHED stops the arrivals over [t_b + 1, t_b + 3) after the burst at t_b, at the job's mult."""
+    if kind == "toolslow":
+        c = yaml.safe_load((REPO / "configs" / "agentload_e2_toolslow_d10.yaml").read_text())
+        c["workload"]["tool_slowdown"] = {"t_s": max(0.0, t_burst_s - 3.0), "width_s": 5.0, "add_s": 1.0}
+    elif kind == "shed":
+        c = yaml.safe_load((REPO / "configs" / "agentload_e2_shed_t600.yaml").read_text())
+        a, b = t_burst_s + 1.0, t_burst_s + 3.0
+        c["arrivals"]["ramp"] = [[0, mult], [a, mult], [a + 0.001, 0], [b, 0], [b + 0.001, mult], [duration_s, mult]]
+    else:
+        raise ValueError(f"unknown r14 kind {kind!r}")
+    c["run"]["duration_s"] = duration_s
+    c["arrivals"]["burst"]["t_s"] = t_burst_s
+    c["arrivals"]["analysis_t_burst_s"] = t_burst_s
+    return c
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True)
@@ -55,6 +76,8 @@ def main(argv=None) -> int:
     ap.add_argument("--prereg", action="store_true")
     ap.add_argument("--set", action="append", default=[])
     ap.add_argument("--rescue-config", default=None, help="ARMS=rescue: write the mock-scale rescue smoke config here")
+    ap.add_argument("--r14-config", default=None, help="R14_CELL: write the mock-scale TOOLSLOW / SHED config here")
+    ap.add_argument("--r14-kind", default=None, choices=["toolslow", "shed"])
     args = ap.parse_args(argv)
     d = Path(args.dir)
     d.mkdir(parents=True, exist_ok=True)
@@ -71,7 +94,14 @@ def main(argv=None) -> int:
     if args.prereg:
         p = load_params(REPO / "configs" / "agentload_analysis.yaml", args.set)
         e2_sha = None
-        if args.rescue_config:
+        e2_path, arms = "", None
+        if args.r14_config:
+            e2 = r14_mock_config(args.r14_kind, args.duration_s, args.t_burst_s, args.mult)
+            rc = Path(args.r14_config)
+            rc.write_bytes(yaml.safe_dump(e2, sort_keys=False).encode("utf-8"))
+            e2_sha, e2_path = hashlib.sha256(rc.read_bytes()).hexdigest(), str(rc)
+            arms = ["noburst"] if args.r14_kind == "toolslow" else ["burst"]
+        elif args.rescue_config:
             e2 = rescue_mock_config(args.duration_s, args.t_burst_s, int(curve["n_cap"]))
             rc = Path(args.rescue_config)
             rc.write_bytes(yaml.safe_dump(e2, sort_keys=False).encode("utf-8"))
@@ -85,7 +115,7 @@ def main(argv=None) -> int:
             tmpl["pass_rule"][key] = prereg._param(p, path)
         pr = prereg.fill(tmpl, curve, cal, e0b=json.loads((d / "e0b.json").read_text()), e2_cfg=e2, lambda_mults=[args.mult],
                          rule="local smoke test: one fake point inside the fake window", engine_cell_label=args.label, p=p,
-                         e2_cfg_sha256=e2_sha)
+                         e2_cfg_sha256=e2_sha, e2_cfg_path=e2_path, arms=arms)
         (d / "prereg.yaml").write_text(yaml.safe_dump(pr, sort_keys=False))
         print(f"fake prereg status={pr['status']}", [x for x in pr["fill_problems"] if x["severity"] == "error"])
         return 0 if pr["status"] == "FILLED" else 1

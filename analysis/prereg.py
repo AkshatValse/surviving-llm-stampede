@@ -35,6 +35,17 @@ authorised ONLY by such a registration (check-job and run_blockers). check-job t
 differs in any key (t_on_s, n_cap, hold, min_on, ...) or whose e2-config bytes differ from the registered sha256, and a job
 that runs any other arm with a rescue config. The CAPPED-drain limit is informational for a rescue registration (no CAPPED
 arm runs under it).
+
+NON-DEFAULT E2 CONFIGS (r14: TOOLSLOW, SHED): when ``fill`` is given an E2 config other than ``configs/agentload_e2_burst.yaml``
+together with its sha256 (the CLI always hashes it), it records ``protocol.e2_config_sha256`` (the default fill output is
+unchanged: the default config records nothing, and callers that pass no sha256, such as ``analysis.basin fill``, record
+nothing). Whenever a registration records ``protocol.e2_config_sha256``, check-job refuses a job whose --e2-config bytes differ
+(or that passes none), and run_blockers refuses a run whose config.yaml (the byte copy of the run config the client writes;
+CRLF read as LF) hashes differently. ``fill(..., arms=[...])`` records ``protocol.arms``: the only arms the registration
+authorises (check-job: ARMS; run_blockers: the run's arm); absent = unrestricted, as before. A ramp E2 config
+(``arrivals.kind: ramp``) needs ``ramp_is_mult: true`` and every job MULTS entry equal to the ramp's largest knot (the rate
+outside the stop), since the job glue's ``arrivals.rate_mult`` is then only recorded. Older registrations with a non-default
+E2 config and no recorded sha256 (B1: b100, b25, made before this binding) keep their old checks (burst / duration fields).
 """
 from __future__ import annotations
 
@@ -68,6 +79,43 @@ UNREGISTERED_TRAP_V2_KEYS = ("trace_bin_s",)            # plots only; changes no
 _OPTIONAL_NULL = ("measured.lambda_cap_e0b.first_unstable_mult_above",)
 REL_TOL = 1e-9
 RESCUE_MODE = "rescue"
+DEFAULT_E2_CONFIG = "configs/agentload_e2_burst.yaml"
+KNOWN_ARMS = ("burst", "noburst", "capped", "rescue")
+
+
+def registered_arms(pr: Dict[str, Any]) -> Optional[List[str]]:
+    """``protocol.arms`` (the only arms this registration authorises), or None (unrestricted)."""
+    a = (pr.get("protocol") or {}).get("arms")
+    return [str(x) for x in a] if isinstance(a, list) else None
+
+
+def _sha_ok(sha: Any) -> bool:
+    return isinstance(sha, str) and len(sha) == 64 and all(c in "0123456789abcdef" for c in sha)
+
+
+def config_text_sha256(path: str | Path) -> str:
+    """sha256 of a config file with CRLF read as LF (the client writes config.yaml with the platform's newline)."""
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def ramp_problems(e2_cfg: Dict[str, Any], mults: Sequence[float]) -> List[str]:
+    """A ramp E2 config: ramp_is_mult true and each MULTS entry equal to the ramp's largest knot rate."""
+    arr = e2_cfg.get("arrivals") or {}
+    if arr.get("kind") != "ramp":
+        return []
+    out = []
+    knots = arr.get("ramp") or []
+    if not arr.get("ramp_is_mult"):
+        out.append("E2 config arrivals.kind ramp needs ramp_is_mult true (rates as multiples of the registered lambda_ref)")
+    try:
+        top = max(float(k[1]) for k in knots)
+    except (TypeError, ValueError, IndexError):
+        return out + [f"E2 config arrivals.ramp knots unreadable: {knots!r}"]
+    for m in mults:
+        if not _close(float(m), top):
+            out.append(f"MULTS entry {m} != the ramp's rate outside the stop ({top}): with kind ramp the job's rate_mult is "
+                       "only recorded, so it must name the ramp's rate")
+    return out
 
 
 def protocol_gate(pr: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -233,8 +281,16 @@ def validate(pr: Dict[str, Any], p: Optional[AnalysisParams] = None, fcfs_substr
             if k not in pg:
                 add("error", "gate_block_incomplete", f"protocol.gate.{k} missing")
         sha = (pr.get("protocol") or {}).get("e2_config_sha256")
-        if not (isinstance(sha, str) and len(sha) == 64 and all(c in "0123456789abcdef" for c in sha)):
+        if not _sha_ok(sha):
             add("error", "e2_config_sha256_missing", f"protocol.e2_config_sha256 must be the e2 config's sha256 (got {sha!r})")
+    proto_v = pr.get("protocol") or {}
+    if pg is None and "e2_config_sha256" in proto_v and not _sha_ok(proto_v.get("e2_config_sha256")):
+        add("error", "e2_config_sha256_invalid", f"protocol.e2_config_sha256 must be a sha256 hex digest (got "
+            f"{proto_v.get('e2_config_sha256')!r})")
+    ra = registered_arms(pr)
+    if "arms" in proto_v and (ra is None or not ra or any(a not in KNOWN_ARMS for a in ra)):
+        add("error", "protocol_arms_invalid", f"protocol.arms must be a non-empty list of {list(KNOWN_ARMS)}, got "
+            f"{proto_v.get('arms')!r}")
     rd = ((pr.get("predicted_boundaries") or {}).get("consistency") or {}).get("mu_300_vs_lambda_miss_rel_dev")
     if rd is not None and abs(rd) > 0.25:
         add("warn", "mu300_far_from_lambda_miss", f"|mu(300)/lambda_miss - 1| = {abs(rd):.3f}: only a check (all n sessions "
@@ -289,7 +345,7 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
          engine_cell_label: Optional[str] = None,
          mu_curve_path: str = "", calibration_path: str = "", e0b_path: str = "", e2_cfg_path: str = "",
          n_cap_rule: str = "argmax", p: Optional[AnalysisParams] = None,
-         e2_cfg_sha256: Optional[str] = None) -> Dict[str, Any]:
+         e2_cfg_sha256: Optional[str] = None, arms: Optional[Sequence[str]] = None) -> Dict[str, Any]:
     """Fill the measured values and the formula-derived boundaries of ``template`` (a deep copy is returned). The
     lambda points and their rule come from the arguments (or stay as in the template). ``status`` becomes FILLED only
     if :func:`validate` finds no error. ``e0b`` (the ``lambda_cap_bracket.json`` of E0b) and ``e2_cfg`` (the raw E2 config:
@@ -366,6 +422,11 @@ def fill(template: Dict[str, Any], mu_curve: Dict[str, Any], calibration: Dict[s
         # a rescue registration: the gate block is registered verbatim, and the config file by its sha256 (plan R1)
         pr["protocol"]["gate"] = copy.deepcopy(cp["gate"])
         pr["protocol"]["e2_config_sha256"] = e2_cfg_sha256
+    elif e2_cfg_sha256 is not None and inp.get("e2_config") and inp["e2_config"] != DEFAULT_E2_CONFIG:
+        # a non-default E2 config (r14 TOOLSLOW / SHED): registered by its sha256; the default config records nothing
+        pr["protocol"]["e2_config_sha256"] = e2_cfg_sha256
+    if arms is not None:
+        pr["protocol"]["arms"] = [str(a) for a in arms]
     pb = pr["predicted_boundaries"]
     pb["recovery_threshold"].update(sessions_per_s=lam_ref, mult_of_lambda_ref=1.0)
     lcap = None if b is None or b.get("largest_all_stable_mult") is None else float(b["largest_all_stable_mult"]) * lam_ref
@@ -606,6 +667,16 @@ def run_blockers(pr: Dict[str, Any], prov: Dict[str, Any], run: Any) -> List[str
         out.append(f"{arm} arm ran with a gate cap {run.gate_n_cap}")
     if arm == RESCUE_MODE and reg_rescue:                   # n_cap is compared above as the resolved cap
         out.extend(gate_block_diff(protocol_gate(pr) or {}, dict(run.cfg.get("gate") or {}), skip=("n_cap",)))
+    ra = registered_arms(pr)
+    if ra is not None and arm not in ra:
+        out.append(f"arm {arm!r} not in the registered protocol.arms {ra}")
+    want_sha = proto.get("e2_config_sha256")
+    if want_sha is not None and not reg_rescue:             # r14: the run's config file is the registered E2 config
+        cfile = Path(run.dir) / "config.yaml"
+        if not cfile.is_file():
+            out.append("run dir has no config.yaml to compare with the registered protocol.e2_config_sha256")
+        elif config_text_sha256(cfile) != want_sha:
+            out.append(f"run config.yaml sha256 {config_text_sha256(cfile)} != registered protocol.e2_config_sha256 {want_sha}")
     if run.prereg_sha256 != prov.get("sha256"):
         out.append(f"run not bound to this file (meta.prereg_sha256={run.prereg_sha256!r}, file sha256={prov.get('sha256')!r})")
     t0 = run.t0_unix
@@ -695,12 +766,23 @@ def check_job(pr: Dict[str, Any], prov: Dict[str, Any], p: AnalysisParams, *, la
             if eg.get("mode") != RESCUE_MODE:
                 out.append(f"E2 config has no rescue gate block (gate.mode {eg.get('mode')!r}) but the registration registers one")
             out.extend(f"E2 config {d}" for d in gate_block_diff(pg, eg))
-    if pg is not None:
+    if pg is not None or proto.get("e2_config_sha256") is not None:
         want = proto.get("e2_config_sha256")
         if e2_cfg_sha256 is None:
-            out.append("rescue registration: check-job needs the --e2-config file to compare its sha256")
+            out.append(f"{'rescue registration' if pg is not None else 'registered e2 config sha256'}: check-job needs the "
+                       "--e2-config file to compare its sha256")
         elif want != e2_cfg_sha256:
             out.append(f"E2 config sha256 {e2_cfg_sha256} != registered protocol.e2_config_sha256 {want}")
+    ra = registered_arms(pr)
+    if ra is not None:
+        if job_arms is None:
+            out.append(f"this registration authorises only the arms {ra}: the job must pass explicit ARMS")
+        else:
+            bad = [a for a in job_arms if a not in ra]
+            if bad:
+                out.append(f"job arms {bad} not in the registered protocol.arms {ra}")
+    if e2_cfg is not None:
+        out.extend(ramp_problems(e2_cfg, mults))
     return out
 
 
@@ -722,6 +804,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                    help="how the CAPPED arm's cap is chosen from mu(n) (recorded in measured.n_cap_rule)")
     f.add_argument("--params", default="configs/agentload_analysis.yaml")
     f.add_argument("--set", action="append", default=[], help="override an analysis param (as summarize --set)")
+    f.add_argument("--arms", nargs="*", default=None, help="register protocol.arms: the only arms the registration authorises")
     d = sub.add_parser("derive-exploratory", help="derive a NEW exploratory cell file from a committed FILLED parent")
     d.add_argument("--from", dest="parent", required=True)
     d.add_argument("--engine-cell-label", required=True)
@@ -780,7 +863,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                   e2_cfg=yaml.safe_load(Path(args.e2_config).read_text()), lambda_mults=args.lambda_mults, rule=args.rule,
                   engine_cell_label=args.engine_cell_label, mu_curve_path=args.mu_curve, calibration_path=args.calibration,
                   e0b_path=args.e0b_bracket, e2_cfg_path=args.e2_config, n_cap_rule=args.n_cap_rule, p=p,
-                  e2_cfg_sha256=hashlib.sha256(Path(args.e2_config).read_bytes()).hexdigest())
+                  e2_cfg_sha256=hashlib.sha256(Path(args.e2_config).read_bytes()).hexdigest(), arms=args.arms)
         out.write_text(yaml.safe_dump(pr, sort_keys=False))
         print(f"wrote {out} status={pr['status']}")
         for x in pr["fill_problems"]:

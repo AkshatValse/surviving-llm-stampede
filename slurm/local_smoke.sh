@@ -6,6 +6,9 @@
 # uncommitted pre-registration (slurm/local_smoke_prereg.py) that the job script validates exactly as it would on Nova.
 # ARMS=rescue (MODE=burst) runs the rescue arm alone with E2_CONFIG = a mock-scale copy of configs/agentload_e2_rescue_smoke.yaml
 # (cap 3 engaged 3 s after a burst of 60 on a small, slow mock pool), registered by the same fill code, then the job's check-run.
+# R14_CELL=toolslow|shed (MODE=burst) runs the one arm of an r14 cell (noburst resp. burst) with E2_CONFIG = a mock-scale copy of
+# configs/agentload_e2_toolslow_d10.yaml (tool calls slowed by 1 s around the burst time) resp. _shed_t600.yaml (arrivals.kind ramp,
+# stopped for 2 s after the burst), registered by sha256 and arm as the r14 cells are; check-job verifies both.
 # Writes under $RESULTS_ROOT (default: a fresh temp dir, printed at the end).
 set -u -o pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,6 +22,12 @@ export POP=4 POP_CHECK="${POP_CHECK-}" SMOKE_RUN_S=8 MISS_RUN_S=12 MISS_WARMUP_S
 export N_LIST="${N_LIST:-2 4}" CLOSED_RUN_S=12 CLOSED_WARMUP_S=3 ARMS="${ARMS:-burst noburst capped}"
 export REPO_DIR
 RESCUE_ARGS=()
+R14_ARGS=()
+if [ -n "${R14_CELL:-}" ]; then
+  case "$R14_CELL" in toolslow) export ARMS=noburst ;; shed) export ARMS=burst ;; *) echo "R14_CELL must be toolslow|shed"; exit 1 ;; esac
+  export E2_CONFIG="$RESULTS_ROOT/fake_calib/agentload_e2_${R14_CELL}_mock.yaml"
+  R14_ARGS=(--r14-config "$E2_CONFIG" --r14-kind "$R14_CELL")
+fi
 if [ "$ARMS" = "rescue" ]; then
   # the rescue smoke protocol lives in its (mock-scale) E2 config, which check-run compares with the run: no burst / workload
   # overrides in GEN_EXTRA; a small slow mock pool so the burst piles up and the cap engages over many active sessions
@@ -39,7 +48,7 @@ export MULTS="${MULTS:-1.5}"
 [ "$MODE" = burst ] && [ "$MULTS" = "1.0" ] && export MULTS=1.5     # lambda must lie strictly inside the fake window (1.1, 2.7)
 "$ENV_GEN/bin/python" "$HERE/local_smoke_prereg.py" --dir "$RESULTS_ROOT/fake_calib" --label "$ENGINE_LABEL" --hardware "$FAKE_HW" \
     --mult "${MULTS%% *}" --duration-s "$BURST_RUN_S" --t-burst-s "$T_BURST" $([ "$MODE" = burst ] && echo --prereg) \
-    --set "trap_v2.eval_from_s=$HIT_EVAL_FROM_S" $ANALYSIS_EXTRA ${RESCUE_ARGS[@]+"${RESCUE_ARGS[@]}"} \
+    --set "trap_v2.eval_from_s=$HIT_EVAL_FROM_S" $ANALYSIS_EXTRA ${RESCUE_ARGS[@]+"${RESCUE_ARGS[@]}"} ${R14_ARGS[@]+"${R14_ARGS[@]}"} \
     || { echo "fake inputs failed"; exit 1; }
 export CALIB_FILE="${CALIB_FILE:-$RESULTS_ROOT/fake_calib/calibration.json}"      # pass CALIB_FILE to use a real calibration.json
 export PREREG_FILE="${PREREG_FILE:-$RESULTS_ROOT/fake_calib/prereg.yaml}" PREREG_ALLOW_UNCOMMITTED=1

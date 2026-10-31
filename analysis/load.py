@@ -76,8 +76,15 @@ class Run:
 
     @property
     def lam(self) -> Optional[float]:
-        """Resolved constant arrival rate, sessions/s (recorded in meta.json at run start)."""
+        """Resolved constant arrival rate, sessions/s (recorded in meta.json at run start). A ramp run (arrivals.kind ramp, no
+        constant rate) returns the rate of its LAST ramp knot (meta.ramp_knots, sessions/s): the rate the post-burst evaluation
+        window is judged at when the ramp is flat there (the SHED cells of plan N4: 1.35 x lambda_ref after the stop;
+        analysis/r14_cells.py checks the flatness). Constant-rate runs are unchanged."""
         v = self.meta.get("resolved_rate_sessions_per_s")
+        if v is None and (self.cfg.get("arrivals") or {}).get("kind") == "ramp":
+            knots = self.meta.get("ramp_knots") or []
+            if knots:
+                return float(knots[-1][1])
         return float(v) if v is not None else None
 
     @property

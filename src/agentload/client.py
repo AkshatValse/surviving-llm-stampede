@@ -42,6 +42,13 @@ resume, release and censored-pause events with the cap, active, waiting and paus
 ``agentload:paused_sessions`` and ``agentload:gate_cap`` (NaN = no cap) are logged. These files and gauges exist only
 for a rescue run; the request and session columns exist in every run (0 / empty without a rescue gate).
 
+Tool-latency spike (``workload.tool_slowdown``, plan N3 TOOLSLOW; see :class:`agentload.config.WorkloadCfg`). A tool call
+whose sleep starts (the previous turn's response completed) at t in [t_s, t_s + width_s) sleeps its drawn tool time plus
+``add_s``. Each tool call of such a run is logged in ``tool_calls.csv`` (sid, origin, idx, turn = the turn whose response
+started it, t_start, tool_s drawn, add_s applied, t_ready = when the next turn became ready); ``meta.json`` gets a
+``tool_slowdown`` block and ``outcome.tool_slowdown`` counts. Without the option none of this exists and the client's
+event order, files and meta keys are those of the client before the option.
+
 Time zero. ``meta.json`` records ``t0_unix`` (wall clock, ``time.time()``) taken at the instant the monotonic run
 clock starts, so ``wall time = t0_unix + t_s`` aligns these logs with server.log, gpu_util.csv and SLURM logs.
 """
@@ -64,7 +71,7 @@ import numpy as np
 import yaml
 
 from .config import (Config, gate_rescue_params, resolve_lambda_ref, resolve_n_cap, resolve_rate, resolve_ramp,
-                     resolve_uncached_tokens_ref)
+                     resolve_uncached_tokens_ref, tool_slowdown_add_s)
 from .gate import SessionGate
 from .parse import extract_output_ids, extract_output_text, extract_usage
 from .poller import MetricsPoller
@@ -83,6 +90,8 @@ GATE_EVENT_FIELDS = ["t_s", "event", "sid", "cap", "active", "waiting", "paused"
 STATIC_GATE_OUTCOME_KEYS = ("n_cap", "n_admitted", "n_waited", "max_active_seen", "max_waiting_seen", "wait_s_max",
                             "wait_s_mean", "n_still_waiting_at_end")
 PLAN_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "tool_time_total_s"]
+# tool_calls.csv: one row per tool call of a run with workload.tool_slowdown (the file exists only for such runs)
+TOOL_CALL_FIELDS = ["sid", "origin", "idx", "turn", "t_start", "tool_s", "add_s", "t_ready"]
 
 
 def prompt_hash(ctx: Context) -> str:
@@ -207,6 +216,9 @@ class LoadGenerator:
         self.t_release: Optional[float] = None
         self.gate_control_error: Optional[str] = None
         self.gate_at_stop: Optional[Dict[str, int]] = None    # rescue: gate queues when the run stopped, before the cancel
+        self.tool_slowdown = cfg.workload.tool_slowdown          # plan N3; None = the client before the option
+        self.tool_log: Optional[CsvLog] = None
+        self.n_tool_calls = self.n_tool_calls_slowed = 0
 
     # ------------------------------------------------------------ time
     def now(self) -> float:
@@ -397,7 +409,14 @@ class LoadGenerator:
                 st.turns_completed = turn
                 ctx = extend_context(ctx, out)
                 if turn < sp.n_turns:
-                    t_planned = self.now() + sp.tool_times_s[turn - 1]
+                    if self.tool_slowdown is None:
+                        t_planned = self.now() + sp.tool_times_s[turn - 1]
+                    else:                                        # TOOLSLOW: the add depends on when the tool call starts
+                        t_tool = self.now()
+                        tool_s = sp.tool_times_s[turn - 1]
+                        add = tool_slowdown_add_s(self.tool_slowdown, t_tool)
+                        t_planned = t_tool + tool_s + add
+                        self._log_tool_call(sp, turn, t_tool, tool_s, add, t_planned)
             st.status = "completed"
         except asyncio.CancelledError:
             st.status = "cancelled"
@@ -419,6 +438,14 @@ class LoadGenerator:
                 st.status = "failed"
             if self.cfg.arrivals.kind == "closed" and not self._closing and st.status in ("completed", "failed"):
                 self._spawn_closed()
+
+    def _log_tool_call(self, sp: SessionPlan, turn: int, t_start: float, tool_s: float, add_s: float, t_ready: float) -> None:
+        self.n_tool_calls += 1
+        if add_s > 0:
+            self.n_tool_calls_slowed += 1
+        if self.tool_log is not None:
+            self.tool_log.write({"sid": sp.sid, "origin": sp.origin, "idx": sp.idx, "turn": turn, "t_start": t_start,
+                                 "tool_s": tool_s, "add_s": add_s, "t_ready": t_ready})
 
     def _lambda_ref_value(self) -> Optional[float]:
         """Resolved ``arrivals.lambda_ref`` (sessions/s; the lambda_miss the arrival rate is a multiple of), if set and
@@ -537,6 +564,8 @@ class LoadGenerator:
         nofile = _raise_nofile()
         self._loop = asyncio.get_running_loop()
         self.req_log = CsvLog(self.out_dir / "requests.csv", REQ_FIELDS)
+        if self.tool_slowdown is not None:
+            self.tool_log = CsvLog(self.out_dir / "tool_calls.csv", TOOL_CALL_FIELDS)
         self.events: List[str] = []
         self._stop = asyncio.Event()
         self._install_signals()
@@ -567,6 +596,11 @@ class LoadGenerator:
         if self.rescue is not None:                    # rescue only: static / uncapped meta.json keys are unchanged
             meta_extra["gate_mode"] = self.gate_mode
             meta_extra["gate"] = {**self.rescue, "n_cap_resolved": self.n_cap}
+        if self.tool_slowdown is not None:             # TOOLSLOW only: other runs' meta.json keys are unchanged
+            ts = self.tool_slowdown
+            meta_extra["tool_slowdown"] = {"t_s": float(ts.t_s), "width_s": float(ts.width_s), "add_s": float(ts.add_s),
+                                           "applies_to": "tool calls whose sleep starts in [t_s, t_s + width_s)",
+                                           "log": "tool_calls.csv"}
 
         def meta(status: str, ended: bool = False) -> None:
             write_meta(self.out_dir, build_meta(experiment=cfg.output.name, argv=argv, seeds=[self.seed],
@@ -647,6 +681,9 @@ class LoadGenerator:
                                  "output_ids_source_counts": dict(self.src_counts),
                                  "prompt_tokens_mismatch": self.n_prompt_mismatch,
                                  "prompt_tokens_missing_in_response": self.n_prompt_missing}
+        if self.tool_slowdown is not None:
+            meta_extra["outcome"]["tool_slowdown"] = {"n_tool_calls": self.n_tool_calls,
+                                                      "n_tool_calls_slowed": self.n_tool_calls_slowed}
         meta("finished", ended=True)
         return Outcome(out_dir=self.out_dir, abort_reason=self.abort_reason, t_end_s=t_end, counts=counts)
 
@@ -678,12 +715,16 @@ class LoadGenerator:
             while True:
                 await asyncio.sleep(self.cfg.run.flush_every_s)
                 self.req_log.flush()
+                if self.tool_log is not None:
+                    self.tool_log.flush()
         except asyncio.CancelledError:
             pass
 
     def _finalize_files(self) -> None:
-        """Close request log; write sessions.csv, events.log and (rescue runs) gate_events.csv."""
+        """Close request log (and the TOOLSLOW tool-call log); write sessions.csv, events.log and (rescue runs) gate_events.csv."""
         self.req_log.close()
+        if self.tool_log is not None:
+            self.tool_log.close()
         with open(self.out_dir / "sessions.csv", "w", newline="") as fh:
             w = csv.DictWriter(fh, fieldnames=SESSION_FIELDS)
             w.writeheader()
