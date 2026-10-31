@@ -1,0 +1,2 @@
+label,seed,rate_mult,t_burst,t_end_s,aborted,abort_reason,n_post_windows,trap_run_s,trapped,hit_eval,n_eval_windows,tail_queue_mean,tail_hit_rate,tail_queue_slope_per_window,hit_returned,queue_returned,recovered,n_pre_windows,pre_hit,pre_queue_mean,good_before,trapped_aborted,verdict,is_trap,hysteresis_run,run_dir,arm
+sglang-fcfs-r1-llama31,1,1.35,1200.0,8700.00786322169,False,,6,0.0,False,0.9269146608315099,2,0.0,0.931107099879663,0.0,True,True,True,1,0.913451511991658,0.0,True,False,recovered,False,False,results/agentload_e2_burst/20261031-153931,capped
