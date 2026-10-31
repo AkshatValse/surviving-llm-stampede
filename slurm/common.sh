@@ -603,6 +603,7 @@ job_main() {
   check_time_budget pre
   launch_engine
   wait_health "$BASE_URL$HEALTH_PATH" "${HEALTH_TIMEOUT_S:-900}"
+  if declare -F engine_post_health_check >/dev/null; then engine_post_health_check || die "engine post-health check failed (see $SERVER_LOG)"; fi
   verify_served_model
   check_time_budget post
   start_gpu_monitor

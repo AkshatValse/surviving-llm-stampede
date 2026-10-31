@@ -133,15 +133,22 @@ for m in 1.35 1.65; do for s in 0 1 2; do
 done; done
 ```
 
-**Pending cells:** do not submit the following until their environments and registrations exist and have been validated and committed. `sglang-lpminf` requires the separate patched `ENV_SGLANG_PATCHED` environment (`WAITING_QUEUE_PREFIX_MATCH_MAX` raised as in plan O3), `POLICY=lpm`, `REFRESH=1`, `LPM_INF=1`, and the same SGLang calibration. `vllm-fcfs` requires `ENV_VLLM` and its **own E0a** `calibration.json`; derive its registration with `--calibration "$VCAL"` and pass that exact file to `CALIB_FILE`. Its reference rates come from vLLM, but the inherited SGLang window and lambda multiples are not measured vLLM boundaries. Neither pending registration is included yet.
+**Pending cells:** do not submit the following until their environments and registrations exist and have been validated and committed. `sglang-lpminf` (plan r11 L1) uses the stock `ENV_SGLANG` plus the job-local hook `slurm/hooks/lpm_inf/sitecustomize.py`, which `LPM_INF=1` puts on the server command line only (`env PYTHONPATH=$REPO/slurm/hooks/lpm_inf PM_WAITING_QUEUE_PREFIX_MATCH_MAX=1000000000`) and which raises `WAITING_QUEUE_PREFIX_MATCH_MAX` from 128 to 1e9 in every process that imports `schedule_policy` (so LPM never falls back to FCFS); it requires `POLICY=lpm`, `REFRESH=1`, `LPM_INF=1`, an unset `PYTHONPATH` in the submitting shell, and the same SGLang calibration. The flag check runs a CPU self-test against the installed package (value 1e9, `schedule_policy.py` md5 `b8ec334ac1ed028e3c176022ea1f9143`, the pinned hook md5, LPM at a queue of 300; without the variable 128 and FCFS) and, after `/health`, the job dies unless `server.log` holds the hook marker from a pid other than the server's (the scheduler child; lines kept in `<job dir>/lpm_inf_markers.txt`). `LPM_INF=0` (default) leaves every command byte-identical. `vllm-fcfs` requires `ENV_VLLM` and its **own E0a** `calibration.json`; derive its registration with `--calibration "$VCAL"` and pass that exact file to `CALIB_FILE`. Its reference rates come from vLLM, but the inherited SGLang window and lambda multiples are not measured vLLM boundaries. Neither pending registration is included yet.
 
-After those prerequisites are ready, set `PATCHED_ENV`, `VLLM_ENV` and `VCAL` to their actual paths, derive and commit the corresponding files, and use:
+After those prerequisites are ready, set `VLLM_ENV` and `VCAL` to their actual paths, derive and commit the corresponding files, and use (the `sglang-lpminf` cell runs at 1.65 x only, under its own 2026-10-30 registration; see the block after this one):
 ```bash
 CAL=prereg/inputs/2026-10-23/calibration.json
 for m in 1.35 1.65; do for s in 0 1 2; do
-  sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,ENV_SGLANG_PATCHED=$PATCHED_ENV,MODE=burst,POLICY=lpm,REFRESH=1,LPM_INF=1,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$CAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_sglang-lpminf.yaml,ENGINE_LABEL=sglang-lpminf" slurm/sglang_job.sbatch
   sbatch --account=f2026.coms.6250.02 --time=03:10:00 --export="$COMMON,ENV_VLLM=$VLLM_ENV,MODE=burst,POLICY=fcfs,REFRESH=0,LPM_INF=0,MULTS=$m,SEEDS=$s,ARMS=burst,CALIB_FILE=$VCAL,PREREG_FILE=configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml,ENGINE_LABEL=vllm-fcfs" slurm/vllm_job.sbatch
 done; done
+```
+
+`sglang-lpminf` (exploratory, BURST arm, 1.65 x, seeds 0-2; registration derived with `python -m analysis.prereg derive-exploratory --from configs/agentload_prereg_2026-10-24.yaml --engine-cell-label sglang-lpminf --arms burst --out configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml`, committed and pushed first). Seed 0 is in effect the test job: a mis-hooked job stops at the self-test or the post-health marker check. Memory per the coordination rules (48G):
+```bash
+CAL=prereg/inputs/2026-10-23/calibration.json
+for s in 0 1 2; do
+  sbatch --account=f2026.coms.6250.02 --partition=instruction --qos=instruction --time=03:10:00 --mem=48G --cpus-per-task=16 --nice=56 --export="$COMMON,MODE=burst,POLICY=lpm,REFRESH=1,LPM_INF=1,MULTS=1.65,SEEDS=$s,ARMS=burst,CALIB_FILE=$CAL,PREREG_FILE=configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml,ENGINE_LABEL=sglang-lpminf" slurm/sglang_job.sbatch
+done
 ```
 `POLICY`, `REFRESH` and `LPM_INF` do not alter vLLM; they are set explicitly to avoid inherited SGLang settings. Summarize each cell with `python -m analysis.summarize burst2 --run-dirs <cell run dirs> --prereg <cell's derived file>`.
 

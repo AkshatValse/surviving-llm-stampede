@@ -1,0 +1,108 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst",
+    "--run-dirs",
+    "results/agentload_e2_burst/20261031-015539",
+    "--out-root",
+    "results",
+    "--set",
+    "burst.trap_min_s=3000",
+    "--set",
+    "burst.hit_eval_from_s=4500"
+  ],
+  "git": {
+    "commit": "5064580c0d7b6b8bdfdc7ef573f89af6aec8ad71",
+    "dirty": false,
+    "branch": "HEAD",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    2
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova22-gpu-1",
+  "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+  "start_time": "2026-10-31T04:23:41",
+  "end_time": "2026-10-31T04:23:42",
+  "wall_s": 0.588598,
+  "slurm_env": {
+    "SLURM_JOB_ID": "17168745",
+    "SLURM_JOB_NAME": "pm-lpminf",
+    "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+    "SLURM_JOB_PARTITION": "instruction",
+    "SLURM_JOB_QOS": "instruction",
+    "SLURM_JOB_NODELIST": "nova22-gpu-1",
+    "SLURM_CPUS_PER_TASK": "16",
+    "SLURM_MEM_PER_NODE": "49152",
+    "SLURM_GPUS_ON_NODE": "1",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+  },
+  "inputs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261031-015539",
+      "label": "sglang-lpminf",
+      "seed": 2,
+      "run_git": {
+        "commit": "5064580c0d7b6b8bdfdc7ef573f89af6aec8ad71",
+        "dirty": false,
+        "branch": "HEAD",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T01:55:39",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168745",
+        "SLURM_JOB_NAME": "pm-lpminf",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-1",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "n_runs": 1,
+  "kill_verdict": {
+    "interval": [
+      1.2,
+      2.0
+    ],
+    "fraction_min": 0.6666666666666666,
+    "min_runs_per_cell": 3,
+    "cells": {},
+    "n_fcfs_cells_with_data": 0,
+    "mechanism_transfers_any_fcfs_cell_strict": false,
+    "mechanism_transfers_any_fcfs_cell_loose": false,
+    "kill_strict": null,
+    "kill_loose": null,
+    "guards": {
+      "n_errors": 0,
+      "n_warnings": 0,
+      "codes": []
+    },
+    "skipped_no_burst": [],
+    "arms_in_kill_table": [
+      "burst"
+    ],
+    "role": "SECONDARY: hit-rate criterion of the first draft. The pre-registered kill-test verdict is kill_verdict_v2.json (`summarize burst2`: throughput criterion, paired arms)"
+  },
+  "guard_problems": []
+}

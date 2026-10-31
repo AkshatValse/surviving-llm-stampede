@@ -1,0 +1,131 @@
+# Round 11, L1 (LPM-INF): FROZEN endpoints and decision rule for the exploratory real-engine run, written before any LPM-INF run exists.
+#
+# L1 step 2 = cell sglang-lpminf on the real engine (SGLang 0.5.22, Qwen2.5-7B-Instruct, A100 80GB PCIe, 300k KV pool): POLICY=lpm, REFRESH=1,
+#   LPM_INF=1 (stock env plus the job-local hook slurm/hooks/lpm_inf/sitecustomize.py, which raises schedule_policy.WAITING_QUEUE_PREFIX_MATCH_MAX
+#   from 128 to 1e9 in every interpreter, so the LPM -> FCFS fallback never engages), BURST arm only, E2 protocol (default E2_CONFIG
+#   configs/agentload_e2_burst.yaml: 200 sessions in 60 s at t = 1200 s, 8700 s run), 1.65 x lambda_ref, seeds 0, 1, 2. Plan item L1.
+#   Registration: `python -m analysis.prereg derive-exploratory --from configs/agentload_prereg_2026-10-24.yaml --engine-cell-label sglang-lpminf
+#   --arms burst --out configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml` (status EXPLORATORY). The result is EXPLORATORY and
+#   directional; nothing here is a registered decisive test.
+#
+# Every trap_v2 constant below is a REGISTERED constant of configs/agentload_prereg_2026-10-24.yaml (pass_rule, measured); the primary endpoint
+# (token hit < 0.05) and the decision rule are the plan's (r11 plan item L1, from the scout's design, scope lpm). None is chosen after an outcome.
+#
+# Machine-readable: experiments/r11_predict_lpminf.py (the blind simulator predictions, S1 bundle 2) reads this file; the engine-side evaluator
+# of the LPM-INF runs must read the same constants. Do not edit after the tag r11-lpminf-pred; a change is a new file with a new date and reason.
+status: FROZEN
+frozen:
+  rule: commit with the blind simulator predictions (results/r11_predict_lpminf/<ts>/, notes/PREDICTIONS_r11_lpminf.md), push, tag
+    r11-lpminf-pred, before the first sglang-lpminf job is submitted
+  written: 2026-10-30
+  blind_scope: >-
+    No LPM-INF (sglang-lpminf) engine run exists anywhere when this file is written. Known to the lead (and stated in the task text that produced
+    this file): the 12 committed stock-LPM grid BURST runs (labels sglang-lpm-r0 / sglang-lpm-r1, results/nova/r7_native_grid_vllm_pulled_20261025-145126);
+    at 1.65 x, stock LPM was trapped or stuck in 4 of 6 runs (seeds 0 and 1 in both replicates; seed 2 in neither), and the scout's post-hoc
+    queue-vs-128 analysis (COORD/scope_lpm). The simulator's outcome files of those runs were not used to set anything here.
+registered_sources:
+  prereg: configs/agentload_prereg_2026-10-24.yaml
+  calibration: prereg/inputs/2026-10-23/calibration.json
+
+cell:
+  engine_cell_label: sglang-lpminf
+  policy: lpm
+  refresh: 1
+  lpm_inf: 1
+  waiting_queue_prefix_match_max: 1000000000     # stock value 128 (sglang 0.5.22 schedule_policy.py:132-133, md5 b8ec334ac1ed028e3c176022ea1f9143)
+  arm: burst
+  e2_config: configs/agentload_e2_burst.yaml
+  prereg_file: configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml
+  kv_tokens: 300000
+  lambda_mult: 1.65
+  lambda_ref: 0.07153402100919228                # prereg measured.lambda_ref = calibration.json lambda_miss_turns_based
+  seeds: [0, 1, 2]
+  informative_seeds: [0, 1]                      # stock LPM collapsed in 4/4 runs on these seeds; seed 2 never collapsed under stock (reported, not decisive)
+  burst_n: 200
+  burst_t_s: 1200
+  burst_width_s: 60
+  duration_s: 8700
+controls:
+  committed_stock_lpm: >-
+    the 12 committed stock-LPM BURST runs (sglang-lpm-r0 / -r1, 1.35 x and 1.65 x, seeds 0-2, results/nova/r7_native_grid_vllm_pulled_20261025-145126);
+    common random numbers by seed (same client plan); the same-seed 1.65 x pairs are the comparison
+  committed_fcfs: the sglang-fcfs-r1 / -r0 BURST runs at 1.65 x on the same seeds (e2_170933xx_pulled_20261025-144558, r7 grid)
+
+# ------------------------------------------------------------------ primary endpoint (per run)
+primary:
+  name: collapse
+  definition: >-
+    collapse := token_hit_rate over W < 0.05, where W = [5700, 8700) s from run start (t_burst + eval_from_s to the run end),
+    token_hit_rate = sum(cached_tokens) / sum(prompt_tokens) over the ok turns that COMPLETE in W (analysis/windows.py `token_hit_rate`,
+    attribute_by complete)
+  window_s: [5700, 8700]
+  hit_metric: token_hit_rate
+  attribute_by: complete
+  collapse_hit_below: 0.05
+  missing: a run without a completed 8700 s horizon, or with no ok turn completing in W, has no primary value (reported as missing, not counted)
+
+# ------------------------------------------------------------------ secondary endpoints (per run; reported, none decides alone)
+secondaries:
+  trap_v2:                                       # the registered label: analysis.trap_v2.trap_v2_run with the prereg pass_rule, unchanged
+    rate_estimator: uncached_tokens
+    rate_tolerance: 0.15                         # (a) |uncached prefill tokens/s over W / uncached_tokens_ref - 1| <= 0.15
+    uncached_tokens_ref: 11243.179816372982      # prereg measured.all_miss_uncached_tokens_per_s
+    slope_frac: 0.5                              # (b) OLS slope of sessions-in-system bin means over W > 0.5 (lambda - lambda_ref)
+    slope_dt_s: 10.0
+    recovered_hit_above: 0.8                     # RECOVERED: frac_turns_cached_gt50 > 0.8 AND outstanding < 20, both over the last end_window_s
+    recovered_backlog_below: 20.0
+    recovered_backlog_metric: outstanding
+    end_window_s: 300.0
+    eval_from_s: 4500.0
+    min_eval_s: 600.0
+    hit_metric: frac_turns_cached_gt50
+    cached_frac_threshold: 0.5
+    state_order: [trapped, recovered, draining, indeterminate]
+  latency:
+    definition: turn latency = response end - request send (client), over the ok turns completing in W; report p50 and p99; also over [1200, 8700)
+    quantiles: [0.5, 0.99]
+  unfinished_sessions:
+    definition: sessions that arrived (base + burst) and did not complete all their turns by the run end (8700 s)
+  miss_turn_latency:
+    definition: >-
+      the latency distribution (p50, p90, p99, max) of MISS turns (cached_tokens / prompt_tokens <= 0.5) completing in W, and the number of turns
+      with latency > 600 s over the whole run; the starvation check of pure LPM (a miss can wait behind every hit)
+    quantiles: [0.5, 0.9, 0.99]
+    long_wait_s: 600.0
+  uncached_tokens_per_s:
+    definition: mean uncached prefill tokens / s over W (the trap_v2 rate estimator), and its ratio to uncached_tokens_ref
+
+# ------------------------------------------------------------------ manipulation check (per run; a run failing it is EXCLUDED)
+manipulation_check:
+  hook_marker: the server log holds a '[pm-lpminf-hook]' line reporting '128 -> 1000000000' from a child pid other than SERVER_PID (the scheduler)
+  self_test: the job's CPU self-test asserted the patched value 1e9 and the schedule_policy.py md5 b8ec334ac1ed028e3c176022ea1f9143
+  scheduler_cost: >-
+    the Prometheus get_next_batch_to_run time counter, differenced over 60 s bins (seconds of scheduler time per second), is >= 0.008 s/s in
+    the bins whose mean waiting queue is > 128 (plan: "whenever the queue is > 128"; stock LPM fell to the FCFS level 0.0028-0.0031 s/s there).
+    Reported as the fraction of qualifying bins >= 0.008. FAIL if that fraction is < 0.9 (the 0.9 tolerance for scrape noise is set here,
+    before any run). If no bin qualifies (the queue never exceeds 128) the check is UNINFORMATIVE, not failed, and is reported as such.
+  scheduler_cost_min_s_per_s: 0.008
+  scheduler_cost_bin_s: 60.0
+  scheduler_cost_min_pass_fraction: 0.9
+
+# ------------------------------------------------------------------ decision rule (exploratory, directional only)
+decision_rule:
+  statistics: per seed, CRN-paired with the committed stock-LPM runs of the same seed; no pooled intervals
+  outcomes:
+    - id: consistent
+      when: INF does not collapse on seed 0 AND does not collapse on seed 1
+      report: consistent with the 128-request fallback causing stock LPM's collapse
+    - id: against
+      when: INF collapses on seed 0 AND on seed 1
+      report: against the fallback explanation (pure LPM also collapses)
+    - id: inconclusive
+      when: any other combination of seeds 0 and 1 (a split, or a seed missing or excluded)
+      report: inconclusive
+  seed_2: reported with its state; it does not enter the rule (stock LPM never collapsed on seed 2)
+  excluded: a run failing the manipulation check is excluded (counts as missing)
+  trade_off: >-
+    if INF avoids collapse but its miss sessions starve -- unfinished sessions above the stock-LPM BURST level of the same seed, or p99 turn
+    latency over W above stock's -- that is reported as a trade-off, not as a success
+  simulator_comparison: >-
+    the S1 bundle-2 simulator predictions (results/r11_predict_lpminf/<ts>/, notes/PREDICTIONS_r11_lpminf.md) are scored per seed: primary
+    collapse match, trap_v2 state match, and |token hit over W (engine) - token hit over W (simulator)| <= 0.1. A miss is reported, not explained away.
