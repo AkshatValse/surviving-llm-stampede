@@ -28,6 +28,20 @@ every session (0.0 without a gate); a session cancelled while still queued has a
 ``gate_censored=1`` (its ``gate_wait_s`` is the wait up to the cancel). The first request's ``sched_delay_s`` is
 measured from the admission time when the session waited (the wait is reported separately).
 
+Rescue gate (``gate.mode: rescue``, the RESCUE arm; see :class:`agentload.config.GateCfg`). The run is uncapped until
+``gate.t_on_s``: no session ever waits and :meth:`SessionGate.checkpoint` returns without suspending, so the client is
+byte-identical to the BURST arm up to then (same plan, same event order). A control task engages the cap ``n_cap`` at
+``t_on_s`` and releases it when both gate queues have stayed empty for ``release_hold_s`` (checked every
+``release_check_s`` from ``t_on_s + min_on_s``). With ``pause_at_turns`` the session calls the checkpoint before each turn
+>= 2, after its tool time: over the cap it pauses (gives up its slot) until a slot is handed back. Each request row
+carries ``t_ready`` (when the turn was ready to send: the planned time of turn 1, the end of the tool time otherwise) and
+``pause_s`` (the pause before it, 0.0 if none); ``sched_delay_s`` of a paused turn is measured from the resume, as for a
+gated first turn. ``sessions.csv`` carries ``n_pauses``, ``pause_s_total`` (a pause still open at the end is counted up
+to ``t_end``) and ``pause_censored`` (1: the session ended while paused). ``gate_events.csv`` lists engage, pause,
+resume, release and censored-pause events with the cap, active, waiting and paused counts after each; the gauges
+``agentload:paused_sessions`` and ``agentload:gate_cap`` (NaN = no cap) are logged. These files and gauges exist only
+for a rescue run; the request and session columns exist in every run (0 / empty without a rescue gate).
+
 Time zero. ``meta.json`` records ``t0_unix`` (wall clock, ``time.time()``) taken at the instant the monotonic run
 clock starts, so ``wall time = t0_unix + t_s`` aligns these logs with server.log, gpu_util.csv and SLURM logs.
 """
@@ -49,7 +63,7 @@ import aiohttp
 import numpy as np
 import yaml
 
-from .config import (Config, resolve_lambda_ref, resolve_n_cap, resolve_rate, resolve_ramp,
+from .config import (Config, gate_rescue_params, resolve_lambda_ref, resolve_n_cap, resolve_rate, resolve_ramp,
                      resolve_uncached_tokens_ref)
 from .gate import SessionGate
 from .parse import extract_output_ids, extract_output_text, extract_usage
@@ -61,9 +75,13 @@ from .workload import (ContentGen, Context, SessionPlan, build_open_plan, contex
 REQ_FIELDS = ["req_id", "sid", "origin", "turn", "n_turns", "t_planned", "t_send", "t_headers", "t_complete",
               "latency_s", "sched_delay_s", "status", "http_status", "error", "prompt_tokens_client",
               "prompt_tokens", "completion_tokens", "cached_tokens", "cached_source", "output_ids_source",
-              "prompt_hash", "raw_usage_json", "error_kind"]
+              "prompt_hash", "raw_usage_json", "error_kind", "t_ready", "pause_s"]
 SESSION_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "t_first_send", "t_end", "turns_completed",
-                  "status", "t_admit", "gate_wait_s", "gate_censored"]
+                  "status", "t_admit", "gate_wait_s", "gate_censored", "n_pauses", "pause_s_total", "pause_censored"]
+GATE_EVENT_FIELDS = ["t_s", "event", "sid", "cap", "active", "waiting", "paused", "pause_s"]
+# outcome.gate of a static / uncapped run: exactly the keys the client wrote before the rescue arm existed
+STATIC_GATE_OUTCOME_KEYS = ("n_cap", "n_admitted", "n_waited", "max_active_seen", "max_waiting_seen", "wait_s_max",
+                            "wait_s_mean", "n_still_waiting_at_end")
 PLAN_FIELDS = ["sid", "origin", "idx", "arrival_s", "n_turns", "tool_time_total_s"]
 
 
@@ -134,9 +152,12 @@ class SessionState:
     t_first_send: Optional[float] = None
     t_end: Optional[float] = None
     turns_completed: int = 0
-    status: str = "pending"          # pending | gated | running | completed | failed | cancelled
+    status: str = "pending"          # pending | gated | running | paused | completed | failed | cancelled
     t_admit: Optional[float] = None  # when the session passed the gate (None: never admitted)
     gate_wait_s: float = 0.0
+    n_pauses: int = 0                # rescue gate: pauses at tool-call boundaries
+    pause_s_total: float = 0.0       # ...their total duration (an open pause counted up to t_end)
+    paused_since: Optional[float] = None   # set while paused
 
 
 @dataclass
@@ -177,7 +198,15 @@ class LoadGenerator:
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._t0 = 0.0
         self.http: Optional[aiohttp.ClientSession] = None
-        self.gate = SessionGate(self.n_cap, self.now)
+        # static: the cap holds from t = 0 (CAPPED). rescue: uncapped until gate.t_on_s, then _gate_control acts.
+        self.gate_mode = cfg.gate.mode
+        self.rescue = gate_rescue_params(cfg.gate) if self.gate_mode == "rescue" else None
+        self.pause_at_turns = bool(self.rescue and self.rescue["pause_at_turns"])
+        self.gate = SessionGate(self.n_cap if self.gate_mode == "static" else None, self.now)
+        self.t_engage: Optional[float] = None
+        self.t_release: Optional[float] = None
+        self.gate_control_error: Optional[str] = None
+        self.gate_at_stop: Optional[Dict[str, int]] = None    # rescue: gate queues when the run stopped, before the cancel
 
     # ------------------------------------------------------------ time
     def now(self) -> float:
@@ -222,10 +251,13 @@ class LoadGenerator:
         self._signals = []
 
     # ------------------------------------------------------------ one request
-    async def _send(self, sp: SessionPlan, turn: int, ctx: Context, t_planned: float
+    async def _send(self, sp: SessionPlan, turn: int, ctx: Context, t_planned: float,
+                    t_ready: Optional[float] = None, pause_s: float = 0.0, t_sched_ref: Optional[float] = None
                     ) -> Optional[Union[np.ndarray, str]]:
         """Send one turn. Returns the model output to append to the context, or None if the request failed (or
-        returned nothing usable). The request row is always logged, including on cancellation."""
+        returned nothing usable). The request row is always logged, including on cancellation.
+        ``t_ready``/``pause_s`` are logged as given (``t_ready`` defaults to ``t_planned``); ``sched_delay_s`` is
+        measured from ``t_sched_ref`` (default ``t_planned``; the resume time after a pause)."""
         wl, srv = self.cfg.workload, self.cfg.server
         prompt: Any = ctx.tolist() if isinstance(ctx, np.ndarray) else ctx
         body: Dict[str, Any] = {"model": srv.model, "prompt": prompt, "max_tokens": wl.decode_tokens,
@@ -236,10 +268,11 @@ class LoadGenerator:
         self.n_req += 1
         row: Dict[str, Any] = {"req_id": self.n_req, "sid": sp.sid, "origin": sp.origin, "turn": turn,
                                "n_turns": sp.n_turns, "t_planned": t_planned,
-                               "prompt_tokens_client": context_len(ctx), "prompt_hash": prompt_hash(ctx)}
+                               "prompt_tokens_client": context_len(ctx), "prompt_hash": prompt_hash(ctx),
+                               "t_ready": t_planned if t_ready is None else t_ready, "pause_s": pause_s}
         t_send = self.now()
         row["t_send"] = t_send
-        row["sched_delay_s"] = t_send - t_planned
+        row["sched_delay_s"] = t_send - (t_planned if t_sched_ref is None else t_sched_ref)
         self.inflight += 1
         self.max_inflight_seen = max(self.max_inflight_seen, self.inflight)
         if self.inflight > self.cfg.run.max_inflight:
@@ -319,23 +352,45 @@ class LoadGenerator:
     # ------------------------------------------------------------ one session
     async def _session(self, sp: SessionPlan) -> None:
         st = self.states[sp.sid]
-        admitted = False
+        admitted = False                                         # True while the session holds a gate slot
+        ever_admitted = False
         try:
-            if self.n_cap is not None:
+            if self.gate.max_active is not None:
                 st.status = "gated"
             st.gate_wait_s = await self.gate.acquire()           # FIFO; returns at once when there is no cap / room
-            admitted = True
+            admitted = ever_admitted = True
             st.t_admit = self.now()
             st.status = "running"
             ctx = self.content.initial(sp)
             t_planned = sp.arrival_s if st.gate_wait_s <= 0.0 else st.t_admit
             for turn in range(1, sp.n_turns + 1):
+                t_ready: Optional[float] = None
+                pause_s = 0.0
+                t_ref: Optional[float] = None
                 if turn > 1:
                     ctx = extend_context(ctx, self.content.delta(sp, turn))
                     await self._sleep_until(t_planned)
+                    if self.pause_at_turns:                      # rescue: tool-call boundary = pause point
+                        t_ready = self.now()
+                        if self.gate.over_cap():
+                            st.status = "paused"
+                            st.paused_since = t_ready
+                            admitted = False                     # checkpoint gives the slot up before it suspends
+                        try:
+                            pause_s = await self.gate.checkpoint(sp.sid)
+                        except asyncio.CancelledError:
+                            admitted = False                     # cancelled while paused: no slot is held
+                            raise
+                        if st.paused_since is not None:
+                            st.n_pauses += 1
+                            st.pause_s_total += pause_s
+                            st.paused_since = None
+                            st.status = "running"
+                            t_ref = self.now()
+                        admitted = True
                 if st.t_first_send is None:
                     st.t_first_send = self.now()
-                out = await self._send(sp, turn, ctx, t_planned)
+                out = await self._send(sp, turn, ctx, t_planned, t_ready=t_ready, pause_s=pause_s, t_sched_ref=t_ref)
                 if out is None:
                     st.status = "failed"
                     return
@@ -349,8 +404,15 @@ class LoadGenerator:
             raise
         finally:
             st.t_end = self.now()
-            if not admitted:                                     # cancelled while queued: censored wait
+            if not ever_admitted:                                # cancelled while queued: censored wait
                 st.gate_wait_s = st.t_end - sp.arrival_s
+            if st.paused_since is not None:                      # ended while paused: censored pause
+                st.n_pauses += 1
+                st.pause_s_total += st.t_end - st.paused_since
+                self.gate.events.append({"t_s": st.t_end, "event": "pause_censored", "sid": sp.sid,
+                                         "cap": self.gate.max_active, "active": self.gate.active,
+                                         "waiting": self.gate.waiting_new, "paused": self.gate.paused,
+                                         "pause_s": st.t_end - st.paused_since})
             if admitted:
                 self.gate.release()
             if st.status == "running":
@@ -390,8 +452,50 @@ class LoadGenerator:
     def _client_gauges(self) -> Dict[str, float]:
         active = sum(1 for s in self.states.values() if s.status == "running")
         gated = sum(1 for s in self.states.values() if s.status == "gated")
-        return {"agentload:inflight_requests": float(self.inflight), "agentload:active_sessions": float(active),
-                "agentload:gated_sessions": float(gated), "agentload:sessions_in_system": float(active + gated)}
+        out = {"agentload:inflight_requests": float(self.inflight), "agentload:active_sessions": float(active),
+               "agentload:gated_sessions": float(gated), "agentload:sessions_in_system": float(active + gated)}
+        if self.rescue is not None:                    # rescue only, so static / uncapped metrics.csv files are unchanged
+            paused = sum(1 for s in self.states.values() if s.status == "paused")
+            cap = self.gate.max_active
+            out["agentload:sessions_in_system"] = float(active + gated + paused)
+            out["agentload:paused_sessions"] = float(paused)
+            out["agentload:gate_cap"] = float("nan") if cap is None else float(cap)
+        return out
+
+    # ------------------------------------------------------------ rescue gate control
+    async def _gate_control(self) -> None:
+        """Rescue arm: engage the cap at t_on_s; from t_on_s + min_on_s check every release_check_s (ticks at
+        t_on_s + k * release_check_s) and release at the first tick at which both gate queues have been empty
+        continuously for release_hold_s. No forced release: a run that never drains ends with the cap engaged.
+        Any exception here aborts the run (``abort_reason`` gate_control_error, the message in events.log and in
+        ``outcome.gate.gate_control_error``), so the post-run check fails instead of the run going on with a stale cap."""
+        try:
+            assert self.rescue is not None and self.n_cap is not None
+            p = self.rescue
+            t_on, hold, min_on, dt = p["t_on_s"], p["release_hold_s"], p["min_on_s"], p["release_check_s"]
+            await self._sleep_until(t_on)
+            self.gate.set_cap(self.n_cap, reason="engage")
+            self.t_engage = self.now()
+            k = 0
+            while True:
+                k += 1
+                tick = t_on + k * dt
+                await self._sleep_until(tick)
+                if tick + 1e-9 < t_on + min_on:
+                    continue
+                since = self.gate.queues_empty_since()
+                if since is not None and self.now() - since >= hold:
+                    self.gate.set_cap(None, reason="release")
+                    self.t_release = self.now()
+                    return
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:                         # a dead controller must not leave the run capped / uncapped silently
+            msg = f"{type(e).__name__}: {e}"
+            self.gate_control_error = msg
+            if isinstance(getattr(self, "events", None), list):
+                self.events.append(f"{self.now():.3f} gate_control_error {msg}")
+            self._abort("gate_control_error")
 
     async def _preflight(self) -> Dict[str, Any]:
         """Wait (up to run.preflight_wait_s) for the health endpoint; record /v1/models for meta.json."""
@@ -442,6 +546,7 @@ class LoadGenerator:
         poll_task: Optional[asyncio.Task] = None
         sched_task: Optional[asyncio.Task] = None
         flush_task: Optional[asyncio.Task] = None
+        gate_task: Optional[asyncio.Task] = None
         t_end = t_end_all = 0.0
         meta_extra: Dict[str, Any] = {
             "config_effective_file": "config_effective.yaml", "n_sessions_planned": len(plan),
@@ -459,6 +564,9 @@ class LoadGenerator:
             "lambda_ref_resolved": self._lambda_ref_value(),
             "uncached_tokens_ref_resolved": self.uncached_tokens_ref,
             "prereg_sha256": cfg.meta.prereg_sha256 or None, "prereg_file": cfg.meta.prereg_file or None}
+        if self.rescue is not None:                    # rescue only: static / uncapped meta.json keys are unchanged
+            meta_extra["gate_mode"] = self.gate_mode
+            meta_extra["gate"] = {**self.rescue, "n_cap_resolved": self.n_cap}
 
         def meta(status: str, ended: bool = False) -> None:
             write_meta(self.out_dir, build_meta(experiment=cfg.output.name, argv=argv, seeds=[self.seed],
@@ -485,6 +593,8 @@ class LoadGenerator:
                 poller.open()
                 poll_task = self._loop.create_task(poller.run())
             flush_task = self._loop.create_task(self._flusher())
+            if self.rescue is not None:
+                gate_task = self._loop.create_task(self._gate_control())
             if cfg.arrivals.kind == "closed":
                 for _ in range(cfg.arrivals.closed_n):
                     self._spawn_closed()
@@ -496,6 +606,7 @@ class LoadGenerator:
                 pass
             t_end = self.now()
             self._closing = True
+            self.gate_at_stop = {"waiting": self.gate.waiting_new, "paused": self.gate.paused, "active": self.gate.active}
             if sched_task:
                 sched_task.cancel()
             for t in list(self.tasks.values()):
@@ -508,10 +619,10 @@ class LoadGenerator:
             meta("failed", ended=True)
             raise
         finally:
-            for t in (poll_task, flush_task):
+            for t in (poll_task, flush_task, gate_task):
                 if t:
                     t.cancel()
-            await asyncio.gather(*[t for t in (poll_task, flush_task) if t], return_exceptions=True)
+            await asyncio.gather(*[t for t in (poll_task, flush_task, gate_task) if t], return_exceptions=True)
             if poller:
                 poller.close()
             self._remove_signals()
@@ -532,12 +643,35 @@ class LoadGenerator:
             meta_extra["first_metrics_scrape_t_s"] = poller.first_scrape_t_s
         meta_extra["outcome"] = {"abort_reason": self.abort_reason, "t_abort_s": self.t_abort, "t_end_s": t_end,
                                  "t_end_incl_cancel_s": t_end_all, **counts,
-                                 "errors_by_kind": dict(self.err_kinds), "gate": self.gate.summary(),
+                                 "errors_by_kind": dict(self.err_kinds), "gate": self._gate_outcome(),
                                  "output_ids_source_counts": dict(self.src_counts),
                                  "prompt_tokens_mismatch": self.n_prompt_mismatch,
                                  "prompt_tokens_missing_in_response": self.n_prompt_missing}
         meta("finished", ended=True)
         return Outcome(out_dir=self.out_dir, abort_reason=self.abort_reason, t_end_s=t_end, counts=counts)
+
+    def _gate_outcome(self) -> Dict[str, Any]:
+        """outcome.gate: the gate summary. Static / uncapped runs keep exactly the keys of the CAPPED client before the
+        rescue arm (``STATIC_GATE_OUTCOME_KEYS``). A rescue run adds the pause counters, the mode, engage / release times,
+        pause statistics per session, the gate queues when the run stopped (``n_still_waiting_at_end`` /
+        ``n_still_paused_at_end``, taken before the end-of-run cancel empties them) and the gate state after the cancel
+        (``active_after_end`` / ``queued_after_end``: both 0 unless a slot leaked)."""
+        g = self.gate.summary()
+        if self.rescue is None:
+            return {k: g[k] for k in STATIC_GATE_OUTCOME_KEYS}
+        ses = list(self.states.values())
+        stop = self.gate_at_stop or {}
+        g.update(mode=self.gate_mode, n_cap_engaged=self.n_cap, t_on_s=self.rescue["t_on_s"], t_engage=self.t_engage,
+                 t_release=self.t_release, released=self.t_release is not None,
+                 n_still_waiting_at_end=stop.get("waiting"), n_still_paused_at_end=stop.get("paused"),
+                 active_at_stop=stop.get("active"), active_after_end=self.gate.active,
+                 queued_after_end=self.gate.waiting, gate_control_error=self.gate_control_error,
+                 n_sessions_paused=sum(1 for s in ses if s.n_pauses > 0),
+                 n_sessions_paused_at_end=sum(1 for s in ses if s.paused_since is not None),
+                 pause_session_s_total=float(sum(s.pause_s_total for s in ses)),
+                 gate_wait_session_s_total=float(sum(s.gate_wait_s for s in ses)),
+                 n_gate_events=len(self.gate.events))
+        return g
 
     async def _flusher(self) -> None:
         try:
@@ -548,7 +682,7 @@ class LoadGenerator:
             pass
 
     def _finalize_files(self) -> None:
-        """Close request log; write sessions.csv and events.log."""
+        """Close request log; write sessions.csv, events.log and (rescue runs) gate_events.csv."""
         self.req_log.close()
         with open(self.out_dir / "sessions.csv", "w", newline="") as fh:
             w = csv.DictWriter(fh, fieldnames=SESSION_FIELDS)
@@ -559,7 +693,14 @@ class LoadGenerator:
                             "n_turns": s.plan.n_turns, "t_first_send": s.t_first_send, "t_end": s.t_end,
                             "turns_completed": s.turns_completed, "status": s.status,
                             "t_admit": "" if s.t_admit is None else s.t_admit, "gate_wait_s": s.gate_wait_s,
-                            "gate_censored": int(s.t_admit is None)})
+                            "gate_censored": int(s.t_admit is None), "n_pauses": s.n_pauses,
+                            "pause_s_total": s.pause_s_total, "pause_censored": int(s.paused_since is not None)})
+        if self.rescue is not None:
+            with open(self.out_dir / "gate_events.csv", "w", newline="") as fh:
+                w = csv.DictWriter(fh, fieldnames=GATE_EVENT_FIELDS)
+                w.writeheader()
+                for ev in sorted(self.gate.events, key=lambda e: e["t_s"]):
+                    w.writerow({k: ("" if ev.get(k) is None else ev.get(k)) for k in GATE_EVENT_FIELDS})
         (self.out_dir / "events.log").write_text("\n".join(self.events) + ("\n" if self.events else ""))
 
 
