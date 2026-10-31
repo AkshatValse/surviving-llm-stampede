@@ -1,0 +1,18 @@
+base: C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/llama31-theory/analysis/theory/cells/llama31_8b_300k.yaml
+name: llama31_8b_300k_conditional_fit
+description: REGISTRATION-CONDITIONAL rerun of the frozen spec llama31_8b_300k (only
+  e2.multiples, e2.cap, tests changed)
+e2:
+  multiples:
+  - 1.35
+  - 1.65
+  cap: 20.0
+tests: []
+lambda_ref:
+  value: 0.0596408614267974
+  source: registration measured.lambda_ref (measured Llama E0a)
+costs:
+  fit_speed_to_e0a:
+    tokens_per_s: 9352.893143955092
+    pop: 32
+    source: registration measured.all_miss_uncached_tokens_per_s (measured Llama E0a)
