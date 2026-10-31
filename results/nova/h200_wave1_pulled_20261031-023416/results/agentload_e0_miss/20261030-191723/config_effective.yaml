@@ -1,0 +1,55 @@
+research_question: 'E0a (real engine): what is the all-miss capacity lambda_miss (sessions/s)
+  of Qwen2.5-7B-Instruct on one A100-80GB under the simulator''s agent workload, with
+  prefix caching DISABLED at the server (SGLang --disable-radix-cache / vLLM --no-enable-prefix-caching)?'
+assumptions_note: 'Workload constants are the simulator''s (configs/prefix_meta.yaml
+  on pilot/prefix-meta): L0=2000, Delta=550, d=100, geometric mean 15 turns (cap 60),
+  Exp(5 s) tool times. Closed population (a completed session is replaced at once),
+  as in the simulator''s lambda_miss measurement. Throughput is measured by analysis
+  (miss subcommand) over [warmup_s, end]; the generator itself only logs. Max prompt
+  = 2000 + 59*650 = 40350 tokens exceeds Qwen2.5''s default 32768 context: the engine
+  must be launched with a longer context (see slurm/ and the plan, open issue O2).'
+server:
+  base_url: http://127.0.0.1:26813
+  model: Qwen/Qwen2.5-7B-Instruct
+  completions_path: /v1/completions
+  request_timeout_s: 7200
+  extra_body:
+    ignore_eos: true
+    repetition_penalty: 1.0
+    top_p: 1.0
+  request_token_ids: true
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: server
+  content_salt: 1
+arrivals:
+  kind: closed
+  closed_n: 64
+run:
+  duration_s: 2700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+metrics:
+  enabled: true
+  interval_s: 5.0
+meta:
+  hardware: NVIDIA H200 NVL, 143771 MiB
+  engine_label: sglang-nocache-h200
+  notes: E0a lambda_miss, closed population
+  start_state_verified: true
+  start_state_detail: 'canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed,
+    3 unverifiable); see canary_1_*.json'
+output:
+  root: results
+  name: agentload_e0_miss

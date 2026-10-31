@@ -1,0 +1,344 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "stable",
+    "--run-dirs",
+    "results/agentload_e0_cap/20261030-232100",
+    "results/agentload_e0_cap/20261030-232104",
+    "results/agentload_e0_cap/20261030-233053",
+    "results/agentload_e0_cap/20261030-235534",
+    "results/agentload_e0_cap/20261031-001504",
+    "results/agentload_e0_cap/20261031-001512",
+    "results/agentload_e0_cap/20261031-032852",
+    "results/agentload_e0_cap/20261031-033431",
+    "results/agentload_e0_cap/20261031-034006",
+    "results/agentload_e0_cap/20261031-040510",
+    "--out-root",
+    "results",
+    "--name",
+    "agentload_analysis_stable_supp10"
+  ],
+  "git": {
+    "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+    "dirty": false,
+    "branch": "main",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    2,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova-login-1",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-31T05:02:54",
+  "end_time": "2026-10-31T05:02:55",
+  "wall_s": 1.031452,
+  "slurm_env": {},
+  "inputs": [
+    {
+      "run_dir": "results/agentload_e0_cap/20261030-232100",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-30T23:21:00",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168377",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261030-232104",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-30T23:21:04",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168378",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261030-233053",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-30T23:30:53",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168379",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261030-235534",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-30T23:55:34",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168380",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261031-001504",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T00:15:04",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168381",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261031-001512",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 0,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T00:15:12",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17168382",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261031-032852",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 1,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T03:28:52",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17169668",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261031-033431",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 2,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T03:34:31",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17169669",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261031-034006",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 1,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T03:40:06",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17169670",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    },
+    {
+      "run_dir": "results/agentload_e0_cap/20261031-040510",
+      "label": "sglang-fcfs-r1-h200",
+      "seed": 2,
+      "run_git": {
+        "commit": "5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7",
+        "dirty": false,
+        "branch": "main",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T04:05:10",
+      "hardware": "NVIDIA H200 NVL, 143771 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17169671",
+        "SLURM_JOB_NAME": "pm-h200-e0b",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova25-gpu-3",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "131072",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "n_runs": 10,
+  "lambda_cap_bracket_in_lambda_miss_units": {
+    "largest_all_stable_mult": 1.3,
+    "first_unstable_mult_above": 1.4,
+    "monotone": true,
+    "n_rates": 6,
+    "by_label": {
+      "sglang-fcfs-r1-h200": {
+        "largest_all_stable_mult": 1.3,
+        "first_unstable_mult_above": 1.4,
+        "monotone": true,
+        "n_rates": 6,
+        "hardware": [
+          "NVIDIA H200 NVL, 143771 MiB"
+        ]
+      }
+    },
+    "guards": {
+      "n_errors": 0,
+      "n_warnings": 0,
+      "codes": []
+    }
+  },
+  "guard_problems": []
+}

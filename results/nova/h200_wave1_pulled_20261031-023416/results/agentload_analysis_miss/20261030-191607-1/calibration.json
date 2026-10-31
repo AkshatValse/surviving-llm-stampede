@@ -1,0 +1,25 @@
+{
+  "hardware": "NVIDIA H200 NVL, 143771 MiB",
+  "hardware_all": [
+    "NVIDIA H200 NVL, 143771 MiB"
+  ],
+  "hostnames": [
+    "nova25-gpu-3"
+  ],
+  "output_ids_sources": [
+    "server_ids"
+  ],
+  "lambda_miss": 0.17833231360220758,
+  "lambda_miss_turns_based": 0.19047761692565882,
+  "lambda_miss_se": null,
+  "lambda_miss_turns_based_se": null,
+  "all_miss_uncached_tokens_per_s": 29848.301545122144,
+  "all_miss_uncached_tokens_per_s_se": null,
+  "all_miss_cached_frac_tokens_max": 0.0,
+  "n_runs": 1,
+  "warmup_s": 900.0,
+  "labels": [
+    "sglang-nocache-h200"
+  ],
+  "note": "lambda_miss = completed sessions/s (simulator headline); turns-based = turns/s / E[T]; use the key you want in arrivals.lambda_ref ('<path>/calibration.json:<key>'). all_miss_uncached_tokens_per_s = arrivals.uncached_tokens_ref of the E2 runs (trap criterion (a))."
+}
