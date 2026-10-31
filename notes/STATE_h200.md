@@ -49,6 +49,12 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
 - Report to the new lead session **nova-lead-2** (`local_8c823c00-db19-4b39-b611-f9ce5f65891f`) from now on; the old lead ran out of context.
 - Nova's VPN was reconnected Sat 15:38 CDT. Assuming the same ~12 h window, it drops around 03:38 Sun. E2 jobs are pulled in batches as they finish, and the verdict runs once all 18 have ended (expected ≈ 00:30 Sun).
 
+## Missing-seed rule and finish estimate (15:50 CDT Sat)
+- **Expected finish:** at the measured 2 h 29 min per job with three H200s, waves end ≈ 17:00, 19:30, 22:00 and 00:30 Sun.
+- **Slurm's estimates** (17171035 at 11:44 Sun; 036/037 N/A) are serial and use the 3:10 limit. Real starts have not been serial: 17171023/24 both started at 11:57:17.
+- **Registered rule** (trap_v2): pass_fraction_min 2/3 and min_seeds 3, per λ cell. A seed with an arm missing counts as a failure (listed under `incomplete`). A cell whose seed is missing entirely has n_seen = 2 and prints INSUFFICIENT, so it is not decisive.
+- **Pending jobs are not reordered or touched.**
+
 ## Nova access window
 - Lead, 2026-10-31 ~02:10 CDT: Nova is reachable over a VPN that Akshat reconnected. It drops automatically around 14:00 CDT Sat. Pull every finished result before 13:30; anything that ends later waits for the next reconnect.
 - Lead, ~03:20 CDT Sat: Akshat reconnects on Sun ~08:00 CDT. Results that finish after Saturday's ~14:00 drop are pulled Sun 08:00–11:30; results freeze at 12:00. Every submission, including any p600k E2, must go in before ~14:00 Sat, because submitting needs the VPN.
