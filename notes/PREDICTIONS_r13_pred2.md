@@ -348,3 +348,9 @@ Driver `blind_tables.py`: frozen functions only, called as `predict.py` calls th
 - `analysis/theory/pred2/*.py` (new), `analysis/theory/cells/h200_600k.yaml` (new), `tests/test_theory_pred2.py` (new);
 - `configs/r13_theory_pred2.yaml` (generated), this file;
 - `results/theory/pred2/*.json`, and `results/theory/pred2/conditional/` once a registration exists (force-add both).
+
+## Freeze record (follow-up commit; nothing above this section changed after the tag)
+
+- Freeze commit `cfa77127dbcbea285d5f44b6c7195d02019bf831`, annotated tag `r13-theory-pred2` (tag object `6f0b5043488a334494f91f25e6fbf04e5ed5770c`).
+- GitHub push time of branch `r13/pred2` at that commit: **2026-10-31T09:20:20Z (04:20:20 CDT)**, from `gh api repos/AkshatValse/Nova-Research/activity` (activity_type branch_creation, after = cfa7712). The tag was pushed immediately afterwards (local clock 2026-10-31T09:20:20Z). The activity API does not list tag pushes; `gh api repos/AkshatValse/Nova-Research/git/refs/tags/r13-theory-pred2` resolves to the tag object above.
+- Tests at the freeze: `tests/test_theory_{pred2,r13_freeze,predict,fluid_rigorous,che_endogenous,paper}.py`, 83 passed.
