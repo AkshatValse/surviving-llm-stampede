@@ -1,0 +1,24 @@
+flag ok:      --schedule-policy
+flag ok:      --max-running-requests
+flag ok:      --chunked-prefill-size
+flag ok:      --max-total-tokens
+flag ok:      --context-length
+flag ok:      --enable-metrics
+flag ok:      --enable-cache-report
+flag ok:      --disable-radix-cache
+flag ok:      --model-path
+flag ok:      --port
+flag ok:      --revision
+optional flag ok:      --sampling-defaults
+sglang version: 0.5.22
+env var ok:      SGLANG_ENABLE_WAITING_PREFIX_REFRESH
+env var ok:      SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN
+jit ok:      ninja 1.13.2.git.kitware.jobserver-pipe-1
+jit ok:      Build cuda_13.0.r13.0/compiler.36424714_0
+jit ok:      /work/classtmp/avalse/swapp/cuda13-home/lib64/libcudart.so -> /work/classtmp/avalse/swapp/envs/sglang/lib/python3.11/site-packages/nvidia/cu13/lib/libcudart.so.13
+jit ok:      /work/classtmp/avalse/swapp/cuda13-home/lib64/stubs/libcuda.so -> /usr/lib64/libcuda.so.1
+lpm_inf: hook dir /work/classtmp/avalse/swapp/repo_r11_lpm/slurm/hooks/lpm_inf
+lpm_inf self-test (hooked):  [pm-lpminf-hook] pid=3826081 ppid=3826080 sglang.srt.managers.schedule_policy.WAITING_QUEUE_PREFIX_MATCH_MAX 128 -> 1000000000 file=/work/classtmp/avalse/swapp/envs/sglang/lib/python3.11/site-packages/sglang/srt/managers/schedule_policy.py
+lpm_inf_selftest value=1000000000 md5=b8ec334ac1ed028e3c176022ea1f9143 hook_md5=be788ae7495e6445788bad8bd370349a active100=lpm active300=lpm file=/work/classtmp/avalse/swapp/envs/sglang/lib/python3.11/site-packages/sglang/srt/managers/schedule_policy.py hook=/work/classtmp/avalse/swapp/repo_r11_lpm/slurm/hooks/lpm_inf/sitecustomize.py
+lpm_inf self-test (control): lpm_inf_selftest value=128 md5=b8ec334ac1ed028e3c176022ea1f9143 hook_md5=be788ae7495e6445788bad8bd370349a active100=lpm active300=fcfs file=/work/classtmp/avalse/swapp/envs/sglang/lib/python3.11/site-packages/sglang/srt/managers/schedule_policy.py hook=/work/classtmp/avalse/swapp/repo_r11_lpm/slurm/hooks/lpm_inf/sitecustomize.py
+lpm_inf hook ok: 1000000000 (stock 128), schedule_policy md5 b8ec334ac1ed028e3c176022ea1f9143, hook md5 be788ae7495e6445788bad8bd370349a
