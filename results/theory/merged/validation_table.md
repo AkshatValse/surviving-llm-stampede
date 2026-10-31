@@ -1,0 +1,226 @@
+| cell | group | quantity | predicted | measured | rel. err | in seed range | note |
+|---|---|---|---|---|---|---|---|
+| a100_300k | all-miss | lambda_miss turns-based (E0a, POP 32) | 0.07177 | 0.07153 | +0.3% |  |  |
+| a100_300k | all-miss | E0a uncached tokens/s | 1.109e+04 | 1.124e+04 | -1.4% |  |  |
+| a100_300k | all-miss | POP-64 / POP-32 E0a tokens | 1.001 | 1.017 | -1.5% |  | check only (one POP-64 seed) |
+| a100_300k | closed | peak n (fluid) | 24.91 | 24 |  |  | measured flat top (within 5%): [20.0, 24.0] |
+| a100_300k | closed | peak n (annealed F1) | 24 | 24 |  |  |  |
+| a100_300k | closed | mu_max sessions/s (fluid) | 0.2478 | 0.2333 | +6.2% |  | turns-based measured 0.2255 |
+| a100_300k | closed | mu_max sessions/s (annealed F1) | 0.2337 | 0.2333 | +0.2% |  |  |
+| a100_300k | closed | mu_max turns-based (fluid) | 0.2478 | 0.2255 | +9.9% |  | model-consistent estimator |
+| a100_300k | closed | mu_max turns-based (annealed F1) | 0.2337 | 0.2255 | +3.6% |  | model-consistent estimator; primary for blind scoring |
+| a100_300k | closed | 0.5-hit crossing n (fluid) | 31.49 | 32.16 | -2.1% |  |  |
+| a100_300k | closed | 0.5-hit crossing n (annealed F1) | 30.47 | 32.16 | -5.3% |  |  |
+| a100_300k | closed | mu(16) sessions/s fluid | annealed | 0.1765 | 0.1765 | 0.1756 | +0.5% |  | rel_err of annealed |
+| a100_300k | closed | mu(16) turns-based fluid | annealed | 0.1765 | 0.1765 | 0.1758 | +0.4% |  | rel_err of annealed; fluid +0.004 |
+| a100_300k | closed | hit(16) fluid | annealed | 0.932 | 0.932 | 0.9321 |  |  |  |
+| a100_300k | closed | mu(20) sessions/s fluid | annealed | 0.2161 | 0.2139 | 0.2239 | -4.4% |  | rel_err of annealed |
+| a100_300k | closed | mu(20) turns-based fluid | annealed | 0.2161 | 0.2139 | 0.215 | -0.5% |  | rel_err of annealed; fluid +0.005 |
+| a100_300k | closed | hit(20) fluid | annealed | 0.932 | 0.922 | 0.9268 |  |  |  |
+| a100_300k | closed | mu(24) sessions/s fluid | annealed | 0.2462 | 0.2337 | 0.2333 | +0.2% |  | rel_err of annealed |
+| a100_300k | closed | mu(24) turns-based fluid | annealed | 0.2462 | 0.2337 | 0.2255 | +3.6% |  | rel_err of annealed; fluid +0.092 |
+| a100_300k | closed | hit(24) fluid | annealed | 0.910 | 0.872 | 0.8877 |  |  |  |
+| a100_300k | closed | mu(32) sessions/s fluid | annealed | 0.1078 | 0.1415 | 0.115 | +23.0% |  | rel_err of annealed |
+| a100_300k | closed | mu(32) turns-based fluid | annealed | 0.1078 | 0.1415 | 0.1158 | +22.2% |  | rel_err of annealed; fluid -0.069 |
+| a100_300k | closed | hit(32) fluid | annealed | 0.371 | 0.357 | 0.5052 |  |  |  |
+| a100_300k | closed | mu(48) sessions/s fluid | annealed | 0.0718 | 0.0719 | 0.04889 | +47.1% |  | rel_err of annealed |
+| a100_300k | closed | mu(48) turns-based fluid | annealed | 0.0718 | 0.0719 | 0.06293 | +14.3% |  | rel_err of annealed; fluid +0.142 |
+| a100_300k | closed | hit(48) fluid | annealed | 0.000 | 0.001 | 0 |  |  |  |
+| a100_300k | closed (Stage C protocol) | mu(48) synchronized start, sessions | turns-based | 0.0712 | 0.0717 | 0.0489 | 0.0629 | +45.7% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| a100_300k | closed | mu(96) sessions/s fluid | annealed | 0.0718 | 0.0718 | 0.06111 | +17.6% |  | rel_err of annealed |
+| a100_300k | closed | mu(96) turns-based fluid | annealed | 0.0718 | 0.0718 | 0.07298 | -1.6% |  | rel_err of annealed; fluid -0.016 |
+| a100_300k | closed | hit(96) fluid | annealed | 0.000 | 0.000 | 0 |  |  |  |
+| a100_300k | closed (Stage C protocol) | mu(96) synchronized start, sessions | turns-based | 0.0783 | 0.0796 | 0.0611 | 0.0730 | +28.1% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| a100_300k | closed (Stage C protocol) | mu(300) synchronized start, sessions | turns-based | 0.1085 | 0.1103 | 0.1078 | 0.1114 | +0.7% |  | graft of A; valid when trapped from t=0 (n E_1 > M) |
+| a100_300k | closed (RMS) | RMS rel err of mu, fluid vs sessions | all n<300: 0.208 | below n_b only: 0.045 | +20.8% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_300k | closed (RMS) | RMS rel err of mu, annealed F1 vs sessions | all n<300: 0.226 | below n_b only: 0.117 | +22.6% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_300k | closed (RMS) | RMS rel err of mu, fluid vs turns-based | all n<300: 0.075 | below n_b only: 0.057 | +7.5% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_300k | closed (RMS) | RMS rel err of mu, annealed F1 vs turns-based | all n<300: 0.109 | below n_b only: 0.113 | +10.9% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_300k | closed | mu at large n, turns-based (stationary mu_b) | 0.07184 | 0.07298 | -1.6% |  | measured at n = 96 |
+| a100_300k | closed | all-miss threshold n_b (= closed form) | 32.70 (= 32.70) | collapse between measured grid points |  |  | measured hit: 16: 0.93, 20: 0.93, 24: 0.89, 32: 0.51, 48: 0.00, 96: 0.00 |
+| a100_300k | window | mu_max / lambda_ref (fluid) | 3.464 | 3.262 | +6.2% |  | turns-based measured 3.15 |
+| a100_300k | window | mu_max / lambda_ref (annealed F1) | 3.267 | 3.262 | +0.2% |  |  |
+| a100_300k | window | mu_max / lambda_ref turns-based (annealed F1) | 3.267 | 3.153 | +3.6% |  | model-consistent; primary for blind scoring |
+| a100_300k | from-empty edge (F2) | P(unstable 3000 s run) at 1.25 x | 0.0005818 | stable |  |  |  |
+| a100_300k | from-empty edge (F2) | P(unstable 3000 s run) at 1.5 x | 0.005986 | stable |  |  |  |
+| a100_300k | from-empty edge (F2) | P(unstable 3000 s run) at 1.75 x | 0.03739 | stable |  |  |  |
+| a100_300k | from-empty edge (F2) | P(unstable 3000 s run) at 2 x | 0.1503 | stable |  |  |  |
+| a100_300k | from-empty edge (F2) | P(unstable 3000 s run) at 2.5 x | 0.6907 | UNSTABLE |  |  |  |
+| a100_300k | from-empty edge (F2) | P(unstable 3000 s run) at 3 x | 0.9725 | UNSTABLE |  |  |  |
+| a100_300k | from-empty edge (F2) | predicted bracket (stable, unstable) | [2.0, 2.5] | [2.0, 2.5] |  |  | 50% edge 2.34 x; log-likelihood of the observed outcomes -0.605 |
+| a100_300k | from-empty edge (secondary: A's level crossing) | P(unstable) at the registered multiples | 1.25: 0.000, 1.5: 0.000, 1.75: 0.000, 2.0: 0.033, 2.5: 0.367, 3.0: 0.955 |  |  |  | 50% edge 2.59 x; log-likelihood -1.083 (probabilities floored at 1e-3) |
+| a100_300k | E2 BURST 1.35 x | backlog [5700, 8700) mean | 215.4 | 232.2, 199.7, 221.4 | -1.1% | yes |  |
+| a100_300k | E2 BURST 1.35 x | backlog slope (sessions/s) | 0.01593 | 0.02222, 0.003596, 0.01861 | +7.6% | yes |  |
+| a100_300k | E2 BURST 1.35 x | session rate (sessions/s) | 0.07791 | 0.081, 0.09133, 0.084 | -8.8% | no |  |
+| a100_300k | E2 BURST 1.35 x | uncached token rate / E0a | 1.006 | 1.025, 1.009, 1.019 | -1.2% | no | model ratio = trapped / model E0a |
+| a100_300k | E2 BURST 1.35 x | hit | 0 | 0, 0, 0 |  | yes |  |
+| a100_300k | E2 BURST 1.35 x | gap/R (frozen loopvars) | 6.925 | 6.916, 6.354, 6.79 | +3.6% | no |  |
+| a100_300k | E2 BURST 1.35 x | R = M/churn (s) | 26.62 | 25.8, 26.2, 25.9 | +2.5% | no |  |
+| a100_300k | E2 BURST 1.35 x | post-burst backlog minimum | 153.4 | 146.7, 146.8, 135.2 | +7.4% | no |  |
+| a100_300k | E2 BURST 1.35 x | time of the minimum after the burst (s) | 1286 | 1050, 1300, 900 | +18.7% | yes |  |
+| a100_300k | E2 NOBURST 1.35 x | hit | 0.9323 | 0.9313, 0.93, 0.9342 | +0.0% | yes |  |
+| a100_300k | E2 NOBURST 1.35 x | sessions in system n1 | 8.468 | 9.224, 7.912, 9.657 | -5.2% | yes |  |
+| a100_300k | E2 NOBURST 1.35 x | gap/R (frozen loopvars) | 0.01685 | 0.019, 0.016, 0.02 | -8.1% | yes |  |
+| a100_300k | E2 NOBURST 1.35 x | R = M/churn (s) | 281.5 | 264.9, 306.6, 255.1 | +2.2% | yes |  |
+| a100_300k | E2 CAPPED 1.35 x (cap 20) | gate empty after the burst (s) | 1576 | 1547, 1847, 1904 | -10.7% | yes |  |
+| a100_300k | E2 BURST 1.65 x | backlog [5700, 8700) mean | 304.2 | 331.8, 282.7, 311 | -1.4% | yes |  |
+| a100_300k | E2 BURST 1.65 x | backlog slope (sessions/s) | 0.02926 | 0.03201, 0.02766, 0.03621 | -8.5% | yes |  |
+| a100_300k | E2 BURST 1.65 x | session rate (sessions/s) | 0.08576 | 0.08967, 0.09667, 0.096 | -8.9% | no |  |
+| a100_300k | E2 BURST 1.65 x | uncached token rate / E0a | 1.016 | 1.025, 1.029, 1.026 | -1.1% | no | model ratio = trapped / model E0a |
+| a100_300k | E2 BURST 1.65 x | hit | 0 | 0, 0, 0 |  | yes |  |
+| a100_300k | E2 BURST 1.65 x | gap/R (frozen loopvars) | 8.983 | 9.672, 8.183, 8.478 | +2.3% | yes |  |
+| a100_300k | E2 BURST 1.65 x | R = M/churn (s) | 26.33 | 25.7, 25.6, 25.7 | +2.6% | no |  |
+| a100_300k | E2 BURST 1.65 x | post-burst backlog minimum | 174.3 | 172.1, 170.4, 162.4 | +3.6% | no |  |
+| a100_300k | E2 BURST 1.65 x | time of the minimum after the burst (s) | 803 | 300, 1200, 900 | +0.4% | yes |  |
+| a100_300k | E2 NOBURST 1.65 x | hit | 0.9323 | 0.9335, 0.9343, 0.9212 | +0.3% | yes |  |
+| a100_300k | E2 NOBURST 1.65 x | sessions in system n1 | 10.43 | 11.56, 10.92, 11.83 | -8.8% | no |  |
+| a100_300k | E2 NOBURST 1.65 x | gap/R (frozen loopvars) | 0.02081 | 0.024, 0.022, 0.028 | -15.6% | no |  |
+| a100_300k | E2 NOBURST 1.65 x | R = M/churn (s) | 230.3 | 213.4, 229.6, 188.1 | +9.5% | no |  |
+| a100_300k | E2 CAPPED 1.65 x (cap 20) | gate empty after the burst (s) | 1941 | 2693, 2021, 2127 | -14.9% | no |  |
+| a100_native | all-miss | lambda_miss turns-based (E0a, POP 32) | 0.07177 | 0.0718 | -0.0% |  |  |
+| a100_native | all-miss | E0a uncached tokens/s | 1.109e+04 | 1.128e+04 | -1.7% |  |  |
+| a100_native | all-miss | POP-64 / POP-32 E0a tokens | 1.021 | 1.012 | +0.9% |  | check only (one POP-64 seed) |
+| a100_native | closed | peak n (fluid) | 74.13 | 64 |  |  | measured flat top (within 5%): [64.0, 80.0] |
+| a100_native | closed | peak n (annealed F1) | 69.5 | 64 |  |  |  |
+| a100_native | closed | mu_max sessions/s (fluid) | 0.5076 | 0.4789 | +6.0% |  | turns-based measured 0.4655 |
+| a100_native | closed | mu_max sessions/s (annealed F1) | 0.4949 | 0.4789 | +3.3% |  |  |
+| a100_native | closed | mu_max turns-based (fluid) | 0.5076 | 0.4655 | +9.0% |  | model-consistent estimator |
+| a100_native | closed | mu_max turns-based (annealed F1) | 0.4949 | 0.4655 | +6.3% |  | model-consistent estimator; primary for blind scoring |
+| a100_native | closed | 0.5-hit crossing n (fluid) | 93.74 | 93.42 | +0.3% |  |  |
+| a100_native | closed | 0.5-hit crossing n (annealed F1) | 92.04 | 93.42 | -1.5% |  |  |
+| a100_native | closed | mu(24) sessions/s fluid | annealed | 0.2538 | 0.2538 | 0.265 | -4.2% |  | rel_err of annealed |
+| a100_native | closed | mu(24) turns-based fluid | annealed | 0.2538 | 0.2538 | 0.2516 | +0.9% |  | rel_err of annealed; fluid +0.009 |
+| a100_native | closed | hit(24) fluid | annealed | 0.932 | 0.932 | 0.9288 |  |  |  |
+| a100_native | closed | mu(48) sessions/s fluid | annealed | 0.4263 | 0.4263 | 0.4311 | -1.1% |  | rel_err of annealed |
+| a100_native | closed | mu(48) turns-based fluid | annealed | 0.4263 | 0.4263 | 0.4145 | +2.9% |  | rel_err of annealed; fluid +0.029 |
+| a100_native | closed | hit(48) fluid | annealed | 0.932 | 0.932 | 0.9294 |  |  |  |
+| a100_native | closed | mu(64) sessions/s fluid | annealed | 0.4882 | 0.4867 | 0.4789 | +1.6% |  | rel_err of annealed |
+| a100_native | closed | mu(64) turns-based fluid | annealed | 0.4882 | 0.4867 | 0.4655 | +4.6% |  | rel_err of annealed; fluid +0.049 |
+| a100_native | closed | hit(64) fluid | annealed | 0.932 | 0.932 | 0.9304 |  |  |  |
+| a100_native | closed | mu(80) sessions/s fluid | annealed | 0.4871 | 0.4502 | 0.4772 | -5.7% |  | rel_err of annealed |
+| a100_native | closed | mu(80) turns-based fluid | annealed | 0.4871 | 0.4502 | 0.4637 | -2.9% |  | rel_err of annealed; fluid +0.050 |
+| a100_native | closed | hit(80) fluid | annealed | 0.920 | 0.888 | 0.9222 |  |  |  |
+| a100_native | closed | mu(96) sessions/s fluid | annealed | 0.0737 | 0.1730 | 0.1228 | +40.9% |  | rel_err of annealed |
+| a100_native | closed | mu(96) turns-based fluid | annealed | 0.0737 | 0.1730 | 0.116 | +49.2% |  | rel_err of annealed; fluid -0.365 |
+| a100_native | closed | hit(96) fluid | annealed | 0.000 | 0.355 | 0.4189 |  |  |  |
+| a100_native | closed (Stage C protocol) | mu(96) synchronized start, sessions | turns-based | 0.0798 | 0.0811 | 0.1228 | 0.1160 | -35.0% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| a100_native | closed | mu(128) sessions/s fluid | annealed | 0.0737 | 0.0737 | 0.06667 | +10.6% |  | rel_err of annealed |
+| a100_native | closed | mu(128) turns-based fluid | annealed | 0.0737 | 0.0737 | 0.07301 | +0.9% |  | rel_err of annealed; fluid +0.009 |
+| a100_native | closed | hit(128) fluid | annealed | 0.000 | 0.000 | 0.007216 |  |  |  |
+| a100_native | closed (Stage C protocol) | mu(128) synchronized start, sessions | turns-based | 0.0857 | 0.0871 | 0.0667 | 0.0730 | +28.5% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| a100_native | closed (Stage C protocol) | mu(300) synchronized start, sessions | turns-based | 0.1108 | 0.1126 | 0.1006 | 0.1074 | +10.2% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| a100_native | closed (RMS) | RMS rel err of mu, fluid vs sessions | all n<300: 0.170 | below n_b only: 0.026 | +17.0% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_native | closed (RMS) | RMS rel err of mu, annealed F1 vs sessions | all n<300: 0.175 | below n_b only: 0.037 | +17.5% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_native | closed (RMS) | RMS rel err of mu, fluid vs turns-based | all n<300: 0.152 | below n_b only: 0.038 | +15.2% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_native | closed (RMS) | RMS rel err of mu, annealed F1 vs turns-based | all n<300: 0.202 | below n_b only: 0.031 | +20.2% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| a100_native | closed | mu at large n, turns-based (stationary mu_b) | 0.0737 | 0.07301 | +0.9% |  | measured at n = 128 |
+| a100_native | closed | all-miss threshold n_b (= closed form) | 94.86 (= 94.86) | collapse between measured grid points |  |  | measured hit: 24: 0.93, 48: 0.93, 64: 0.93, 80: 0.92, 96: 0.42, 128: 0.01 |
+| a100_native | window | mu_max / lambda_ref (fluid) | 7.07 | 6.67 | +6.0% |  | turns-based measured 6.48 |
+| a100_native | window | mu_max / lambda_ref (annealed F1) | 6.893 | 6.67 | +3.3% |  |  |
+| a100_native | window | mu_max / lambda_ref turns-based (annealed F1) | 6.893 | 6.484 | +6.3% |  | model-consistent; primary for blind scoring |
+| a100_native | from-empty edge (F2) | P(unstable 3000 s run) at 1.5 x | 0 | stable |  |  |  |
+| a100_native | from-empty edge (F2) | P(unstable 3000 s run) at 2.5 x | 1.232e-14 | stable |  |  |  |
+| a100_native | from-empty edge (F2) | P(unstable 3000 s run) at 3.5 x | 1.114e-08 | stable |  |  |  |
+| a100_native | from-empty edge (F2) | P(unstable 3000 s run) at 4.5 x | 0.0001232 | stable |  |  |  |
+| a100_native | from-empty edge (F2) | P(unstable 3000 s run) at 5.5 x | 0.04925 | stable |  |  |  |
+| a100_native | from-empty edge (F2) | P(unstable 3000 s run) at 6.5 x | 0.683 | UNSTABLE |  |  |  |
+| a100_native | from-empty edge (F2) | predicted bracket (stable, unstable) | [5.5, 6.5] | [5.5, 6.5] |  |  | 50% edge 6.26 x; log-likelihood of the observed outcomes -0.432 |
+| a100_native | from-empty edge (secondary: A's level crossing) | P(unstable) at the registered multiples | 1.5: 0.000, 2.5: 0.000, 3.5: 0.000, 4.5: 0.000, 5.5: 0.000, 6.5: 0.345 |  |  |  | 50% edge 6.58 x; log-likelihood -1.069 (probabilities floored at 1e-3) |
+| a100_native | E2 BURST 2.5 x | backlog [5700, 8700) mean | 564.8 | 601.2, 557, 583.2 | -2.7% | yes |  |
+| a100_native | E2 BURST 2.5 x | backlog slope (sessions/s) | 0.06966 | 0.08484, 0.08292, 0.0794 | -15.5% | no |  |
+| a100_native | E2 BURST 2.5 x | session rate (sessions/s) | 0.1061 | 0.1093, 0.1033, 0.112 | -1.9% | yes |  |
+| a100_native | E2 BURST 2.5 x | uncached token rate / E0a | 1.067 | 1.078, 1.074, 1.074 | -0.8% | no | model ratio = trapped / model E0a |
+| a100_native | E2 BURST 2.5 x | hit | 0 | 0, 0, 0 |  | yes |  |
+| a100_native | E2 BURST 2.5 x | gap/R (frozen loopvars) | 4.452 | 4.572, 4.141, 4.272 | +2.9% | yes |  |
+| a100_native | E2 BURST 2.5 x | R = M/churn (s) | 79.71 | 77.5, 77.9, 77.8 | +2.5% | no |  |
+| a100_native | E2 BURST 2.5 x | post-burst backlog minimum | 205.9 | 167.7, 161.1, 154.8 | +27.7% | no |  |
+| a100_native | E2 BURST 2.5 x | time of the minimum after the burst (s) | 301 | 150, 150, 200 | +80.6% | no |  |
+| a100_native | E2 NOBURST 2.5 x | hit | 0.9323 | 0.9313, 0.9291, 0.935 | +0.1% | yes |  |
+| a100_native | E2 NOBURST 2.5 x | sessions in system n1 | 16.29 | 18.46, 15.59, 18.22 | -6.5% | yes |  |
+| a100_native | E2 NOBURST 2.5 x | gap/R (frozen loopvars) | 0.0101 | 0.012, 0.01, 0.011 | -8.2% | yes |  |
+| a100_native | E2 NOBURST 2.5 x | R = M/churn (s) | 489.7 | 445.7, 505.2, 449.8 | +4.9% | yes |  |
+| a100_native | E2 CAPPED 2.5 x (cap 64) | gate empty after the burst (s) | 493.4 | 582.8, 511.6, 542 | -9.5% | no |  |
+| a100_native | E2 BURST 4 x | backlog [5700, 8700) mean | 1089 | 1139, 1098, 1114 | -2.5% | no |  |
+| a100_native | E2 BURST 4 x | backlog slope (sessions/s) | 0.1519 | 0.1643, 0.1465, 0.1555 | -2.3% | yes |  |
+| a100_native | E2 BURST 4 x | session rate (sessions/s) | 0.1307 | 0.134, 0.137, 0.146 | -6.0% | no |  |
+| a100_native | E2 BURST 4 x | uncached token rate / E0a | 1.079 | 1.11, 1.106, 1.124 | -3.1% | no | model ratio = trapped / model E0a |
+| a100_native | E2 BURST 4 x | hit | 0 | 0, 0, 0 |  | yes |  |
+| a100_native | E2 BURST 4 x | gap/R (frozen loopvars) | 7.064 | 6.862, 6.682, 6.96 | +3.4% | no |  |
+| a100_native | E2 BURST 4 x | R = M/churn (s) | 78.6 | 75.1, 75.4, 74.2 | +4.9% | no |  |
+| a100_native | E2 BURST 4 x | post-burst backlog minimum | 233 | 231.1, 228.7, 201.5 | +5.7% | no |  |
+| a100_native | E2 BURST 4 x | time of the minimum after the burst (s) | 60 | 100, 100, 100 | -40.0% | no |  |
+| a100_native | E2 NOBURST 4 x | hit | 0.9323 | 0.935, 0.9322, 0.929 | +0.0% | yes |  |
+| a100_native | E2 NOBURST 4 x | sessions in system n1 | 27.8 | 33.63, 28.22, 28.54 | -7.7% | no |  |
+| a100_native | E2 NOBURST 4 x | gap/R (frozen loopvars) | 0.01731 | 0.022, 0.018, 0.019 | -12.0% | no |  |
+| a100_native | E2 NOBURST 4 x | R = M/churn (s) | 307.8 | 271.6, 309.5, 306.1 | +4.1% | yes |  |
+| a100_native | E2 CAPPED 4 x (cap 64) | gate empty after the burst (s) | 815 | 936.8, 836.6, 900.4 | -8.6% | no |  |
+| vllm_300k | all-miss | lambda_miss turns-based (E0a, POP 32) | 0.06697 | 0.06566 | +2.0% |  | tokens fitted, turns predicted |
+| vllm_300k | all-miss | E0a uncached tokens/s | 1.035e+04 | 1.035e+04 | -0.0% |  | E0a token rate (fitted: one speed factor) |
+| vllm_300k | all-miss | POP-64 / POP-32 E0a tokens | 1.001 | 1.018 | -1.6% |  | check only (one POP-64 seed) |
+| vllm_300k | closed | peak n (fluid) | 24.87 | 20 |  |  | measured flat top (within 5%): [20.0, 24.0] |
+| vllm_300k | closed | peak n (annealed F1) | 24 | 20 |  |  |  |
+| vllm_300k | closed | mu_max sessions/s (fluid) | 0.249 | 0.2194 | +13.5% |  | turns-based measured 0.2108 |
+| vllm_300k | closed | mu_max sessions/s (annealed F1) | 0.2353 | 0.2194 | +7.2% |  |  |
+| vllm_300k | closed | mu_max turns-based (fluid) | 0.249 | 0.2108 | +18.1% |  | model-consistent estimator |
+| vllm_300k | closed | mu_max turns-based (annealed F1) | 0.2353 | 0.2108 | +11.7% |  | model-consistent estimator; primary for blind scoring |
+| vllm_300k | closed | 0.5-hit crossing n (fluid) | 31.75 | 29.1 | +9.1% |  |  |
+| vllm_300k | closed | 0.5-hit crossing n (annealed F1) | 30.69 | 29.1 | +5.5% |  |  |
+| vllm_300k | closed | mu(16) sessions/s fluid | annealed | 0.1786 | 0.1785 | 0.175 | +2.0% |  | rel_err of annealed |
+| vllm_300k | closed | mu(16) turns-based fluid | annealed | 0.1786 | 0.1785 | 0.174 | +2.6% |  | rel_err of annealed; fluid +0.026 |
+| vllm_300k | closed | hit(16) fluid | annealed | 0.932 | 0.932 | 0.9319 |  |  |  |
+| vllm_300k | closed | mu(20) sessions/s fluid | annealed | 0.2181 | 0.2160 | 0.2194 | -1.6% |  | rel_err of annealed |
+| vllm_300k | closed | mu(20) turns-based fluid | annealed | 0.2181 | 0.2160 | 0.2108 | +2.5% |  | rel_err of annealed; fluid +0.035 |
+| vllm_300k | closed | hit(20) fluid | annealed | 0.932 | 0.923 | 0.9261 |  |  |  |
+| vllm_300k | closed | mu(24) sessions/s fluid | annealed | 0.2476 | 0.2353 | 0.2183 | +7.8% |  | rel_err of annealed |
+| vllm_300k | closed | mu(24) turns-based fluid | annealed | 0.2476 | 0.2353 | 0.2096 | +12.3% |  | rel_err of annealed; fluid +0.181 |
+| vllm_300k | closed | hit(24) fluid | annealed | 0.910 | 0.877 | 0.8792 |  |  |  |
+| vllm_300k | closed | mu(28) sessions/s fluid | annealed | 0.2254 | 0.2086 | 0.1189 | +75.5% |  | rel_err of annealed |
+| vllm_300k | closed | mu(28) turns-based fluid | annealed | 0.2254 | 0.2086 | 0.1228 | +69.8% |  | rel_err of annealed; fluid +0.835 |
+| vllm_300k | closed | hit(28) fluid | annealed | 0.812 | 0.717 | 0.6584 |  |  |  |
+| vllm_300k | closed | mu(32) sessions/s fluid | annealed | 0.1116 | 0.1402 | 0.04333 | +223.6% |  | rel_err of annealed |
+| vllm_300k | closed | mu(32) turns-based fluid | annealed | 0.1116 | 0.1402 | 0.05438 | +157.8% |  | rel_err of annealed; fluid +1.053 |
+| vllm_300k | closed | hit(32) fluid | annealed | 0.441 | 0.381 | 0.08304 |  |  |  |
+| vllm_300k | closed | mu(40) sessions/s fluid | annealed | 0.0670 | 0.0720 | 0.04111 | +75.0% |  | rel_err of annealed |
+| vllm_300k | closed | mu(40) turns-based fluid | annealed | 0.0670 | 0.0720 | 0.05551 | +29.6% |  | rel_err of annealed; fluid +0.208 |
+| vllm_300k | closed | hit(40) fluid | annealed | 0.000 | 0.028 | 0.007458 |  |  |  |
+| vllm_300k | closed (Stage C protocol) | mu(40) synchronized start, sessions | turns-based | 0.0664 | 0.0667 | 0.0411 | 0.0555 | +61.5% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| vllm_300k | closed | mu(48) sessions/s fluid | annealed | 0.0670 | 0.0671 | 0.04389 | +52.9% |  | rel_err of annealed |
+| vllm_300k | closed | mu(48) turns-based fluid | annealed | 0.0670 | 0.0671 | 0.05924 | +13.3% |  | rel_err of annealed; fluid +0.132 |
+| vllm_300k | closed | hit(48) fluid | annealed | 0.000 | 0.001 | 0 |  |  |  |
+| vllm_300k | closed (Stage C protocol) | mu(48) synchronized start, sessions | turns-based | 0.0666 | 0.0671 | 0.0439 | 0.0592 | +51.8% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| vllm_300k | closed | mu(96) sessions/s fluid | annealed | 0.0670 | 0.0670 | 0.05722 | +17.2% |  | rel_err of annealed |
+| vllm_300k | closed | mu(96) turns-based fluid | annealed | 0.0670 | 0.0670 | 0.06865 | -2.3% |  | rel_err of annealed; fluid -0.023 |
+| vllm_300k | closed | hit(96) fluid | annealed | 0.000 | 0.000 | 0 |  |  |  |
+| vllm_300k | closed (Stage C protocol) | mu(96) synchronized start, sessions | turns-based | 0.0743 | 0.0755 | 0.0572 | 0.0686 | +29.8% |  | graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here |
+| vllm_300k | closed (Stage C protocol) | mu(300) synchronized start, sessions | turns-based | 0.1036 | 0.1053 | 0.1050 | 0.1047 | -1.3% |  | graft of A; valid when trapped from t=0 (n E_1 > M) |
+| vllm_300k | closed (RMS) | RMS rel err of mu, fluid vs sessions | all n<300: 0.708 | below n_b only: 0.813 | +70.8% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| vllm_300k | closed (RMS) | RMS rel err of mu, annealed F1 vs sessions | all n<300: 0.898 | below n_b only: 1.056 | +89.8% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| vllm_300k | closed (RMS) | RMS rel err of mu, fluid vs turns-based | all n<300: 0.488 | below n_b only: 0.607 | +48.8% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| vllm_300k | closed (RMS) | RMS rel err of mu, annealed F1 vs turns-based | all n<300: 0.623 | below n_b only: 0.774 | +62.3% |  | all-points RMS is the headline; the below-n_b subset is chosen by the model |
+| vllm_300k | closed | mu at large n, turns-based (stationary mu_b) | 0.06704 | 0.06865 | -2.3% |  | measured at n = 96 |
+| vllm_300k | closed | all-miss threshold n_b (= closed form) | 32.83 (= 32.83) | collapse between measured grid points |  |  | measured hit: 16: 0.93, 20: 0.93, 24: 0.88, 28: 0.66, 32: 0.08, 40: 0.01, 48: 0.00, 96: 0.00 |
+| vllm_300k | window | mu_max / lambda_ref (fluid) | 3.792 | 3.342 | +13.5% |  | turns-based measured 3.21 |
+| vllm_300k | window | mu_max / lambda_ref (annealed F1) | 3.584 | 3.342 | +7.2% |  |  |
+| vllm_300k | window | mu_max / lambda_ref turns-based (annealed F1) | 3.584 | 3.21 | +11.7% |  | model-consistent; primary for blind scoring |
+| vllm_300k | from-empty edge (F2) | P(unstable 3000 s run) at 1.25 x | 0.0001595 | stable |  |  |  |
+| vllm_300k | from-empty edge (F2) | P(unstable 3000 s run) at 1.5 x | 0.001755 | stable |  |  |  |
+| vllm_300k | from-empty edge (F2) | P(unstable 3000 s run) at 1.75 x | 0.01215 | stable |  |  |  |
+| vllm_300k | from-empty edge (F2) | P(unstable 3000 s run) at 2 x | 0.0569 | stable |  |  |  |
+| vllm_300k | from-empty edge (F2) | P(unstable 3000 s run) at 2.5 x | 0.4238 | UNSTABLE |  |  |  |
+| vllm_300k | from-empty edge (F2) | P(unstable 3000 s run) at 3 x | 0.8822 | UNSTABLE |  |  |  |
+| vllm_300k | from-empty edge (F2) | predicted bracket (stable, unstable) | [2.5, 3.0] | [2.0, 2.5] |  |  | 50% edge 2.57 x; log-likelihood of the observed outcomes -1.057 |
+| vllm_300k | from-empty edge (secondary: A's level crossing) | P(unstable) at the registered multiples | 1.25: 0.000, 1.5: 0.000, 1.75: 0.000, 2.0: 0.007, 2.5: 0.177, 3.0: 0.693 |  |  |  | 50% edge 2.81 x; log-likelihood -2.107 (probabilities floored at 1e-3) |
+| vllm_300k | E2 BURST 1.35 x | backlog [5700, 8700) mean | 206.3 | 227.3, 202.8, 217.6 | -4.4% | yes |  |
+| vllm_300k | E2 BURST 1.35 x | backlog slope (sessions/s) | 0.0145 | 0.01409, 0.0002376, 0.01633 | +41.9% | yes |  |
+| vllm_300k | E2 BURST 1.35 x | session rate (sessions/s) | 0.07164 | 0.08033, 0.08433, 0.07867 | -11.7% | no |  |
+| vllm_300k | E2 BURST 1.35 x | uncached token rate / E0a | 0.9921 | 0.9965, 1, 1.007 | -0.9% | no | model ratio = trapped / model E0a |
+| vllm_300k | E2 BURST 1.35 x | hit | 0 | 0, 0, 0 |  | yes |  |
+| vllm_300k | E2 BURST 1.35 x | gap/R (frozen loopvars) | 6.64 | 6.709, 6.508, 6.715 | -0.1% | yes |  |
+| vllm_300k | E2 BURST 1.35 x | R = M/churn (s) | 28.92 | 28.8, 28.7, 28.5 | +0.9% | no |  |
+| vllm_300k | E2 BURST 1.65 x | backlog [5700, 8700) mean | 288.2 | 308.7, 276.6, 300.1 | -2.3% | yes |  |
+| vllm_300k | E2 BURST 1.65 x | backlog slope (sessions/s) | 0.02671 | 0.03219, 0.01748, 0.03258 | -2.6% | yes |  |
+| vllm_300k | E2 BURST 1.65 x | session rate (sessions/s) | 0.07887 | 0.086, 0.09267, 0.08567 | -10.5% | no |  |
+| vllm_300k | E2 BURST 1.65 x | uncached token rate / E0a | 1.002 | 1.031, 1.025, 1.026 | -2.5% | no | model ratio = trapped / model E0a |
+| vllm_300k | E2 BURST 1.65 x | hit | 0 | 0, 0, 0 |  | yes |  |
+| vllm_300k | E2 BURST 1.65 x | gap/R (frozen loopvars) | 8.519 | 8.627, 8.054, 8.297 | +2.3% | yes |  |
+| vllm_300k | E2 BURST 1.65 x | R = M/churn (s) | 28.6 | 27.8, 28, 27.9 | +2.5% | no |  |

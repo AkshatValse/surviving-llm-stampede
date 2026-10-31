@@ -1,0 +1,65 @@
+# FROZEN SCORING DECLARATION for the round-13 theory's blind predictions (written 2026-10-31 before the freeze tag
+# r13-theory-pred, before any H200 Stage C n >= 40 / E0b, Llama, pool-sweep, B1 or R1/R4 result was read by the theory
+# authors).  Copied into every prediction JSON under "scoring".  notes/THEORY_r13_scoring.md explains each rule.
+general:
+  primary_curve:
+    mu_max: annealed (F1)
+    peak_n: annealed (F1)
+    mu_points_below_n_b: annealed (F1)
+    window: annealed (F1) mu_max / lambda_ref
+    n_half: fluid (0.5-hit crossing of the fluid curve)
+    n_b: fluid (exact identity T3(b))
+    from_empty_edge: F2 (target n_b, I_D from Campbell, H = 3000 s); A's level crossing reported, not primary
+    trapped_state: fluid round robin (B)
+    rescue_release: two_phase (fluid phase 1); bands two_phase_annealed and the two collapsed bounds
+  estimator:
+    primary: turns-based (mu = completed turns per second / E[T]; the model's mu is nu / E[T])
+    also_reported: mu_sessions (completed sessions per second), with both errors
+  tolerances_hit:
+    mu_max_rel: 0.10
+    window_rel: 0.10
+    peak_n: "inside the measured flat top (grid points within 2% of the measured grid maximum) or the grid point next to it"
+    n_half_abs_sessions: 3.0
+    e0b_bracket: "equal = hit; one grid step off = near miss; two or more = miss"
+    e0b_loglik: "report both F2 and A's level crossing on the 6 outcomes"
+    trapped_backlog_rel: 0.15
+    trapped_token_ratio_abs: 0.03
+    release_time_rel: 0.15
+  independence_note: "trapped gap/R and R are identities given the backlog and the E0a composition cost; they are not scored as
+    independent rows.  An unbiased model lands 50% of single quantities inside a 3-seed range."
+  bands: "sensitivity variants and the F2-variant spread are declared uncertainty bands, never alternative primaries"
+  registration_conditional_rule: "after a cell's registration is pushed, rerun predict.py at the frozen tag with a spec that
+    differs from the frozen one ONLY in e2.multiples, e2.cap and tests (Llama: plus lambda_ref = the measured E0a value and a
+    second variant with fit_speed_to_e0a = the measured E0a tokens).  Read only the registration's rate and cap fields.  Write
+    <cell>_conditional.json, labelled conditional."
+cells:
+  h200_300k:
+    primary_variant: h200_300k (uniform speed factor fitted to the absolute H200 E0a tokens, s = 2.742)
+    band_variants: [h200_300k_ratiofit, h200_300k_lamratiofit, h200_300k_decode2, h200_300k_e0a2]
+    refutation:
+      - "measured window (turns-based mu_max / 0.19388) >= 2.4 refutes T8 under uniform scaling (predicted 1.95, band 1.66-1.95)"
+      - "measured hit(32) < 0.5 (cliff at or inside the A100 300k cell's) refutes T3(c) (predicted n_b 41.3, n_half 37.3)"
+      - "measured hit(48) >= 0.5 refutes T3(b)/(c) (pool part M/E_S = 27.8 is speed-invariant; n_b <= 41.8 in every variant)"
+    known_prefreeze_warning: "uniform scaling misfits the allowed POP-64/POP-32 input: 1.019 predicted vs 1.046 measured"
+  llama31_8b_300k:
+    primary_variant: llama31_8b_300k (a priori architecture ratios, no data)
+    conditional: "llama31_8b_300k_speed_table.json: s = measured E0a tokens / model E0a tokens at s = 1; interpolate"
+    speed_independent: ["n_b pool part M/E_S", "the existence and sign of the window", "fold-freeness (Prop F)"]
+    refutation:
+      - "measured n_half outside the speed-table n_half(s) +- 3 sessions"
+      - "no rise-peak-collapse (measured mu at n = 48 within 10% of the measured peak)"
+  a100_pool150k:
+    refutation: ["measured window >= 2.5 refutes T8/T3 pool scaling (predicted 1.97 fluid)", "hit(24) >= 0.5 refutes n_b 18.3"]
+  a100_pool600k:
+    refutation: ["measured window < 4.5 refutes (predicted 5.72 fluid)", "hit(48) < 0.5 refutes n_half 60.0"]
+  b1_basin_300k:
+    shared_with_simulator: "PASS is also the round-7 simulator's prediction; the theory-specific quantities are b_c = 53.4 at
+      1.65 x and the committor P(trapped) for bursts 40-60 (not run)"
+    burst_width_note: "the model assumes the 60 s burst width of the protocol"
+  r1_rescue_300k:
+    verdict_shared_with_simulator: "RESCUED is also the registered simulator prediction; the release times discriminate"
+    relapse_mapping: "P(relapse) = F2 escape to n_b over [t_rel + 300 s, 8700 s); identified with the registered relapse event
+      (any 300 s window with follow-up hit < 0.2 after t_rel + 300 s)"
+  r4_rescue_native:
+    relapse_mapping: "as R1"
+    fragility: "needs the phase-1 rate >= 51% of the fluid value; a collapsed phase 1 gives no release by 7200 s"

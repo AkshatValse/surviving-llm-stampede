@@ -1,0 +1,11 @@
+# OUT-OF-SAMPLE (blind), SENSITIVITY variant of h200_300k with TWO parameters fitted to the H200 E0a (allowed inputs only):
+# the decode/memory-side factor (iteration-fixed, floor and decode-attention costs) reproduces the E0a POP-64 / POP-32 token
+# ratio 1.046, the compute-side factor the POP-32 token rate.  The model under-predicts the A100's POP-64 ratio by 1.6
+# points (1.001 vs 1.017), so this variant over-attributes the ratio to slow overheads: a pessimistic bracket.
+base: h200_300k.yaml
+name: h200_300k_e0a2
+description: "H200 cell, decode/memory side fitted to the E0a POP-64 ratio, compute side to the E0a tokens (sensitivity; blind)"
+costs:
+  decode_side_speedup:
+    fit_pop64_over_pop32: 1.046
+    source: "H200 E0a POP-64 / POP-32 uncached token ratio 1.046 (allowed input; task brief)"

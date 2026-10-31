@@ -1,0 +1,12 @@
+# OUT-OF-SAMPLE (blind), SENSITIVITY variant of h200_300k (added post-review, 2026-10-31, before the freeze): the uniform speed
+# factor fitted to the measured H200/A100 E0a TOKEN RATIO (29,866 / 11,243 = 2.6564) applied to the model's own A100 E0a
+# analogue (11,090.66 tok/s), instead of to the absolute H200 rate.  This removes the A100 model's -1.4% E0a bias from s.
+# Target = 11,090.66 x 2.6564 = 29,461.3 tok/s.  The lambda-ratio fit (0.19388 / 0.071534 = 2.7103) is h200_300k_lamratiofit.
+base: h200_300k.yaml
+name: h200_300k_ratiofit
+description: "H200 cell, uniform speed factor fitted to the measured H200/A100 E0a token ratio (sensitivity; blind)"
+costs:
+  fit_speed_to_e0a:
+    tokens_per_s: 29461.3
+    pop: 32
+    source: "H200/A100 E0a token ratio 29,866/11,243 times the model's A100 E0a analogue 11,090.66 tok/s"

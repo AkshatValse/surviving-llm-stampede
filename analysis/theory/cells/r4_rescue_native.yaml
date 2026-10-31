@@ -1,0 +1,18 @@
+# OUT-OF-SAMPLE (blind). Registered rescue test R4 on the a100_native cell (configs/agentload_e2_rescue_native.yaml):
+# pause cap 64 engaged at 2100 s at 4.0 x lambda_ref; same release rule as R1.
+base: a100_native.yaml
+name: r4_rescue_native
+description: "R4 rescue test on a100_native (blind)"
+blind: true
+tests:
+  - kind: rescue
+    name: R4
+    multiples: [4.0]
+    cap: 64
+    t_on_s: 2100
+    release_hold_s: 300
+    min_on_s: 600
+    release_check_s: 10
+    release_by_s: 7200
+    horizon_s: 8700
+    burst: {n: 200, t_s: 1200, width_s: 60}

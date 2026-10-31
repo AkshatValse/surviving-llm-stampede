@@ -1,0 +1,33 @@
+{
+ "created": "2026-10-31T00:11:31-0500",
+ "argv": [
+  "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\theory\\analysis\\theory\\che_endogenous\\run_che.py",
+  "--out",
+  "results/theory/che_endogenous",
+  "--figdir",
+  "figures/theory"
+ ],
+ "git_head": "582c2a656f3ae43ce5704e10b737270a5a937077",
+ "git_dirty": true,
+ "code_sha256": {
+  "model.py": "aeeb6e2304421ea74eb9c811053fc2376bade0ecc88396dad2f693c81f7cec5c",
+  "open_system.py": "34fcf503f2db1a010bb30da5b0adb2ed2266c4d32d2aa8fec79cb76d6786d66e",
+  "measured.py": "16407bd066ea00359141bf23ffbc490f78430193e1ad603694852918c711e5d0",
+  "run_che.py": "37e7464fb0c22fe539f6a9abc9a766839680ac3eb229d9d98655b55534e5c3ba"
+ },
+ "eta": 0.1,
+ "n_rep": 400,
+ "smooth_nodes": 11,
+ "seconds": 815.5485334396362,
+ "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+ "numpy": "1.26.4",
+ "inputs": "workload (configs/agentload_e2_burst.yaml), pools, calibration/round6_server_log_fit/calibration.yaml, vLLM E0a token rate (scale), H200 E0a token rate (scale); measured targets only in measured.py for comparison",
+ "parts": [
+  "bursts",
+  "predictions",
+  "rescue",
+  "scaling",
+  "sensitivity",
+  "validation"
+ ]
+}

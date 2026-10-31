@@ -1,0 +1,11 @@
+# OUT-OF-SAMPLE (blind), SENSITIVITY variant of h200_300k (added post-review, 2026-10-31, before the freeze): the uniform speed
+# factor fitted to the measured H200/A100 E0a lambda_miss ratio (0.19388 / 0.071534 = 2.7103) applied to the model's own A100
+# E0a token analogue (11,090.66 tok/s): target 30,059.2 tok/s.
+base: h200_300k.yaml
+name: h200_300k_lamratiofit
+description: "H200 cell, uniform speed factor fitted to the measured H200/A100 E0a lambda_miss ratio (sensitivity; blind)"
+costs:
+  fit_speed_to_e0a:
+    tokens_per_s: 30059.2
+    pop: 32
+    source: "H200/A100 E0a lambda_miss ratio 0.19388/0.071534 times the model's A100 E0a analogue 11,090.66 tok/s"
