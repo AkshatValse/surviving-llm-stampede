@@ -24,12 +24,14 @@
 % ---------------------------------------------------------------- classical theory
 
 % FULL (text read; the working-set model is reviewed here and credited to denning1968working)
+% DOI checked 2026-10-31 at api.crossref.org/works/10.1145/1476589.1476705 (Denning, AFIPS '68 Fall, part I, first page 915)
 @inproceedings{denning1968thrashing,
   author    = {Denning, Peter J.},
   title     = {Thrashing: Its Causes and Prevention},
   booktitle = {Proceedings of the AFIPS Fall Joint Computer Conference},
   year      = {1968},
   pages     = {915--922},
+  doi       = {10.1145/1476589.1476705},
 }
 
 % META (Crossref; also cited as reference 2 of denning1968thrashing)
@@ -170,7 +172,7 @@
 @inproceedings{chou1985evaluation,
   author    = {Chou, Hong-Tai and DeWitt, David J.},
   title     = {An Evaluation of Buffer Management Strategies for Relational Database Systems},
-  booktitle = {Proceedings of VLDB 85},
+  booktitle = {Proceedings of the 11th International Conference on Very Large Data Bases (VLDB '85)},
   address   = {Stockholm},
   pages     = {127--141},
   year      = {1985},
@@ -622,6 +624,37 @@
   howpublished = {arXiv:2412.15115},
 }
 
+% ABSTRACT (arXiv API 2026-10-31: 2407.21783 v3 of 23 Nov 2024, first listed authors Grattafiori, Dubey, Jauhri; the
+% report on the Llama 3.1 release, which includes the 8B Instruct model used in the one Llama cell)
+@misc{grattafiori2024llama3,
+  author       = {Grattafiori, Aaron and Dubey, Abhimanyu and Jauhri, Abhinav and others},
+  title        = {The {Llama} 3 Herd of Models},
+  year         = {2024},
+  howpublished = {arXiv:2407.21783},
+}
+
+% ABSTRACT. proceedings.mlsys.org/paper_files/paper/2025 (abstract page and its BibTeX, read 2026-10-31): title, the eleven
+% authors in this order, Proceedings of Machine Learning and Systems 7 (MLSys 2025); no page range given there. arXiv API
+% 2026-10-31: 2501.01005 v2 of 21 Apr 2025, comment "Accepted by MLSys 2025". Cited for the A100 cells' attention backend.
+@inproceedings{ye2025flashinfer,
+  author    = {Ye, Zihao and Chen, Lequn and Lai, Ruihang and Lin, Wuwei and Zhang, Yineng and Wang, Stephanie and Chen, Tianqi and Kasikci, Baris and Grover, Vinod and Krishnamurthy, Arvind and Ceze, Luis},
+  title     = {{FlashInfer}: Efficient and Customizable Attention Engine for {LLM} Inference Serving},
+  booktitle = {Proceedings of Machine Learning and Systems 7 (MLSys 2025)},
+  year      = {2025},
+}
+
+% META. Crossref (api.crossref.org/works/10.52202/079017-2193), 2026-10-31: title, the six authors in this order, Advances
+% in Neural Information Processing Systems 37, pages 68658-68685; arXiv API 2026-10-31: 2407.08608 v2. Cited for the H200
+% cells' attention backend.
+@inproceedings{shah2024flashattention3,
+  author    = {Shah, Jay and Bikshandi, Ganesh and Zhang, Ying and Thakkar, Vijay and Ramani, Pradeep and Dao, Tri},
+  title     = {{FlashAttention-3}: Fast and Accurate Attention with Asynchrony and Low-precision},
+  booktitle = {Advances in Neural Information Processing Systems 37 (NeurIPS 2024)},
+  pages     = {68658--68685},
+  year      = {2024},
+  doi       = {10.52202/079017-2193},
+}
+
 % ---------------------------------------------------------------- added 2026-10-25 (resolution of the \todo markers in the draft)
 
 % verified 2026-10-25 at https://www.lk.cs.ucla.edu/data/files/Kleinrock/Packet%20Switching%20in%20a%20Multiaccess%20Broadcast%20Channel.pdf (author-hosted scan of the journal article; pages 1, 6 and 7 read as images): FULL (slotted ALOHA "often exhibits unstable behavior"; fluid approximation, equilibrium contour, stable and unstable channels with stable and unstable equilibrium points). DOI and pages 410--423 from Crossref (api.crossref.org/works?query.bibliographic=...).
@@ -894,7 +927,9 @@
 % (Figs. 10-11, 0.05 jobs/s, SLO 20 tokens/s): the no-control baseline at the maximum clock does not thrash; KAIROS without
 % thrashing avoidance (the SLO boost is a separate mechanism, so presumably still on) drops to 2.3 tokens/s P5 and 0.046 jobs/s, "a persistent thrashing regime ... making
 % recovery difficult"; Fig. 11 shows context usage, job throughput and pending agents, no frequency trace, so the clock
-% during the thrashing is not reported; one run per configuration, no burst trigger. The Sec. 8 runs replay one recorded agent workload (Sec. 7); Poisson
+% during the thrashing is not reported; Fig. 10 gives one value per configuration and Fig. 11 one trace each, with no error
+% bars and the number of runs not stated (Sec. 7 says only that replay gives an identical workload across runs); no burst
+% trigger. The Sec. 8 runs replay one recorded agent workload (Sec. 7); Poisson
 % arrivals are stated only for the Sec. 3 characterization (Sec. 3.1). Sec. 6.2.4 states that a short overload can push an
 % instance into a persistently inefficient operating region. Same first author as
 % yuan2026agentic: cite as "KAIROS" in prose. arXiv API 2026-10-31: v1 only, submitted 2026-04-17, no journal reference.
@@ -1082,7 +1117,7 @@
 @inproceedings{dan1990skewed,
   author    = {Dan, Asit and Dias, Daniel M. and Yu, Philip S.},
   title     = {The Effect of Skewed Data Access on Buffer Hits and Data Contention in a Data Sharing Environment},
-  booktitle = {Proceedings of the 16th International Conference on Very Large Data Bases (VLDB)},
+  booktitle = {Proceedings of the 16th International Conference on Very Large Data Bases (VLDB '90)},
   address   = {Brisbane, Australia},
   pages     = {419--431},
   year      = {1990},
@@ -1194,7 +1229,7 @@
 % repository of the frozen pre-registration.
 @misc{suram2026cacheable,
   author       = {Suram, Shriniwas Ramesh},
-  title        = {Cacheable by Design? Training Mixture-of-Experts Routers for Locality Against the Edge Memory-Bandwidth Wall: A Pre-Registered Negative Result with a Systems Measurement Study},
+  title        = {Cacheable by Design? {T}raining Mixture-of-Experts Routers for Locality Against the Edge Memory-Bandwidth Wall: A Pre-Registered Negative Result with a Systems Measurement Study},
   year         = {2026},
   howpublished = {arXiv:2608.18261 (v1, 18 August 2026)},
 }

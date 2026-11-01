@@ -6,10 +6,10 @@ with the drawing functions of `analysis/theory/paper/figs.py`). Every F1-F7 scri
 measured files listed in their section below, without that check. Rebuild all:
 
 ```
-PY="C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe" bash figures/paper/build_all.sh
+PY=python bash figures/paper/build_all.sh
 ```
 
-(`PYTHONPATH="src;."` is set by the script; only F1 imports repo code, `analysis.*`.) `FIG_SOURCES=1` makes a script print the files it read. PDFs carry no timestamp, so a rebuild is byte-identical.
+(Point `PY` at the interpreter of an environment built from `env/requirements-local.txt`. `PYTHONPATH="src;."` is set by the script; the `;` separator is the Windows one, so on Linux or macOS change it to `src:.`; only F1 imports repo code, `analysis.*`.) `FIG_SOURCES=1` makes a script print the files it read. PDFs carry no timestamp, so a rebuild is byte-identical.
 Style (`_style.py`): matplotlib 3.9.2, STIXGeneral serif, 8-9 pt at final size, TrueType fonts embedded, no raster content;
 single column 3.4 in, double column 7.0 in. One Okabe-Ito palette. The same colour means the same thing everywhere:
 BURST vermillion, NOBURST blue, CAPPED green (a static session cap is also green); FCFS near-black, LPM purple, PEEK orange,
