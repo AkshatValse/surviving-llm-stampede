@@ -1,0 +1,137 @@
+{
+  "by_seed": {
+    "0": {
+      "d10": "good",
+      "d30": "good",
+      "t600": "stuck",
+      "t3600": "good",
+      "control_burst": "stuck",
+      "control_noburst": "good"
+    },
+    "1": {
+      "d10": "good",
+      "d30": "good",
+      "t600": "stuck",
+      "t3600": "good",
+      "control_burst": "stuck",
+      "control_noburst": "good"
+    },
+    "2": {
+      "d10": "good",
+      "d30": "stuck",
+      "control_burst": "stuck",
+      "control_noburst": "good"
+    }
+  },
+  "decision": {
+    "cells": {
+      "d10": {
+        "label": "sglang-fcfs-r1-toolslow-d10",
+        "family": "toolslow",
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "need": 2,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 0,
+        "good": 3
+      },
+      "d30": {
+        "label": "sglang-fcfs-r1-toolslow-d30",
+        "family": "toolslow",
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "need": 2,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 1,
+        "good": 2
+      },
+      "t600": {
+        "label": "sglang-fcfs-r1-shed-t600",
+        "family": "shed",
+        "seeds": [
+          0,
+          1
+        ],
+        "need": 2,
+        "seeds_present": [
+          0,
+          1
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 2,
+        "good": 0,
+        "sessions_shed_by_seed": {
+          "0": 59,
+          "1": 56
+        }
+      },
+      "t3600": {
+        "label": "sglang-fcfs-r1-shed-t3600",
+        "family": "shed",
+        "seeds": [
+          0,
+          1
+        ],
+        "need": 2,
+        "seeds_present": [
+          0,
+          1
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 0,
+        "good": 2,
+        "sessions_shed_by_seed": {
+          "0": 355,
+          "1": 378
+        }
+      }
+    },
+    "toolslow": {
+      "rule": "causal test of the gap: d10 GOOD in >=2/3 seeds and d30 STUCK in >=2/3",
+      "d10_good_majority": true,
+      "d30_stuck_majority": false,
+      "pass": false
+    },
+    "shed": {
+      "rule": "tau600 STUCK in >=2/3 and tau3600 GOOD in >=2/3; sessions shed reported; compared with R1 (0 shed)",
+      "t600_stuck_majority": true,
+      "t3600_good_majority": true,
+      "r1_sessions_shed": 0,
+      "pass": true
+    },
+    "note": "pass is True / False once the present seeds decide it, None while missing seeds could still change it"
+  },
+  "endpoint_problems": [],
+  "endpoints": {
+    "stuck_hit_below": 0.2,
+    "good_hit_above": 0.8,
+    "eval_window_s": [
+      5700.0,
+      8700.0
+    ],
+    "trapped_co_primary_n": [
+      100
+    ],
+    "source": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\extra\\configs\\r11_basin_predict.yaml"
+  }
+}

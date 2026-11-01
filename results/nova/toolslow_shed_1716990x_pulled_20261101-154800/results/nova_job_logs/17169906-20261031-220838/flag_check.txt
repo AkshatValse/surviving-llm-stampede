@@ -1,0 +1,19 @@
+flag ok:      --schedule-policy
+flag ok:      --max-running-requests
+flag ok:      --chunked-prefill-size
+flag ok:      --max-total-tokens
+flag ok:      --context-length
+flag ok:      --enable-metrics
+flag ok:      --enable-cache-report
+flag ok:      --disable-radix-cache
+flag ok:      --model-path
+flag ok:      --port
+flag ok:      --revision
+optional flag ok:      --sampling-defaults
+sglang version: 0.5.22
+env var ok:      SGLANG_ENABLE_WAITING_PREFIX_REFRESH
+env var ok:      SGLANG_ALLOW_OVERWRITE_LONGER_CONTEXT_LEN
+jit ok:      ninja 1.13.2.git.kitware.jobserver-pipe-1
+jit ok:      Build cuda_13.0.r13.0/compiler.36424714_0
+jit ok:      /work/classtmp/avalse/swapp/cuda13-home/lib64/libcudart.so -> /work/classtmp/avalse/swapp/envs/sglang/lib/python3.11/site-packages/nvidia/cu13/lib/libcudart.so.13
+jit ok:      /work/classtmp/avalse/swapp/cuda13-home/lib64/stubs/libcuda.so -> /usr/lib64/libcuda.so.1
