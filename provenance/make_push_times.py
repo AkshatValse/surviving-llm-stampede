@@ -8,7 +8,13 @@ and the Slurm submit/start/end times of the first job of the corresponding batch
 cluster's local time. Run from the repository root:
 
     python provenance/make_push_times.py > provenance/push_times_2026-10.tsv
+
+The refresh of 2026-11-01 reads a newer activity export and sacct snapshot and adds the rows of
+rounds 11 to 14 (EXTRA_ROWS); the rows above are unchanged:
+
+    python provenance/make_push_times.py --activity github_activity_2026-11-01.json         --sacct sacct_cited_jobs_2026-11-01.txt --extra > provenance/push_times_2026-11-01.tsv
 """
+import argparse
 import csv
 import json
 import subprocess
@@ -38,6 +44,31 @@ ROWS = [
     ("vLLM registration", "5a6fbcd", "vLLM registered paired test", "17166121"),
 ]
 
+# rounds 11 to 14 (2026-10-30 evening to 2026-10-31); used with --extra
+EXTRA_ROWS = [
+    ("BASIN-1 simulator predictions (r11 S1 bundle 1)", "c600fd7", "BASIN-1", "17168500"),
+    ("BASIN-1 registrations (tag r11-basin-reg)", "9b67c26", "BASIN-1", "17168500"),
+    ("LPM-INF exploratory registration (tag r11-lpminf-pred)", "5064580", "LPM-INF", "17168743"),
+    ("rescue simulator predictions (tag r11-rescue-pred)", "72501f0", "rescue R1", "17168966"),
+    ("rescue registrations R1/R4 (tag r11-rescue-reg)", "f0bc3ad", "rescue R1", "17168966"),
+    ("rescue registrations R1/R4 (tag r11-rescue-reg)", "f0bc3ad", "rescue R4", "17168972"),
+    ("theory freeze (tag r13-theory-pred): rescue", "997d2c4", "rescue R1", "17168966"),
+    ("theory freeze (tag r13-theory-pred): pool sweep", "997d2c4", "pool sweep Stage C", "17168864"),
+    ("theory freeze (tag r13-theory-pred): H200 n=36/44/52", "997d2c4", "H200 Stage C n=36/44/52", "17169612"),
+    ("theory freeze (tag r13-theory-pred): Llama-3.1-8B", "997d2c4", "Llama-3.1-8B Stage C", "17166814"),
+    ("Llama-3.1-8B simulator predictions (tag r12-llama31-predictions-frozen)", "a62aea9", "Llama-3.1-8B E0b", "17169565"),
+    ("BASIN-2 registrations (tag r14-basin2-reg)", "621d88f", "BASIN-2", "17169893"),
+    ("TOOLSLOW/SHED registrations (tag r14-extra-reg)", "b006291", "TOOLSLOW", "17169902"),
+    ("TOOLSLOW/SHED registrations (tag r14-extra-reg)", "b006291", "SHED", "17169908"),
+    ("pred2 (tag r13-theory-pred2): BASIN-2", "cfa7712", "BASIN-2", "17169893"),
+    ("pred2 (tag r13-theory-pred2): TOOLSLOW", "cfa7712", "TOOLSLOW", "17169902"),
+    ("pred2 (tag r13-theory-pred2): SHED", "cfa7712", "SHED", "17169908"),
+    ("pred2 (tag r13-theory-pred2): H200 600k Stage C", "cfa7712", "H200 600k Stage C", "17169672"),
+    ("H200 600k registration", "4d1d431", "H200 600k E2", "17171020"),
+    ("Llama-3.1-8B registration", "1559f8e", "Llama-3.1-8B E2", "17170409"),
+    ("Llama-3.1-8B theory conditional", "a36f441", "Llama-3.1-8B E2", "17170409"),
+]
+
 
 def git(*args):
     return subprocess.run(["git", *args], capture_output=True, text=True)
@@ -56,11 +87,17 @@ def fmt(dt):
 
 
 def main():
-    activity = json.loads((HERE / "github_activity_2026-10.json").read_text(encoding="utf-8"))
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--activity", default="github_activity_2026-10.json")
+    ap.add_argument("--events", default="github_events_2026-10.json")
+    ap.add_argument("--sacct", default="sacct_cited_jobs_2026-10-30.txt")
+    ap.add_argument("--extra", action="store_true", help="also the rounds 11-14 rows")
+    args = ap.parse_args()
+    activity = json.loads((HERE / args.activity).read_text(encoding="utf-8"))
     activity.sort(key=lambda a: (a["timestamp"], a["id"]))
-    events = json.loads((HERE / "github_events_2026-10.json").read_text(encoding="utf-8"))
+    events = json.loads((HERE / args.events).read_text(encoding="utf-8"))
     jobs = {}
-    with open(HERE / "sacct_cited_jobs_2026-10-30.txt", encoding="utf-8", newline="") as f:
+    with open(HERE / args.sacct, encoding="utf-8", newline="") as f:
         for r in csv.DictReader(f, delimiter="|"):
             jobs[r["JobID"]] = r
 
@@ -91,7 +128,7 @@ def main():
     out.writerow(["event", "commit", "committer_time_cdt", "first_on_github_cdt", "github_ref_update",
                   "activity_id", "event_created_cdt", "batch", "first_job", "submit_cdt", "start_cdt",
                   "end_cdt", "push_minus_submit_s", "push_minus_start_s"])
-    for event, commit, batch, job in ROWS:
+    for event, commit, batch, job in ROWS + (EXTRA_ROWS if args.extra else []):
         full = git("rev-parse", commit + "^{commit}").stdout.strip()
         committed = git("log", "-1", "--format=%cd", "--date=format:%Y-%m-%d %H:%M:%S", full).stdout.strip()
         a = first_push(full)
