@@ -35,3 +35,15 @@ Points the table does not show on its own:
 - The vLLM registration `5a6fbcd` reached GitHub 1 min 59 s after the paired-test jobs were submitted and 53 s after the first one started (17166122 started at 16:26:17). The Slurm submit line names the registration file (`PREREG_FILE=configs/agentload_prereg_2026-10-30_vllm.yaml`) but not its hash. `notes/LOG.md` and `notes/STATE.md` give the submission time as 16:30; Slurm records 16:24:36.
 - Tags: GitHub records no push time for tags. The tagger times, set by the committer, are 10-24 14:52:56 (`r6`), 10-25 15:08:26 (`r8`) and 10-30 12:32:41 (`r9`).
 - The 103 commits in `commit-map.tsv` (all made before the rewrite) have no server record earlier than the repository's first push. 97 of them, including `288b801`, `4435c51` and `d0235a7`, arrived with `main` at 2026-10-22 17:45:50; `fc870c2` with `wip/r6-separate-batching` at 17:45:52. The other 5 are reachable only from the `archive/*` tags, which have no push record.
+
+## Refresh of 2026-11-01 (after the last registered jobs)
+
+Exported 2026-11-01, 15:55 to 16:05 CST (21:55 to 22:05 UTC). Daylight saving time ended at 02:00 CDT on 2026-11-01, so Slurm local times from 01:00 on that day are CST (UTC-6); the `_utc` copy below is unambiguous. The 2026-10 files above are unchanged.
+
+| File | What it is |
+|---|---|
+| `github_activity_2026-11-01.json` | The same `gh api .../activity --paginate` call: 122 entries, 2026-10-22 22:45:50Z to 2026-11-01 21:56:08Z. No tag pushes, as before. |
+| `github_tag_refs_2026-11-01.json` | `gh api repos/AkshatValse/Nova-Research/git/matching-refs/tags --paginate`: the 17 tags on GitHub with their tag objects. |
+| `sacct_cited_jobs_2026-11-01.txt` | `sacct -j <IDs> -X -P -o JobID,JobName,Account,Partition,Submit,Start,End,State,ExitCode,NodeList,SubmitLine%2000` on nova-login-1: 258 jobs, every job ID cited in `paper/NUMBERS.md`, `paper/main.tex` and `paper/sections/*.tex` with ranges expanded. All are billed to `f2026.coms.6250.02`, partition `instruction`; 257 COMPLETED and 1 FAILED (17060022, the second Stage 0 smoke attempt). Rows of five unrelated job IDs, which the range expansion picked up from list notation and which belong to other users, were removed before saving. |
+| `sacct_cited_jobs_2026-11-01_utc.txt` | The same jobs with `TZ=UTC` and without the submit line. |
+| `push_times_2026-11-01.tsv` | `python provenance/make_push_times.py --activity github_activity_2026-11-01.json --sacct sacct_cited_jobs_2026-11-01.txt --extra`: the 14 rows of `push_times_2026-10.tsv` (identical except that the vLLM paired test now has its end time) plus 21 rows for rounds 11 to 14 (BASIN-1, LPM-INF, rescue, the two theory freezes, the Llama-3.1-8B predictions, registration and theory conditional, BASIN-2, TOOLSLOW, SHED and the 600k H200 registration). The event column reads "not in event log" for the new rows: the events export was not refreshed. |
