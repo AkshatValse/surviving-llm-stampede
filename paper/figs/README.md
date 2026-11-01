@@ -1,6 +1,6 @@
 # Paper figures
 
-Six vector PDFs, one script each under `figures/paper/`. Every script reads only git-tracked, unmodified files
+Seven vector PDFs, one script each under `figures/paper/` (F7 reuses F1's drawing function). Every script reads only git-tracked, unmodified files
 (`figures/paper/_style.py::src` refuses anything else) and writes `paper/figs/<name>.pdf`. Rebuild all:
 
 ```
@@ -14,17 +14,25 @@ BURST vermillion, NOBURST blue, CAPPED green (a static session cap is also green
 Continuum pins sky blue, CONCUR dark yellow; real engine = black and filled, simulator = gray, open, dashed;
 per-run states (F6): trapped vermillion, recovered green, draining sky blue, indeterminate gray.
 
-Checked for every figure: `pdfinfo` page size (below), `pdftoppm` render, and a `pdflatex` test page placing all six at their
+Checked for every figure: `pdfinfo` page size (below), `pdftoppm` render, and the paper build placing all seven at their
 native widths.
+
+File names are not the paper's figure numbers. In the 2026-10-26 build: Fig. 1 = F1, Fig. 2 = F2, Fig. 3 = F3, Fig. 4 = F7 (native E2),
+Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms).
 
 | file | width x height (in) | column |
 |---|---|---|
 | `fig1_e2_timeseries.pdf` | 7.00 x 3.90 | double |
 | `fig2_thrashing_curve.pdf` | 7.00 x 4.00 | double |
-| `fig3_from_empty_stability.pdf` | 3.40 x 2.45 | single |
+| `fig3_from_empty_stability.pdf` | 3.40 x 4.75 | single |
 | `fig4_mechanisms.pdf` | 7.00 x 3.47 | double |
 | `fig5_robustness.pdf` | 3.40 x 4.09 | single |
-| `fig6_policy_grid.pdf` | 3.40 x 2.90 | single |
+| `fig6_policy_grid.pdf` | 3.40 x 3.32 | single |
+| `fig7_e2_native_timeseries.pdf` | 7.00 x 3.60 | double |
+
+Changed on 2026-10-26 (native pool and vLLM results): F2 gains the B4n curve and the native cap; F3 gains a native-pool panel
+(native E0b against B2n); F6 gains a vLLM row; F7 is new. F1 was refactored into a function (`draw`) that F7 calls; F1's PDF is
+byte-identical to the previous build. F4 and F5 are unchanged.
 
 ---
 
@@ -78,6 +86,11 @@ registered seed 0, frozen before any native run; the real pool is 6% larger, so 
 Horizontal dotted line: lambda_miss (E0a all-miss capacity, turns-based: 0.0715 sessions/s at 300k, 0.0718 native). Green dashed line:
 n_cap = 20, the registered E2 cap. Log n axis; same y-limits in both columns so the shift of the cliff (hit-fraction crossing
 ~32 at 300k, between 80 and 96 native) and the unchanged lambda_miss are visible.
+Added 2026-10-26 to the right column: light gray dotted squares = B4n, the round-8 simulator curve at the real pool (955,757 tokens,
+mixed batching, mean of seeds 0-2 of `mu` (sessions-based) and `hit_rate`). B4n is NOT a blind prediction: the native curve had been
+measured and summarised in `notes/STATE.md` (6793fb7, 14:47) before its spec (29728e3, 14:49) was written; the figure labels it so.
+Green dashed line in the right column: the registered native cap n_cap = 64 (`configs/agentload_prereg_2026-10-25_native.yaml`).
+The right column's legend moved into the empty lower-left of the hit panel.
 
 **Sources.**
 - `results/nova/stageC_1706210x_pulled_20261022-125454/analysis_local/agentload_analysis_closed/20261022-125619/mu_curve.csv` (label `sglang-fcfs-r1`, n = 16, 20, 24, 32, 48, 96, 300)
@@ -86,6 +99,10 @@ n_cap = 20, the registered E2 cap. Log n axis; same y-limits in both columns so 
 - `results/r6_predict_report/20261024-034707/b4_runs.csv` (mixed, kv_k 900, set `registered(seed 0)`)
 - `results/nova/e0a_1707263x_pulled_20261023-142037/analysis_local_combined/20261023-142416/calibration.json` (`lambda_miss_turns_based`)
 - `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json` (`lambda_miss_turns_based`)
+- `results/r8_native_report/20261025-150146/mixed_curves_curve_runs.csv` (B4n, seeds 0-2)
+
+**Reading of B4n (right column).** Seed-mean peak at n = 72 (0.532 sessions/s; the real grid has no 72), hit 0.92 at 80, 0.79 at 88,
+0.42 at 96, 0 from 112: it lies on the real curve's cliff between 80 and 96 more closely than B4 (900k), but see the blindness note.
 
 ## F3 `fig3_from_empty_stability.pdf` (script `figures/paper/fig3_from_empty_stability.py`)
 
@@ -95,6 +112,12 @@ Gray: blind prediction B2 of the simulator (mixed batching), fraction of runs st
 seeds (dashed) and the 20-seed supplement (dotted). x axis in sessions/s with a second axis in multiples of lambda_ref (0.0715; the
 simulator's own lambda_miss is 0.0722, so the top axis is exact for the real runs and approximate for the simulator).
 Reading: real stable at 2.0 x (0.143), unstable at 2.5 x (0.179) and 3.0 x (0.215); simulator all-stable edge 0.14 (3 seeds) / 0.15 (20 seeds).
+That is the top panel. Bottom panel (added 2026-10-26): native pool (955,757 tokens). Real native E0b, one 3000 s run at 1.5, 2.5, 3.5,
+4.5, 5.5, 6.5 x the native lambda_ref (0.07180, native E0a turns-based; each run's rate from its `meta.json`, checked against
+multiple x lambda_ref); gray = blind prediction B2n (`notes/PREDICTIONS_native.md`, pushed 15:08 on 2026-10-25 before any native
+E0b run had finished), stable fraction of 10 seeds at each multiple of the mode's own lambda_miss, mixed (primary, dashed) and separate
+(secondary, dotted); refinement rows (none ran) excluded. Reading: real stable through 5.5 x (0.395), unstable at 6.5 x (0.467);
+B2n mixed 10/10 stable through 6.5 x (0.468), 7/10 at 7.0, 2/10 at 7.5; separate 10/10 through 6.0 x, 8/10 at 6.5, 3/10 at 7.0, 0/10 at 7.5.
 
 **Sources.**
 - `results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_analysis_stable/20261024-150720/stable_runs.csv`
@@ -102,6 +125,11 @@ Reading: real stable at 2.0 x (0.143), unstable at 2.5 x (0.179) and 3.0 x (0.21
   `20261023-144337`, `20261023-144407`, `20261023-145616`, `20261023-151551`, `20261023-151551-1`, `20261023-151556`
 - `results/nova/e0a_1707263x_pulled_20261023-142037/analysis_local_combined/20261023-142416/calibration.json`
 - `results/r6_predict_report/20261024-034707/b2_table.csv`, `results/r6_predict_report/20261024-034707/b2_supp20_table.csv`
+- `results/nova/e0b_native_1710093x_pulled_20261025-173038/results/agentload_analysis_stable/20261025-172934/stable_runs.csv`
+- the six `meta.json` under `results/nova/e0b_native_1710093x_pulled_20261025-173038/results/agentload_e0_cap/`:
+  `20261025-144656` (1.5), `20261025-153959` (2.5), `20261025-163302` (3.5), `20261025-144709` (4.5), `20261025-154012` (5.5), `20261025-163315` (6.5)
+- `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json`
+- `results/r8_native_report/20261025-150146/mixed_edge_edge_verdicts.csv`, `results/r8_native_report/20261025-150146/separate_edge_edge_verdicts.csv`
 
 ## F4 `fig4_mechanisms.pdf` (script `figures/paper/fig4_mechanisms.py`)
 
@@ -153,6 +181,11 @@ over the window. Rows 2-4 are exploratory registrations derived from the E2 one 
 Reading: FCFS has the same state in all 6 runs with refresh on and off. LPM changes some individual runs between refresh on and off (seed 0 at 1.35 x is recovered
 with refresh on, trapped with it off), but 5 of its 6 runs at 1.35 x recover or drain (on: 3 of 3, off: 2 of 3); at 1.65 x refresh on has 0 of 3 recovered
 (two trapped, one indeterminate) and refresh off 1 of 3.
+Row 5 (added 2026-10-26, below a dashed line): vLLM 0.32.0, FCFS (default), prefix caching on, 300k-token pool (18,750 blocks of 16),
+BURST arm only, exploratory registration `configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml` (window and multiples inherited
+from the SGLang cell, not measured); the column multiples are of vLLM's own lambda_ref (0.06566 sessions/s, vLLM E0a turns-based), so
+the rates are 0.0886 and 0.1083 sessions/s, not the SGLang rows' 0.0966 and 0.1180. Reading: hit 0.00 in all six; trapped / indeterminate
+/ trapped at both multiples (seed 1 indeterminate by the slope test both times).
 
 **Sources.**
 - `results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_analysis_burst2/20261025-144012/trap_v2_runs.csv` (arm `burst` rows, label `sglang-fcfs-r1`)
@@ -160,7 +193,41 @@ with refresh on, trapped with it off), but 5 of its 6 runs at 1.35 x recover or 
 - `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_burst2/20261025-144233/trap_v2_runs.csv` (`sglang-lpm-r1`)
 - `results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_burst2/20261025-144236/trap_v2_runs.csv` (`sglang-lpm-r0`)
 
+- `results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_analysis_burst2/20261026-100701/trap_v2_runs.csv` (`vllm-fcfs`)
+
 (The directory name `r7_native_grid_vllm_pulled_...` is the pull's name; the grid runs themselves used the 300k-token cap, not the native pool.)
+
+## F7 `fig7_e2_native_timeseries.pdf` (script `figures/paper/fig7_e2_native_timeseries.py`)
+
+**Shows.** The real pre-registered paired kill test with the native KV pool (native E2, SGLang 0.5.22, Qwen2.5-7B-Instruct, A100 80GB,
+pool 955,757 tokens sized by SGLang; registration `configs/agentload_prereg_2026-10-25_native.yaml`) at 2.5 x the native lambda_ref
+(0.1795 sessions/s, left) and 4.0 x (0.2872, right). Same layout, metric and computation as F1 (the script calls
+`fig1_e2_timeseries.draw`): top, the registered hit metric in 100 s windows (`analysis.windows.window_table`, the verdict's overrides);
+bottom, the verdict's backlog series (sessions in the system, 50 s bins), log scale to 3000; one thin line per seed and arm;
+CAPPED gate n_cap = 64; dashed line = the burst at 1200 s; gray band = the registered evaluation window (5700 s to 8700 s).
+The burst label is shifted right (700 s instead of 90 s) so that it does not cover the falling BURST lines.
+
+**Sources.**
+- `results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_analysis_burst2/20261026-100653/trap_v2_runs.csv`
+- `results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_analysis_burst2/20261026-100653/backlog_trace.csv`
+- `configs/agentload_analysis.yaml` (with the verdict's overrides, as for F1)
+- for each of the 18 run dirs `results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/<ts>/`, the files `meta.json`,
+  `config_effective.yaml`, `requests.csv`, `sessions.csv` (72 files):
+
+| x lambda_ref | seed | BURST `<ts>` | NOBURST `<ts>` | CAPPED `<ts>` |
+|---|---|---|---|---|
+| 2.5 | 0 | 20261025-174410 | 20261025-174405 | 20261025-174402 |
+| 2.5 | 1 | 20261025-182014 | 20261025-182234 | 20261025-201333 |
+| 2.5 | 2 | 20261025-201414 | 20261025-202740 | 20261025-204942 |
+| 4.0 | 0 | 20261025-174409 | 20261025-174445 | 20261025-175810 |
+| 4.0 | 1 | 20261025-201340 | 20261025-201333-1 | 20261025-201337 |
+| 4.0 | 2 | 20261025-205154 | 20261025-224309 | 20261025-224304 |
+
+**What to read off it.** Every BURST run keeps hitting for a few hundred seconds after the burst (0.63-0.76 in the 100 s window that
+contains it, against 0.21-0.33 at 300k), then is at hit 0 from 300-600 s after the burst to the end; its backlog barely dips after the
+burst (155-231 sessions 100-200 s after it) and then grows without a plateau to 658-1379 over the last 300 s (`paper/derived/burst_hit_onset.csv`,
+`paper/derived/e2_native_burst_backlog.csv`). NOBURST and CAPPED sit at hit ~0.93 and backlog 16-34; the CAPPED gate's queue empties
+512-937 s after the burst (`paper/derived/e2_native_capped_drain.csv`).
 
 ---
 
@@ -184,4 +251,8 @@ with refresh on, trapped with it off), but 5 of its 6 runs at 1.35 x recover or 
 7. **Secondary mini-SWE-agent workload (F5).** The declared row's lambda_miss is not converged (0.0120 vs 0.0141 sessions/s with a long window) and its hi = 3.0 came from a 3000 s edge horizon that is too short for it; the
    x positions of that row and of the post-hoc row are therefore in different units (declared vs converged lambda_miss). Shown as declared, with the post-hoc row labelled.
 8. **Real-engine reference row (F5).** E2 has 3 seeds and the 2-of-3 rule; the simulator rows have 10 seeds and 7-of-10. The E2 window edge drawn (2.0 x) is E0b's largest all-stable multiple (2.5 x was unstable, one run each).
-9. **F1 hit series are computed, not read.** No committed time series of the hit fraction exists, so F1 recomputes it from `requests.csv` with the repo's `window_table` (checked against the registered per-run `hit_eval`, see above); only the backlog is read from a committed series.
+9. **F1 hit series are computed, not read.** No committed time series of the hit fraction exists, so F1 recomputes it from `requests.csv` with the repo's `window_table` (checked against the registered per-run `hit_eval`, see above); only the backlog is read from a committed series. The same holds for F7; `paper/derived/burst_hit_onset.csv` recomputes the evaluation-window hit of every BURST run of E2, native E2 and vLLM from `requests.csv` and matches the verdict's `hit_eval` (0.0 in all 18).
+10. **B4n is not blind (F2).** `notes/PREDICTIONS_native.md` says its predictions were made "before any real native-pool result was seen"; that is true of the agent that ran them, but the native Stage C curve and lambda_miss had been analysed on the cluster (14:42) and written into `notes/STATE.md` (6793fb7, 14:47) before the round-8 spec was committed (29728e3, 14:49), and the spec's grid adds 72, 80 and 88 near the real cliff. B2n and B3n (F3) are blind in time.
+11. **Native pool size (F7).** Two of the 18 native E2 servers (jobs 17102173 and 17102184) report `max_total_num_tokens=955756`, one token below the 955,757 of the other 16 and of native Stage C, E0a and E0b; the figures and the paper use 955,757.
+12. **Native E2 run times.** The LOG entry gives the native E2 runs as "2026-10-25 17:43 - 2026-10-26 ~10:00"; the runs' own `meta.json` start and end times span 17:44:02 to 01:08:10 (the six vLLM runs end at 03:20:42; ~10:00 is when the archive was pulled). The paper uses the `meta.json` times.
+13. **"About 2.75 x wider" (LOG).** The native E0b LOG entry calls the native window "about 2.75 x wider than at the 300k cap (in units of lambda_miss)". 2.75 is the ratio of the upper edges (5.5 / 2.0); the window widths are 4.5 and 1.0 lambda_miss. The paper states both.

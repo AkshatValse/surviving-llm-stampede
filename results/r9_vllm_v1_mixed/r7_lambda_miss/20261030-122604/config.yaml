@@ -1,0 +1,220 @@
+# Round 9, BLIND simulator predictions for the real-engine vLLM experiments (vLLM 0.32.0, KV pool capped at 18,750 blocks of 16 tokens = 300,000 tokens).
+#
+# Written and committed BEFORE any run that uses it (the git commit in every meta.json is that commit or a later one that did not change a declared quantity of this
+# file; the one planned later edit is the freeze of the V1 cost factors, `r9.v1.factor`, in a second commit, see below). The predictions are committed and timestamped
+# before anyone reads the real outcomes; nothing under results/nova/ was read (the two real vLLM numbers below come from the task text), and no real vLLM closed-curve,
+# from-empty or burst number was seen.
+#
+# WHAT THIS IS, PLAINLY. The calibrated simulator of src/prefixmeta/ was fitted to SGLang 0.5.22 server-log timing (calibration/round6_server_log_fit/calibration.yaml;
+# validation in calibration/round6_server_log_fit/VALIDATION.md), NOT to vLLM. NEITHER variant below models vLLM-specific mechanics: not vLLM's block-level (16-token)
+# lazy LRU eviction of cached blocks (the simulator evicts whole sessions LRU-first and decides hit or miss at admission), not the absence of a waiting-prefix refresh,
+# not vLLM's chunked-prefill token budget and scheduler (the simulator keeps SGLang-calibrated prefill_chunk_budget = 8192 and its `mixed` / `separate_prefill_priority`
+# iteration models). The outputs are therefore predictions of the calibrated SGLang-like model run at vLLM's KV capacity (and, for V1, at vLLM's measured all-miss token
+# rate), not predictions of a vLLM model.
+#
+# THE REAL FACTS USED (all from the task text; r9.real_inputs): vLLM's KV pool is capped at 300,000 tokens (the same value as the round-6 / round-7 SGLang runs); vLLM's
+# measured all-miss capacity lambda_miss (turns-based) = 0.0657 sessions/s and its measured all-miss uncached prefill rate = 10,349 tokens/s (results/nova/e0a_vllm_*,
+# prereg/inputs/2026-10-25-vllm/calibration.json; neither file was opened by this round). The simulator's own all-miss rate on the record workload is about 11,239 tokens/s.
+#
+# TWO VARIANTS, both reported, each in both batching modes (`mixed` PRIMARY, `separate_prefill_priority` SECONDARY, selected with --set engine.batching=...):
+#   V0  the SGLang-calibrated engine UNCHANGED (this file's `engine:` block = configs/r7_robustness.yaml `engine:` verbatim, the round-6 cost constants). Every result is
+#       stated in multiples of the simulator's OWN lambda_miss (the "same dimensionless behaviour" hypothesis): the multiples of the edge stage and of the paired arms are
+#       multiples of V0's own turns-based lambda_miss, and sessions/s values are converted to real units only by an explicit, labelled multiplication.
+#   V1  the same engine with its token-proportional compute costs scaled by ONE multiplicative factor f so that its all-miss uncached token rate equals vLLM's measured
+#       10,349 tokens/s. The scaled engine keys are exactly r9.v1.scaled_engine_keys (per_token_s, prefill_attn_s, decode_attn_s: the cost terms that grow with the number
+#       of tokens processed, the first through `per_token_s x tokens`, the other two through `x token x context`); iter_fixed_s, iter_floor_s, attn_ctx_norm and every other
+#       key are NOT scaled. Only existing, opt-in config keys are used (the three values are replaced through --set, recorded in every meta.json); no src/ default is changed.
+#       One factor per batching mode (the factor that makes THAT mode's B1 token rate hit the target); the residual of the other mode at the mixed factor is reported too.
+#       Every V1 multiple is a multiple of V1's own lambda_miss. V1's B1 token rate equals the target BY CONSTRUCTION (it is fitted, not predicted); V1's B1 lambda_miss in
+#       sessions/s is a by-product that can be compared with the real 0.0657, but the real value was available to the lead and is not a blind output of V1.
+#
+# HOW f IS SET (declared before the check; the check is run on the clean commit of THIS file with the r7 driver's `lambda_miss` stage and --set overrides, then the factor is
+# written into `r9.v1.factor` below in a SECOND commit, before any main run):
+#   * the quantity matched: the 3-seed mean (seeds 0, 1, 2) of the per-window `prefill_tok_per_s` over the measured window [900, 2700) s of the B1 protocol (cache OFF,
+#     closed POP 32, synchronized start, replacement at once) = `token_rate` of the r7 lambda_miss summary, with the engine's three scaled keys replaced by base_value x f.
+#   * iteration: f_0 = 1 (R_0 measured); f_1 = round(R_0 / target, 4); for k >= 1, f_(k+1) = round(f_k + (1/target - 1/R_k) (f_k - f_(k-1)) / (1/R_k - 1/R_(k-1)), 4), i.e. the
+#     secant step on time-per-token 1/R as a function of f (1/R is affine in f up to the workload mix). Stop at the first k with |R_k / target - 1| <= tolerance_rel; at
+#     most max_iterations steps; if the tolerance is not met the closest f is frozen and the residual is reported. f is rounded to factor_decimals decimals.
+#   * the scaled values passed to --set are float(f"{base * f:.10e}") formatted with .10e; every iteration, its factor, rate and result dir is logged in
+#     calibration/r9_vllm_v1_factor/ (small JSON and log, force-added) in the second commit.
+#   * the final check run IS a B1v run of the main round (same seeds, protocol and overrides), so the main B1v of V1 reproduces it bit for bit (checked by a test and in the notes).
+#
+# THE STAGES (the round-7 machinery used UNCHANGED through this spec, as in round 8; `r7.stages` and `r7.title` are the existing opt-in keys):
+#   B1v  lambda_miss: cache off, closed POP 32 (plus the labelled POP 64 check), 3 seeds, 900 s warm-up + 1800 s window, turns-based lambda_miss and the all-miss token rate.
+#   B4v  closed curve mu(n) and hit fraction, n in {16, 20, 24, 28, 32, 40, 48, 96, 300}, 10 seeds, 900 s + 1800 s, synchronized start (as Stage C); the peak (first argmax
+#        of the seed-mean turns-based mu), the 0.5-hit crossing (linear interpolation of the seed-mean hit fraction) and the cap = smallest grid n with seed-mean mu >= 0.95 x peak.
+#   B2v  from-empty stability (B2 rule: not early-stopped, final backlog < 50, OLS rise over the last 1500 s <= 10), 3000 s, multiples {1.25, 1.5, 1.75, 2.0, 2.5, 3.0} of the
+#        variant's own turns-based lambda_miss, 10 seeds; the edge hi = the largest multiple such that every grid multiple <= hi is all-stable (the contiguous rule). The
+#        conditional refinement grid of round 7 is switched off (the registered rule has no multiple below 1.25).
+#   B3v  the paired NOBURST / BURST / CAPPED test (burst of 200 sessions in 60 s at t = 1200 s, 7500 s after, 10 seeds, the round-7 classification) at EVERY multiple that the
+#        registration rule can produce from the edge grid, and for the CAPPED arm at the cap B4v picks AND at the sensitivity caps (stage `pairs_all` of
+#        src/prefixmeta/r9_vllm_predict.py, a new stage that reuses r7_robustness.burst_section / classify_burst_frames; NOBURST and BURST do not depend on the cap and are
+#        run once per multiple, so every arm of a multiple shares the seeds and the arrival streams (common random numbers)).
+#   Verdicts: per-arm rule (each of BURST trapped, NOBURST good, CAPPED recovered in >= 7 of 10 seeds) AND the registered same-seed rule (all three conditions hold in the
+#   SAME seed, in >= 7 of 10 seeds). Every fraction carries a Wilson 95% interval.
+#
+# COMPUTE BUDGET RULE (declared): if the run would exceed about 3 hours of wall time at 6 worker processes, the cap sensitivity is cut to {20, 28} first and the cut is
+# stated in the notes; no variant, mode or candidate multiple is dropped silently. (A pilot from rounds 7 and 8 puts the whole set far below that.)
+research_question: >-
+  Blind predictions of the calibrated simulator (V0 unchanged; V1 with its token-proportional costs scaled to vLLM's measured all-miss token rate) for the real vLLM 0.32.0
+  experiments at a 300,000-token KV pool: B1v all-miss capacity, B4v closed curve, B2v from-empty edge, B3v paired NOBURST / BURST / CAPPED test at every candidate multiple.
+
+base_config: configs/prefix_meta_r5.yaml        # r5 -> prefix_meta.yaml; fcfs_lru = FCFS with LRU eviction
+
+engine:                                          # configs/r7_robustness.yaml `engine:` verbatim (V0). kv_memory_tokens 300000 = vLLM's cap (18,750 blocks x 16 tokens)
+  iter_fixed_s: 0.00924
+  iter_floor_s: 0.00126
+  per_token_s: 6.26e-05
+  decode_attn_s: 0.00031
+  attn_ctx_norm: 8192
+  prefill_attn_s: 2.24e-09
+  prefill_attn_ctx: mid
+  prefill_chunk_budget: 8192
+  max_running_seqs: 256
+  kv_memory_tokens: 300000
+  cache_enabled: true
+  skip_ahead: false
+  admission_limited_by_prefill_budget: true
+  batch_decode_iterations: true
+  free_kv_on_session_end: true
+  batching: mixed                                # PRIMARY; the secondary run overrides it with --set engine.batching=separate_prefill_priority
+
+workload:                                        # the record workload (identical to configs/r7_robustness.yaml `workload:`)
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  tool_time_cv: 1.5            # unused for exp
+
+metrics:
+  window_s: 100.0              # 100 s windows tile every measurement window used below
+  fine_window_s: 100.0
+  tail_window_s: 2500.0        # only the `tail_*` summary columns of the runs (the last 2500 s); does not touch the dynamics
+
+parallel:
+  max_workers: 6               # hard cap (at most 6 worker processes)
+
+# ------------------------------------------------------------------------------------------------------------------------------ r7 declarations
+# (read by src/prefixmeta/r7_robustness.py and r7_report.py for the stages lambda_miss, curves, edge; by r9_vllm_predict.py for the stage pairs_all; fixed before any run)
+r7:
+  title: "Round 9: blind vLLM predictions of the calibrated simulator (r7 stages lambda_miss, curves, edge; r9 stage pairs_all)"
+  stages: [lambda_miss, curves, edge]
+  policy: fcfs_lru
+  expected_turns: 14.761       # E[min(Geom(1/15), 60)]
+  wilson_z: 1.96               # EVERY fraction in the report carries a Wilson 95% interval
+
+  workloads:
+    exp5:                                        # the RECORD workload: Exp(5 s) tool times
+      label: "Exp(5 s) (record)"
+      workload: {tool_time_dist: exp, tool_time_mean_s: 5.0}
+  record_workload: exp5
+
+  # ---- B1v lambda_miss: cache DISABLED, closed population, synchronized start at t = 0, replacement at once, measured window [900, 2700) s
+  lambda_miss:
+    population: 32
+    seeds: [0, 1, 2]
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000
+    # lambda_miss := 3-seed mean of (completed turns / s) / E[T]   (turns-based; sessions/s is reported next to it)
+    # token_rate_miss := 3-seed mean of the mean per-window prefill_tok_per_s over the measured window (all uncached when the cache is off)
+    check_populations: [64]      # labelled sensitivity (not used downstream)
+
+  # ---- B4v closed curve mu(n), cache ON, same protocol (synchronized start, replacement at once, measured window [900, 2700) s)
+  curve:
+    n_grid: [16, 20, 24, 28, 32, 40, 48, 96, 300]
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    warmup_s: 900.0
+    horizon_s: 2700.0
+    pool_sessions: 5000
+    # mu(n) used for the argmax and the cap := turns-based sessions/s (completed turns / s / E[T]) averaged over the seeds; the session-based mu is a labelled sensitivity.
+    peak_rule: "first argmax of the seed-mean mu over the grid (ties -> smallest n)"
+    cap_rule: "smallest grid n with seed-mean mu(n) >= 0.95 * mu(peak_n)"
+
+  # ---- B2v from-empty stability edge (B2's operational rule), cache ON, open-loop Poisson at lambda = multiple x the variant's own lambda_miss (turns-based, same mode)
+  edge:
+    multiples: [1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+    refine_if_lowest_unstable: []          # the round-7 refinement grid is switched off: the registration rule has no multiple below 1.25 (hi = 1.0, an empty window, if 1.25 fails)
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    horizon_s: 3000.0
+    stable_final_backlog_below: 50.0      # backlog = waiting queue + gate (no gate here)
+    stable_trend_window_s: 1500.0         # OLS rise of the fine backlog series over the last 1500 s ...
+    stable_trend_max_rise: 10.0           # ... must be <= 10 requests
+    unstable_backlog_stop: 3000           # an early-stopped run (backlog > 3000) is unstable
+    # all-stable := every seed stable.  hi := the largest multiple m such that EVERY grid multiple <= m is all-stable. If every grid multiple (up to 3.0) is all-stable the
+    # edge is CENSORED at the grid top: it is then reported as ">= 3.0".
+
+  # ---- the paired-arm test points of the registration rule (r7 rule; reported for the edge hi of the simulator and, in the notes, for every possible real hi)
+  window:
+    lo: 1.0
+    point_fractions: [0.3333333333333333, 0.6666666666666666]    # points lo + (hi - lo) * f, each rounded to the nearest 0.05 (np.round(x / 0.05) * 0.05)
+    round_to: 0.05
+    empty_if_hi_at_most: 1.1
+
+  # ---- paired arms (B3v): NOBURST, BURST, CAPPED on the same seeds (common random numbers); read by the r9 stage `pairs_all`
+  pairs:
+    seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    burst_n: 200
+    burst_width_s: 60.0
+    warmup_s: 1200.0                      # t_burst
+    after_s: 7500.0                       # horizon = 8700 s
+    # CAPPED = BURST + a static session cap = cap_n (FIFO gate: a session enters only while fewer than cap sessions are in the system)
+
+  # ---- classification (r7 / round-6 B3 rules, unchanged)
+  classify:
+    eval_window_rel_to_burst_s: [5000.0, 7500.0]      # the last 2500 s of the standard run = [6200, 8700) s; NOBURST uses the same absolute window
+    trapped_token_rate_rel_tol: 0.15      # TRAPPED := |token_rate_E / token_rate_miss - 1| <= 0.15 AND backlog slope_E > trapped_slope_frac * (lambda - lambda_miss)
+    trapped_slope_frac: 0.5
+    recovered_hit_above: 0.8              # RECOVERED := hit_E > 0.8 AND mean backlog_E < 20 ;  NOBURST "good" := the same RECOVERED test on the NOBURST arm
+    recovered_backlog_below: 20.0
+    pass_min_frac: 0.6666666666666666     # a condition holds at a point if it holds in >= ceil(2/3 * n_seeds - 1e-9) seeds (7 of 10); PASS needs all three
+    indeterminate_hit_below: 0.2          # INDETERMINATE := hit_E < 0.2 AND NOT TRAPPED
+
+# ------------------------------------------------------------------------------------------------------------------------------ r9 declarations
+# (read by src/prefixmeta/r9_vllm_predict.py and experiments/r9_vllm_predict_run.sh; fixed before any run, except r9.v1.factor which is frozen in the second commit)
+r9:
+  kv_pool_tokens: 300000
+  vllm_kv_blocks: 18750
+  vllm_block_tokens: 16
+  real_inputs:                                     # the ONLY real vLLM numbers used (from the task text; the files that hold them were not opened)
+    lambda_miss_turns_sessions_per_s: 0.0657
+    all_miss_token_rate_tok_per_s: 10349
+    simulator_all_miss_token_rate_tok_per_s_task_text: 11239    # the simulator's own rate quoted in the task (about); not used by any computation
+
+  modes:                                           # PRIMARY first
+    mixed: {batching: mixed}
+    separate: {batching: separate_prefill_priority}
+  variants: [v0, v1]
+  out_root_template: "results/r9_vllm_{variant}_{mode}"      # one out-root (own manifest) per variant and mode, so the four never mix
+  check_out_root_template: "results/r9_vllm_v1_check_{mode}"
+
+  v1:
+    target_token_rate_tok_per_s: 10349
+    scaled_engine_keys: [per_token_s, prefill_attn_s, decode_attn_s]
+    base_values_from: engine                       # the unscaled values are this file's `engine:` block
+    value_format: ".10e"
+    factor_decimals: 4
+    tolerance_rel: 0.003                           # |R / target - 1| <= 0.3% accepts f
+    max_iterations: 6
+    factor:                                        # FROZEN in the second commit from the quick B1 check (calibration/r9_vllm_v1_factor/), run on the clean first commit 5806460
+      mixed: 1.0882                                # check: f = 1 gave 11,219.7 tok/s; f = 1.0841 gave 10,386.2; f = 1.0882 gave 10,358.3 (+0.09% of 10,349), accepted
+      separate: 1.0806                             # check: f = 1 gave 11,146.8 tok/s; f = 1.0771 gave 10,381.5; f = 1.0806 gave 10,341.9 (-0.07%), accepted
+    # labelled by-product (not used): the separate mode at the MIXED factor 1.0882 gives 10,270.8 tok/s (-0.76%), i.e. a single factor would leave it 0.8% low.
+
+  b3v:
+    multiples: [1.15, 1.25, 1.35, 1.5, 1.65, 2.0, 2.35]   # every multiple the registration rule can produce from the edge grid below (task list)
+    multiples_extra_labelled: [1.10]                      # also produced by the rule (hi = 1.25: 1 + 0.25/3 = 1.083 -> 1.10); not on the task's list, run and labelled as extra
+    caps_sensitivity: [16, 20, 24, 28, 32]                # CAPPED arm at these caps AND at the cap the B4v rule picks (cap_rule above)
+    caps_extra_labelled: [40]                             # labelled extra: a cap above the collapse region
+    cut_caps_if_over_budget: [20, 28]                     # the declared cut (not expected to be needed)
+    same_seed_rule: "seed s passes iff BURST trapped(s) AND NOBURST good(s) AND CAPPED recovered(s); PASS iff the number of passing seeds >= ceil(2/3 * n_seeds - 1e-9)"
+    per_arm_rule: "PASS iff BURST trapped, NOBURST good and CAPPED recovered each in >= ceil(2/3 * n_seeds - 1e-9) seeds (the round-7 rule)"
+
+  registration:                                    # the rule the real E2 registration applies to the real edge (stated by the task), to map each possible real edge to its test points
+    edge_grid: [1.25, 1.5, 1.75, 2.0, 2.5, 3.0]    # hi := the largest all-stable multiple of this grid (capped by mu* / lambda_ref of the real run, which is NOT predicted here)
+    window_lo: 1.0
+    point_fractions: [0.3333333333333333, 0.6666666666666666]
+    round_to: 0.05

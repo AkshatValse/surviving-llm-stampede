@@ -54,10 +54,15 @@ def load_run_without_metrics(rel_dir: str) -> Run:
     return Run(dir=Path(rel_dir), meta=meta, cfg=cfg, requests=req, sessions=ses, metrics=empty_metrics, t_end_s=float(t_end))
 
 
-def main() -> None:
-    runs = pd.read_csv(S.src(f"{VERDICT}/trap_v2_runs.csv"))
+def draw(pull: str, verdict: str, mults: tuple, n_cap: int, name: str, bl_ylim: tuple = (1, 700),
+         bl_ticks: tuple = (1, 10, 100), height: float = 3.9, top: float = 0.93, bottom: float = 0.17,
+         label_dx: float = 90.0) -> None:
+    """One E2-style figure: hit fraction (top) and backlog (bottom) per arm and seed, one column per registered rate.
+
+    Used by this script (E2, 300k pool) and by fig7_e2_native_timeseries.py (native pool)."""
+    runs = pd.read_csv(S.src(f"{verdict}/trap_v2_runs.csv"))
     assert len(runs) == 18, len(runs)
-    trace = pd.read_csv(S.src(f"{VERDICT}/backlog_trace.csv"))
+    trace = pd.read_csv(S.src(f"{verdict}/backlog_trace.csv"))
     p = load_params(S.src("configs/agentload_analysis.yaml"), TRAP_OVERRIDES)
 
     series = {}      # (mult, arm, seed) -> dict(t_hit, hit, t_bl, bl)
@@ -65,7 +70,7 @@ def main() -> None:
     eval_from = set()
     t_end = set()
     for _, r in runs.iterrows():
-        rel = f"{PULL}/{r['run_dir']}"
+        rel = f"{pull}/{r['run_dir']}"
         run = load_run_without_metrics(rel)
         wt = window_table(run, p, window_s=HIT_WINDOW_S)
         tb = trace[trace["run_dir"] == r["run_dir"]].sort_values("t_start")
@@ -82,8 +87,8 @@ def main() -> None:
     tb_, ef_, te_ = t_burst.pop(), eval_from.pop(), max(t_end)
     lam = {float(m): float(g["lambda"].iloc[0]) for m, g in runs.groupby("rate_mult")}
 
-    fig, axes = plt.subplots(2, 2, figsize=(S.COL2, 3.9), sharex=True)
-    mults = (1.35, 1.65)
+    assert set(lam) == set(mults), (sorted(lam), mults)
+    fig, axes = plt.subplots(2, 2, figsize=(S.COL2, height), sharex=True)
     for j, m in enumerate(mults):
         for i, ax in enumerate(axes[:, j]):
             ax.axvspan(ef_, te_, color=S.LGRAY, alpha=0.28, lw=0, zorder=0)
@@ -102,28 +107,31 @@ def main() -> None:
         axes[0, j].set_ylim(-0.03, 1.03)
         axes[0, j].set_yticks([0, 0.25, 0.5, 0.75, 1.0])
         axes[1, j].set_yscale("log")
-        axes[1, j].set_ylim(1, 700)
+        axes[1, j].set_ylim(*bl_ylim)
         axes[1, j].set_xlabel("time since start of run (s)")
         axes[0, j].set_title(rf"{m:.2f} $\times\ \lambda_{{\mathrm{{ref}}}}$  ($\lambda$ = {lam[m]:.4f} sessions/s)", pad=4)
         # burst and window labels
-        axes[0, j].text(tb_ + 90, 0.25, "burst at 1200 s:\n200 sessions in 60 s", fontsize=7.5, va="center", ha="left", color=S.DARK)
+        axes[0, j].text(tb_ + label_dx, 0.25, "burst at 1200 s:\n200 sessions in 60 s", fontsize=7.5, va="center", ha="left", color=S.DARK)
         axes[0, j].text((ef_ + te_) / 2, 0.25, "registered\nevaluation window", fontsize=7.5, va="center", ha="center", color=S.DARK)
     axes[0, 0].set_ylabel("prefix-cache hit fraction")
     axes[1, 0].set_ylabel("backlog (sessions in system)")
-    axes[1, 0].set_yticks([1, 10, 100])
-    axes[1, 0].set_yticklabels(["1", "10", "100"])
-    axes[1, 1].set_yticks([1, 10, 100])
-    axes[1, 1].set_yticklabels(["1", "10", "100"])
+    for ax in axes[1, :]:
+        ax.set_yticks(list(bl_ticks))
+        ax.set_yticklabels([f"{t:d}" for t in bl_ticks])
 
     from matplotlib.lines import Line2D
-    labels = {"burst": "BURST", "noburst": "NOBURST", "capped": r"CAPPED (gate $n_{\mathrm{cap}}$ = 20)"}
+    labels = {"burst": "BURST", "noburst": "NOBURST", "capped": rf"CAPPED (gate $n_{{\mathrm{{cap}}}}$ = {n_cap})"}
     handles = [Line2D([0], [0], color=S.ARM_COLOR[a], lw=1.4, ls="-" if a != "capped" else (0, (3, 1.2)), label=labels[a])
                for a in ("burst", "noburst", "capped")]
     handles.append(Line2D([0], [0], color=S.GRAY, lw=0.7, label="one line per seed (0, 1, 2)"))
     fig.legend(handles=handles, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.005), columnspacing=1.8, handlelength=2.0)
-    fig.subplots_adjust(left=0.075, right=0.99, top=0.93, bottom=0.17, hspace=0.12, wspace=0.14)
-    S.save(fig, "fig1_e2_timeseries")
-    S.finish("fig1_e2_timeseries")
+    fig.subplots_adjust(left=0.075, right=0.99, top=top, bottom=bottom, hspace=0.12, wspace=0.14)
+    S.save(fig, name)
+    S.finish(name)
+
+
+def main() -> None:
+    draw(PULL, VERDICT, (1.35, 1.65), 20, "fig1_e2_timeseries")
 
 
 if __name__ == "__main__":

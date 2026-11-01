@@ -1,0 +1,464 @@
+{
+  "schema": "kill_verdict_v2",
+  "criterion": "TRAPPED iff the completion rate (trap_v2.rate_estimator; default: uncached prefill tokens/s over the post-burst window vs E0a's all-miss rate) is within +-rate_tolerance of its all-miss reference AND the session backlog slope > slope_frac*(lambda-lambda_miss) [and lambda > lambda_miss]; DRAINING iff slope<0; RECOVERED iff hit > recovered_hit_above and the backlog (trap_v2.recovered_backlog_metric; default outstanding = requests in flight + gate queue) < recovered_backlog_below at the end. PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= pass_fraction_min of the seeds.",
+  "rule": {
+    "eval_from_s": 4500,
+    "min_eval_s": 600.0,
+    "rate_estimator": "uncached_tokens",
+    "rate_tolerance": 0.15,
+    "slope_frac": 0.5,
+    "slope_dt_s": 10.0,
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "recovered_backlog_metric": "outstanding",
+    "end_window_s": 300.0,
+    "pass_fraction_min": 0.6666666666666666,
+    "min_seeds": 3,
+    "trace_bin_s": 50.0
+  },
+  "hit_metric": "frac_turns_cached_gt50",
+  "prereg": {
+    "provided": true,
+    "provenance": {
+      "path": "/work/classtmp/avalse/swapp/repo_next/configs/agentload_prereg_2026-10-25_native.yaml",
+      "sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1",
+      "git_last_commit": "b8c19ec7d8f6fd846c41245a873b33bb72111881",
+      "git_last_commit_unix": 1792967476.0,
+      "git_last_commit_time": "2026-10-25T17:31:16-05:00",
+      "git_first_commit": "b8c19ec7d8f6fd846c41245a873b33bb72111881",
+      "git_first_commit_unix": 1792967476.0,
+      "git_first_commit_time": "2026-10-25T17:31:16-05:00",
+      "git_tracked": true,
+      "git_modified_since_commit": false,
+      "committed_clean": true
+    },
+    "problems": [
+      {
+        "severity": "warn",
+        "code": "mu300_far_from_lambda_miss",
+        "message": "|mu(300)/lambda_miss - 1| = 0.401: only a check (all n sessions start together, so mu(300) in the 1800 s window is transient-biased: simulator +65%); the registered recovery threshold is lambda_miss"
+      }
+    ],
+    "status": "FILLED",
+    "window": {
+      "lo": 0.07179742331825469,
+      "hi": 0.39488582825040075,
+      "lo_mult": 1.0,
+      "hi_mult": 5.5,
+      "lambda_ref": 0.07179742331825469
+    },
+    "engine_cell_label": "sglang-fcfs-r1-native",
+    "registered_lambda_mults": [
+      2.5,
+      4.0
+    ],
+    "valid": true,
+    "committed_clean": true
+  },
+  "pre_registered": true,
+  "fcfs_substr": "fcfs",
+  "cells": [
+    {
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "lambda": 0.1794935582956367,
+      "lambda_miss": 0.07179742331825469,
+      "seeds": {
+        "0": {
+          "missing_arms": [],
+          "burst_trapped": true,
+          "noburst_good": true,
+          "capped_recovered": true,
+          "states": {
+            "burst": "trapped",
+            "noburst": "recovered",
+            "capped": "recovered"
+          },
+          "pass": true
+        },
+        "1": {
+          "missing_arms": [],
+          "burst_trapped": true,
+          "noburst_good": true,
+          "capped_recovered": true,
+          "states": {
+            "burst": "trapped",
+            "noburst": "recovered",
+            "capped": "recovered"
+          },
+          "pass": true
+        },
+        "2": {
+          "missing_arms": [],
+          "burst_trapped": true,
+          "noburst_good": true,
+          "capped_recovered": true,
+          "states": {
+            "burst": "trapped",
+            "noburst": "recovered",
+            "capped": "recovered"
+          },
+          "pass": true
+        }
+      },
+      "n_seeds_seen": 3,
+      "n_seeds_complete": 3,
+      "n_pass": 3,
+      "frac_pass": 1.0,
+      "burst_trapped_frac": 1.0,
+      "noburst_good_frac": 1.0,
+      "capped_recovered_frac": 1.0,
+      "enough_seeds": true,
+      "meets": true,
+      "incomplete": [],
+      "diagnosis": "PASS: burst traps, no-burst stays good, capped recovers",
+      "in_registered_window": true,
+      "pairing_problems": {},
+      "meets_valid_pairing": true,
+      "registered_label": true,
+      "registered_lambda": true,
+      "registration_blockers": {},
+      "decisive_eligible": true,
+      "exploratory": false
+    },
+    {
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "lambda": 0.28718969327301874,
+      "lambda_miss": 0.07179742331825469,
+      "seeds": {
+        "0": {
+          "missing_arms": [],
+          "burst_trapped": true,
+          "noburst_good": true,
+          "capped_recovered": true,
+          "states": {
+            "burst": "trapped",
+            "noburst": "recovered",
+            "capped": "recovered"
+          },
+          "pass": true
+        },
+        "1": {
+          "missing_arms": [],
+          "burst_trapped": true,
+          "noburst_good": true,
+          "capped_recovered": true,
+          "states": {
+            "burst": "trapped",
+            "noburst": "recovered",
+            "capped": "recovered"
+          },
+          "pass": true
+        },
+        "2": {
+          "missing_arms": [],
+          "burst_trapped": true,
+          "noburst_good": true,
+          "capped_recovered": true,
+          "states": {
+            "burst": "trapped",
+            "noburst": "recovered",
+            "capped": "recovered"
+          },
+          "pass": true
+        }
+      },
+      "n_seeds_seen": 3,
+      "n_seeds_complete": 3,
+      "n_pass": 3,
+      "frac_pass": 1.0,
+      "burst_trapped_frac": 1.0,
+      "noburst_good_frac": 1.0,
+      "capped_recovered_frac": 1.0,
+      "enough_seeds": true,
+      "meets": true,
+      "incomplete": [],
+      "diagnosis": "PASS: burst traps, no-burst stays good, capped recovers",
+      "in_registered_window": true,
+      "pairing_problems": {},
+      "meets_valid_pairing": true,
+      "registered_label": true,
+      "registered_lambda": true,
+      "registration_blockers": {},
+      "decisive_eligible": true,
+      "exploratory": false
+    }
+  ],
+  "runs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-174410",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 0,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-174405",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 0,
+      "arm": "noburst",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": true,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-174402",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 0,
+      "arm": "capped",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": true,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-174409",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 0,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-174445",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 0,
+      "arm": "noburst",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-175810",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 0,
+      "arm": "capped",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-182014",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 1,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-182234",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 1,
+      "arm": "noburst",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": true,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-201333",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 1,
+      "arm": "capped",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": true,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-201340",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 1,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-201333-1",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 1,
+      "arm": "noburst",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": true,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-201337",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 1,
+      "arm": "capped",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": true,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-201414",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 2,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-202740",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 2,
+      "arm": "noburst",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-204942",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5,
+      "seed": 2,
+      "arm": "capped",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-205154",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 2,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-224309",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 2,
+      "arm": "noburst",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    },
+    {
+      "run_dir": "results/agentload_e2_burst/20261025-224304",
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0,
+      "seed": 2,
+      "arm": "capped",
+      "classification": "RECOVERED",
+      "state": "recovered",
+      "trapped": false,
+      "recovered": true,
+      "draining": false,
+      "prereg_sha256": "21bf7c03e0630b65b80d086058815e12c5ba9fbe41e9864d3dd0183b9bf776c1"
+    }
+  ],
+  "fcfs_cells_meeting_rule": [
+    {
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5
+    },
+    {
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0
+    }
+  ],
+  "kill_test_pass_rule_only": true,
+  "kill_test_pass_decisive": true,
+  "decisive_cells": [
+    {
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 2.5
+    },
+    {
+      "label": "sglang-fcfs-r1-native",
+      "rate_mult": 4.0
+    }
+  ],
+  "decisive_note": "a decisive PASS needs a valid, committed, clean FILLED pre-registration file whose last commit predates every run of the cell, the registered cell (label == inputs.engine_cell_label; 'fcfs'-substring matches such as vllm-fcfs or -native do NOT count), a registered lambda multiple inside its window, and every run bound to the file (meta.prereg_sha256) and to its protocol; without --prereg or with a derived EXPLORATORY file the verdict is exploratory. A derived file's window is inherited from its parent cell, not measured for the exploratory engine",
+  "pairing_problems": {},
+  "skipped_runs": [],
+  "legacy_secondary_burst_arm": {
+    "sglang-fcfs-r1-native|2.5": {
+      "n_burst_runs": 3,
+      "n_legacy_trap": 3
+    },
+    "sglang-fcfs-r1-native|4.0": {
+      "n_burst_runs": 3,
+      "n_legacy_trap": 3
+    }
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}

@@ -1,0 +1,90 @@
+[12:24:42] v0 mixed overrides: none
+[12:24:42] START v0 mixed lambda_miss
+[lambda_miss] exp5: 0.07219 sessions/s (turns-based), token rate 11220, busy 1.000
+[12:24:44] DONE  v0 mixed lambda_miss
+[12:24:44] START v0 mixed curves
+[curves] exp5: peak n=24 mu_turns=0.22166, cap n=20 (sessions-based: peak 24, cap 20)
+[12:24:48] DONE  v0 mixed curves
+[12:24:48] START v0 mixed edge
+[edge] exp5: hi=2 (largest all-stable 2), refined=False, points=[1.35, 1.65]
+[12:24:50] DONE  v0 mixed edge
+[12:24:50] START v0 mixed pairs_all
+[pairs_all] x1.1: BURST trapped 4/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:6, 40:0; PASS(picked cap 20) per-arm False same-seed False
+[pairs_all] x1.15: BURST trapped 6/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:6, 40:0; PASS(picked cap 20) per-arm False same-seed False
+[pairs_all] x1.25: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:7, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.35: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:4, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.5: BURST trapped 7/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.65: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:9, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2: BURST trapped 10/10, NOBURST good 9/10; CAPPED recovered by cap: 16:6, 20:10, 24:10, 28:5, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2.35: BURST trapped 10/10, NOBURST good 6/10; CAPPED recovered by cap: 16:0, 20:10, 24:10, 28:2, 32:0, 40:0; PASS(picked cap 20) per-arm False same-seed False
+[12:25:21] DONE  v0 mixed pairs_all
+[12:25:21] START v0 mixed r7 report
+[12:25:22] DONE  v0 mixed r7 report
+[12:25:23] v0 separate overrides: --set engine.batching=separate_prefill_priority
+[12:25:23] START v0 separate lambda_miss
+[lambda_miss] exp5: 0.07136 sessions/s (turns-based), token rate 11147, busy 1.000
+[12:25:25] DONE  v0 separate lambda_miss
+[12:25:25] START v0 separate curves
+[curves] exp5: peak n=24 mu_turns=0.22084, cap n=20 (sessions-based: peak 24, cap 20)
+[12:25:28] DONE  v0 separate curves
+[12:25:28] START v0 separate edge
+[edge] exp5: hi=2 (largest all-stable 2), refined=False, points=[1.35, 1.65]
+[12:25:31] DONE  v0 separate edge
+[12:25:31] START v0 separate pairs_all
+[pairs_all] x1.1: BURST trapped 6/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:8, 40:0; PASS(picked cap 20) per-arm False same-seed False
+[pairs_all] x1.15: BURST trapped 8/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:7, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.25: BURST trapped 10/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:7, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.35: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:7, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.5: BURST trapped 8/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:2, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.65: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2: BURST trapped 9/10, NOBURST good 9/10; CAPPED recovered by cap: 16:6, 20:10, 24:10, 28:7, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2.35: BURST trapped 10/10, NOBURST good 6/10; CAPPED recovered by cap: 16:0, 20:10, 24:10, 28:3, 32:0, 40:0; PASS(picked cap 20) per-arm False same-seed False
+[12:26:01] DONE  v0 separate pairs_all
+[12:26:01] START v0 separate r7 report
+[12:26:02] DONE  v0 separate r7 report
+[12:26:03] v1 mixed overrides: --set engine.per_token_s=6.8121320000e-05 --set engine.prefill_attn_s=2.4375680000e-09 --set engine.decode_attn_s=3.3734200000e-04
+[12:26:03] START v1 mixed lambda_miss
+[lambda_miss] exp5: 0.06623 sessions/s (turns-based), token rate 10358, busy 1.000
+[12:26:05] DONE  v1 mixed lambda_miss
+[12:26:05] START v1 mixed curves
+[curves] exp5: peak n=24 mu_turns=0.21544, cap n=20 (sessions-based: peak 24, cap 20)
+[12:26:08] DONE  v1 mixed curves
+[12:26:08] START v1 mixed edge
+[edge] exp5: hi=2 (largest all-stable 2), refined=False, points=[1.35, 1.65]
+[12:26:11] DONE  v1 mixed edge
+[12:26:11] START v1 mixed pairs_all
+[pairs_all] x1.1: BURST trapped 7/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:6, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.15: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:6, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.25: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:5, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.35: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:4, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.5: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:9, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.65: BURST trapped 7/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:9, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2: BURST trapped 9/10, NOBURST good 9/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:4, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2.35: BURST trapped 10/10, NOBURST good 7/10; CAPPED recovered by cap: 16:1, 20:10, 24:10, 28:3, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[12:26:41] DONE  v1 mixed pairs_all
+[12:26:41] START v1 mixed r7 report
+[12:26:42] DONE  v1 mixed r7 report
+[12:26:43] v1 separate overrides: --set engine.batching=separate_prefill_priority --set engine.per_token_s=6.7645560000e-05 --set engine.prefill_attn_s=2.4205440000e-09 --set engine.decode_attn_s=3.3498600000e-04
+[12:26:43] START v1 separate lambda_miss
+[lambda_miss] exp5: 0.06633 sessions/s (turns-based), token rate 10342, busy 1.000
+[12:26:46] DONE  v1 separate lambda_miss
+[12:26:46] START v1 separate curves
+[curves] exp5: peak n=24 mu_turns=0.21513, cap n=20 (sessions-based: peak 24, cap 20)
+[12:26:49] DONE  v1 separate curves
+[12:26:49] START v1 separate edge
+[edge] exp5: hi=2 (largest all-stable 2), refined=False, points=[1.35, 1.65]
+[12:26:52] DONE  v1 separate edge
+[12:26:52] START v1 separate pairs_all
+[pairs_all] x1.1: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:9, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.15: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:8, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.25: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:6, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.35: BURST trapped 9/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:6, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.5: BURST trapped 10/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:10, 32:2, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x1.65: BURST trapped 8/10, NOBURST good 10/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:9, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2: BURST trapped 9/10, NOBURST good 9/10; CAPPED recovered by cap: 16:10, 20:10, 24:10, 28:6, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[pairs_all] x2.35: BURST trapped 10/10, NOBURST good 7/10; CAPPED recovered by cap: 16:0, 20:10, 24:10, 28:3, 32:0, 40:0; PASS(picked cap 20) per-arm True same-seed True
+[12:27:21] DONE  v1 separate pairs_all
+[12:27:21] START v1 separate r7 report
+[12:27:22] DONE  v1 separate r7 report
+[12:27:22] START r9 report
+[12:27:23] ALL DONE variants=v0 v1

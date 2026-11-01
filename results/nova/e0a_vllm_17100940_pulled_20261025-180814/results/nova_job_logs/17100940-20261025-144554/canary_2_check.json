@@ -1,0 +1,26 @@
+{
+  "cache_expected": false,
+  "exit_code": 0,
+  "idle": {
+    "idle": true,
+    "kv_in_use": {
+      "metric": "vllm:kv_cache_usage_perc",
+      "value": 0.0
+    },
+    "n_categories_known": 3,
+    "running": {
+      "metric": "vllm:num_requests_running",
+      "value": 0.0
+    },
+    "waited_s": 0.01,
+    "waiting": {
+      "metric": "vllm:num_requests_waiting",
+      "value": 0.0
+    }
+  },
+  "ok": true,
+  "phase": "check",
+  "reason": "idle verified (prefix caching not expected: no canary hit test)",
+  "salt": 900002,
+  "tokens": 1024
+}

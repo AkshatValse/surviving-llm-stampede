@@ -16,16 +16,17 @@ native C & 17096856--57 & $\mu(n)$, native pool, $n\in\{24,48,64,80,96,128,300\}
 native E0a & 17096858 & $\lmiss$, native pool\\
 grid & 17097086--103 & BURST arm, 3 policy cells\\
 vLLM & 17097972--74 & install, GPU check, smoke\\
-\midrule
-native E0b & 17100938--39 & \pending{running}\\
-vLLM E0a & 17100940 & \pending{running}\\
+native E0b & 17100938--39 & from-empty stability, native pool\\
+vLLM E0a & 17100940 & $\lmiss$, vLLM, cache off\\
+native E2 & 17102173--90 & registered test, native pool, 2 rates $\times$ 3 seeds $\times$ 3 arms\\
+vLLM BURST & 17102318--23 & BURST arm, vLLM, exploratory\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{table}[ht]
 \centering\footnotesize
-\caption{Workload and engine of the real-engine runs.}\label{tab:workload}
+\caption{Workload and engines of the real-engine runs.}\label{tab:workload}
 \begin{tabular}{@{}l l@{}}
 \toprule
 First prompt $L_0$ & 2000 tokens\\
@@ -43,17 +44,21 @@ KV pool & 300,000 tokens; native 955,757\\
 Context limit & 49,152 tokens\\
 Model & Qwen2.5-7B-Instruct, rev.\ a09a3545\\
 GPU & A100 80GB PCIe, 81,920\,MiB, driver 580.178.04\\
+\midrule
+vLLM (exploratory) & 0.32.0, FCFS (default), prefix caching on\\
+ & chunked prefill 8192, $\le256$ running\\
+ & 300,000 tokens (18,750 blocks of 16)\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Stage 0.} The smoke test (job 17060165) verified that every engine flag exists; that cached tokens are reported (a repeated 64-token prompt had 63 tokens cached); that the server returns output token ids; that contexts up to 40,350 tokens are accepted; that the KV pool is exactly 300,000 tokens; that client and server agree on prompt length (0 mismatches over 3191 requests); and that the flush empties the cache (canary 1023 cached tokens before, 0 after).
 
-\paragraph{Stage C and E0a.} Closed population; all sessions start at $t=0$ and a finished session is replaced at once; 900\,s warmup and an 1800\,s measured window; one run per $n$ (seed 0); flush and canary check between runs. E0a disables the radix cache and runs 32 sessions with seeds 0, 1 and 2, plus 64 sessions with seed 0 as a saturation check. Its per-run values over the window were (sessions/s, turns-based sessions/s, uncached tokens/s): seed 0, 0.0567, 0.0643, 11,076; seed 1, 0.0817, 0.0773, 11,342; seed 2, 0.0767, 0.0730, 11,312; 64 sessions, 0.0544, 0.0676, 11,431. The spread comes from in-flight composition: the mean turn index of the requests in the window was 15.9, 13.2 and 14.1 for seeds 0, 1 and 2.
+\paragraph{Stage C and E0a.} Closed population; all sessions start at $t=0$ and a finished session is replaced at once; 900\,s warmup and an 1800\,s measured window; one run per $n$ (seed 0); flush and canary check between runs. E0a disables the radix cache and runs 32 sessions with seeds 0, 1 and 2, plus 64 sessions with seed 0 as a saturation check. Its per-run values over the window were (sessions/s, turns-based sessions/s, uncached tokens/s): seed 0, 0.0567, 0.0643, 11,076; seed 1, 0.0817, 0.0773, 11,342; seed 2, 0.0767, 0.0730, 11,312; 64 sessions, 0.0544, 0.0676, 11,431. The spread comes from in-flight composition: the mean turn index of the requests in the window was 15.9, 13.2 and 14.1 for seeds 0, 1 and 2. vLLM E0a ran the same protocol with vLLM's prefix caching off: seed 0, 0.0539, 0.0603, 10,208; seed 1, 0.0728, 0.0705, 10,487; seed 2, 0.0700, 0.0662, 10,352; 64 sessions, 0.0467, 0.0631, 10,531.
 
-\paragraph{E0b.} Poisson session arrivals from an empty cache and queue at 1.25, 1.5, 1.75, 2.0, 2.5 and 3.0 $\lref$; one 3000\,s run per rate; stable if the final queue is below 50 and the fitted rise of the queue over the last 1500\,s is at most 10.
+\paragraph{E0b.} Poisson session arrivals from an empty cache and queue at 1.25, 1.5, 1.75, 2.0, 2.5 and 3.0 $\lref$; one 3000\,s run per rate; stable if the final queue is below 50 and the fitted rise of the queue over the last 1500\,s is at most 10. Native E0b used the same rule at 1.5, 2.5, 3.5, 4.5, 5.5 and 6.5 times the native $\lref$.
 
-\paragraph{E2.} One arm per 8700\,s job, each on a fresh server; burst of 200 fresh sessions within 60\,s at $t_b=1200$\,s for BURST and CAPPED; CAPPED gate $\ncap=20$; evaluation window $[t_b+4500,\,8700]$\,s. The registered rule (Table~\ref{tab:rule}) was applied by the analysis tool frozen at the registration commit, with the same parameter overrides that the jobs themselves used.
+\paragraph{E2.} One arm per 8700\,s job, each on a fresh server; burst of 200 fresh sessions within 60\,s at $t_b=1200$\,s for BURST and CAPPED; CAPPED gate $\ncap=20$; evaluation window $[t_b+4500,\,8700]$\,s. The registered rule (Table~\ref{tab:rule}) was applied by the analysis tool frozen at the registration commit, with the same parameter overrides that the jobs themselves used. Native E2 used the same protocol with the native registration's rates, reference rates and gate $\ncap=64$. Twelve of its 18 runs started after the cluster checkout moved from the registration commit to \texttt{a78ce07}, which adds only the vLLM registration, its input file and two notes files (the log and the state file), with no code change, and its verdict ran on that commit; two of its 18 servers sized the pool one token smaller, at 955,756.
 
 \begin{table}[ht]
 \centering\footnotesize
@@ -62,6 +67,7 @@ GPU & A100 80GB PCIe, 81,920\,MiB, driver 580.178.04\\
 \toprule
 Rate estimator & uncached prefill tokens/s\\
 Reference rate & E0a all-miss, 11,243 tokens/s\\
+ & \quad (native: 11,282; vLLM: 10,349)\\
 Rate tolerance & $\pm0.15$\\
 Slope test & slope $>0.5\,(\lambda-\lmiss)$, 10\,s bins\\
 Minimum window & 600\,s\\
@@ -73,9 +79,9 @@ Pass & $\ge2/3$ of $\ge3$ seeds with all three\\
 \end{tabular}
 \end{table}
 
-\paragraph{Backlog definitions.} The figures and Table~\ref{tab:e2} report the backlog as sessions in the system (arrived minus ended), which includes sessions asleep in tool calls (8--12 in the good state). The registered RECOVERED test uses the outstanding backlog (requests in flight plus sessions held at the gate). The simulator's predictions count waiting requests plus the gate queue.
+\paragraph{Backlog definitions.} The figures and Table~\ref{tab:e2} report the backlog as sessions in the system (arrived minus ended), which includes sessions asleep in tool calls (8--12 in the good state at 300k, 16--34 with the native pool). The registered RECOVERED test uses the outstanding backlog (requests in flight plus sessions held at the gate). The simulator's predictions count waiting requests plus the gate queue.
 
-\section{The registration}\label{app:prereg}
+\section{The registrations}\label{app:prereg}
 The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FILLED, committed in \texttt{d279b7b} (2026-10-24, 15:09 CDT) before the first E2 job, SHA-256 \texttt{2a6d680a9615bba962a5673d6db6b3e4\allowbreak ca5102bf778ca974cea46147f5cc0ac6}. Its fields:
 
 \begin{itemize}
@@ -89,6 +95,10 @@ The registration is \fpath{configs/agentload_prereg_2026-10-24.yaml}, status FIL
 \end{itemize}
 
 \noindent The verdict is in \fpath{results/agentload_analysis_burst2/20261025-144012/} inside the E2 data directory: pre-registered, decisive pass at 1.35 and 1.65 $\lref$. The three grid cells have their own derived registrations, \fpath{configs/agentload_prereg_2026-10-24_grid_<cell>.yaml} for the cells \texttt{sglang-fcfs-r0}, \texttt{sglang-lpm-r1} and \texttt{sglang-lpm-r0}, with status EXPLORATORY; the analysis never calls them decisive.
+
+\paragraph{The native registration.} \fpath{configs/agentload_prereg_2026-10-25_native.yaml}, status FILLED, committed in \texttt{b8c19ec} (2026-10-25, 17:31 CDT) 13 minutes before the first native E2 run, SHA-256 \texttt{21bf7c03e0630b65b80d086058815e12\allowbreak c5ba9fbe41e9864d3dd0183b9bf776c1}; the same template, formulas, trap rule, kill conditions and protocol as above. Cell \texttt{sglang-fcfs-r1-native}; inputs under \fpath{prereg/inputs/2026-10-25-native/}. Measured: $\mu(n)$ 0.2650 ($n=24$), 0.4311 (48), 0.4789 (64), 0.4772 (80), 0.1228 (96), 0.0667 (128), 0.1006 (300); $\mu^*=0.4789$; $\ncap=64$ by the smallest-within-5\% rule (also the argmax; flagged ambiguous, $n=80$ within 0.35\%); $\lref=0.07180$ (turns-based); all-miss rate 11,282 tokens/s; native E0b largest all-stable multiple 5.5, first unstable 6.5, monotone. Window $(0.0718,\,0.3949)$\sps{} $=(1,\,5.5)\,\lref$, upper edge from native E0b, below $\mu^*/\lref=6.67$. Rates 2.5 and 4.0 $\lref$ (0.1795 and 0.2872\sps) by the same rule, inside the margin band $(1.1,\,4.95)$; the rule was recorded in the project state file (\texttt{6cb43e9}, 15:08 CDT) before native E0b was read. Predicted drains 668\,s and 1043\,s; the drain fits up to 6.19 $\lref$. Warnings recorded at filling: $|\mu(300)/\lmiss-1|=0.401$, the ambiguous cap, and an incomplete grid (no $n=16$, 20 or 32). The verdict is \fpath{results/agentload_analysis_burst2/20261026-100653/} inside the native E2 data directory: pre-registered, decisive pass at 2.5 and 4.0 $\lref$.
+
+\paragraph{The vLLM registration.} \fpath{configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml}, status EXPLORATORY, derived from the E2 registration and committed in \texttt{a78ce07} (2026-10-25, 18:06 CDT) before the vLLM BURST jobs were submitted, SHA-256 \texttt{c5037cac6003c4e98da89f88dae953bf\allowbreak e68bb21a27a4e3e5e3dab3c8891aeab5}. Cell \texttt{vllm-fcfs}, BURST arm only; the window, multiples, protocol and trap rule are inherited from \texttt{sglang-fcfs-r1}, and the reference rates come from \fpath{prereg/inputs/2026-10-25-vllm/calibration.json}, a byte-identical copy of the vLLM E0a calibration. The verdict, \fpath{results/agentload_analysis_burst2/20261026-100701/}, reports per-run states and no kill-test verdict.
 
 \section{Blind-prediction timeline}\label{app:timeline}
 
@@ -115,11 +125,26 @@ When & Event\\
 10-24 15:38 to 10-25 $\sim$02:40 & E2 runs\\
 10-25 02:28 & native-pool Stage C and E0a start (17096856--58)\\
 10-25 14:40 & registered E2 verdict computed (data \texttt{49fbc7b})\\
+10-25 14:42 & native Stage C curve analysed on the cluster; native curve and $\lmiss$ in the state file at 14:47 (\texttt{6793fb7})\\
+10-25 $\sim$14:45 & native E0b (17100938--39) and vLLM E0a (17100940) start\\
+10-25 14:49 & native prediction spec committed (\texttt{29728e3})\\
+10-25 14:52 & native Stage C and E0a data committed (\texttt{fa265c2})\\
+10-25 14:54 & B1n--B4n run on the clean code commit \texttt{0336c91}\\
+10-25 15:06 & B1n--B4n committed (\texttt{e3ea48f})\\
+10-25 15:08 & tag \texttt{r8-native-predictions-frozen}, pushed; native rate rule in the state file (\texttt{6cb43e9})\\
+10-25 17:27 & native E0b finishes; pulled 17:30\\
+10-25 17:31 & native E0b data and native registration committed (\texttt{f3f55ab}, \texttt{b8c19ec})\\
+10-25 17:44 to 10-26 01:08 & native E2 runs (17102173--90)\\
+10-25 18:06 & vLLM calibration and registration committed (\texttt{65b65e2}, \texttt{a78ce07}); vLLM BURST submitted 18:07 (17102318--23)\\
+10-25 22:43 to 10-26 03:21 & vLLM BURST runs\\
+10-26 10:07 & native E2 and vLLM verdicts computed (data \texttt{f116cf3})\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \noindent B3 (E2) and B4 (native pool) were committed before their experiments were submitted, so they are blind in time. B2 (E0b) was committed after E0b had finished on the cluster but before its results were pulled. The agents that made the predictions were instructed not to contact the cluster and not to open the E0a or E0b result directories or the main checkout; they could technically have done so, and we checked their session records afterwards and found no cluster command and no access to E0b before the tag was pushed. For B2 this instruction-level control, checked after the fact, is the only safeguard. The order of the commits, the tag and the pull was checked from the repository's reflog and the push record. A scan of every line added between the base commit and the predictions found no use of withheld data, but a text scan cannot prove that nobody read it. B1 (E0a) rests on the same instruction only: E0a was committed before the predictions. The independent verifier had read the project state file, which mentions E0a, so it is independent but not blind. Two conditions of the verification failed and are disclosed: the strict containment of B3 passes within the B2 all-stable range, and the platform-specific test failures of the full suite.
+
+In the second round, B2n (native E0b) and B3n (native E2) were pushed while native E0b was still running, before any of its runs had finished, and before the native registration or any native E2 job existed, so they are blind in time. B1n and B4n are not: native Stage C and E0a had finished, and their headline numbers were in the project state file before the round's specification was written. That specification is shared by all four, so B2n and B3n are blind to the native E0b and E2 outcomes but were specified after the native curve was known, and B3n's cap of 64 is B4n's output. The agent that ran the round worked in a worktree cut from a commit that predates the native data (\texttt{fb3510e}) and, by its own record, read nothing under the real-engine results directories; that record has not been checked independently. No independent verifier reran the second round.
 
 \section{Provenance}\label{app:prov}
 Every number in the paper is listed with its source file and commit or job in \fpath{paper/NUMBERS.md}. Commits dated before 2026-10-22 predate a history rewrite and are mapped to current hashes in \fpath{provenance/commit-map.tsv}.
@@ -136,16 +161,20 @@ E0a & \fpath{results/nova/e0a_1707263x_pulled_20261023-142037/} (\texttt{a76f5e5
 E0b & \fpath{results/nova/e0b_1708475x_pulled_20261024-150639/} (\texttt{cfbc702})\\
 E2 & \fpath{results/nova/e2_170933xx_pulled_20261025-144558/} (\texttt{49fbc7b})\\
 native, grid, vLLM & \fpath{results/nova/r7_native_grid_vllm_pulled_20261025-145126/} (\texttt{fa265c2})\\
+native E0b & \fpath{results/nova/e0b_native_1710093x_pulled_20261025-173038/} (\texttt{f3f55ab})\\
+vLLM E0a & \fpath{results/nova/e0a_vllm_17100940_pulled_20261025-180814/} (\texttt{b273241})\\
+native E2, vLLM BURST & \fpath{results/nova/e2_native_vllm_burst_pulled_20261026-101256/} (\texttt{f116cf3})\\
 validation & \fpath{results/r6_validate_stagec/20261024-025222/} (\texttt{813cfc1})\\
 B1--B4 & \fpath{results/r6_predict_report/20261024-034707/}, \fpath{notes/PREDICTIONS.md} (\texttt{64bc4e3})\\
+B1n--B4n & \fpath{results/r8_native_report/20261025-150146/}, \fpath{notes/PREDICTIONS_native.md} (\texttt{e3ea48f})\\
 robustness & \fpath{results/r7_report/20261024-233554/} (\texttt{c653498}); \fpath{results/r7_traces_sim/r7_report/20261025-012451/}, \fpath{results/r7_traces_sim_adj/r7_report/20261025-012453/} (\texttt{b530e55})\\
 mechanisms & \fpath{results/prefix_meta_baselines_audit_summary/20261025-001850/} (\texttt{dc76032}); \fpath{results/prefix_meta_r4_curve/20261021-050856/}, \fpath{results/prefix_meta_r4/20261021-051550/} (\texttt{a1d485b})\\
-figures & \fpath{figures/paper/}, \fpath{paper/figs/README.md} (\texttt{e098e1c}, \texttt{c974070})\\
-derived & \fpath{paper/derived/}, \fpath{figures/paper/derived_numbers.py} (\texttt{38bf22b})\\
+figures & \fpath{figures/paper/}, \fpath{paper/figs/README.md}\\
+derived & \fpath{paper/derived/}, \fpath{figures/paper/derived_numbers.py}\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Derived numbers.} The CAPPED drain times, the BURST backlog after the burst and over the window, the E0b hit fractions and the interval estimates for the E2 counts are computed from committed run data by \fpath{figures/paper/derived_numbers.py} and written to \fpath{paper/derived/}.
+\paragraph{Derived numbers.} The CAPPED drain times, the BURST backlog after the burst and over the window, the E0b hit fractions, the interval estimates for the registered counts, and, per BURST run, the hit fraction before the burst and the first 100\,s window from which no turn hit, are computed from committed run data by \fpath{figures/paper/derived_numbers.py} and written to \fpath{paper/derived/}, for E2, native E0b, native E2 and the vLLM BURST runs.
 
 \paragraph{Notes that support the text.} The math check of the model is \fpath{notes/MATHCHECK_thrashing_curve.md}; the verification of Stage~C (three-source hit check, eviction survival times, prompt continuity) is \fpath{notes/STAGEC_VERIFICATION.md}; the audit of the PEEK, Continuum and CONCUR rules against released code is \fpath{notes/BASELINES_AUDIT.md}; the audit of every citation, the scoop check and the reading of the SGLang and vLLM sources (read twice, through a page summariser, without verbatim code; the engine facts of \S\ref{sec:background} rest on it) are in \fpath{notes/lit/CITATION_AUDIT_2026-10-25.md}; the trace statistics are in \fpath{notes/lit/AGENT_TRACES.md}. Where the research log and a committed CSV differ in the last digit (three hit fractions and one backlog of the policy grid), the paper uses the CSV.

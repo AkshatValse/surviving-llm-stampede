@@ -5,6 +5,6 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 PY="${PY:-python}"
 export PYTHONPATH="src;."
-for f in fig1_e2_timeseries fig2_thrashing_curve fig3_from_empty_stability fig4_mechanisms fig5_robustness fig6_policy_grid; do
+for f in fig1_e2_timeseries fig2_thrashing_curve fig3_from_empty_stability fig4_mechanisms fig5_robustness fig6_policy_grid fig7_e2_native_timeseries; do
   "$PY" "figures/paper/$f.py"
 done

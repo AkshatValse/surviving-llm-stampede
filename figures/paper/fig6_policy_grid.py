@@ -7,6 +7,9 @@ Colour: per-run state of the trap analysis over the evaluation window (t_b + 450
 all-miss rate, backlog growing), indeterminate (neither trapped, draining nor recovered), draining (backlog falling),
 recovered (hit > 0.8 and backlog < 20 at the end). Numbers: hit fraction (upper) and mean backlog in sessions (lower) over the
 evaluation window.
+Last row (added 2026-10-26): vLLM 0.32.0, FCFS, prefix caching on, 300k-token pool (18,750 blocks of 16), BURST arm only, under
+the exploratory registration configs/agentload_prereg_2026-10-24_grid_vllm-fcfs.yaml: the same multiples 1.35 and 1.65, but of
+vLLM's own lambda_ref (0.06566 sessions/s, vLLM E0a turns-based); window and multiples inherited from the SGLang cell, not measured.
 Run:  python figures/paper/fig6_policy_grid.py
 """
 from __future__ import annotations
@@ -25,12 +28,15 @@ E2_VERDICT = "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_
 GRID_DIR = "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_burst2"
 GRID_VERDICTS = [f"{GRID_DIR}/20261025-144230/trap_v2_runs.csv", f"{GRID_DIR}/20261025-144233/trap_v2_runs.csv",
                  f"{GRID_DIR}/20261025-144236/trap_v2_runs.csv"]
+VLLM_VERDICT = ("results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_analysis_burst2/20261026-100701/"
+                "trap_v2_runs.csv")
 
 CELLS = [  # (engine label, row label)
     ("sglang-fcfs-r1", "FCFS, refresh on\n(registered E2)"),
     ("sglang-fcfs-r0", "FCFS, refresh off"),
     ("sglang-lpm-r1", "LPM, refresh on"),
     ("sglang-lpm-r0", "LPM, refresh off"),
+    ("vllm-fcfs", "vLLM 0.32.0, FCFS\n(own " r"$\lambda_{\mathrm{ref}}$)"),
 ]
 MULTS = (1.35, 1.65)
 SEEDS = (0, 1, 2)
@@ -39,11 +45,11 @@ SEEDS = (0, 1, 2)
 def main() -> None:
     e2 = pd.read_csv(S.src(E2_VERDICT))
     e2 = e2[e2["arm"] == "burst"]
-    frames = [e2] + [pd.read_csv(S.src(p)) for p in GRID_VERDICTS]
+    frames = [e2] + [pd.read_csv(S.src(p)) for p in GRID_VERDICTS] + [pd.read_csv(S.src(VLLM_VERDICT))]
     allr = pd.concat(frames, ignore_index=True)
     allr = allr[allr["arm"] == "burst"]
     assert allr.groupby(["label", "rate_mult", "seed"]).size().max() == 1
-    assert len(allr) == 24, len(allr)
+    assert len(allr) == 30, len(allr)
 
     cw, ch, gap = 0.36, 0.42, 0.12
     n_rows = len(CELLS)
@@ -77,11 +83,13 @@ def main() -> None:
     ax.text(x0 - 0.07, y_top + 0.03, "seed", ha="right", va="bottom", fontsize=7.5, color=S.GRAY)
     # registered vs exploratory separator
     ax.plot([0.02, x0 + 2 * (3 * cw) + gap], [y_top - ch] * 2, color=S.DARK, lw=0.6, zorder=3)
+    # SGLang vs vLLM separator
+    ax.plot([0.02, x0 + 2 * (3 * cw) + gap], [y_top - 4 * ch] * 2, color=S.DARK, lw=0.6, ls=(0, (2, 1.5)), zorder=3)
     # legend
     handles = [Patch(facecolor=S.STATE_COLOR[s], edgecolor="none", label=S.STATE_LABEL[s]) for s in ("trapped", "indeterminate", "draining", "recovered")]
     fig.legend(handles=handles, loc="lower center", ncol=4, bbox_to_anchor=(0.5, 0.20 / fig_h), fontsize=7.5, columnspacing=0.9,
                handlelength=1.0, handletextpad=0.4)
-    fig.text(0.5, 0.02 / fig_h, "in each square: hit fraction (upper), mean backlog in sessions (lower).\nRows 2-4: exploratory, BURST arm only; row 1: decisive E2 BURST arm.",
+    fig.text(0.5, 0.02 / fig_h, "in each square: hit fraction (upper), mean backlog in sessions (lower).\nRow 1: decisive E2 BURST arm. Rows 2-5: exploratory, BURST arm only.",
              ha="center", va="bottom", fontsize=7.0, color=S.GRAY, linespacing=1.15)
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
     S.save(fig, "fig6_policy_grid")

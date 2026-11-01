@@ -1,0 +1,27 @@
+flag ok:      --enable-prefix-caching
+flag ok:      --no-enable-prefix-caching
+flag ok:      --block-size
+flag ok:      --num-gpu-blocks-override
+flag ok:      --gpu-memory-utilization
+flag ok:      --max-num-seqs
+flag ok:      --max-num-batched-tokens
+flag ok:      --enable-chunked-prefill
+flag ok:      --scheduling-policy
+flag ok:      --max-model-len
+flag ok:      --hf-overrides
+flag ok:      --enable-prompt-tokens-details
+flag ok:      --host
+flag ok:      --port
+flag ok:      --revision
+optional flag ok:      --generation-config
+vllm version ok: 0.32.0
+torch 2.13.0+cu130 cuda build 13.0 cuda available True NVIDIA A100 80GB PCIe
+env var ok:      VLLM_ALLOW_LONG_MAX_MODEL_LEN
+env var ok:      VLLM_SERVER_DEV_MODE
+env var ok:      VLLM_USE_FLASHINFER_SAMPLER
+env var ok:      VLLM_NO_USAGE_STATS
+env var ok:      VLLM_USE_RUST_FRONTEND
+env var ok:      VLLM_CACHE_ROOT
+toolchain ok:  gcc gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
+toolchain ok:  g++ g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
+toolchain ok:  cc cc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
