@@ -1,4 +1,4 @@
-# Paper input: the H200 cells (SGLang): 300k window compression, no registered test there; 600k pool registered, paired test running
+# Paper input: the H200 cells (SGLang): 300k window compression, no registered test there; 600k pool registered paired test PASS at both points
 
 Written 2026-10-31 for the lead. Every number below comes from committed files on branch `r12/h200`. The pull is `results/nova/h200_wave1_pulled_20261031-023416/` (abbreviated **HP**), committed in `d108056`. Full narrative: `notes/LOG.md`, entry 2026-10-31 "H200 cell".
 
@@ -11,7 +11,7 @@ Written 2026-10-31 for the lead. Every number below comes from committed files o
 
 So there is no registration and no E2, and no decisive claim for this cell. No exploratory pair was run either: `derive-exploratory` needs a FILLED parent, the only one at this pool is the A100 registration, and its hardware check refuses the H200 calibration. Making that work would need a code change.
 
-**At a 600k pool on the same H200, the window reopens to (1, 2.5) and the cell registers** (1.5 and 2.0 ×, cap 48). Its paired test, jobs 17171020–37, is running; see the section "600k-pool H200 cell" below. The verdict will be added after the Sunday pull.
+**At a 600k pool on the same H200, the window reopens to (1, 2.5) and the cell registers** (1.5 and 2.0 ×, cap 48). **Its registered paired test (jobs 17171020–37) PASSES at both points**; see "600k-pool H200 cell: verdict" below.
 
 **What the cell delivers is a measurement: window compression on a faster GPU.** The pool (300k tokens) and the workload (Exp(5 s) tool time) are the same as on the A100. Against the A100:
 - the H200 raises λ_miss 2.71 ×;
@@ -138,7 +138,39 @@ The 2×2 (μ_max/λ_ref; edge):
 
 **Suggested sentence:** "Doubling the pool on the H200 reopens the window: the peak rises 1.53 × and moves from n = 32 to 48, the from-empty edge moves from 1.3 to 2.5 λ_miss, and the cell registers at 1.5 and 2.0 λ_miss, exactly the registration our frozen model predicted."
 
-The verdict follows when the 18 E2 jobs have finished (pull Sunday 08:00–11:30).
+## 600k-pool H200 cell: verdict
+
+**PASS at both registered points (1.5 and 2.0 × λ_ref).**
+- Verdict: `results/agentload_analysis_burst2/20261101-154448/` (`kill_verdict_v2.json`, `trap_v2_runs.csv`, `trap_v2_cells.csv`), under HP6E = `results/nova/h200p600k_e2_partB3_1717102x_pulled_20261101-154520/`.
+- Flags: `kill_test_pass_rule_only: true`; `pre_registered: true`; `kill_test_pass_decisive: true`. Both cells `meets`, `in_registered_window` and `meets_valid_pairing`.
+- Unlike the vLLM test, the decisive label rests on the push log as well as on commit order: the registration reached GitHub (09:26:41 CDT) before the jobs were submitted (09:27:44).
+- Runs: all 18 are in the five `results/nova/h200p600k_e2_part*` pulls.
+- Jobs: 17171020–37, all COMPLETED 0:0. Seed-major order: seed 0 = 020–025 (1.5 × BURST / NOBURST / CAPPED, then 2.0 ×), seed 1 = 026–031, seed 2 = 032–037. `sacct` in HP6E `swapp/sacct_17171020-17171037.txt`.
+
+| number(s) | what | source |
+|---|---|---|
+| T I T; G G G; R R R (1.5) / T T T; G G G; R R R (2.0) | states for seeds 0, 1, 2 (T trapped, I indeterminate, G good, R recovered) | `trap_v2_runs.csv` `state` (NOBURST `recovered` = good) |
+| 0.000 (all six BURST) | BURST hit over t_b + 4500 s to 8700 s | `hit_eval` |
+| 1.095, 1.042, 1.093; 1.113, 1.106, 1.112 | BURST uncached prefill rate, × all-miss (29,866 tok/s) | `1 + rate_rel_dev_tokens` |
+| 509.2, 485.6, 484.9; 912.8, 872.5, 909.3 | BURST mean backlog (sessions) | `backlog_eval_mean` |
+| 0.0759, 0.0478, 0.0601 vs 0.0485; 0.1272, 0.0995, 0.1122 vs 0.0969 | BURST backlog slope vs registered threshold 0.5 (λ − λ_miss) | `backlog_slope`, `slope_threshold` |
+| 0.929–0.936 | NOBURST and CAPPED hit | `hit_eval` |
+| 22.5–34.1; ≤ 0.0018 | NOBURST and CAPPED mean backlog; abs(slope) | `backlog_eval_mean`, `backlog_slope` |
+
+**Against pred2's frozen E2 block:**
+- Trapped backlog: predicted 458 / 867, measured 485–509 / 873–913 (within ±15 %).
+- Trapped token ratio: predicted 1.054 / 1.064, measured 1.04–1.10 / 1.11 (outside ±0.03 in 5 of 6 runs).
+- Predicted fresh critical burst: 114 / 91 sessions, below the registered 200.
+
+**Caveats:**
+- **One indeterminate run.** 1.5 × seed 1 is stuck (hit 0.000, token 1.042 ×, backlog 486), but its slope (0.0478) is 1.3 % below the threshold. It counts as not trapped, and 1.5 × passes with 2/3.
+- **Scope.** One model, one GPU type (H200 NVL, fa3) and three seeds.
+- **Calibration.** λ_ref is the 300k E0a, reused because λ_miss is pool-independent. The cell has no E0a of its own.
+- **Stage C grid.** It starts at n = 32, so `grid_incomplete` is set.
+
+**Suggested text (1–2 sentences):** "On an H200 with a 600k-token pool, the registered paired test passes at both points (1.5 and 2.0 λ_miss): the burst leaves the server all-miss with a growing backlog in 6/6 runs (5/6 by the registered slope rule), while the paired no-burst arm stays good and a client-side cap of 48 recovers in 6/6. A faster GPU therefore needs a larger KV budget for the window to exist, but where it exists the trap and the cure replicate."
+
+**Table row (E2 table format):** H200 NVL, 600k, λ_ref 0.194; 1.5 ×: BURST T I T, NOBURST G G G, CAPPED R R R; 2.0 ×: T T T, G G G, R R R; PASS / PASS.
 
 ## Caveats
 

@@ -1,5 +1,7 @@
 # H200 cell: live state (branch `r12/h200`)
 
+**DONE (2026-11-01 ~16:00 CST):** 600k E2 verdict PASS at 1.5 and 2.0 × (`agentload_analysis_burst2/20261101-154448`); all 18 runs pulled (parts A, A2, B1, B2, B3). Nothing of this cell remains on Nova except the staging dirs. LOG entry 2026-11-01; `notes/PAPER_INPUT_h200.md`.
+
 Cell `sglang-fcfs-r1-h200` (E0a `sglang-nocache-h200`):
 - **Engine and model:** SGLang 0.5.22, Qwen2.5-7B-Instruct a09a3545.
 - **Configuration:** 300k-token KV pool, FCFS with waiting-prefix refresh.
@@ -33,7 +35,9 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
   - Submit script `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `$W/h200_jobs.env`. Each job's run dir is listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`.
   - **Pulled already (part A):** 17171020–22 (seed 0, 1.5 ×, all three arms; COMPLETED 0:0, ended 11:56–12:03) in `results/nova/h200p600k_e2_partA_1717102x_pulled_20261031-120927/` (archive sha256 `c492385e…`; each run's `meta.json` carries PREREG_SHA256 `6be6e232…`). Not yet analysed.
   - **Pulled (part A2):** 17171023–25 (seed 0, 2.0 ×; COMPLETED 0:0, ended 14:26–14:33) in `results/nova/h200p600k_e2_partA2_1717102x_pulled_20261031-154207/` (archive sha256 `b867996b…`; PREREG_SHA256 `6be6e232…` in each `meta.json`).
-  - **Still on Nova (15:50 CDT):** 17171026–28 running since 14:27 / 14:27 / 14:33; 17171029–37 pending.
+  - **Pulled (part B1, B2):** 17171026–28 (seed 1, 1.5 ×) in `results/nova/h200p600k_e2_partB1_1717102x_pulled_20261031-170435/` (sha256 `e741691e…`); 17171029–31 (seed 1, 2.0 ×) in `results/nova/h200p600k_e2_partB2_1717102x_pulled_20261031-193319/` (sha256 `cef4fb58…`). All COMPLETED 0:0 and bound to PREREG_SHA256 `6be6e232…`. 12 of 18 runs are pulled.
+  - **Still on Nova (19:35 CDT Sat):** 17171032–35 running (started 18:27, 19:30, 19:30, 19:33); 17171036–37 pending. Expected end ≈ 00:30 Sun.
+  - **Overnight pause (Akshat, via the lead, ~19:40):** no monitoring, polling or pulls tonight. Resume when Akshat reconnects Nova on Sunday. Then: pull 17171032–37 in one batch (part B3), run the verdict, write the LOG and PAPER_INPUT, push, and send the lead one message with the verdict and hashes.
   - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
 - **Staging dirs** `/work/classtmp/avalse/swapp/pull_staging_h200*` (uncompressed copies; each archive deleted after its hash check).
 
@@ -48,6 +52,12 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
 ## Lead change and reconnect (2026-10-31 ~15:40 CDT)
 - Report to the new lead session **nova-lead-2** (`local_8c823c00-db19-4b39-b611-f9ce5f65891f`) from now on; the old lead ran out of context.
 - Nova's VPN was reconnected Sat 15:38 CDT. Assuming the same ~12 h window, it drops around 03:38 Sun. E2 jobs are pulled in batches as they finish, and the verdict runs once all 18 have ended (expected ≈ 00:30 Sun).
+
+## Missing-seed rule and finish estimate (15:50 CDT Sat)
+- **Expected finish:** at the measured 2 h 29 min per job with three H200s, waves end ≈ 17:00, 19:30, 22:00 and 00:30 Sun.
+- **Slurm's estimates** (17171035 at 11:44 Sun; 036/037 N/A) are serial and use the 3:10 limit. Real starts have not been serial: 17171023/24 both started at 11:57:17.
+- **Registered rule** (trap_v2): pass_fraction_min 2/3 and min_seeds 3, per λ cell. A seed with an arm missing counts as a failure (listed under `incomplete`). A cell whose seed is missing entirely has n_seen = 2 and prints INSUFFICIENT, so it is not decisive.
+- **Pending jobs are not reordered or touched.**
 
 ## Nova access window
 - Lead, 2026-10-31 ~02:10 CDT: Nova is reachable over a VPN that Akshat reconnected. It drops automatically around 14:00 CDT Sat. Pull every finished result before 13:30; anything that ends later waits for the next reconnect.
