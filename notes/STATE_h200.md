@@ -33,7 +33,9 @@ The per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell 
   - Submit script `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `$W/h200_jobs.env`. Each job's run dir is listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`.
   - **Pulled already (part A):** 17171020–22 (seed 0, 1.5 ×, all three arms; COMPLETED 0:0, ended 11:56–12:03) in `results/nova/h200p600k_e2_partA_1717102x_pulled_20261031-120927/` (archive sha256 `c492385e…`; each run's `meta.json` carries PREREG_SHA256 `6be6e232…`). Not yet analysed.
   - **Pulled (part A2):** 17171023–25 (seed 0, 2.0 ×; COMPLETED 0:0, ended 14:26–14:33) in `results/nova/h200p600k_e2_partA2_1717102x_pulled_20261031-154207/` (archive sha256 `b867996b…`; PREREG_SHA256 `6be6e232…` in each `meta.json`).
-  - **Still on Nova (15:50 CDT):** 17171026–28 running since 14:27 / 14:27 / 14:33; 17171029–37 pending.
+  - **Pulled (part B1, B2):** 17171026–28 (seed 1, 1.5 ×) in `results/nova/h200p600k_e2_partB1_1717102x_pulled_20261031-170435/` (sha256 `e741691e…`); 17171029–31 (seed 1, 2.0 ×) in `results/nova/h200p600k_e2_partB2_1717102x_pulled_20261031-193319/` (sha256 `cef4fb58…`). All COMPLETED 0:0 and bound to PREREG_SHA256 `6be6e232…`. 12 of 18 runs are pulled.
+  - **Still on Nova (19:35 CDT Sat):** 17171032–35 running (started 18:27, 19:30, 19:30, 19:33); 17171036–37 pending. Expected end ≈ 00:30 Sun.
+  - **Overnight pause (Akshat, via the lead, ~19:40):** no monitoring, polling or pulls tonight. Resume when Akshat reconnects Nova on Sunday. Then: pull 17171032–37 in one batch (part B3), run the verdict, write the LOG and PAPER_INPUT, push, and send the lead one message with the verdict and hashes.
   - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
 - **Staging dirs** `/work/classtmp/avalse/swapp/pull_staging_h200*` (uncompressed copies; each archive deleted after its hash check).
 
