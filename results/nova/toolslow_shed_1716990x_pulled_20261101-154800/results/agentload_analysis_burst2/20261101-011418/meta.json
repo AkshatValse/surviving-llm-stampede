@@ -1,0 +1,96 @@
+{
+  "experiment": "agentload_analysis",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "analysis.summarize",
+    "burst2",
+    "--run-dirs",
+    "results/agentload_e2_burst/20261031-224614",
+    "--out-root",
+    "results",
+    "--set",
+    "burst.trap_min_s=3000",
+    "--set",
+    "burst.hit_eval_from_s=4500",
+    "--set",
+    "trap_v2.eval_from_s=4500",
+    "--prereg",
+    "configs/agentload_prereg_2026-10-31_shed_t600.yaml"
+  ],
+  "git": {
+    "commit": "b006291e21c9f21d8845b32eea95afd359a08400",
+    "dirty": false,
+    "branch": "HEAD",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova22-gpu-2",
+  "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+  "start_time": "2026-11-01T01:14:18",
+  "end_time": "2026-11-01T01:14:18",
+  "wall_s": 0.659077,
+  "slurm_env": {
+    "SLURM_JOB_ID": "17169908",
+    "SLURM_JOB_NAME": "pm-sh600",
+    "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+    "SLURM_JOB_PARTITION": "instruction",
+    "SLURM_JOB_QOS": "instruction",
+    "SLURM_JOB_NODELIST": "nova22-gpu-2",
+    "SLURM_CPUS_PER_TASK": "16",
+    "SLURM_MEM_PER_NODE": "49152",
+    "SLURM_GPUS_ON_NODE": "1",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+  },
+  "inputs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261031-224614",
+      "label": "sglang-fcfs-r1-shed-t600",
+      "seed": 0,
+      "run_git": {
+        "commit": "b006291e21c9f21d8845b32eea95afd359a08400",
+        "dirty": false,
+        "branch": "HEAD",
+        "captured_at": "run start"
+      },
+      "run_start": "2026-10-31T22:46:14",
+      "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+      "slurm_env": {
+        "SLURM_JOB_ID": "17169908",
+        "SLURM_JOB_NAME": "pm-sh600",
+        "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+        "SLURM_JOB_PARTITION": "instruction",
+        "SLURM_JOB_QOS": "instruction",
+        "SLURM_JOB_NODELIST": "nova22-gpu-2",
+        "SLURM_CPUS_PER_TASK": "16",
+        "SLURM_MEM_PER_NODE": "49152",
+        "SLURM_GPUS_ON_NODE": "1",
+        "CUDA_VISIBLE_DEVICES": "0",
+        "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+      }
+    }
+  ],
+  "n_runs": 1,
+  "kill_verdict_v2": {
+    "pre_registered": true,
+    "kill_test_pass_rule_only": false,
+    "kill_test_pass_decisive": false,
+    "fcfs_cells_meeting_rule": [],
+    "decisive_cells": [],
+    "pairing_problems": {}
+  },
+  "guard_problems": []
+}

@@ -1,0 +1,29 @@
+TOOLSLOW (jobs 17169902-17169907) and SHED (jobs 17169908-17169911) pulled read-only from Nova clone $W/repo_r14_extra
+(HEAD b006291 = tag r14-extra-reg, git status clean), 2026-11-01 15:44 CST (UTC-6; DST ended at 02:00 CDT on 11-01, so sacct
+times after 01:00 on 11-01 are CST).
+
+Run dirs (from results/nova_job_logs/<job>-*/run_dirs_*.txt):
+  17169902 toolslow d10 seed 0  results/agentload_e2_burst/20261031-210448
+  17169903 toolslow d10 seed 1  results/agentload_e2_burst/20261031-210648
+  17169904 toolslow d10 seed 2  results/agentload_e2_burst/20261031-215143
+  17169905 toolslow d30 seed 0  results/agentload_e2_burst/20261031-220113
+  17169906 toolslow d30 seed 1  results/agentload_e2_burst/20261031-220954
+  17169907 toolslow d30 seed 2  results/agentload_e2_burst/20261031-224211
+  17169908 shed t600 seed 0     results/agentload_e2_burst/20261031-224614
+  17169909 shed t600 seed 1     results/agentload_e2_burst/20261031-230929
+  17169910 shed t3600 seed 0    results/agentload_e2_burst/20261031-232800
+  17169911 shed t3600 seed 1    results/agentload_e2_burst/20261031-233231
+All 10 jobs COMPLETED 0:0 (sacct_17169902-17169911.txt; account f2026.coms.6250.02, partition and QoS instruction).
+
+Pull: tar on Nova (the 10 run dirs, results/nova_job_logs/171699{02..11}-*, the per-job agentload_analysis_burst and
+agentload_analysis_burst2 dirs of these jobs, logs/pm-tsd* and pm-sh* .out of these jobs, sacct written outside the clone),
+xz -T2, sha256 2dbf41f0bd0e91628f5ea40f09cd89734f645efcaa7ace4b4c535c2037faa2b9 (24,512,996 bytes) on both ends, scp,
+tar --force-local -x, remote archive deleted.
+
+Registered analysis on the PC (Windows, shared venv, PYTHONPATH="src;."), branch r14/extra at db24efa:
+  python -m analysis.r14_cells classify --run-dirs <the 10 run dirs> --out-root <this dir>/analysis
+    (default --prereg = the four committed registrations; controls = the committed 1.35 x E2 runs, jobs 17093387-404,
+     found by the tool under results/nova/e2_170933xx_pulled_20261025-144558)
+  -> analysis/agentload_analysis_r14/20261101-154909 (r14_runs.csv, r14_verdict.json, meta.json)
+Independent check (not committed; a stdlib-only script over requests.csv): hit_eval of all 10 runs reproduced exactly
+(0.931301, 0.930036, 0.934174, 0.931286, 0.930036, 0.000000, 0.000000, 0.000000, 0.932792, 0.929910).
