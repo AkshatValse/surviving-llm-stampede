@@ -1,0 +1,137 @@
+{
+  "schema": "kill_verdict_v2",
+  "criterion": "TRAPPED iff the completion rate (trap_v2.rate_estimator; default: uncached prefill tokens/s over the post-burst window vs E0a's all-miss rate) is within +-rate_tolerance of its all-miss reference AND the session backlog slope > slope_frac*(lambda-lambda_miss) [and lambda > lambda_miss]; DRAINING iff slope<0; RECOVERED iff hit > recovered_hit_above and the backlog (trap_v2.recovered_backlog_metric; default outstanding = requests in flight + gate queue) < recovered_backlog_below at the end. PASS per lambda: BURST trapped AND NOBURST good AND CAPPED recovered in >= pass_fraction_min of the seeds.",
+  "rule": {
+    "eval_from_s": 4500,
+    "min_eval_s": 600.0,
+    "rate_estimator": "uncached_tokens",
+    "rate_tolerance": 0.15,
+    "slope_frac": 0.5,
+    "slope_dt_s": 10.0,
+    "recovered_hit_above": 0.8,
+    "recovered_backlog_below": 20.0,
+    "recovered_backlog_metric": "outstanding",
+    "end_window_s": 300.0,
+    "pass_fraction_min": 0.6666666666666666,
+    "min_seeds": 3,
+    "trace_bin_s": 50.0
+  },
+  "hit_metric": "frac_turns_cached_gt50",
+  "prereg": {
+    "provided": true,
+    "provenance": {
+      "path": "/work/classtmp/avalse/swapp/repo_llama31/configs/agentload_prereg_2026-10-30_llama31.yaml",
+      "sha256": "e584ed871e38293377813bcf94bb924d679a737bd61ae773686306eff112fbee",
+      "git_last_commit": "1559f8e33bed9d5944e3ef1eb6f05c905fb04f2c",
+      "git_last_commit_unix": 1793450953.0,
+      "git_last_commit_time": "2026-10-31T07:49:13-05:00",
+      "git_first_commit": "1559f8e33bed9d5944e3ef1eb6f05c905fb04f2c",
+      "git_first_commit_unix": 1793450953.0,
+      "git_first_commit_time": "2026-10-31T07:49:13-05:00",
+      "git_tracked": true,
+      "git_modified_since_commit": false,
+      "committed_clean": true
+    },
+    "problems": [
+      {
+        "severity": "warn",
+        "code": "mu300_far_from_lambda_miss",
+        "message": "|mu(300)/lambda_miss - 1| = 0.667: only a check (all n sessions start together, so mu(300) in the 1800 s window is transient-biased: simulator +65%); the registered recovery threshold is lambda_miss"
+      }
+    ],
+    "status": "FILLED",
+    "window": {
+      "lo": 0.0596408614267974,
+      "hi": 0.1192817228535948,
+      "lo_mult": 1.0,
+      "hi_mult": 2.0,
+      "lambda_ref": 0.0596408614267974
+    },
+    "engine_cell_label": "sglang-fcfs-r1-llama31",
+    "registered_lambda_mults": [
+      1.35,
+      1.65
+    ],
+    "valid": true,
+    "committed_clean": true
+  },
+  "pre_registered": true,
+  "fcfs_substr": "fcfs",
+  "cells": [
+    {
+      "label": "sglang-fcfs-r1-llama31",
+      "rate_mult": 1.35,
+      "lambda": 0.0805151629261765,
+      "lambda_miss": 0.0596408614267974,
+      "seeds": {
+        "2": {
+          "missing_arms": [
+            "noburst",
+            "capped"
+          ],
+          "burst_trapped": true,
+          "noburst_good": null,
+          "capped_recovered": null,
+          "states": {
+            "burst": "trapped"
+          },
+          "pass": false
+        }
+      },
+      "n_seeds_seen": 1,
+      "n_seeds_complete": 0,
+      "n_pass": 0,
+      "frac_pass": 0.0,
+      "burst_trapped_frac": 1.0,
+      "noburst_good_frac": null,
+      "capped_recovered_frac": null,
+      "enough_seeds": false,
+      "meets": false,
+      "incomplete": [
+        "2"
+      ],
+      "diagnosis": "INSUFFICIENT: 1 seeds < min_seeds",
+      "in_registered_window": true,
+      "pairing_problems": {},
+      "meets_valid_pairing": false,
+      "registered_label": true,
+      "registered_lambda": true,
+      "registration_blockers": {},
+      "decisive_eligible": true,
+      "exploratory": false
+    }
+  ],
+  "runs": [
+    {
+      "run_dir": "results/agentload_e2_burst/20261031-183519",
+      "label": "sglang-fcfs-r1-llama31",
+      "rate_mult": 1.35,
+      "seed": 2,
+      "arm": "burst",
+      "classification": "TRAPPED",
+      "state": "trapped",
+      "trapped": true,
+      "recovered": false,
+      "draining": false,
+      "prereg_sha256": "e584ed871e38293377813bcf94bb924d679a737bd61ae773686306eff112fbee"
+    }
+  ],
+  "fcfs_cells_meeting_rule": [],
+  "kill_test_pass_rule_only": false,
+  "kill_test_pass_decisive": false,
+  "decisive_cells": [],
+  "decisive_note": "a decisive PASS needs a valid, committed, clean FILLED pre-registration file whose last commit predates every run of the cell, the registered cell (label == inputs.engine_cell_label; 'fcfs'-substring matches such as vllm-fcfs or -native do NOT count), a registered lambda multiple inside its window, and every run bound to the file (meta.prereg_sha256) and to its protocol; without --prereg or with a derived EXPLORATORY file the verdict is exploratory. A derived file's window is inherited from its parent cell, not measured for the exploratory engine",
+  "pairing_problems": {},
+  "skipped_runs": [],
+  "legacy_secondary_burst_arm": {
+    "sglang-fcfs-r1-llama31|1.35": {
+      "n_burst_runs": 1,
+      "n_legacy_trap": 1
+    }
+  },
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}
