@@ -26,6 +26,10 @@ File names are not the paper's figure numbers. In the 2026-10-26 build: Fig. 1 =
 Fig. 5 = F6 (policy grid), Fig. 6 = F5 (robustness), Fig. 7 = F4 (mechanisms). In the 2026-10-31 build planned by the integration:
 Fig. 1 = F1 (`fig:e2`), 2 = F8 (`fig:fpmu`), 3 = F2 (`fig:curve`), 4 = F3 (`fig:edge`), 5 = F7 (`fig:e2native`), 6 = F6 (`fig:grid`),
 7 = F9 (`fig:fpscale`), 8 = F5 (`fig:robust`), 9 = F4 (`fig:mech`), 10 = F10 (`fig:fixed`); check against the built PDF.
+In the fill-3 build (fix round 3, 2026-10-31): Fig. 1 = F1 (`fig:e2`, Sec. 1), 2 = F2 (`fig:curve`, Sec. 5), 3 = `fig_rescue.pdf`
+(`fig:rescue`, Sec. 5; script `figures/paper/fig_rescue.py`), 4 = F8 (`fig:fpmu`, Sec. 6), 5 = F10 (`fig:fixed`, Appendix F),
+6 = F3 (`fig:edge`), 7 = F7 (`fig:e2native`) and 8 = F6 (`fig:grid`) in Appendix G, 9 = F9 (`fig:fpscale`, Appendix H),
+10 = F5 (`fig:robust`) and 11 = F4 (`fig:mech`) in Appendix I.
 
 | file | width x height (in) | column |
 |---|---|---|
@@ -337,7 +341,7 @@ are byte-identical to their committed versions (SHA-256 checked before and after
 (E0A, NATM, VE0A).
 
 **Shows.**
-- F8 (`fig:fpmu`, Section 4): the predicted closed curve mu(n), fluid and F1, against the measured Stage C points (sessions/s and
+- F8 (`fig:fpmu`, Section 6; Section 4 before fill 2): the predicted closed curve mu(n), fluid and F1, against the measured Stage C points (sessions/s and
   turns-based) for SGLang 300k, SGLang with the native pool and vLLM 300k; dotted line at the predicted all-miss onset n_b,
   dash-dotted at lambda_ref. n = 300 is not drawn (a synchronized-start transient). No measured mu(n) point is an input of the curve.
   Fix-up 1 of fill 2 (2026-10-31): a fourth panel shows the frozen H200 300k prediction (`results/theory/merged/h200_300k.json`)
@@ -345,11 +349,19 @@ are byte-identical to their committed versions (SHA-256 checked before and after
   with n <= 32 shaded (seen by the first author before the freeze) and n = 36, 44, 52 ringed (blind in time); F8 now uses the serif
   style of `_style.py` and F2's logarithmic n axis (ticks 16-96, cut at 140), and is 7.00 x 2.45 in. F9 (a) also plots the measured
   H200 peak ratio (0.367218 and 0.386109 sessions/s over lambda_ref 0.193877). F10 is byte-identical.
-- F9 (`fig:fpscale`, Section 7): (a) the fluid peak ratio in model units, mu* / mu_b, against s zbar, with the A100's measured ratios
-  (turns-based and sessions/s; measured in units of lambda_ref = 0.07153 from E0a, which lies 0.4% below the model's mu_b = 0.07184) and the frozen
-  H200 prediction (s = 2.742); (b) the peak ratio against the pool M, with the two measured A100 pools and the frozen 150k and 600k
-  predictions. The diamonds are frozen predictions; no outcome of a pending test is plotted. The diamonds are at the fluid model-unit
-  ratio, 0.1% (H200) and 8.5% (150k) above the F1 values the paper quotes (`paper/NUMBERS.md`, "0.1%; 8.5%").
+- F9 (`fig:fpscale`, Appendix H since fix round 1 of fill 3; Section 7 before): (a) the fluid peak ratio in model units, mu* / mu_b,
+  against s zbar, with the A100's measured ratios (turns-based and sessions/s; measured in units of lambda_ref = 0.07153 from E0a, which
+  lies 0.4% below the model's mu_b = 0.07184), the frozen H200 prediction (s = 2.742) and the measured H200 peak ratio (turns-based and
+  sessions/s, over its lambda_ref 0.193877; seen by the first author before the freeze); (b) the peak ratio against the pool M: the model
+  with A100 costs (solid) and, since fill 3, with the frozen H200 costs (green, dashed; s = 2.742); the A100 300k and native cells,
+  measured (open squares, in sample); since fill 3, the A100 pool-sweep peak ratios at 150k and 600k, measured (filled squares, blind in
+  time; `results/nova/pool_sweep_1716886x_pulled_20261031-112342/derived/pool_sweep_scored.json`), and their frozen predictions (purple
+  diamonds); since fill 3, the H200 frozen predictions at 300k (`r13-theory-pred`) and 600k (pred2, `results/theory/pred2/h200_600k.json`)
+  (green diamonds) and the measured H200 peak ratios at 300k (open triangle, seen before the freeze) and 600k (filled triangle, blind in
+  time; `results/nova/h200p600k_stageC_e0b_171696xx_pulled_20261031-092822/.../20261031-092435/mu_curve.json`), all turns-based. The
+  diamonds are frozen predictions; no outcome of a pending test is plotted. The diamonds are at the fluid model-unit ratio; the F1
+  values the paper quotes (`tab:windowlaw`, `tab:frozen`) differ from them by -8.6% (150k) to +1.2% (H200, 600k), as the caption says
+  (`paper/NUMBERS.md`, row "-8.6% (1.8720 / 2.0473 - 1), +1.2% (3.1956 / 3.1565 - 1)").
 - F10 (`fig:fixed`, Appendix F): (a) the open-system phase line dn/dt = lambda - mu(n) of the predicted 300k curve at 1.65 lambda_ref,
   with n_1 = 10.4, n_2 = 31.8, n_b = 32.7 and the trap (n grows at lambda - mu_b); (b) the closed-system feedback map Phi_n(h) at
   n = 33.5 > n_b for exponential 5 s tool times (one stationary state, all-miss) and for 0.5 Exp(1 s) + 0.5 Exp(9 s) of the same mean
