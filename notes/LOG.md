@@ -797,3 +797,60 @@ On the H200, doubling the pool raises the peak 1.53 × (0.386 → 0.592), moves 
 
 **Interpretation:** The window is set by pool and speed together. The faster GPU closes it at 300k, and doubling the pool reopens it, to an edge (2.5 ×) above the A100 300k cell's (2.0 ×). The frozen fluid model predicted the registration this cell actually produced, blind. As at 300k, it gets the rising branch, the peak and the edge, but misplaces the tail past the midpoint, where the real engine keeps a partial hit rate. The kill test now runs at 1.5 and 2.0 × λ_ref, where the frozen pred2 E2 block predicts a good NOBURST state (hit 0.932) and a trapped BURST arm (backlog ≈ 458 and 867 sessions).
 **Next:** the 18 E2 jobs, about 4.5 waves of 2.5 h on the 4 H200s; first ends ≈ 12:00 Sat, last ≈ 22:00 Sat if the cap allows four at once. Pull what has finished before the VPN drops (~14:00 Sat), the rest on Sun 08:00–11:30. Then run `summarize burst2 --prereg configs/agentload_prereg_2026-10-31_h200_p600k.yaml` with the E2 overrides (`--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500`).
+
+## 2026-11-01 — H200 600k-pool registered paired test: PASS at both registered points (1.5 and 2.0 × λ_ref)
+**Question:** On the H200 with a 600k-token pool, at the two rates its own window registers, does a 200-session burst trap SGLang? And does the paired NOBURST arm stay good while a client-side cap of 48 recovers?
+**Setup:**
+- **Registration:** `configs/agentload_prereg_2026-10-31_h200_p600k.yaml`, commit `4d1d431`, PREREG_SHA256 `6be6e232…578e`, carried by every run's `meta.json`. Committed 09:26:38 CDT on 2026-10-31; GitHub `branch_creation` at 09:26:41 CDT, before the submission at 09:27:44 (Nova clock).
+- **Cell:** `sglang-fcfs-r1-h200-p600k`: SGLang 0.5.22, Qwen2.5-7B, `KV_TOKENS=600000`, fa3, one H200 NVL. λ_ref = 0.19388 sessions/s (the H200 E0a); points 1.5 and 2.0 ×; cap 48; seeds 0–2.
+- **Arms:** BURST (200 sessions in 60 s at t = 1200 s), NOBURST and CAPPED, on common random numbers; one 8700 s arm per job.
+- **Jobs:** 17171020–17171037 (seed-major), all COMPLETED 0:0 on nova25-gpu-3. Starts 09:27 on 10-31 to 21:59; ends 11:56 on 10-31 to 00:28 on 11-01 (CDT); 2:28:58–2:32:08 each. Run from `repo_h200` at `4d1d431`, unchanged throughout.
+- **Verdict:** run on the login node on 2026-11-01 15:44 CST: `summarize burst2` over the 18 run dirs listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`, with `--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-31_h200_p600k.yaml` → `agentload_analysis_burst2/20261101-154448/`. No guard errors or warnings.
+- **Data:** pulled read-only in four parts, each an xz archive sha256-checked at both ends with the remote archive deleted:
+  - `results/nova/h200p600k_e2_partA_…20261031-120927/` (17171020–22);
+  - `_partA2_…20261031-154207/` (17171023–25);
+  - `_partB1_…20261031-170435/` (17171026–28);
+  - `_partB2_…20261031-193319/` (17171029–31);
+  - `_partB3_…20261101-154520/` (17171032–37, archive sha256 `a8016ebf…`). This part also holds the verdict dir (separate archive, sha256 `861e33d3…`) and `swapp/sacct_17171020-17171037.txt`.
+
+**Result:**
+- Verdict flags: `pre_registered: true`, `kill_test_pass_rule_only: true`, `kill_test_pass_decisive: true`.
+- Decisive cells: both (1.5 ×, 2.0 ×), in the registered window, with valid pairing.
+
+| λ (× λ_ref) | arm | seed 0 | seed 1 | seed 2 | count |
+|---|---|---|---|---|---|
+| 1.5 | BURST | trapped | indeterminate | trapped | trapped 2/3 |
+| 1.5 | NOBURST | good | good | good | 3/3 |
+| 1.5 | CAPPED | recovered | recovered | recovered | 3/3 |
+| 2.0 | BURST | trapped | trapped | trapped | 3/3 |
+| 2.0 | NOBURST | good | good | good | 3/3 |
+| 2.0 | CAPPED | recovered | recovered | recovered | 3/3 |
+
+- **BURST runs** (all six: hit 0.000 over the evaluation window, t_b + 4500 s to 8700 s):
+  - uncached-prefill rate: 1.095, 1.042, 1.093 × the all-miss rate at 1.5 ×; 1.113, 1.106, 1.112 × at 2.0 ×;
+  - mean backlog: 509.2, 485.6, 484.9 and 912.8, 872.5, 909.3 sessions;
+  - backlog slope: 0.0759, 0.0478, 0.0601 against the threshold 0.0485 (1.5 ×), and 0.1272, 0.0995, 0.1122 against 0.0969 (2.0 ×);
+  - session completion rate: 1.20–1.27 × and 1.40–1.45 × λ_ref, so the backlog grows.
+- The one indeterminate run (1.5 ×, seed 1) is stuck the same way: hit 0.000, token rate 1.042 ×, backlog 486. Its slope, 0.0478, is 1.3 % below the threshold. That is the same seed-1 pattern as on the A100 and on vLLM.
+- **NOBURST and CAPPED:** hit 0.929–0.936, mean backlog 22.5–34.1, |slope| ≤ 0.0018, uncached-token rate 0.09–0.14 × all-miss. Within a seed the two arms are indistinguishable in the evaluation window: the gate had drained.
+
+**Against the blind pred2 predictions** (`results/theory/pred2/h200_600k.json`, tag `r13-theory-pred2`, pushed 04:20:20 CDT on 10-31, before any p600k job could start; read after the verdict):
+- The predicted registration consequence (1.5 / 2.0 ×, cap 48) is the registration.
+- Trapped backlog: predicted 458 / 867, real 485–509 / 873–913. +6–11 % and +1–5 %, inside ±15 %.
+- Trapped token ratio: predicted 1.054 / 1.064, real 1.042–1.095 / 1.106–1.113. Outside ±0.03 in five of six runs (the real trap rewrites prefill about 4–5 % faster than predicted at 2.0 ×).
+- Trapped slope: predicted 0.052 / 0.117, real 0.048–0.076 / 0.099–0.127.
+- Fresh critical burst: predicted 114 / 91 sessions, below the registered 200, consistent with trapping in 5/6 runs and being stuck in 6/6.
+- There is no simulator prediction for this cell.
+
+**Verified vs. not:**
+- Verified:
+  - the 18 accounting records (COMPLETED 0:0);
+  - `repo_h200` HEAD `4d1d431`, clean;
+  - the registration hash in every run;
+  - every archive checksum;
+  - check-job before submission;
+  - the order: registration on GitHub before submission;
+  - no guard warnings.
+- Not verified: anything beyond one model, one GPU, the 600k pool and three seeds.
+
+**Interpretation:** On the H200, once the pool is large enough for a window to exist, the result is the same as on the A100. At a load it carries indefinitely from empty (NOBURST good 6/6), a 200-session burst leaves it all-miss for the remaining 7500 s (stuck 6/6, trapped by the registered rule 5/6). A client-side session cap at its measured peak prevents that (6/6). It joins the registered A100 300k, A100 native and vLLM paired tests, all of which pass at both of their registered points. The H200 300k cell, whose window is too narrow to register, is reported separately as window compression.

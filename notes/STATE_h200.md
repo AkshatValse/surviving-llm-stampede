@@ -1,5 +1,7 @@
 # H200 cell: live state (branch `r12/h200`)
 
+**DONE (2026-11-01 ~16:00 CST):** 600k E2 verdict PASS at 1.5 and 2.0 × (`agentload_analysis_burst2/20261101-154448`); all 18 runs pulled (parts A, A2, B1, B2, B3). Nothing of this cell remains on Nova except the staging dirs. LOG entry 2026-11-01; `notes/PAPER_INPUT_h200.md`.
+
 Cell `sglang-fcfs-r1-h200` (E0a `sglang-nocache-h200`):
 - **Engine and model:** SGLang 0.5.22, Qwen2.5-7B-Instruct a09a3545.
 - **Configuration:** 300k-token KV pool, FCFS with waiting-prefix refresh.
