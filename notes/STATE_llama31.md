@@ -1,5 +1,7 @@
 # Llama-3.1-8B cell: live state (branch `r12/llama31`)
 
+**DONE (2026-11-01 16:00 CST).** All 18 E2 jobs COMPLETED 0:0 (Sat 12:41–23:31 CDT) and pulled (parts 1–5; part 5 `fbc064f` holds the rest and the verdict). Registered verdict `agentload_analysis_burst2/20261101-154441`: `kill_test_pass_decisive: true`, decisive cell **1.65 ×** (BURST trapped 2/3, NOBURST good 3/3, CAPPED recovered 3/3); **1.35 × FAILS** (trapped 1/3: indeterminate, draining, trapped). All six BURST runs at hit 0.000 and 1.01–1.05 × the all-miss token rate. LOG entry 2026-11-01 and `notes/PAPER_INPUT_llama31.md` (final) written after merging origin/main (`d4b82e1`). Nothing of this cell is left on Nova (repo_llama31 and its results stay as they are). Everything below is the history.
+
 Cell: SGLang 0.5.22 + NousResearch/Meta-Llama-3.1-8B-Instruct @ d10aef7 (shards byte-identical to meta-llama 0e9e39f2), 300k-token pool, one A100 80GB PCIe, label `sglang-fcfs-r1-llama31`. Owner: the Llama session started 2026-10-30 22:15 CDT by the lead ("arXiv paper draft for NOVA"). LEAD CHANGE (Sat ~15:45 CDT): report to `nova-lead-2` (session `local_8c823c00-db19-4b39-b611-f9ce5f65891f`); the old lead ran out of context. Rules: `Nova-Research-wt/COORD/COORDINATION.md`; plan: `COORD/llama31_wave1_handoff.md`, `COORD/model2/commands_corrected.sh` (step by step), checker problems in `COORD/model2_scope_and_check.md`.
 
 ## Nova
