@@ -1,0 +1,27 @@
+{
+  "out_dir": "results/agentload_analysis_burst2/20261101-154441",
+  "n_runs": 18,
+  "guards": {
+    "n_errors": 0,
+    "n_warnings": 0,
+    "codes": []
+  }
+}
+{
+  "pre_registered": true,
+  "kill_test_pass_rule_only": true,
+  "kill_test_pass_decisive": true,
+  "fcfs_cells_meeting_rule": [
+    {
+      "label": "sglang-fcfs-r1-llama31",
+      "rate_mult": 1.65
+    }
+  ],
+  "decisive_cells": [
+    {
+      "label": "sglang-fcfs-r1-llama31",
+      "rate_mult": 1.65
+    }
+  ],
+  "pairing_problems": {}
+}

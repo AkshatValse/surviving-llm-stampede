@@ -1,6 +1,6 @@
-# PAPER_INPUT: Llama-3.1-8B cell (second model family) — DRAFT, E2 verdict pending
+# PAPER_INPUT: Llama-3.1-8B cell (second model family) — FINAL
 
-Status (2026-10-31 08:10 CDT): Stage C, E0a, E0b and the registration are done; the 18 paired E2 jobs (17170409–17170426) are queued. The E2 verdict, its table and the final paragraph are added after the Sunday 08:00–11:30 pull. Everything below the E2 section is final.
+**Verdict: registered paired kill test, decisive PASS at 1.65 × λ_ref; 1.35 × FAILS the 2/3 rule** (`kill_test_pass_decisive: true`, decisive cells: 1.65 × only). Every BURST run is stuck at zero hits at the all-miss token rate; the registered slope test calls 3 of the 6 trapped (1/3 at 1.35 ×, 2/3 at 1.65 ×). NOBURST good 6/6, CAPPED recovered 6/6. Verdict dir `agentload_analysis_burst2/20261101-154441` in `results/nova/llama31_e2_part5_verdict_pulled_20261101-154525/` (status 2026-11-01 16:00 CST).
 
 Branch `r12/llama31` (from `5a6fbcd`). Live state: `notes/STATE_llama31.md`. Blind simulator predictions: branch `r12/llama31-predict`, tag `r12-llama31-predictions-frozen`. Theory conditional: branch `r12/llama31-theory-cond`.
 
@@ -48,16 +48,36 @@ Readings: peak location and cap right in every V1 configuration; the peak is 7% 
 **Theory (lead's round 13, tag `r13-theory-pred`, pushed 02:05:30 CDT; second set `r13-theory-pred2`, 04:20:20 CDT).** A-priori Llama row: λ_miss 0.0619, μ_max 0.208 (F1) at n ≈ 23, 0.5-hit crossing 30.9, n_b 32.0, window 3.37 (F1), edge 2.46 ×; conditional rule s = T_meas / 9,559 = 9,353 / 9,559 = 0.978 through `results/theory/merged/llama31_8b_300k_speed_table.json`. The lead scores it with `notes/THEORY_r13_scoring.md`; the measured landmarks it needs are above (peak n 20, μ_max 0.2017 sessions / 0.195 turns, 0.5-hit crossing 29.4, edge 2.0 × with 2.5 × unstable, window 3.38 sessions / 3.28 turns).
 - Registration-conditional theory prediction for E2 (`analysis.theory.pred2.conditional --cell llama31_8b_300k --registration configs/agentload_prereg_2026-10-30_llama31.yaml`, run on `r13-theory-pred2` at 07:51; commits `a36f441` and `d12eef2` on `r12/llama31-theory-cond`, GitHub 12:52:42Z and 12:52:56Z = 07:52:42 / 07:52:56 CDT, with no E2 job started): at 1.35 / 1.65 × and cap 20, trapped token ratio 1.004 / 1.013, BURST backlog 191 / 266, NOBURST hit 0.932, capped drain 1,574 / 1,869 s (fit variant: 1.006 / 1.015, 197 / 272, 0.932, 1,601 / 1,908 s). Files: `results/theory/pred2/conditional/llama31_8b_300k_conditional{,_fit}.{json,yaml}`.
 
-## E2, the registered paired kill test — PENDING
-Jobs 17170409–17170426 (seed-major: seeds 0, 1, 2 → 1.35, 1.65 × → BURST, NOBURST, CAPPED with N_CAP = 20), one 8700 s arm per job (burst of 200 sessions in 60 s at t = 1200 s), `--time=03:10:00 --deadline=2026-11-01T11:40:00`, from `$W/repo_llama31` at `1559f8e`, `CALIB_FILE=prereg/inputs/2026-10-30-llama31/calibration.json`, `PREREG_FILE=configs/agentload_prereg_2026-10-30_llama31.yaml`. Verdict: `analysis.summarize burst2 --prereg` with `--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500`. To be filled: per-run table, decisive flag, comparison with both predictions.
+## E2, the registered paired kill test
+Jobs 17170409–17170426, all COMPLETED 0:0 (Sat 12:41 – 23:31 CDT; seed-major: seeds 0, 1, 2 → 1.35, 1.65 × → BURST, NOBURST, CAPPED with N_CAP = 20), one 8700 s arm per job (burst of 200 sessions in 60 s at t = 1200 s), from `$W/repo_llama31` at `1559f8e`, `CALIB_FILE=prereg/inputs/2026-10-30-llama31/calibration.json`, `PREREG_FILE=configs/agentload_prereg_2026-10-30_llama31.yaml`. Every job passed the in-job registration check (PREREG_OK, sha256 `e584ed87…`, committed clean) and the pool check. Verdict on Nova's login node with the frozen code: `analysis.summarize burst2 --prereg configs/agentload_prereg_2026-10-30_llama31.yaml --set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500` over all 18 runs → `agentload_analysis_burst2/20261101-154441` (`kill_verdict_v2.json`, `trap_v2_runs.csv`). `pre_registered: true`; registration first and last commit `1559f8e` (07:49:13 CDT Sat), before every run; no pairing problems, no guard problems; decisive cells: **1.65 ×**.
+
+| λ (× λ_ref) | arm | seed 0 | seed 1 | seed 2 | count | cell |
+|---|---|---|---|---|---|---|
+| 1.35 (0.0805 /s) | BURST | indeterminate | draining | trapped | trapped 1/3 | **FAIL** |
+| 1.35 | NOBURST | good | good | good | 3/3 | |
+| 1.35 | CAPPED | recovered | recovered | recovered | 3/3 | |
+| 1.65 (0.0984 /s) | BURST | trapped | indeterminate | trapped | trapped 2/3 | **PASS** |
+| 1.65 | NOBURST | good | good | good | 3/3 | |
+| 1.65 | CAPPED | recovered | recovered | recovered | 3/3 | |
+
+Per BURST run (evaluation window t_b + 4500 s to the end): uncached-token rate / all-miss rate, backlog slope vs threshold 0.5 (λ − λ_miss), mean backlog:
+- 1.35 ×: seed 0 1.050, 0.0052 vs 0.0104, 210 (indeterminate: stuck at zero hits, slope below threshold); seed 1 1.034, −0.000003, 196 (draining: backlog 196 → 181 at hit 0.000; the registered label for a negative slope); seed 2 1.012, 0.0157, 208 (trapped).
+- 1.65 ×: seed 0 1.044, 0.0243 vs 0.0194, 288 (trapped); seed 1 1.030, 0.0114, 267 (indeterminate); seed 2 1.054, 0.0245, 277 (trapped).
+- All six at hit 0.000. NOBURST hit 0.925–0.935, backlog 7–10; CAPPED equal to NOBURST in the evaluation window (the gate drained the burst first).
+
+Against the predictions for E2: simulator V1 predicted PASS at both points (BURST trapped 9/10 and 8/10, mixed; 9/10 and 9/10, separate), trapped token ratio 0.985–1.068, BURST backlog 181 / 252 (mixed); real trapped 1/3 and 2/3, ratio 1.012–1.054, backlog 196–210 / 267–288. Every BURST run is stuck as predicted; the slope test, flagged by the simulator as the fragile part at low λ, fails in 3 of 6 real runs. Theory conditional (committed before any E2 job started): token ratio 1.004 / 1.013, backlog 191 / 266, NOBURST hit 0.932 at 1.35 / 1.65 ×.
 
 ## Caveats
+- The decisive PASS rests on one of the two registered points (1.65 ×); the 1.35 × point FAILS by the registered rule. Report it as such; "stuck 6/6" is a descriptive reading, not the registered criterion.
+- Three seeds per point. The slope criterion is the fragile part at the lower point (the Qwen 300k cell had 1 of 3 stuck-but-indeterminate at 1.35 ×; here 2 of 3).
 - One run per n (Stage C) and one run per multiple (E0b), as in the other cells; n = 24 is within 3.3% of the peak (cap choice noisy, warning recorded).
 - The weights come from a third-party mirror proven byte-identical to Meta's shards; the paper should name the mirror and revision (Llama 3.1 Community License).
 - Llama runs within its trained context (131k); the Qwen2.5 cells ran past their trained 32k with no YaRN.
 - Procedural: the cell's jobs were reordered by `nice` (62–64, then 54, then 44 for E2) to keep the coordination order under Slurm's age factor; the E0b jobs were submitted without `afterok` because Slurm had purged the finished calibration job; the registration was filled on the PC, so the file has CRLF line endings as written by `prereg fill` (as the vLLM registration). None of these touches a registered quantity.
 
-## Suggested text (draft; final after E2)
-*Paragraph.* To test whether the effect depends on the model, we repeated the whole protocol with a second model family, Llama-3.1-8B-Instruct (Meta's weights via an ungated mirror), on the same GPU, engine and 300k-token pool. Its all-miss capacity is 17% lower than Qwen2.5-7B's (λ_miss = 0.0596 sessions/s, 9,353 prefill tokens/s), but the closed curve has the same shape: a plateau to n = 20 at hit 0.93, a peak of 0.202 sessions/s (3.4 × λ_miss), and a cliff to hit 0.20 by n = 32 and to the all-miss floor by n = 40. The from-empty edge is again 2.0 × λ_miss, so the same rule registers the same points, 1.35 and 1.65 ×, with the same cap, 20. [E2 outcome.]
+## Suggested text
+*Two sentences.* With a second model family, Llama-3.1-8B-Instruct (Meta's weights; 17% lower all-miss capacity than Qwen2.5-7B), the measured curve, window and registered points are the same (peak n = 20, edge 2.0 × λ_miss, points 1.35 and 1.65 ×, cap 20), and the pre-registered paired test passes decisively at 1.65 × (BURST trapped 2/3, NOBURST good 3/3, CAPPED recovered 3/3). At 1.35 × it fails the registered 2/3 rule: all three BURST runs sit at zero hits at the all-miss token rate, but only one clears the backlog-slope threshold (one is indeterminate, one draining).
 
-*Table row (cells table).* Llama-3.1-8B, SGLang 0.5.22, A100, 300k | λ_miss 0.0596 | μ_max/λ_miss 3.38 | peak n 20 | edge 2.0 × | points 1.35, 1.65 × | cap 20 | E2: [pending].
+*Paragraph (longer form).* To test whether the effect depends on the model, we repeated the whole protocol with a second model family, Llama-3.1-8B-Instruct (Meta's weights via an ungated mirror), on the same GPU, engine and 300k-token pool. Its all-miss capacity is 17% lower than Qwen2.5-7B's (λ_miss = 0.0596 sessions/s, 9,353 prefill tokens/s), but the closed curve has the same shape: a plateau to n = 20 at hit 0.93, a peak of 0.202 sessions/s (3.4 × λ_miss), and a cliff to hit 0.20 by n = 32 and to the all-miss floor by n = 40. The from-empty edge is again 2.0 × λ_miss, so the same rule registers the same points and cap. After the burst, all six BURST runs are stuck at zero hits at 1.01–1.05 × the all-miss token rate while every paired NOBURST run stays good and every CAPPED run recovers; by the registered rule this is a decisive PASS at 1.65 × (2/3 trapped) and a FAIL at 1.35 ×, where the backlog grows too slowly in two of three seeds to clear the slope threshold.
+
+*Table row (cells table).* Llama-3.1-8B, SGLang 0.5.22, A100, 300k | λ_miss 0.0596 | μ_max/λ_miss 3.38 | peak n 20 | edge 2.0 × | points 1.35, 1.65 × | cap 20 | E2: PASS at 1.65 × (2/3 / 3/3 / 3/3), FAIL at 1.35 × (1/3 / 3/3 / 3/3); stuck 6/6 | decisive PASS.
