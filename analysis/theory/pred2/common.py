@@ -204,7 +204,10 @@ def git_head() -> str:
 def frozen_code_unchanged() -> Dict[str, Any]:
     """git diff of analysis/theory against the freeze commit must list only NEW files (status A)."""
     try:
-        out = subprocess.run(["git", "diff", "--name-status", FROZEN_COMMIT, "--", "analysis/theory"], cwd=ROOT,
+        # the public copy rewrote every commit hash; its tag r13-theory-pred points at the same frozen tree
+        ref = FROZEN_COMMIT if subprocess.run(["git", "cat-file", "-e", FROZEN_COMMIT + "^{commit}"], cwd=ROOT,
+                                              capture_output=True).returncode == 0 else FROZEN_TAG + "^{commit}"
+        out = subprocess.run(["git", "diff", "--name-status", ref, "--", "analysis/theory"], cwd=ROOT,
                              capture_output=True, text=True, check=True).stdout.split("\n")
         rows = [r.split("\t") for r in out if r.strip()]
         untracked = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "analysis/theory"], cwd=ROOT,

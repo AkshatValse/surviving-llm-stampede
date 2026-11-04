@@ -1,0 +1,36 @@
+tree 679813a7cb1a33b391d8e24719e161c992ac33b3
+parent f0bc3ad5883221f9da1cf9cd6bed2d63246ca2e3
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793431660 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793431660 -0500
+
+r14 N3/N4: TOOLSLOW client option and SHED ramp configs, FILLED registrations (toolslow-d10/-d30, shed-t600/-t3600), e2-config sha256 + arms binding, analysis/r14_cells.py
+
+Client (src/agentload): workload.tool_slowdown {t_s, width_s, add_s} (config.py: typed, validated; client.py: a tool call
+whose sleep starts in [t_s, t_s + width_s) sleeps its drawn tool time plus add_s, logged per call in tool_calls.csv, meta
+tool_slowdown block and outcome counts). Without the option the client writes the base commit's files, columns, meta keys
+and requests (identity test against r11-rescue-reg, f0bc3ad), and the TOOLSLOW configs give its NOBURST plan.csv byte for byte.
+
+Configs: configs/agentload_e2_toolslow_d10.yaml / _d30.yaml (the E2 config plus tool_slowdown {1200, 900, 10 resp. 30};
+NOBURST arm at 1.35 x); configs/agentload_e2_shed_t600.yaml / _t3600.yaml (the E2 BURST config with arrivals.kind ramp,
+ramp_is_mult true, knots [[0,1.35],[1800,1.35],[1800.001,0],[1800+tau,0],[1800+tau+0.001,1.35],[8700,1.35]]). Tested: the
+ramp arrivals outside the stop and the burst sessions equal the BURST arm's and the committed BURST controls' (CRN).
+
+Registrations (analysis/r14_prereg.py fill: prereg fill under sglang-fcfs-r1 from prereg/inputs/2026-10-23, the inputs of
+configs/agentload_prereg_2026-10-24.yaml, single point 1.35, n_cap 20 by smallest_within_margin, then only
+inputs.engine_cell_label set): configs/agentload_prereg_2026-10-31_toolslow_d10.yaml, _toolslow_d30.yaml (arm noburst,
+seeds 0-2), _shed_t600.yaml, _shed_t3600.yaml (arm burst, seeds 0-1). Frozen endpoints: STUCK / GOOD of
+configs/r11_basin_predict.yaml, over [5700, 8700). Rules: TOOLSLOW 'causal test of the gap: d10 GOOD in >=2/3 seeds and d30
+STUCK in >=2/3'; SHED 'tau600 STUCK in >=2/3 and tau3600 GOOD in >=2/3; sessions shed reported; compared with R1 (0 shed)'.
+Scripted diff against the 2026-10-24 file: only label, e2 config, its sha256, protocol.arms, lambda list, rule and the
+derived capped-drain entry differ. Blind theory predictions (pred2, branch r13/pred2) are committed separately; not read here.
+
+analysis/prereg.py: fill records protocol.e2_config_sha256 for a non-default E2 config when given its sha256 (the CLI always
+hashes; the default config and analysis.basin fill record nothing, so earlier fills are reproduced byte for byte) and
+protocol.arms when given arms; check-job refuses a job whose --e2-config bytes differ from a recorded sha256 (extending the
+rescue binding to every registration that records one), whose ARMS are outside protocol.arms, or whose MULTS differ from a
+ramp config's rate outside the stop; run_blockers refuses a run whose config.yaml (CRLF read as LF) hashes differently or
+whose arm is outside protocol.arms. analysis/load.py: a ramp run's lam is its last knot's rate (constant runs unchanged), so
+trap_v2 / burst2 / the basin endpoints classify SHED runs at the post-stop rate. analysis/r14_cells.py: classify with the
+frozen endpoints, CRN pairing with the committed 1.35 x NOBURST / BURST runs (jobs 17093387-404), sessions shed, both rules.
+slurm/local_smoke.sh + local_smoke_prereg.py: R14_CELL=toolslow|shed mock-scale glue smoke (defaults unchanged).
+tests/test_r14_extra.py. notes/STATE_r14_extra.md.

@@ -1,0 +1,19 @@
+object 9b67c262084d3d50235c645eec71f3aa8b5bb68a
+type commit
+tag r11-basin-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793408662 -0500
+
+r11-basin-reg: B1 basin registrations and the blind S1 bundle-1 predictions, frozen before any B1 or E0F job is submitted
+
+Registrations (FILLED, analysis.basin fill on prereg/inputs/2026-10-23):
+- configs/agentload_prereg_2026-10-30_b100.yaml  sha256 dbe65a6458afd688c7a2cd393f13bc2bc753ca439445d5222bcf35b88e58b0b6  (sglang-fcfs-r1-b100, burst_n 100)
+- configs/agentload_prereg_2026-10-30_b25.yaml   sha256 1304fa3924577281f4ca2ec1ef0d73e7a8034855923839171ef8646576bf19b7  (sglang-fcfs-r1-b25, burst_n 25)
+- cell configs configs/agentload_e2_burst_n100.yaml (3fd25217...) and _n25.yaml (967d9bbf...), committed in c600fd7
+  with the predictions; job glue E2_CONFIG and analysis/basin.py in 9128995.
+Predictions: commit c600fd7 (configs/r11_basin_predict.yaml FROZEN endpoints, sha256 2f340909...;
+configs/r11_predict_basin.yaml; experiments/r11_predict_basin.py; notes/PREDICTIONS_r11_basin.md;
+results/r11_predict_basin/20261030-194539). Predicted: B1 PASS (n100 STUCK+TRAPPED 3/3, n25 GOOD 3/3);
+E0F not replicated (2.5 x stable 3/3 on seeds 3-5).
+E0F (sglang-fcfs-r1-e0bfresh, MODE=cap, seeds 3-5 at 2.0 / 2.5 x) is exploratory and needs no registration file.
+Also tagged: L1 step 1 post hoc LPM-128 crossing analysis (9b67c26).
+Nova clone for these jobs: /work/classtmp/avalse/swapp/repo_r11_basin.

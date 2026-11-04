@@ -1,0 +1,15 @@
+object f0bc3ad5883221f9da1cf9cd6bed2d63246ca2e3
+type commit
+tag r11-rescue-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793417922 -0500
+
+r11 rescue registrations (plan R1, R4), FILLED and committed before any rescue job is submitted
+
+R1  configs/agentload_prereg_2026-10-31_rescue.yaml         sha256 502dee9e3107952a2f968c1b59b8ee3d4063870d72f0dfac1261e2b2e2316691
+    cell sglang-fcfs-r1-rescue, 1.35 and 1.65 x, n_cap 20, e2 config configs/agentload_e2_rescue.yaml (t_on 1800)
+R4  configs/agentload_prereg_2026-10-31_rescue_native.yaml  sha256 ddd776f822755ba50472668b4af7dba3538354d98feb2579b8cca422b5215bb1
+    cell sglang-fcfs-r1-rescue-native, 4.0 x, n_cap 64, e2 config configs/agentload_e2_rescue_native.yaml (t_on 2100)
+smoke configs/agentload_prereg_2026-10-31_rescue_smoke.yaml sha256 e70eadd08514dd725ccc5880296528d14db3a3b156d3ab330465c77388c27df8
+    (mechanical GPU smoke job, never decisive)
+Frozen rule constants: analysis/rescue.py (RULE, STUCK, PROFILES, CHECK) sha256 b1934595d661051410cb0ceee7cd95e03f96a5e8d775878f8fe751a1058d60f1
+Blind predictions: tag r11-rescue-pred (72501f0), results/r11_predict_rescue/20261030-195231 (R1: R1_rescue; R4: R4s_t2100)

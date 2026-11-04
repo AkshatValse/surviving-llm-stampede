@@ -1,0 +1,6 @@
+tree 5fbee13f636454792179386e35035bc4908dad03
+parent f3f55ab39f04ad998e2df4f491aa7dc5af0b48bd
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792967476 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792967476 -0500
+
+Native-pool pre-registration (FILLED, valid): cell sglang-fcfs-r1-native, window (1, 5.5) x lambda_ref from native E0b, lambda points 2.5 and 4.0 x (the 1/3-2/3 rule written before native E0b was read), n_cap 64 by smallest_within_margin; inputs in prereg/inputs/2026-10-25-native

@@ -1,0 +1,8 @@
+tree 89b236685b9ba972da2b9edcebe0a77c3b62267a
+parent 8332d207e36781ae70158cfe9ab4b7b28ff8ae8e
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793450953 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793450953 -0500
+
+Llama-3.1-8B pre-registration (FILLED, valid): cell sglang-fcfs-r1-llama31, window (1, 2.0) x lambda_ref from this cell's E0b (2.5 x unstable), lambda points 1.35 and 1.65 x by the 1/3-2/3 rule of 836063a, n_cap 20 by smallest_within_margin
+
+Inputs in prereg/inputs/2026-10-30-llama31: Stage C 17166814-16 combined curve (agentload_analysis_closed/20261031-074803, sha256 a085d373), E0b bracket of the six runs 17169565-70 (agentload_analysis_stable/20261031-074804, sha256 36d47273), E0a calibration of 17166823/29/31 (job 17168803, sha256 7c2cb2de). lambda_ref 0.059641 (turns-based), all-miss 9,353 tok/s, mu_max 0.2017 (n = 20), capped-drain limit 2.80 x. Warnings only: n_cap_ambiguous (n = 24 within 0.033), mu300_far_from_lambda_miss. Filled on the PC as the vLLM registration was (CRLF as written by fill).

@@ -1,0 +1,28 @@
+tree f90f952d4199440488b1aad1cb7e4c259ddddee7
+parent 9b67c262084d3d50235c645eec71f3aa8b5bb68a
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793429918 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793429918 -0500
+
+r14 B2 (remedy N1): basin dose-response registrations (b40, b50, b60), cell configs, analysis/basin.py bracket rule, tests
+
+- configs/agentload_e2_burst_n40.yaml / _n50.yaml / _n60.yaml: byte copies of configs/agentload_e2_burst.yaml except
+  arrivals.burst.n (line 53), made exactly as _n100 / _n25 were.
+- configs/agentload_prereg_2026-10-31_b40.yaml / _b50.yaml / _b60.yaml (FILLED): python -m analysis.basin fill --n 40|50|60,
+  i.e. analysis.prereg.fill on the 2026-10-24 inputs (prereg/inputs/2026-10-23) under the measured cell sglang-fcfs-r1 with the
+  cell's E2 config, lambda_mults [1.65], smallest_within_margin (n_cap 20), then only inputs.engine_cell_label set to
+  sglang-fcfs-r1-b40 / -b50 / -b60. The frozen endpoints are those of configs/r11_basin_predict.yaml, unchanged. The rule text
+  carries the frozen N1 rule: the basin boundary is bracketed iff b=40 is GOOD in >=2/3 seeds and b=60 STUCK in >=2/3 seeds;
+  the seven-point curve 0,25,40,50,60,100,200 is reported against the frozen committor. prereg validate rc=0 for all three.
+  registration_diff against configs/agentload_prereg_2026-10-24.yaml: forbidden leaves none; allowed = label, e2_config,
+  burst_n, lambda list, rule; derived = the capped_drain numbers; measured, pass_rule, kill_conditions, predictions, checks and
+  fill_problems identical.
+- analysis/basin.py: fill accepts n in {40, 50, 60} (n = 100 / 25 still fill byte-identically to the committed files);
+  bracket_decision (the frozen N1 rule, tri-state, missing seed counts as not meeting a criterion) and curve_table (the
+  seven-point curve per seed); classify and its verdict json report both next to the unchanged B1 decision.
+- tests/test_r14_basin2.py: config byte diff, CRN plan properties for seeds 0-2 (identical base sessions; burst start times
+  are the first n draws of the n=200 draw; burst specs the first n of the 200; nested 25 < 40 < 50 < 60 < 100 < 200),
+  registrations reproduced by fill and valid, registration_diff, check-job pass and refusal cases (default config, parent
+  registration, crossed configs and labels, the measured label, an unregistered rate), the bracket rule and curve.
+
+No job glue change: MODE=burst with E2_CONFIG (9128995) runs these cells. Blind theory predictions for these cells are
+committed separately (pred2, branch r13/pred2) before any B2 job is submitted.

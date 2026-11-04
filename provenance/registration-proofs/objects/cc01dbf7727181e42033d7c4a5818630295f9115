@@ -1,0 +1,6 @@
+tree eb3ec9f6ecef616c3952be4de769fbee66c94477
+parent 29746a9d4ebd8f0969dfb2512e4ee75c68211308
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793381518 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793381518 -0500
+
+r9: blind vLLM predictions of the calibrated simulator (V0 unchanged, V1 token-cost scaled), notes and result summaries

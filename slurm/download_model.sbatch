@@ -15,8 +15,8 @@
 # $HF_HOME/MODEL_REVISION.txt (pass the same HF_REVISION to the engine jobs so they load exactly this snapshot).
 # Before sbatch:  env | grep ^SBATCH_   (must print nothing, or only correct values)
 # ---- BILLING GUARD (identical in all .sbatch files; keep it before anything else) ----------------------------
-# SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is the
-# OTHER course (f2026.coms.6720.01). Refuse to run unless the allocation really is the COMS 6250 one. Values come from
+# SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is a
+# different allocation. Refuse to run unless the allocation really is the COMS 6250 one. Values come from
 # the job environment, falling back to `scontrol show job`. Before submitting, also run:  env | grep ^SBATCH_
 _ctx() {   # _ctx ENV_VAR_NAME SCONTROL_KEY
   local v; eval "v=\${$1:-}"

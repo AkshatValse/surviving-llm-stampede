@@ -105,7 +105,7 @@ The three arms for one (m, seed) share arrivals and session specs. That is the c
 - **PASS:** BURST trapped, NOBURST good, CAPPED recovered, in at least 2/3 seeds.
 - **Kill:** no registered λ passes. The mechanism does not transfer under this protocol.
 
-**Concurrency.** 18 jobs at 1 GPU each. The per-user cap is 11 GPUs, shared with the COMS 6720 project, so this means about 2 waves, roughly 6 h wall plus queue time.
+**Concurrency.** 18 jobs at 1 GPU each. The per-user cap is 11 GPUs, shared with the user's other allocation, so this means about 2 waves, roughly 6 h wall plus queue time.
 
 ## Stage 5: exploratory grid
 

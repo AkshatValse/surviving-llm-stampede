@@ -216,7 +216,7 @@ for m in 1.35 1.65; do for s in 0 1 2; do
 done; done
 ```
 
-Same line as `notes/E2_RUNBOOK.md` Stage 5 for the vLLM cell, with `slurm/vllm_job.sbatch` and the vLLM calibration. One 8700 s BURST run per job (burst of 200 sessions in 60 s at t_b = 1200 s); `POLICY`, `REFRESH` and `LPM_INF` are not read by the vLLM scripts. The six jobs are independent and can run in one wave (the per-user cap of 11 GPUs is shared with the COMS 6720 project and with the SGLang grid jobs 17097086 to 17097103). Summarise with:
+Same line as `notes/E2_RUNBOOK.md` Stage 5 for the vLLM cell, with `slurm/vllm_job.sbatch` and the vLLM calibration. One 8700 s BURST run per job (burst of 200 sessions in 60 s at t_b = 1200 s); `POLICY`, `REFRESH` and `LPM_INF` are not read by the vLLM scripts. The six jobs are independent and can run in one wave (the per-user cap of 11 GPUs is shared with the user's other allocation and with the SGLang grid jobs 17097086 to 17097103). Summarise with:
 
 ```bash
 python -m analysis.summarize burst2 --run-dirs <the six run dirs> --prereg "$PRE"

@@ -94,7 +94,6 @@ All numbers below come from a simulator with assumed A100/8B constants (M = 300k
    - The harness now includes the referee's redesign: paired burst / no-burst / client-capped arms with common random numbers, plus a token-based trap criterion (the first, session-rate version would have missed the simulator's own traps; caught in review). See `harness/prefix-meta` and `notes/NOVA_PLAN_prefix_meta.md` (updated GPU-h table there).
 3. **KV pool.** Cap at 300k tokens to match the simulator (the referee warns reviewers will say "you shrank the cache"), plus at least one λ on the native pool (≈1M tokens).
 4. **Output feedback.** The default is to prefer server-returned token ids over synthetic ones; Stage 0 decides.
-5. **Codex folder.** An earlier session's `.claude/settings.local.json` still allows reads of the old Codex folder. I did not touch it tonight. Remove the rule?
 
 ## Needs Akshat (exact commands, in order)
 1. **Re-verify account and QoS.** CLAUDE.md's values come from an earlier session and were not re-checked tonight.
@@ -132,7 +131,7 @@ All numbers below come from a simulator with assumed A100/8B constants (M = 300k
   - Round 4: 4 PASS (two knife-edge or non-blind) / 2 FAIL.
   - Amendments are append-only and disclosed. Registered readings are reported first in `notes/LOG.md`.
   - One undisclosed scratch look was found in round 4 (`s3/little.py`, on unregistered seeds), with negligible impact.
-- **Commit trailers.** Some subagent commits carry a "Claude Sonnet 5.5" trailer, not the requested Opus line. Disclosed by the agents.
+- **Commit trailers.** No commit in this repository carries a model trailer: trailers were removed in the 2026-10-22 rewrite (see `provenance/commit-map.tsv`) and none were added since; AI use is disclosed in the paper.
 - **Citations.** Every citation was opened by a subagent, mostly through a summarizer. **None is paper-ready until re-verified.**
 - **Corrections I made to my own claims tonight.**
   - "LPM-128 inherits the trap": vacuous.

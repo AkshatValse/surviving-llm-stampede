@@ -1,0 +1,6 @@
+tree 2ed3a0402abc533f23c7795c9d87786b109a559c
+parent cfa77127dbcbea285d5f44b6c7195d02019bf831
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793451160 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793451160 -0500
+
+Theory pred2 conditional for the Llama-3.1-8B cell at its registered rates and cap (1.35 / 1.65 x, n_cap 20), run on r13-theory-pred2 (cfa7712) with --registration configs/agentload_prereg_2026-10-30_llama31.yaml from r12/llama31 1559f8e (sha256 e584ed87); committed before any Llama E2 job (17170409-26, all pending) started

@@ -1,0 +1,6 @@
+tree e91a86ca73887adfa80d39bcbe3c0f23d52824ef
+parent 6847dde8721aa91cd57fef10079219fe57212546
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430843 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430843 -0500
+
+r12: blind Llama-3.1-8B predictions of the calibrated simulator (V0 unchanged = round 9's V0 exactly, V1 token-cost scaled to 9,353 tok/s), notes and result summaries; pushed before any Llama Stage C or E0b result was read

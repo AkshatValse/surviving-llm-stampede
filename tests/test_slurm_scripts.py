@@ -36,7 +36,7 @@ def test_required_sbatch_directives(path):
                  "--gres=gpu:a100:1", "--exclude=nova22-amp-7", "--cpus-per-task=16", "--mem=128G", "--time=04:00:00",
                  "--output=logs/%x-%j.out"):
         assert want in directives, (path.name, want)
-    assert not any("6720" in d for d in directives)                       # never the other course's account
+    assert not any("f2026.other" in d for d in directives)                       # never another allocation
     assert "DRAFT" in text and "NEVER SUBMITTED" in text
 
 
@@ -224,17 +224,17 @@ def test_billing_guard_is_identical_in_every_sbatch_and_precedes_other_code():
 
 @pytest.mark.parametrize("path", BILLING, ids=lambda p: p.name)
 @pytest.mark.parametrize("ctx", [
-    {"SLURM_JOB_ACCOUNT": "f2026.coms.6720.01"},                        # the user's default account (the other course)
+    {"SLURM_JOB_ACCOUNT": "f2026.other.0000.01"},                        # the user's default account (another allocation)
     {"SLURM_JOB_PARTITION": "nova"}, {"SLURM_JOB_QOS": "normal"},
     {"SLURM_JOB_ACCOUNT": ""},                                          # unknown
 ], ids=["wrong-account", "wrong-partition", "wrong-qos", "unknown-account"])
 def test_billing_guard_refuses_the_wrong_context(path, ctx, tmp_path):
     e = {k: v for k, v in os.environ.items() if not k.startswith("SLURM_")}
     e.update(GOOD_CTX)
-    e.update(ctx, MODE="smoke", SLURM_SUBMIT_DIR=str(tmp_path), SBATCH_ACCOUNT="f2026.coms.6720.01")
+    e.update(ctx, MODE="smoke", SLURM_SUBMIT_DIR=str(tmp_path), SBATCH_ACCOUNT="f2026.other.0000.01")
     r = subprocess.run([BASH, str(path)], capture_output=True, text=True, env=e, cwd=tmp_path)
     assert r.returncode == 2 and "FATAL: wrong or unknown SLURM context" in r.stderr
-    assert "SBATCH_ACCOUNT=f2026.coms.6720.01" in r.stderr             # the likely culprit is printed
+    assert "SBATCH_ACCOUNT=f2026.other.0000.01" in r.stderr             # the likely culprit is printed
 
 
 def test_billing_guard_passes_the_right_context_and_falls_back_to_scontrol(tmp_path):
@@ -244,7 +244,7 @@ def test_billing_guard_passes_the_right_context_and_falls_back_to_scontrol(tmp_p
     sc.chmod(0o755)
     base = {k: v for k, v in os.environ.items() if not k.startswith("SLURM_")}
     base.update(PATH=f"{tmp_path / 'bin'}:{base['PATH']}", SLURM_JOB_ID="7", MODE="smoke", HF_HOME="<x>", ENV_GEN="<y>")
-    for acct, want in (("f2026.coms.6720.01", 2), ("f2026.coms.6250.02", 1)):    # 1 = download script's placeholder exit
+    for acct, want in (("f2026.other.0000.01", 2), ("f2026.coms.6250.02", 1)):    # 1 = download script's placeholder exit
         sc.write_text(f"#!/bin/sh\necho 'JobId=7 JobName=x UserId=u(1) Account={acct} Partition=instruction QOS=instruction'\n")
         r = subprocess.run([BASH, str(SLURM / "download_model.sbatch")], capture_output=True, text=True, env=base, cwd=tmp_path)
         assert r.returncode == want, (acct, r.stdout, r.stderr)

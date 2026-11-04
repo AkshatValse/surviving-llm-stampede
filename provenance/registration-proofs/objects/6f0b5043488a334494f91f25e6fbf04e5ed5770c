@@ -1,0 +1,6 @@
+object cfa77127dbcbea285d5f44b6c7195d02019bf831
+type commit
+tag r13-theory-pred2
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793438417 -0500
+
+Round-13 theory second prediction set (pred2), frozen before any B2, N2, TOOLSLOW or SHED job. Model unchanged from r13-theory-pred (997d2c4); new drivers, configs/r13_theory_pred2.yaml, notes/PREDICTIONS_r13_pred2.md. B2 bracketing P = 0.66 (uncalibrated 0.42), N2 P = 0.80, TOOLSLOW P = 0.80, SHED registered P = 0.997, E0F replication P = 0.47.

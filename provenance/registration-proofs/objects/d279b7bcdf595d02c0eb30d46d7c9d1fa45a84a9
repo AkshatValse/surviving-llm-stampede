@@ -1,0 +1,6 @@
+tree 5bb62ff20c792bdc986568c6a4d5f55c56c358cb
+parent cfbc7028ef7236fe05cd1a890e4ae1a0f45c7867
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792872552 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792872552 -0500
+
+E2 pre-registration (FILLED, valid): window (1, 2.0) x lambda_ref with the upper edge from E0b, lambda points 1.35 and 1.65 x lambda_ref (the 1/3 and 2/3 rule written before E0b was read), n_cap 20 by smallest_within_margin; E0b bracket added to prereg/inputs/2026-10-23

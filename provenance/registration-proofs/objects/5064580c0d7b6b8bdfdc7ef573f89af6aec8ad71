@@ -1,0 +1,12 @@
+tree 196bf960c4734bc185a8ea4e7e6d5828303cdd34
+parent a288aa807e691aba7e3fce2659ffd68becf6e853
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793412139 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793412139 -0500
+
+r11 L1: exploratory registration for sglang-lpminf (derive-exploratory from the E2 registration, BURST arm only)
+
+python -m analysis.prereg derive-exploratory --from configs/agentload_prereg_2026-10-24.yaml --engine-cell-label sglang-lpminf
+--arms burst. Status EXPLORATORY, never decisive; window, lambda multiples (1.35 / 1.65), protocol and trap rule inherited from
+sglang-fcfs-r1. Identical to the stock-LPM grid file agentload_prereg_2026-10-24_grid_sglang-lpm-r1.yaml except the cell label
+(as there, the policy is carried by the label and the job's POLICY/LPM_INF settings; the LPM_INF cell definition is in
+configs/r11_lpminf_predict.yaml). validate: no errors.

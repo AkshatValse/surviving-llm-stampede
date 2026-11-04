@@ -73,8 +73,8 @@
 #  ENV_SGLANG / ENV_GEN / HF_HOME : env prefixes and cache dir (PLACEHOLDERS from notes/NOVA_ENV_PLAN.md; LPM_INF=1 uses ENV_SGLANG too)
 
 # ---- BILLING GUARD (identical in all .sbatch files; keep it before anything else) ----------------------------
-# SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is the
-# OTHER course (f2026.coms.6720.01). Refuse to run unless the allocation really is the COMS 6250 one. Values come from
+# SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is a
+# different allocation. Refuse to run unless the allocation really is the COMS 6250 one. Values come from
 # the job environment, falling back to `scontrol show job`. Before submitting, also run:  env | grep ^SBATCH_
 _ctx() {   # _ctx ENV_VAR_NAME SCONTROL_KEY
   local v; eval "v=\${$1:-}"

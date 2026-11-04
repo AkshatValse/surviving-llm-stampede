@@ -1,8 +1,3 @@
-# Claude Code personal / machine-local files
-CLAUDE.local.md
-.claude/settings.local.json
-.claude/worktrees/
-
 # Research outputs. Policy (see README.md, "Data policy"):
 #  - results/nova/        TRACKED: real-engine data pulled from Nova. Irreplaceable: ISU class storage is wiped at semester end.
 #  - results/vat_collect/, results/vat_alignment/

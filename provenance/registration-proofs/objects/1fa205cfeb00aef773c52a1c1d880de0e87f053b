@@ -1,0 +1,6 @@
+object 5064580c0d7b6b8bdfdc7ef573f89af6aec8ad71
+type commit
+tag r11-lpminf-pred
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793412150 -0500
+
+r11 L1 / S1 bundle 2 freeze: blind LPM-INF simulator predictions and frozen endpoints (e2e8474), LPM_INF hook and job glue (a288aa8), exploratory registration configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml (5064580, sha256 f4454c5b...). Committed before any sglang-lpminf job is submitted.

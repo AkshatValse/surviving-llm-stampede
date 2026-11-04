@@ -5,7 +5,7 @@ Every Nova step below needs Akshat's explicit OK before it runs. The project rul
 **Storage (checked 2026-10-21 over SSH, read-only).**
 - **Project root:** `/work/classtmp/avalse/swapp`. This is new and created in step A.
   - `/work/classtmp` is ISU's class storage: NFS, 16 TB with 14 TB free. ISU's class page says class files **are deleted at semester end**, so results must be copied off after every job.
-  - `/work/classtmp/avalse/` already holds three `hpcml-*` dirs from the earlier project (about 12 GB). They are **not touched**.
+  - Other directories under `/work/classtmp/avalse/` are not this project's; do not touch them.
 - **Home:** `/home/avalse`, using 16 MB. ISU states a 10 GB hard quota. Every cache (pip, micromamba, HF, Triton/FlashInfer via `XDG_CACHE_HOME`) is therefore redirected to class storage.
 - **Other locations:**
   - `/ptmp`: Lustre, no user dir. A 2021 ISU deck says files are purged 90 days after creation; this may be outdated.

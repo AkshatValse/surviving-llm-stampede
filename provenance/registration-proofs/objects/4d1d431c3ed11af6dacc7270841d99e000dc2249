@@ -1,0 +1,6 @@
+tree 86dbb0e362dae3f6e587991859878ad043fb33ae
+parent 5a6fbcdf6632d39b47612a2746dcaa3f0e4d56a7
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793456798 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793456798 -0500
+
+H200 600k-pool pre-registration (FILLED, valid): cell sglang-fcfs-r1-h200-p600k, window (1, 2.5) x lambda_ref from its E0b (3.0 x unstable; mu_max/lambda_ref 3.05 not binding), lambda points 1.5 and 2.0 x by the 1/3-2/3 rule of 836063a, n_cap 48 by smallest_within_margin; inputs in prereg/inputs/2026-10-31-h200-p600k (Stage C 17169672-80 combined curve agentload_analysis_closed/20261031-092435, E0b 17169682-87 bracket agentload_analysis_stable/20261031-092436, H200 E0a calibration 17166810-12)

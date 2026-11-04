@@ -1,0 +1,6 @@
+object 64bc4e3cab4887ecc219e160ff2a84106bd74277
+type commit
+tag r6-predictions-frozen
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792871576 -0500
+
+Round 6 blind predictions B1-B4 (notes/PREDICTIONS.md), frozen before any E0b or E2 real result was read. Simulations ran on 630ab9e; independent verification (Codex, append-only) is 877b936.
