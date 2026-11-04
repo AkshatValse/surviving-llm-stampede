@@ -1094,7 +1094,7 @@ The **(unmerged)** marks in the earlier rows predate the merges into `r10/arxiv`
 
 Reported so far: the four items rendered by `\pending{}` until 2026-10-26 ("Native pool and vLLM"); the registered vLLM verdict, the only marker of the 2026-10-30 version (rows under "Added 2026-10-31": the registered analysis passes at both rates, and the frozen r11 mechanism decision rule is not met because the detector raised false alarms in two CAPPED runs); in fill 1 the H200 300k curve, cliff bracket and edge, BASIN-1, the fresh-seed E0b and LPM-INF; in fill 2 the rescue tests R1 and R4, with their registration push time (f0bc3ad, 22:39:02 CDT) and job IDs (17168965 smoke, 17168966-71 R1, 17168972-74 R4); in the review fix round the Llama-3.1-8B registration (1559f8e, pushed 07:49:15 CDT on 2026-10-31); and in fill 3 the pool sweep at 150k and 600k, BASIN-2, and the H200 600k and Llama-3.1-8B curves, edges, registrations and pre-E2 predictions (rows under "Fill 3"). No sentence of the paper calls any of these pending.
 
-Pending in this version, exactly one (restated after fill 4, 2026-11-01): the only `\pending{...}` left in the paper is `\repourl`.
+Pending in this version: none. The last marker, the repository URL, was set on 2026-11-04 to https://github.com/AkshatValse/surviving-llm-stampede (the public repository, built from this branch).
 
 1. **`\repourl`** (`main.tex` line 27, printed once in the Code and data availability statement), the URL of the public repository the authors will name; the arXiv comments field carries the same URL.
 
