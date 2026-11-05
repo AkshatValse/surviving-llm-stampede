@@ -1,6 +1,8 @@
 # r16 MIRROR: frozen blind predictions (model F, the renewal law of the trap)
 
-Written 2026-11-05, about 16:00 CST, by the lead session, before any MIRROR job was submitted. Branch `r16/mirror`, registration
+Written 2026-11-05 between about 13:45 and 14:05 CST, by the lead session, before any MIRROR job was submitted.
+(Erratum, added after the tag: the tagged version of this line says "about 16:00 CST", which is wrong. The registration
+commit bc81ee7 is dated 14:07:08 CST and was pushed at about 14:07:37 CST; GitHub's push log is authoritative.) Branch `r16/mirror`, registration
 tag `r16-mirror-reg`. Code: `analysis/theory/icml/mirror_predict.py` (predictions), `analysis/r16_mirror.py` (registration,
 rules, scoring). Frozen numbers: `results/theory/r16/mirror_predictions.json`; frozen client plans:
 `results/theory/r16/mirror_plans/`. Registration: `configs/agentload_prereg_2026-11-05_mirror_k20.yaml`.
