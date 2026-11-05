@@ -117,7 +117,7 @@ The full 300 s N trajectories are in the YAML (`N_300s_bins`; bin centres in `n_
 - **CUT-A:**
   - Slopes: +0.00716 over W1 and +0.00880 over W2. C over W2 = 1.028 λ_ref.
   - Dip: N(2400) = 182.6, lowest 173.5 at t ≈ 3520 s (−9.2, −5.0%), then regrowth to N(8700) = 211.3.
-  - Served prompt over W2: 10,096. The FIFO wait trend is +0.0088 s/s.
+  - Served prompt over W2: 10,096. The FIFO wait trend is +0.0088 s/s (against join time; see the post-registration note).
   - Asymptotics at λ' (Theorem 1/2): z' = 1.00575, γ' = 0.00575, α' = 0.00646/s, D' = 1.0597 λ_ref. So D' sits below
     λ' = 1.15 λ_ref and above λ_miss: Corollary 3's regrowth.
 - **CUT-B:**
@@ -221,3 +221,13 @@ Per seed at the headline noise:
 6. **The plans must match.** The predictions are conditional on the run's `plan.csv` matching
    `results/theory/icml/cut_plans/` (same seeds, same knots). If the build agents' knots differ, rerun `cut_predict.py`
    with their knots **before** any result exists.
+
+## Post-registration note (2026-11-05; after tag `icml-cut-pred`, nothing above changed)
+
+The fluid's "wait trend" (+0.0088 and −0.0027 s/s) is the FIFO wait regressed on the time a request *joins*. The measured
+300 s-median gap trend is regressed on the turn's *completion* time.
+- Asymptotically, the completion-time slope is the join-time slope divided by z. Here z' is 1.006 in CUT-A, so the
+  difference is under 1%.
+- The registered per-seed gap trends in the YAML (`gap_med_slope_w5700`) already use the measured definition, from the
+  plan-driven model's completion times.
+- The registered secondary prediction (CUT-B gap trend < 0) is a sign, so it is unaffected.

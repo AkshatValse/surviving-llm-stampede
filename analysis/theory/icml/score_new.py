@@ -64,8 +64,11 @@ def main(argv=None) -> int:
             D = _interp(C["asymptotic"], mult, "D_over_lam_ref") * lam_ref
             alpha = _interp(C["asymptotic"], mult, "alpha")
             gamma = _interp(C["asymptotic"], mult, "gamma")
+            # gap_med_slope is regressed on the turn's completion time; a turn completing at t joined at ~t/z, so the
+            # model value of that trend is gamma/z = 1 - 1/z (not registered; S2 below stays as registered, against gamma)
+            gamma_z = gamma / _interp(C["asymptotic"], mult, "z")
             thr = 0.5 * (lam - lam_ref)
-            row.update(pred_P=P, pred_D=D, pred_alpha=alpha, pred_gamma=gamma, threshold=thr,
+            row.update(pred_P=P, pred_D=D, pred_alpha=alpha, pred_gamma=gamma, pred_gamma_over_z=gamma_z, threshold=thr,
                        S1_run=bool(abs(st["P_served_mean"] / P - 1.0) <= 0.08),
                        S3_run=(bool(st["completion_rate"] > lam_ref) if st["arrival_rate_window"] >= 1.1 * lam_ref else None))
             if info["seed"] is not None:
@@ -83,6 +86,8 @@ def main(argv=None) -> int:
             n=len(el),
             S1_pooled=bool(abs(np.mean([r["P_served_mean"] for r in el]) / P - 1.0) <= 0.05),
             S2_pooled=bool(0.6 <= np.mean([r["gap_med_slope"] for r in el]) / el[0]["pred_gamma"] <= 1.4),
+            S2_gamma_over_z_pooled_NOT_REGISTERED=bool(
+                0.6 <= np.mean([r["gap_med_slope"] for r in el]) / el[0]["pred_gamma_over_z"] <= 1.4),
             S3_pooled=bool(abs(np.mean([r["completion_rate"] for r in el]) / el[0]["pred_D"] - 1.0) <= 0.15),
             S4_pooled=bool(abs(np.mean([r["backlog_slope"] for r in el]) / el[0]["pred_alpha"] - 1.0) <= 0.35),
         )
@@ -93,15 +98,17 @@ def main(argv=None) -> int:
     os.makedirs(od, exist_ok=True)
     with open(os.path.join(od, "score.json"), "w") as f:
         json.dump(out, f, indent=1, default=float)
-    lines = ["| run | seed | eligible | P meas/pred | gap slope / gamma | completions / D | slope / alpha | S5 side | S5 close |",
-             "|---|---|---|---|---|---|---|---|---|"]
+    lines = ["| run | seed | eligible | P meas/pred | gap slope / gamma | gap slope / (gamma/z), not registered | completions / D "
+             "| slope / alpha | S5 side | S5 close |",
+             "|---|---|---|---|---|---|---|---|---|---|"]
     for r in out_runs:
         if not r["eligible"]:
-            lines.append(f"| {os.path.basename(r['run'])} | {r['seed']} | no (hit {r['fu_hit']:.2f}) | | | | | | |")
+            lines.append(f"| {os.path.basename(r['run'])} | {r['seed']} | no (hit {r['fu_hit']:.2f}) | | | | | | | |")
             continue
-        lines.append("| {} | {} | yes | {:.0f}/{:.0f} | {:.4f}/{:.4f} | {:.4f}/{:.4f} | {:.4f}/{:.4f} | {} | {} |".format(
+        lines.append("| {} | {} | yes | {:.0f}/{:.0f} | {:.4f}/{:.4f} | {:.4f}/{:.4f} | {:.4f}/{:.4f} | {:.4f}/{:.4f} | {} | {} |".format(
             os.path.basename(r["run"]), r["seed"], r["P_served_mean"], r["pred_P"], r["gap_med_slope"], r["pred_gamma"],
-            r["completion_rate"], r["pred_D"], r["backlog_slope"], r["pred_alpha"], r.get("S5_side"), r.get("S5_close")))
+            r["gap_med_slope"], r["pred_gamma_over_z"], r["completion_rate"], r["pred_D"], r["backlog_slope"], r["pred_alpha"],
+            r.get("S5_side"), r.get("S5_close")))
     lines.append("")
     lines.append(f"pooled: {json.dumps(pooled)}")
     with open(os.path.join(od, "score.md"), "w") as f:
