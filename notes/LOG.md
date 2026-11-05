@@ -1130,3 +1130,31 @@ Every BURST run sits at hit 0.000 over the evaluation window with an uncached-to
 **Interpretation:**
 - On the engine, a cut below the trapped throughput but above the all-miss capacity left every run trapped (CUT-A). A cut below the all-miss capacity drained the trap only slowly, still trapped after 6300 s of cut (CUT-B). This is the pattern of Theorem 1(a) and Corollary 3.
 - In T2, the exact-plan simulator beat the plan-averaged fluid model on the one cell built to separate them. Whether a short tool slowdown traps the engine at 1.65 x depends on the arrival plan, as the per-seed layer said.
+
+## 2026-11-05 — r16 MIRROR registered (step-capped workload; model F predicts a reversed youth premium) and submitted
+**Question:** Theorem 2 writes the trapped completion rate as D = lambda_miss H(z) Gamma(z), with H set by the turn-count law.
+For agents that run to a fixed step budget (T nearly deterministic), H is well below 1. Does the engine then complete
+sessions BELOW its all-miss capacity, with model F's transient (a completion blackout, then a wave), rather than at the
+steady near-capacity rate that every throughput-curve reading predicts?
+**Design:** configs/agentload_e2_mirror_k20.yaml = configs/agentload_e2_burst.yaml with mean_turns 1000 and max_turns 20.
+- Cell sglang-fcfs-r1-mirror-k20.
+- BURST at 1.65x (decisive) and 1.35x (secondary), NOBURST controls at 1.65x, seeds 0-2.
+- One E0a of the workload.
+- Rules M1-M4 (decisive) and W5-W10 (secondary): analysis/r16_mirror.py.
+- Frozen predictions: notes/PREDICTIONS_r16_mirror.md and results/theory/r16/mirror_predictions.json.
+- The tolerances come from model F's timing on committed standard-workload runs (factor 0.9223).
+**Freeze:** commit bc81ee7, tag r16-mirror-reg, pushed 14:07:37 CST. Erratum 18ac5e6 corrects the writing time in the note.
+**Nova:** frozen clone repo_r16_mirror at bc81ee7, built from a 649 MB bundle (sha256 eb9812c0..., equal on both ends after
+an append; the first scp was cut by the lead's own timeout).
+- Smoke test 17264039: MODE=miss, 300 s, the workload confirmed in config_effective.yaml.
+- Submitted 14:50:52-53 CST, in the registered order:
+  - 17264055-57: BURST 1.65x, seeds 0-2;
+  - 17264058-60: NOBURST 1.65x;
+  - 17264061: E0a;
+  - 17264062-64: BURST 1.35x.
+- All started 14:50:57-14:51:28 CST. Every E2 job printed PREREG_OK.
+**Deviation (recorded):** the E0a job 17264061 FAILED its own pre-run time-budget check at 14:51:57.
+- It needed 7080 s, including the default population-check run, against the 5400 s of the registered submit line's
+  --time 01:30:00. Nothing ran.
+- It was resubmitted unchanged except --time 02:15:00 as 17264093 (14:53:08) and passed the check.
+- No registered rule uses the E0a (secondary W10 only).
