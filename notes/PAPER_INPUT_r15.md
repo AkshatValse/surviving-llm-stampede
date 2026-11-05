@@ -250,20 +250,30 @@ All three are STUCK, with a follow-up hit of 0.000 over [5700, 8700) s.
      The predictions were frozen, but this comparison was not registered as a test, so report it as post hoc.
   2. **The completion rate over [5700, 8700).** Registered as a secondary prediction, ±0.006 /s. Measured 1.053 / 1.184 /
      1.100 λ_ref against model F's 1.044 / 1.198 / 1.086: it varies with the plan as model F says.
-     - No single constant fits all three seeds. Zero drift misses by 0.0069 / 0.0024 / 0.0036 /s, the all-miss capacity by
-       0.0038 / 0.0131 / 0.0071, D_trap by 0.020 / 0.016 / 0.016.
+     - No single constant rate comes within 0.004 /s of all three seeds. The best constant, 0.0800 /s (the midrange),
+       misses by up to 0.0047 /s, which is inside the ±0.006 tolerance, so do not say "no constant fits". Zero drift
+       misses by 0.0069 / 0.0024 / 0.0036 /s, the all-miss capacity by 0.0038 / 0.0131 / 0.0071, D_trap by
+       0.020 / 0.016 / 0.016. Model F misses by at most 0.0010. (Corrected after the reframe session's check.)
      - In seeds 0 and 2, completions over W2 fell below arrivals: the backlog regrew, towards model F's asymptotic
        D′ = 1.06 λ_ref.
   3. **STUCK in all three runs to 8700 s.** This is registered. The follow-up hit is 0.000, and N never fell below 149.
 - **Precision.**
-  - Engine jitter between runs with identical plans (the pre-cut parts, [1300, 2400)) is 0.0001–0.0005 /s in slope. The
-    agreement within 0.0004 /s is therefore at the noise floor. Quote it as "within the engine's run-to-run jitter", not to
-    four decimals.
+  - Engine jitter between runs with identical plans (the pre-cut parts, [1300, 2400)) is 0.0001–0.0005 /s in slope.
+    - Over [3000, 8700) the agreement (within 0.0004 /s) is at that noise floor. Quote it as "within the engine's
+      run-to-run jitter", not to four decimals.
+    - In the late window seed 1 misses by 0.00085 /s, above the jitter, so scope the jitter sentence to [3000, 8700).
   - The model's backlog level runs 5–10 sessions high, e.g. 186 against 176 at [2100, 2400) for seed 0.
   - On the six uncut controls the model's slope bias was −0.0007 ± 0.0002 /s. Here the residuals are +0.0001 to +0.0004.
 - **"Below the throughput measured in the trap"** compares with D_trap, the uncut same-seed run's trapped throughput over
   [3000, 8700) (1.34 / 1.41 / 1.32 λ_ref). That is a counterfactual quantity, not something an operator could read off before
   cutting.
+  - **What an operator would have seen before cutting:** the cut runs' own completion rate over [1800, 2400) (D_pre, in
+    `cut_runs.csv`) was 0.1217 / 0.1183 / 0.0867 sessions/s = 1.70 / 1.65 / 1.21 λ_ref. That still includes the burst
+    sessions' own completions.
+    - The nominal cut rate 1.15 λ_ref is below it in all three seeds.
+    - The realised rate over [3000, 8700) (1.20 / 1.12 / 1.18) is also below it in all three, narrowly for seed 2 (1.185 vs
+      1.212).
+    - Over [5700, 8700), seed 2's realised rate (1.254) is above its D_pre.
   - The realised post-cut arrival rate was 1.20 / 1.12 / 1.18 λ_ref over [3000, 8700) and 1.19 / 1.05 / 1.25 over
     [5700, 8700), not exactly 1.15. The plans are thinned Poisson streams.
   - Seed 1's backlog fell 11.5% (175 to 155), and trap_v2 labels it "draining". It stayed STUCK.
@@ -297,10 +307,11 @@ All three are STUCK, with a follow-up hit of 0.000 over [5700, 8700) s.
 > whose plan has few post-cut arrivals, as model~F predicted. Both comparators assume a constant throughput, and over
 > $[3000,8700)$\,s a backlog that merely tracks arrivals above 1.15~$\lref$ fits as well as model~F, so the PASS alone does not
 > single out the theorem. What does is the late window, scored after the fact against slopes frozen with the predictions: over
-> $[5700,8700)$\,s the backlog grew again at $+0.0071$, $-0.0027$ and $+0.0131$\,/s against model~F's $+0.0069$, $-0.0036$ and
+> $[5700,8700)$\,s the backlog's slope was $+0.0071$, $-0.0027$ and $+0.0131$\,/s against model~F's $+0.0069$, $-0.0036$ and
 > $+0.0129$, while every constant-throughput reading missed by at least 0.004\,/s; and the completion rate there, a registered
-> secondary prediction, varied with the plan as model~F said (1.05, 1.18 and 1.10~$\lref$ against 1.04, 1.20 and 1.09), which no
-> single constant fits. The agreement is at the level of the engine's run-to-run jitter (0.0001--0.0005\,/s).
+> secondary prediction, varied with the plan as model~F said (1.05, 1.18 and 1.10~$\lref$ against 1.04, 1.20 and 1.09); no single
+> constant rate comes within 0.004\,/s of all three seeds. Over $[3000,8700)$\,s the agreement is at the level of the engine's
+> run-to-run jitter (0.0001--0.0005\,/s).
 
 ## 4. A2 / T2 TOOLSLOW d15 at 1.65× — pending (jobs 17256873–75)
 
