@@ -1,0 +1,36 @@
+r15 pull: T1 TOOLSLOW-W (jobs 17256674-76) and REPLICATE-EDGE (jobs 17256677-78), 2026-11-05
+
+Source clone on Nova: /work/classtmp/avalse/swapp/repo_r15_tonight at e05a262 (tag r15-reg), git status clean.
+All five jobs COMPLETED 0:0 (sacct_17256674-17256678.txt in this directory). Submitted 03:21:38 CST, ended 05:51:48-06:04:13 CST.
+
+Job -> run directories (from logs/<name>-<id>.out):
+  17256674 pm-tsw18  T1 seed 0  results/agentload_e2_burst/20261105-032338   (nova22-gpu-2)
+  17256675 pm-tsw18  T1 seed 1  results/agentload_e2_burst/20261105-032413   (nova22-gpu-3)
+  17256676 pm-tsw18  T1 seed 2  results/agentload_e2_burst/20261105-032418   (nova22-gpu-3)
+  17256677 pm-edgeA  SEEDS "0 4 0"  results/agentload_e0_cap/20261105-032421 (seed 0), 20261105-041724 (seed 4), 20261105-051027 (seed 0)  (nova22-gpu-3)
+  17256678 pm-edgeB  SEEDS "4 0 4"  results/agentload_e0_cap/20261105-032455 (seed 4), 20261105-041757 (seed 0), 20261105-051100 (seed 4)  (nova22-gpu-3)
+  In-job analyses: results/agentload_analysis_burst/20261105-0551*, results/agentload_analysis_burst2/20261105-0551*/0552* (T1),
+  results/agentload_analysis_stable/20261105-060330, -060402 (EDGE). Job log dirs: results/nova_job_logs/1725667[4-8]-*.
+
+Pull (06:10 CST):
+  on Nova:  tar -cf - <the 22 paths above + logs/pm-tsw18-1725667[4-6].out logs/pm-edge{A,B}-1725667[78].out> | xz -T2 -6
+            > /work/classtmp/avalse/swapp/pulls_r15/t1_edge_20261105.tar.xz   (13,513,360 bytes)
+  sha256 on Nova and on the PC after scp: 75090c949378c57ac5c867f057a20a7178d01bcd84af528397b0dcfaa227c429 (equal)
+  on the PC: xz -dc ... | tar --force-local -x -C <this directory>; the remote archive was then deleted.
+
+Analyses (PC, worktree r15/tonight at 063024e, PYTHONPATH="src;."):
+  T1 registered verdict:
+    python -m analysis.r15_cells classify --run-dirs results/agentload_e2_burst/20261105-032338 20261105-032413 20261105-032418 --out-root <this>/analysis
+    -> analysis/agentload_analysis_r15/20261105-061431/ (r15_verdict.json, r15_runs.csv, meta.json)
+  T1 exploratory measures:
+    python -m analysis.r15_sim_toolslow measure --run-dirs <the 3 T1 dirs> --out results/theory/r15/toolslow_measured_r15_t1.json
+  T1 trap-state score against tag icml-trap-pred (rules S1-S5), scorer analysis/theory/icml/score_new.py at fdb80c9
+  (git archive of fdb80c9 into the session scratchpad; run from there):
+    python -m analysis.theory.icml.score_new --cell a100_300k --trigger-s 1200 --run-dirs <the 3 T1 dirs> --out <this>/analysis/icml_score_new_t1
+  EDGE frozen verdict:
+    python -m analysis.r15_edge classify --run-dirs <the 6 cap dirs> --out-root <this>/analysis
+    -> analysis/agentload_analysis_r15_edge/20261105-061605/ (r15_edge_verdict.json, r15_edge_runs.csv, meta.json)
+
+Memory note: sacct MaxRSS of the batch step was 4.61 GB (17256674), 13.22 GB (17256675), 12.59 GB (17256676), 4.52 GB (17256677)
+and 4.48 GB (17256678), all under --mem=20G. The large values are consistent with the model files' page cache being charged to
+the job that first read them on a node (Qwen2.5-7B-Instruct bf16 is about 15 GB); the process footprint of every job is about 4.4-4.7 GB.
