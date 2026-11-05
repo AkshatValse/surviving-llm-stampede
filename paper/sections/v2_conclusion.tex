@@ -9,7 +9,9 @@ proved positive for our workload at $\rho\ge1.04$; below that it rests on a floa
 
 \paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
 scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind
-(\S\ref{sec:validation}): three TOOLSLOW-W runs in one cell, and the six CUT runs. The from-empty runs are single runs per rate; in
+(\S\ref{sec:validation}): three TOOLSLOW-W runs in one cell, and the six CUT runs. In CUT-A the registered rule separates
+model~F only from constant-throughput readings, and the late-window comparison that singles it out was scored after the fact,
+against slopes frozen with the predictions. The from-empty runs are single runs per rate; in
 an exploratory replication at the 2.5~$\lref$ edge of the 300k pool, three runs on each of two arrival plans reproduced both
 originals, one collapse and one stable run, which suggests that there the spread across seeds comes from the plans rather than from
 service noise (six runs, on two GPUs of one node). The trapped windows are at most 7500\,s long, and ``does not escape'' means
@@ -30,8 +32,10 @@ FIFO orbits, so from any trapped state it converges to a self-similar regime fix
 between turns grows linearly, the backlog grows at a fraction of the excess load (0.6 to 0.8 at our loads), and the turns it serves
 are young and short; for our workload it completes sessions faster than its all-miss capacity. Checked retrospectively on 57 stuck
 runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws hold for the runs taken
-together. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
-trap does not clear it, and a cut below the all-miss capacity drains the trap only slowly and by turning sessions away
-(\pending{CUT outcome on the engine}). The
-other exit, a session cap that restores reuse, rescued all 9 established traps of our registered tests at the same load without
+together, and blind on three runs trapped by a tool slowdown alone. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
+trap does not clear it, and a cut below the all-miss capacity drains the trap only slowly and by turning sessions away.
+On the engine, a cut to below the trapped throughput of the same seeds' uncut runs, but above the all-miss capacity, left all three
+traps in place to the end of the run; the registered test rules out only constant-throughput readings, and the support for the
+corollary comes from the persistence and from the late backlog, which followed model~F's frozen slopes (\pending{CUT-B outcome}).
+The other exit, a session cap that restores reuse, rescued all 9 established traps of our registered tests at the same load without
 shedding, and the engine stayed good after the cap was removed.

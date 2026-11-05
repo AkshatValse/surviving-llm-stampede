@@ -27,7 +27,9 @@ sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr} s
 misses: the cut must go below $\lmiss$, which lies below the throughput measured in the trap. Their GPU-only simulations point
 the same way: the trap persisted at a cut to 0.2~$\lref$ while the trapped departures they measured were 0.20--0.31~$\lref$. Their
 systems keep some reuse in the trap, though, and with a host tier one seed in three recovered at cuts above the trapped departures
-they measured, so the corollary does not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}).
+they measured, so the corollary does not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}): a cut to below the trapped throughput of
+the same seeds' uncut runs, but above $\lmiss$, left all three CUT-A traps in place to the end of the run (\pending{CUT-B
+outcome}).
 
 \paragraph{Restoring reuse with a session cap.} A FIFO gate that admits at most $c$ sessions, each holding its slot until its last
 turn ends, makes the admitted sessions a closed system of $\min(n,c)$ sessions (Proposition~\ref{prop:cap}). In the quasi-static

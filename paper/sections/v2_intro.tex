@@ -56,9 +56,12 @@ measured in a trap exceeds the drain threshold.
 matches, across 57 stuck runs on SGLang and vLLM, two GPUs and two models, the trapped turn mix (within 3\% in 50 of them), the
 linear growth of the gap (median ratio of measured to predicted slope 1.01, with a wide per-run spread) and completions above the
 all-miss capacity (in every run). It also explains, post hoc, why our registered trap rule was fragile at the lower rate. These
-checks are retrospective. In a pre-registered test with no burst, a 30\,s tool slowdown trapped the engine in 3 of 3 runs while
-their paired no-burst runs stayed good, and on these runs the theory's predictions, frozen before the runs existed, met all four
-pooled scores; \pending{CUT outcomes}.
+checks are retrospective. Two blind tests followed, with predictions frozen before the runs existed. A pre-registered 30\,s tool
+slowdown with no burst trapped the engine in 3 of 3 runs while their paired no-burst runs stayed good, and on these runs the theory
+met all four pooled scores. After a burst, a cut in arrivals to below the trapped throughput of the same seeds' uncut runs, but
+above the all-miss capacity, left all three CUT-A runs trapped; the registered rule favoured model~F over both constant-throughput
+readings in every seed, and in a post-hoc comparison the late backlog followed model~F's frozen per-seed slopes, which those
+readings miss; \pending{CUT-B outcome}.
 \item \textbf{A first-principles account of entry} (\S\ref{sec:entry}). We derive the closed-population throughput curve $\mu(n)$ from
 the pool, the workload and a cost model fitted to server-log timing only. Its all-miss onset is the sessions in tool calls plus one
 pool of running sessions, which a faster GPU moves out, and we report its out-of-sample record, misses included. Against a post-hoc

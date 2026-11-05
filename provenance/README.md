@@ -47,3 +47,17 @@ Exported 2026-11-01, 15:55 to 16:05 CST (21:55 to 22:05 UTC). Daylight saving ti
 | `sacct_cited_jobs_2026-11-01.txt` | `sacct -j <IDs> -X -P -o JobID,JobName,Account,Partition,Submit,Start,End,State,ExitCode,NodeList,SubmitLine%2000` on nova-login-1: 258 jobs, every job ID cited in `paper/NUMBERS.md`, `paper/main.tex` and `paper/sections/*.tex` with ranges expanded. All are billed to `f2026.coms.6250.02`, partition `instruction`; 257 COMPLETED and 1 FAILED (17060022, the second Stage 0 smoke attempt). Rows of five unrelated job IDs, which the range expansion picked up from list notation and which belong to other users, were removed before saving. |
 | `sacct_cited_jobs_2026-11-01_utc.txt` | The same jobs with `TZ=UTC` and without the submit line. |
 | `push_times_2026-11-01.tsv` | `python provenance/make_push_times.py --activity github_activity_2026-11-01.json --sacct sacct_cited_jobs_2026-11-01.txt --extra`: the 14 rows of `push_times_2026-10.tsv` (identical except that the vLLM paired test now has its end time) plus 21 rows for rounds 11 to 14 (BASIN-1, LPM-INF, rescue, the two theory freezes, the Llama-3.1-8B predictions, registration and theory conditional, BASIN-2, TOOLSLOW, SHED and the 600k H200 registration). The event column reads "not in event log" for the new rows: the events export was not refreshed. |
+
+## Refresh of 2026-11-05 (round 15, CST)
+
+Exported 2026-11-05 at about 06:50 CST (12:50 UTC). Every time of this round is after the end of daylight saving time, so local times are CST (UTC-6). The earlier files above are unchanged; `make_push_times.py` still regenerates `push_times_2026-10.tsv` and `push_times_2026-11-01.tsv` byte for byte.
+
+| File | What it is |
+|---|---|
+| `github_activity_2026-11-05.json` | The same `gh api 'repos/AkshatValse/Nova-Research/activity?per_page=100' --paginate` call (pages merged): 149 entries, 2026-10-22 22:45:50Z to 2026-11-05 12:43:38Z. No tag pushes, as before. |
+| `github_tag_refs_2026-11-05.json` | `gh api repos/AkshatValse/Nova-Research/git/matching-refs/tags --paginate`: 21 tags, including `icml-trap-pred`, `icml-cut-pred`, `r15-reg` and `r15-cut-reg`. |
+| `sacct_cited_jobs_2026-11-05.txt` | `sacct -j <IDs> -X -P -o JobID,JobName,Account,Partition,Submit,Start,End,State,ExitCode,NodeList,SubmitLine%2000` on nova-login-1 for the 14 jobs of round 15 (17256674-78, 17256867-75), all billed to `f2026.coms.6250.02`, partition `instruction`. Jobs still running at export time show End `Unknown`; the file is refreshed when they end. |
+| `sacct_cited_jobs_2026-11-05_utc.txt` | The same jobs with `TZ=UTC` and without the submit line. |
+| `push_times_2026-11-05.tsv` | `python provenance/make_push_times.py --activity github_activity_2026-11-05.json --sacct sacct_cited_jobs_2026-11-05.txt --r15`: one row per (commit, batch) of round 15, times in CST. Every registration and prediction commit was on GitHub before the first job of its batch was submitted (margins 145 s to 3 h 32 min). The one later row is `fdb80c9`, which added the scorer's unregistered gamma/z column 777 s after the TOOLSLOW-W jobs were submitted and before any of their output existed. |
+
+Tag objects carry no push time. Each tag's commit is the "first on GitHub" commit of its branch push: `icml-trap-pred` = `6b47a6c` (branch `claude/theory-icml-2164a9` created 06:24:47Z), `icml-cut-pred` = `2f90267` (pushed 08:25:43Z), `r15-reg` = `e05a262` (in `185dac9`, branch `r15/tonight` created 09:18:36Z), `r15-cut-reg` = `11b0e4e` (in `063024e`, pushed 09:54:49Z).

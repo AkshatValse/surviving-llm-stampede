@@ -13,6 +13,11 @@ The refresh of 2026-11-01 reads a newer activity export and sacct snapshot and a
 rounds 11 to 14 (EXTRA_ROWS); the rows above are unchanged:
 
     python provenance/make_push_times.py --activity github_activity_2026-11-01.json         --sacct sacct_cited_jobs_2026-11-01.txt --extra > provenance/push_times_2026-11-01.tsv
+
+The export of 2026-11-05 (round 15) writes only the rows of that night (R15_ROWS). Daylight saving time ended on
+2026-11-01, so its times are CST (UTC-6) and its columns are named *_cst; the outputs above are unchanged:
+
+    python provenance/make_push_times.py --activity github_activity_2026-11-05.json         --sacct sacct_cited_jobs_2026-11-05.txt --r15 > provenance/push_times_2026-11-05.tsv
 """
 import argparse
 import csv
@@ -69,6 +74,22 @@ EXTRA_ROWS = [
     ("Llama-3.1-8B theory conditional", "a36f441", "Llama-3.1-8B E2", "17170409"),
 ]
 
+# round 15 (2026-11-05, CST); used with --r15, alone
+R15_ROWS = [
+    ("trap-state predictions (tag icml-trap-pred): TOOLSLOW-W", "6b47a6c", "TOOLSLOW-W", "17256674"),
+    ("trap-state predictions (tag icml-trap-pred): TOOLSLOW d15 1.65x", "6b47a6c", "TOOLSLOW d15 1.65x", "17256873"),
+    ("trap-state scorer score_new.py (24b5e13)", "24b5e13", "TOOLSLOW-W", "17256674"),
+    ("scorer gamma/z column, not registered (fdb80c9)", "fdb80c9", "TOOLSLOW-W", "17256674"),
+    ("r15 registrations and predictions (tag r15-reg): TOOLSLOW-W", "e05a262", "TOOLSLOW-W", "17256674"),
+    ("r15 registrations and predictions (tag r15-reg): REPLICATE-EDGE", "e05a262", "REPLICATE-EDGE", "17256677"),
+    ("r15 registrations and predictions (tag r15-reg): TOOLSLOW d15 1.65x", "e05a262", "TOOLSLOW d15 1.65x", "17256873"),
+    ("cut predictions (tag icml-cut-pred): CUT-A", "2f90267", "CUT-A", "17256867"),
+    ("cut predictions (tag icml-cut-pred): CUT-B", "2f90267", "CUT-B", "17256870"),
+    ("CUT registrations (tag r15-cut-reg): CUT-A", "11b0e4e", "CUT-A", "17256867"),
+    ("CUT registrations (tag r15-cut-reg): CUT-B", "11b0e4e", "CUT-B", "17256870"),
+]
+CST = timezone(timedelta(hours=-6))
+
 
 def git(*args):
     return subprocess.run(["git", *args], capture_output=True, text=True)
@@ -92,7 +113,11 @@ def main():
     ap.add_argument("--events", default="github_events_2026-10.json")
     ap.add_argument("--sacct", default="sacct_cited_jobs_2026-10-30.txt")
     ap.add_argument("--extra", action="store_true", help="also the rounds 11-14 rows")
+    ap.add_argument("--r15", action="store_true", help="only the round-15 rows (2026-11-05), in CST")
     args = ap.parse_args()
+    global CDT
+    if args.r15:          # every r15 time (GitHub and Slurm) is after the end of daylight saving time
+        CDT = CST
     activity = json.loads((HERE / args.activity).read_text(encoding="utf-8"))
     activity.sort(key=lambda a: (a["timestamp"], a["id"]))
     events = json.loads((HERE / args.events).read_text(encoding="utf-8"))
@@ -125,10 +150,12 @@ def main():
 
     sys.stdout.reconfigure(newline="\n")  # LF on Windows too
     out = csv.writer(sys.stdout, delimiter="\t", lineterminator="\n")
-    out.writerow(["event", "commit", "committer_time_cdt", "first_on_github_cdt", "github_ref_update",
-                  "activity_id", "event_created_cdt", "batch", "first_job", "submit_cdt", "start_cdt",
-                  "end_cdt", "push_minus_submit_s", "push_minus_start_s"])
-    for event, commit, batch, job in ROWS + (EXTRA_ROWS if args.extra else []):
+    z = "cst" if args.r15 else "cdt"
+    out.writerow(["event", "commit", f"committer_time_{z}", f"first_on_github_{z}", "github_ref_update",
+                  "activity_id", f"event_created_{z}", "batch", "first_job", f"submit_{z}", f"start_{z}",
+                  f"end_{z}", "push_minus_submit_s", "push_minus_start_s"])
+    rows = R15_ROWS if args.r15 else ROWS + (EXTRA_ROWS if args.extra else [])
+    for event, commit, batch, job in rows:
         full = git("rev-parse", commit + "^{commit}").stdout.strip()
         committed = git("log", "-1", "--format=%cd", "--date=format:%Y-%m-%d %H:%M:%S", full).stdout.strip()
         a = first_push(full)

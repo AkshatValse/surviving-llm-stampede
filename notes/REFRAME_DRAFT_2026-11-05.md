@@ -171,3 +171,31 @@ number there was independently recomputed from the raw CSVs. No Nova result was 
   replicates.
 - Still pending: CUT (abstract, Sec. 1, Sec. 3, Table 4, Sec. 9, App. appendix_supp lines on CUT, limitations.tex), and
   `\repourl`.
+
+## PAPER_INPUT part 2a (CUT-A, narrowed reading), filled 2026-11-05
+
+Source: `notes/PAPER_INPUT_r15.md` section 3 and Verification (branch `r15/tonight`, commit 882d3c0), with the blind recompute and
+the adversarial review folded in. No Nova result was read by this session.
+
+- Sec. 3, CUT item: the predictions paragraph now says "below the trapped throughput of the same seed's uncut run" and "on 300 s
+  bins"; the rule paragraph adds the rule history (fixed after the per-seed predictions were read; four differences from the draft,
+  two stricter, one mixed, one looser; the draft rule gives the same verdict); "CUT-A outcome: pass" gives the slopes against all
+  three references, the sign clause, the secondary predictions (300 s dip as registered, the 10 s figure named as such), and a
+  paragraph "The pass is narrower than Corollary 3": the rule rejects only the constant-throughput readings; zero drift fits
+  [3000, 8700) as well as model F; the late window (post hoc, against frozen slopes), the plan-dependent completion rate (registered
+  secondary) and the persistence single out model F; agreement quoted as within the engine's jitter; one node; "did not clear"
+  means within 8700 s. CUT-B is `\pending`, with PASS and FAIL drafts as source comments.
+- "No single constant fits" is written as "no single constant rate comes within 0.004 /s of all three seeds": a constant at
+  0.0800 sessions/s misses the three measured completion rates by at most 0.0047 /s, which is inside the registered tolerance of
+  0.006, so the stronger wording would overstate.
+- Contribution 2, Sec. 5 (control), Sec. 8 (limitations), Sec. 9 (conclusion), Table 4 and the old appendices' CUT clauses carry
+  the narrowed reading; each keeps a `\pending{CUT-B outcome}`.
+- Abstract trimmed by 31 characters ("the trapped engine" -> "the engine"; "30 BURST runs" -> "30 runs"; "no parameter fitted" ->
+  "nothing fitted"; "the trapped turn mix" -> "the turn mix"; "with no session shed" -> "without shedding"): 1872 form
+  characters, so the CUT clause has about 61. `\pending{CUT}` stays until part 2b.
+- Provenance: the round-15 exports (push_times_2026-11-05.tsv, github_activity_2026-11-05.json, github_tag_refs_2026-11-05.json,
+  sacct_cited_jobs_2026-11-05{,_utc}.txt, the README section and the `--r15` mode of make_push_times.py) copied unchanged from
+  origin/r15/tonight with `git checkout`.
+- The first-principles model's heuristic layers F1-F4 are H1-H4 in the paper text (theory.tex and appendix_fp.tex say so; Fig. 8's
+  caption notes that its legend still says F1); frozen files, JSON keys and code are unchanged.
+- D1 and D5 are scoped to the runs committed before the blind tests (Sec. 3 and App. C).

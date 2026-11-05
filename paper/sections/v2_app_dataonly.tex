@@ -6,15 +6,15 @@ outputs: \fpath{analysis/r15_dataonly/} and \fpath{results/r15_dataonly/} (\fpat
 
 \paragraph{Persistence (D5).} Rolling 300\,s windows of the follow-up hit fraction; a trap starts at the first window after the
 trigger with hit fraction at most 0.2, and an escape is any later window with at least 0.5 before the run ends or an intervention
-begins (a rescue cap, a SHED stop). In 50 trapped FCFS runs (49 after a burst, registered and exploratory, and TOOLSLOW's trapped
-run) there was no escape; the highest window after onset reached 0.164. Trapped time totals 99--103\,h, depending on whether the
+begins (a rescue cap, a SHED stop). In the 50 trapped FCFS runs committed before the blind tests of 2026-11-05 (49 after a burst, registered and exploratory,
+and the trapped run of the 900\,s TOOLSLOW arm; the TOOLSLOW-W and CUT runs are not included) there was no escape; the highest window after onset reached 0.164. Trapped time totals 99--103\,h, depending on whether the
 trap is taken to start at the beginning or the end of its first window (the first computation gave 104.5\,h, which the recomputation
 did not reproduce), and the shortest trapped span is 6100--6400\,s, so a one-sided 95\% upper bound on a run's escape probability
 within such a span is $1-0.05^{1/50}=5.8$\%. Stock LPM escaped in 4 of its 9 trapped runs (several barely above 0.5), and LPM with its
 fallback disabled in its one trapped run. Of the 16 from-empty runs that collapsed, one recovered within its 3000\,s run (150k pool,
 1.30~$\lref$, seed~0).
 
-\paragraph{The trap outlives its trigger (D1).} In 16 stuck runs every trigger session (the burst's, or for TOOLSLOW the sessions
+\paragraph{The trap outlives its trigger (D1).} In 16 stuck runs committed before those tests, every trigger session (the burst's, or for TOOLSLOW the sessions
 with a slowed tool call) had left the system 558--6246\,s before the end: the 600k H200 paired test (6 of 6), BASIN bursts of 50 (1),
 60 (3) and 100 (3), SHED's 600\,s stop (2) and TOOLSLOW's trapped run (1). The 727--15{,}453 turns completed after the last trigger
 session left had no hit in 15 of these runs; in the TOOLSLOW run 4 of 5{,}937 hit, all within 715\,s after its last slowed session left. In
