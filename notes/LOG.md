@@ -1060,3 +1060,40 @@ Every BURST run sits at hit 0.000 over the evaluation window with an uncached-to
 **Interpretation:**
 - The trap needs no arrival burst. A 30 s tool slowdown that lasts 1800 s traps every seed at 1.35 x, while the same one lasting 900 s trapped 1 of 3 (r14). The trapped state it produces is the one the theorem describes, with numbers frozen from burst-triggered traps.
 - Near the from-empty edge, a run's fate repeated with its arrival path in 8 of 8 runs. So the cell-level escape probability reflects workload variation across plans, not noise within a plan.
+
+## 2026-11-05 — r15 CUT-A (Corollary 3 arrival cut to 1.15 x): registered PASS, theory-favoured 3/3; the late window singles out model F
+
+**Question:** After a burst traps the engine at 1.65 x lambda_ref, does cutting arrivals to 1.15 x clear the trap? That rate lies below the trapped throughput measured in uncut runs and above the all-miss capacity. Corollary 3 of the trap renewal theorem says it does not.
+**Setup:**
+- Theory predictions: tag `icml-cut-pred` (`2f90267`), pushed 02:25:43 CST.
+- Rule: commit `11b0e4e`, tag `r15-cut-reg`, pushed 03:54:49 CST.
+- Jobs 17256867-69 (seeds 0-2), submitted 03:57:14 CST from the frozen clone `repo_r15_cut` at `11b0e4e`. All three ran on nova22-gpu-1 and COMPLETED 0:0 by 06:36.
+- Pull: `results/nova/r15_cut_a_1725686x_pulled_20261105-063800/` (COMMANDS.txt, sacct records, sha256 db4812fb... on both ends).
+- CUT-B seed 0 (job 17256870, nova22-gpu-2) was pulled at 06:51 into `results/nova/r15_cut_b0_17256870_pulled_20261105-065100/`. CUT-B waits for seeds 1 and 2.
+**Result:**
+- CUT-A **PASS**. All three runs are counted, bound to the registration and STUCK (follow-up hit 0.000 over [5700, 8700) s). The manipulation check passes: pre-cut sessions identical to the controls, post-cut thinned plan exact, kept-count z = -0.09 / -1.70 / -0.71.
+- Slopes of N over [3000, 8700): measured +0.00404 / -0.00217 / +0.00295 /s. Model F's frozen values +0.00392 / -0.00258 / +0.00284; naive (lambda'_plan - D_trap) -0.00943 / -0.02036 / -0.00987; quasi-static (lambda'_plan - lambda_ref) +0.01461 / +0.00864 / +0.01320. So theory-favoured 3/3.
+- Sign clause: S over [5700, 8700) was +0.00705 / -0.00274 / +0.01315, positive in 2 of 3. Model F predicted seed 1 negative.
+- CUT-B seed 0 (interim): S -0.00854 against model F -0.00953 and naive -0.03294, so theory-favoured. Stuck, draining slowly.
+**Against predictions:**
+- The theory's registered secondary predictions all hold for CUT-A:
+  - completion over [5700, 8700) within 0.001 /s of the per-seed plug-ins (tolerance 0.006);
+  - served prompt within 0.9% (tolerance 5%);
+  - 300 s-bin dip 0.7 / 9.6 / 11.0% (< 15%);
+  - last bin 226 / 162 / 195 (> 150).
+- Not registered as a test, but against frozen values: the [5700, 8700) slopes match model F's frozen `w5700` slopes within 0.00014 / 0.00085 / 0.00025 /s. Zero-drift, midpoint, quasi-static and naive constant-throughput readings all miss by at least 0.004 /s there.
+**Verified vs. not:**
+- Verified:
+  - a blind recompute with its own code: full agreement, no failed check;
+  - an adversarial review: verdict, numbers and timeline robust under 1 s sampling, other bins, trimmed windows, in-flight requests and D_trap over [5700, 8700); margins >= 0.005 /s;
+  - all 65 CUT tests pass;
+  - the archive sha256.
+- Not verified, or limiting:
+  - The registered PASS's comparators are both constant-throughput endpoints. A zero-drift story fits [3000, 8700) as well as model F, so the PASS alone does not single out the theorem.
+  - The rule was finalised after the per-seed predictions were read. One change (the sign window) loosened it. The draft rule gives the same PASS.
+  - Agreement within 0.0004 /s is at the engine's run-to-run jitter (0.0001-0.0005 /s).
+  - Model F's backlog levels run 5-10 sessions high.
+  - 3 seeds on one node; "did not clear" holds within 8700 s.
+**Interpretation:**
+- A cut below the trap's measured throughput but above the all-miss capacity left every run trapped. Over the last 3000 s the backlog regrew in seeds 0 and 2 at model F's frozen rates, and completions varied by plan as model F said; no constant-throughput reading fits.
+- This is the engine evidence for Corollary 3: the throughput a trapped engine shows overstates the arrival rate it can recover at. The evidence comes through the persistence and the late window, not through the registered comparison alone.

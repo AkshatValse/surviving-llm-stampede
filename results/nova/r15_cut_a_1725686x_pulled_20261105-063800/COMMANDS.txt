@@ -1,0 +1,35 @@
+r15 pull: CUT-A (Corollary 3 arrival-cut test, lambda' = 1.15 x lambda_ref), jobs 17256867-69, 2026-11-05
+
+Source clone on Nova: /work/classtmp/avalse/swapp/repo_r15_cut at 11b0e4e (tag r15-cut-reg), git status clean.
+All three jobs COMPLETED 0:0 on nova22-gpu-1 (sacct_17256867-17256869.txt here). Submitted 03:57:14 CST, started 04:05:26-04:06:27,
+ended 06:35:12-06:35:56 CST. Every run's meta.json: commit 11b0e4ef, prereg_sha256 23997ce2... (the CUT-A registration),
+t0_unix 1793873223.8 / 1793873243.7 / 1793873267.5 (04:07:04-04:07:48 CST).
+
+Job -> run directories (from logs/pm-cut115-<id>.out):
+  17256867 CUT-A seed 0  results/agentload_e2_burst/20261105-040702
+  17256868 CUT-A seed 1  results/agentload_e2_burst/20261105-040722
+  17256869 CUT-A seed 2  results/agentload_e2_burst/20261105-040746
+  In-job analyses: results/agentload_analysis_burst/20261105-0635{05,25,48}, results/agentload_analysis_burst2/20261105-0635{07,26,50}.
+  Job log dirs: results/nova_job_logs/1725686{7,8,9}-*.
+
+Pull (06:38 CST):
+  on Nova:  tar -cf - <the 12 paths above + logs/pm-cut115-1725686{7,8,9}.out> | xz -T2 -6
+            > /work/classtmp/avalse/swapp/pulls_r15/cut_a_20261105.tar.xz   (6,726,528 bytes)
+  sha256 on Nova and on the PC after scp: db4812fb06432ce5671d8fcbc9e806fa5495f814c53100fbb2fbd56a67265bba (equal)
+  on the PC: xz -dc ... | tar --force-local -x -C <this directory>; the remote archive was then deleted.
+
+Analyses (PC, worktree r15/tonight at 24dcc91, PYTHONPATH="src;."):
+  Registered verdict:
+    python -m analysis.r15_cut classify --run-dirs results/agentload_e2_burst/20261105-040702 20261105-040722 20261105-040746
+      --prereg configs/agentload_prereg_2026-11-05_cut_a115.yaml configs/agentload_prereg_2026-11-05_cut_b085.yaml
+      --theory-git icml-cut-pred:results/theory/icml/cut_predictions.json --out-root <this>/analysis
+    -> analysis/agentload_analysis_r15_cut/20261105-063936/ (cut_verdict.json, cut_runs.csv, cut_n_grid.csv, meta.json)
+    (CUT-B shows PENDING here: its runs were not yet finished.)
+  The theory's registered secondary predictions for CUT-A (served prompt, completion rate, 300 s-bin dip and last bin over
+  [5700, 8700)), with analysis/theory/icml/measured.py window_stats at fdb80c9 (run from a git archive of fdb80c9 in the
+  session scratchpad) and the 10 s N grid above aggregated to 300 s bins:
+    -> analysis/icml_cut_secondary_cut_a.json
+
+Memory note: sacct MaxRSS 20.94 GB (17256867), 4.63 GB (17256868), 4.74 GB (17256869) at --mem=20G; all three COMPLETED.
+17256867 was the first of the three on nova22-gpu-1; the large value is consistent with the model files' page cache
+(about 15 GB) charged to that job's cgroup, which the kernel reclaims before an OOM kill.

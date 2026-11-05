@@ -116,7 +116,7 @@ S1–S5. The output is `TP/analysis/icml_score_new_t1/score.json` and `score.md`
 > Outcome: TRAPS. All three runs were stuck (hit 0.000 over $[5700,8700)$\,s; backlog slopes 0.0192, 0.0184 and 0.0232\,/s
 > against a threshold of 0.0125), while their paired NOBURST controls stayed good (hit 0.930--0.934). The 30\,s arm that ended
 > at 2100\,s had trapped 1 of 3 on the same plans. All three runs are eligible for S1--S5, and the pooled scores pass:
-> composition +1.9\% (limit $\pm5$\%), gap slope $1.08\gamma$, completion rate +1.9\% of $D$ with every run above $\lref$, and
+> composition +1.9\% (limit $\pm5$\%), gap slope $1.075\gamma$, completion rate +1.9\% of $D$ with every run above $\lref$, and
 > backlog slope +29\% of $\alpha$ (limit $\pm35$\%). Per run, composition is within $\pm8$\% in all three (seed~1 at +7.9\%).
 > S5's plug-in lies on the measured side of the threshold in 2 of 3 runs and within 0.01\,/s in 3 of 3. Every
 > model we froze predicted this cell's outcome, so it tests the trap-state law on a trap with no burst, not the models against
@@ -167,7 +167,140 @@ S1–S5. The output is `TP/analysis/icml_score_new_t1/score.json` and `score.md`
 - Possible place: the limitations paragraph of the conclusion ("The from-empty runs are single runs per rate") can now say that
   same-plan replicates at the 2.5× edge reproduced both originals in 3 of 3 each.
 
-## 3. CUT (Corollary 3) — pending (jobs 17256867–72)
+## 3. CUT-A (Corollary 3, λ′ = 1.15 λ_ref): registered verdict **PASS** (theory-favoured 3/3, sign clause 2/3)
+
+**Pull and sources.**
+- Pull: `results/nova/r15_cut_a_1725686x_pulled_20261105-063800/` (abbreviated **CP**). It holds `COMMANDS.txt`, the sacct
+  records and the archive sha256 `db4812fb…`, checked on both ends.
+- Registered verdict: `CP/analysis/agentload_analysis_r15_cut/20261105-063936/` (`cut_verdict.json`, `cut_runs.csv`,
+  `cut_n_grid.csv`), from `analysis.r15_cut classify` with `--theory-git icml-cut-pred:results/theory/icml/cut_predictions.json`.
+  It reports CUT-B as PENDING because CUT-B had not finished.
+
+**Timeline.**
+- Theory predictions: tag `icml-cut-pred` (`2f90267`), pushed 02:25:43 CST.
+- Rule: commit `11b0e4e`, tag `r15-cut-reg`, pushed 03:54:49 CST. Its RULE HISTORY sentence says the rule was fixed after the
+  predictions and before any CUT job, and calls it "stricter than the draft" the theory session simulated (R1/R2 in
+  `PREDICTIONS_icml_cut.md`). The skeptic's review found that wording only partly accurate. It differs from the draft in four
+  ways, and the rule was finalised after the per-seed predictions had been read:
+  - **stricter:** the quasi-static comparator is added, and an unstuck run counts against the theory;
+  - **mixed:** the naive comparator uses the frozen D_trap instead of the run's own D_pre. That is stricter for seeds 0 and 1
+    and looser for seed 2, the seed the theory note names as its weakest;
+  - **looser:** the CUT-A sign clause moved from [3000, 8700) to [5700, 8700) on the theory session's advice. In its own
+    Monte Carlo that raised P(PASS) from 0.82 to 0.99.
+  - **Same verdict either way:** under the draft rule (R1 with the run's own D_pre, sign over [3000, 8700)) the verdict is
+    also PASS, with 3/3 theory-favoured and the sign positive in 2/3.
+  - Do not call the rule "stricter" in the paper.
+- Jobs 17256867–69: submitted 03:57:14 CST from the frozen clone `repo_r15_cut` at `11b0e4e`; all three ran on nova22-gpu-1.
+  The runs' t0 is 04:07:04–04:07:48 CST and every run's meta.json records commit `11b0e4e`.
+
+**Validity.** All three runs are counted, finished at 8700 s and bound to the CUT-A registration (prereg sha256 `23997ce2…`).
+They pass the manipulation check:
+- sessions before 2400 s identical to the same-seed uncut 1.65× BURST control (tool times equal to 0.0 s);
+- post-cut sessions exactly the registered thinned plan, with kept counts 539 / 513 / 540 of 775 / 767 / 788 candidates
+  (z = −0.09 / −1.70 / −0.71 against keep probability 1.15/1.65);
+- the 200 burst sessions in [1200, 1260) s;
+- the ramp is the registered one.
+
+All three are STUCK, with a follow-up hit of 0.000 over [5700, 8700) s.
+
+| seed | measured S, [3000, 8700) (/s) | model F (frozen) | naive λ′_plan − D_trap | quasi-static λ′_plan − λ_ref | call | S over [5700, 8700) |
+|---|---|---|---|---|---|---|
+| 0 | **+0.00404** | +0.00392 (error 0.00012) | −0.00943 (error 0.0135) | +0.01461 (error 0.0106) | THEORY-FAVOURED | +0.00705 (> 0) |
+| 1 | **−0.00217** | −0.00258 (error 0.00041) | −0.02036 (error 0.0182) | +0.00864 (error 0.0108) | THEORY-FAVOURED | −0.00274 (model F predicted < 0 for this plan) |
+| 2 | **+0.00295** | +0.00284 (error 0.00010) | −0.00987 (error 0.0128) | +0.01320 (error 0.0103) | THEORY-FAVOURED | +0.01315 (> 0) |
+
+- The arrival rate after the cut, λ′_plan over [3000, 8700), is 0.0861 / 0.0802 / 0.0847 sessions/s, i.e. 1.20 / 1.12 /
+  1.18 λ_ref.
+- The frozen trapped throughput of the uncut controls is D_trap = 0.0956 / 0.1005 / 0.0946 (1.34 / 1.41 / 1.32 λ_ref).
+- In every seed, then, the cut put arrivals below the throughput measured in the trap. The trap still did not drain.
+- **Rate in the cut runs:** they completed 0.0753 / 0.0847 / 0.0787 sessions/s over [5700, 8700) (1.05 / 1.18 / 1.10 λ_ref):
+  below D_trap, and above the all-miss capacity λ_ref.
+- **The theory's registered secondary predictions** (`notes/PREDICTIONS_icml_cut.md` item 4, not part of PASS; computed in
+  `CP/analysis/icml_cut_secondary_cut_a.json` with `analysis/theory/icml/measured.py` at `fdb80c9`). All hold:
+  - completion over [5700, 8700) within ±0.006 /s of the per-seed plug-in (0.07467 / 0.08567 / 0.07767): errors +0.0007 /
+    −0.0010 / +0.0010;
+  - served prompt within ±5% (9994 / 10136 / 9718): measured 10011 / 10132 / 9804 (+0.2% / −0.0% / +0.9%);
+  - dip < 15% of the [2100, 2400) level on 300 s bins: 0.7% (lowest bin [2400, 2700)), 9.6% ([6600, 6900)) and 11.0%
+    ([6300, 6600)), against model F's 3.0% / 9.4% / 8.5%;
+  - last bin [8400, 8700) > 150: 225.7 / 161.9 / 194.9 (model F 231.2 / 165.8 / 203.6).
+  - The classifier's own descriptive dip (10 s bins, against N at the cut) is deeper: 3.1% / 13.2% / 19.1%. Quote the
+    registered 300 s definition, and say which one you use.
+- **Backlog levels:** at [2100, 2400) the measured N is 176.1 / 175.0 / 172.4, against model F's 185.6 / 180.5 / 178.9.
+
+**What the registered PASS does and does not show** (from the adversarial review; numbers recomputed by the lead,
+`plan.csv` base arrivals and `cut_runs.csv`).
+- **It rejects two constant-throughput stories.** Both comparators are constant-throughput endpoints:
+  - the naive one: completions at the uncut trapped throughput D_trap;
+  - the quasi-static one: completions at the all-miss capacity λ_ref.
+
+  The rule calls THEORY for any prediction lying between them.
+- **It does not reject intermediate stories.** A zero-drift story fits [3000, 8700) as well as model F: completions equal to
+  the nominal cut rate 1.15 λ_ref, i.e. S = λ′_plan − 1.15 λ_ref = +0.00388 / −0.00209 / +0.00247. Its errors are 0.00016 /
+  0.00008 / 0.00047, against model F's 0.00012 / 0.00041 / 0.00010. A midpoint story, C = (λ_ref + D_trap)/2, would clear the
+  trap slowly, and it is still theory-favoured under the rule.
+- **What separates model F from those stories.**
+  1. **The late window, [5700, 8700) s.** Model F's frozen W2 slopes are in `cut_predictions.json` (`w5700.theory_slope`):
+     +0.00691 / −0.00359 / +0.01289. Measured: +0.00705 / −0.00274 / +0.01315 (errors 0.00014 / 0.00085 / 0.00025). The
+     alternatives miss by:
+     - zero drift: 0.0040 / 0.0042 / 0.0057;
+     - midpoint: 0.0053 / 0.0080 / 0.0066;
+     - quasi-static: 0.0068 / 0.0065 / 0.0050;
+     - naive: 0.017 / 0.022 / 0.018.
+
+     The predictions were frozen, but this comparison was not registered as a test, so report it as post hoc.
+  2. **The completion rate over [5700, 8700).** Registered as a secondary prediction, ±0.006 /s. Measured 1.053 / 1.184 /
+     1.100 λ_ref against model F's 1.044 / 1.198 / 1.086: it varies with the plan as model F says.
+     - No single constant fits all three seeds. Zero drift misses by 0.0069 / 0.0024 / 0.0036 /s, the all-miss capacity by
+       0.0038 / 0.0131 / 0.0071, D_trap by 0.020 / 0.016 / 0.016.
+     - In seeds 0 and 2, completions over W2 fell below arrivals: the backlog regrew, towards model F's asymptotic
+       D′ = 1.06 λ_ref.
+  3. **STUCK in all three runs to 8700 s.** This is registered. The follow-up hit is 0.000, and N never fell below 149.
+- **Precision.**
+  - Engine jitter between runs with identical plans (the pre-cut parts, [1300, 2400)) is 0.0001–0.0005 /s in slope. The
+    agreement within 0.0004 /s is therefore at the noise floor. Quote it as "within the engine's run-to-run jitter", not to
+    four decimals.
+  - The model's backlog level runs 5–10 sessions high, e.g. 186 against 176 at [2100, 2400) for seed 0.
+  - On the six uncut controls the model's slope bias was −0.0007 ± 0.0002 /s. Here the residuals are +0.0001 to +0.0004.
+- **"Below the throughput measured in the trap"** compares with D_trap, the uncut same-seed run's trapped throughput over
+  [3000, 8700) (1.34 / 1.41 / 1.32 λ_ref). That is a counterfactual quantity, not something an operator could read off before
+  cutting.
+  - The realised post-cut arrival rate was 1.20 / 1.12 / 1.18 λ_ref over [3000, 8700) and 1.19 / 1.05 / 1.25 over
+    [5700, 8700), not exactly 1.15. The plans are thinned Poisson streams.
+  - Seed 1's backlog fell 11.5% (175 to 155), and trap_v2 labels it "draining". It stayed STUCK.
+- **Code nit (no effect).** The skeptic found that when S_naive and S_qs are exactly equally close, `seed_call` returns
+  NAIVE-FAVOURED where the rule text says TIE. That needs exact float equality, it errs against the theory, and the code
+  stays frozen.
+
+**Reading for the paper (narrowed).**
+- After a burst trapped the engine at 1.65 λ_ref, cutting arrivals to about 1.15 λ_ref left all three runs trapped to the
+  end of the run. That rate is below the uncut runs' trapped throughput (1.32–1.41 λ_ref) and above the all-miss capacity.
+- The registered rule favoured model F over both constant-throughput readings in 3/3 seeds:
+  - "the trap drains at the throughput it showed";
+  - "completions fall to the all-miss capacity".
+- Over the last 3000 s the backlog grew again in seeds 0 and 2, at the rates model F froze (within 0.0003 /s). Completions
+  matched its per-seed values within 0.001 /s.
+- This supports Corollary 3's claim that the measured trapped throughput overstates the recovery threshold. It does so
+  through the persistence and the late-window regrowth, not through the registered PASS alone.
+- **Limits.**
+  - The cut comes 1200 s after the burst, so the test sees the young trap's transient and the start of the regrowth, not
+    the asymptotic rate.
+  - There are 3 seeds, all on one node.
+  - "Did not clear" means within 8700 s.
+
+**Suggested text (the PASS draft in v2_validation.tex, CUT-A half).**
+
+> CUT-A passed its registered rule. All three runs stayed stuck to the end of the run after arrivals were cut to
+> 1.15~$\lref$, below the trapped throughput of the same seeds' uncut runs (1.32--1.41~$\lref$). The backlog's slope over
+> $[3000,8700)$\,s was $+0.0040$, $-0.0022$ and $+0.0029$\,/s, against model~F's frozen $+0.0039$, $-0.0026$ and $+0.0028$, the
+> naive comparator's $-0.0094$, $-0.0204$ and $-0.0099$, and the quasi-static comparator's $+0.0146$, $+0.0086$ and $+0.0132$, so
+> all three seeds were theory-favoured; the slope over $[5700,8700)$\,s was positive in seeds 0 and 2 and negative in seed~1,
+> whose plan has few post-cut arrivals, as model~F predicted. Both comparators assume a constant throughput, and over
+> $[3000,8700)$\,s a backlog that merely tracks arrivals above 1.15~$\lref$ fits as well as model~F, so the PASS alone does not
+> single out the theorem. What does is the late window, scored after the fact against slopes frozen with the predictions: over
+> $[5700,8700)$\,s the backlog grew again at $+0.0071$, $-0.0027$ and $+0.0131$\,/s against model~F's $+0.0069$, $-0.0036$ and
+> $+0.0129$, while every constant-throughput reading missed by at least 0.004\,/s; and the completion rate there, a registered
+> secondary prediction, varied with the plan as model~F said (1.05, 1.18 and 1.10~$\lref$ against 1.04, 1.20 and 1.09), which no
+> single constant fits. The agreement is at the level of the engine's run-to-run jitter (0.0001--0.0005\,/s).
 
 ## 4. A2 / T2 TOOLSLOW d15 at 1.65× — pending (jobs 17256873–75)
 
@@ -204,3 +337,25 @@ S1–S5. The output is `TP/analysis/icml_score_new_t1/score.json` and `score.md`
     - The EDGE code also exempts `meta.start_state_verified` from the config comparison, and has a RULE-ERROR outcome that the
       yaml does not define. Neither applies here.
   - Scripts and outputs: session scratchpad `tonight/recompute_t1_edge/` (not committed).
+- **CUT-A: blind recompute plus an adversarial review (two agents in parallel, own code, neither ran the classifier).**
+  - **Recompute: full agreement.**
+    - S over both windows matches to ≤ 1.3e-17.
+    - D_trap recomputed from the three uncut controls equals the frozen constants to 2e-17.
+    - λ′_plan equals the theory file's `lam_plan`, and each plan.csv equals the theory session's own frozen plan
+      (`cut_plans/CUT-A_seed{0,1,2}.csv`).
+    - Manipulation, binding, STUCK, calls, verdict and every registered secondary prediction match.
+    - The registration predates each run by 756–800 s. The theory commit `2f90267` predates the registration.
+    - No failed checks.
+  - **Skeptic.**
+    - Numbers and timeline: NONE-FOUND. The 65 tests of `tests/test_r15_cut.py` pass.
+    - Rule application: NONE-FOUND, apart from the exact-tie code nit above.
+    - Robustness: NONE-FOUND. The calls survive 1 s sampling, other bin widths, trimmed windows, in-flight requests instead
+      of sessions, and D_trap over [5700, 8700). The margins to a changed call are ≥ 0.005 /s, at least 10× the engine
+      jitter.
+    - MINOR: the rule-history wording ("stricter"); "below the throughput measured in the trap" is loose; the naive
+      comparator is a weak foil; "did not clear" holds only to 8700 s; the noise model does not fit these residuals.
+    - SERIOUS, for the interpretation only: the registered PASS cannot separate Corollary 3 from zero-drift or
+      slow-clearing stories.
+    - All of this is folded into section 3 above.
+  - Scripts and outputs: session scratchpad `tonight/verify_cut_a_recompute/` and `tonight/verify_cut_a_skeptic/` (not
+    committed).

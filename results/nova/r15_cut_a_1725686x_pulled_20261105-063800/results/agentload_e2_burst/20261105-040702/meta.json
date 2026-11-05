@@ -1,0 +1,193 @@
+{
+  "experiment": "agentload_e2_burst",
+  "status": "finished",
+  "argv": [
+    "/work/classtmp/avalse/swapp/envs/swapp/bin/python",
+    "-m",
+    "agentload",
+    "run",
+    "--config",
+    "configs/agentload_e2_cut_a115.yaml",
+    "--name",
+    "agentload_e2_burst",
+    "--out-root",
+    "results",
+    "--set",
+    "server.base_url=\"http://127.0.0.1:36867\"",
+    "--set",
+    "server.model=\"Qwen/Qwen2.5-7B-Instruct\"",
+    "--set",
+    "server.request_token_ids=true",
+    "--set",
+    "workload.output_feedback=server",
+    "--set",
+    "workload.content_salt=1",
+    "--set",
+    "meta.engine_label=\"sglang-fcfs-r1-cut-a115\"",
+    "--set",
+    "meta.hardware=\"NVIDIA A100 80GB PCIe, 81920 MiB\"",
+    "--set",
+    "meta.start_state_verified=true",
+    "--set",
+    "meta.start_state_detail=\"canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_1_*.json\"",
+    "--seed",
+    "0",
+    "--set",
+    "arrivals.rate_mult=1.65",
+    "--set",
+    "arrivals.lambda_ref=\"prereg/inputs/2026-10-23/calibration.json:lambda_miss_turns_based\"",
+    "--set",
+    "arrivals.uncached_tokens_ref=\"prereg/inputs/2026-10-23/calibration.json:all_miss_uncached_tokens_per_s\"",
+    "--set",
+    "meta.prereg_sha256=\"23997ce21a58b33073b3d5e0a738927da36498c3360bb76727dd35542a39cf4d\"",
+    "--set",
+    "meta.prereg_file=\"configs/agentload_prereg_2026-11-05_cut_a115.yaml\"",
+    "--set",
+    "arrivals.analysis_t_burst_s=1200",
+    "--set",
+    "meta.arm=\"burst\"",
+    "--set",
+    "run.duration_s=8700",
+    "--set",
+    "arrivals.burst.t_s=1200"
+  ],
+  "git": {
+    "commit": "11b0e4ef1881f8463cf1b50ec72abb8966fd8600",
+    "dirty": false,
+    "branch": "r15-cut-reg-run",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.11.17",
+    "numpy": "2.4.6",
+    "platform": "Linux-5.14.0-570.62.1.el9_6.tuxcare.5.els11.x86_64-x86_64-with-glibc2.34",
+    "aiohttp": "3.14.5",
+    "pandas": "3.0.6",
+    "yaml": "6.0.3",
+    "scipy": "missing"
+  },
+  "hostname": "nova22-gpu-1",
+  "hardware": "NVIDIA A100 80GB PCIe, 81920 MiB",
+  "start_time": "2026-11-05T04:07:02",
+  "end_time": "2026-11-05T06:32:03",
+  "wall_s": 8701.492379,
+  "slurm_env": {
+    "SLURM_JOB_ID": "17256867",
+    "SLURM_JOB_NAME": "pm-cut115",
+    "SLURM_JOB_ACCOUNT": "f2026.coms.6250.02",
+    "SLURM_JOB_PARTITION": "instruction",
+    "SLURM_JOB_QOS": "instruction",
+    "SLURM_JOB_NODELIST": "nova22-gpu-1",
+    "SLURM_CPUS_PER_TASK": "16",
+    "SLURM_MEM_PER_NODE": "20480",
+    "SLURM_GPUS_ON_NODE": "1",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/work/classtmp/avalse/swapp/hf"
+  },
+  "config_effective_file": "config_effective.yaml",
+  "n_sessions_planned": 1058,
+  "resolved_rate_sessions_per_s": null,
+  "ramp_knots": [
+    [
+      0.0,
+      0.11803113466516725
+    ],
+    [
+      2400.0,
+      0.11803113466516725
+    ],
+    [
+      2400.001,
+      0.0822641241605711
+    ],
+    [
+      8700.0,
+      0.0822641241605711
+    ]
+  ],
+  "engine_label": "sglang-fcfs-r1-cut-a115",
+  "notes": "E2 BURST 1.65x + CUT-A (arrival rate cut to 1.15 x lambda_ref at t_cut = 2400 s)",
+  "expected_turns_per_session": 14.761055049953429,
+  "duration_s_configured": 8700,
+  "time_convention": "seconds since run start (event-loop monotonic clock); wall time = t0_unix + t_s",
+  "rlimit_nofile": {
+    "soft_before": 131072,
+    "soft_after": 131072,
+    "hard": 131072,
+    "error": null
+  },
+  "force_close_connections": true,
+  "output_feedback_configured": "server",
+  "prompt_mode": "tokens",
+  "request_token_ids": true,
+  "content_salt": 1,
+  "start_state_verified": true,
+  "start_state_detail": "canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_1_*.json",
+  "arm": "burst",
+  "analysis_t_burst_s": 1200,
+  "gate_n_cap_configured": null,
+  "gate_n_cap_resolved": null,
+  "lambda_ref_resolved": 0.07153402100919228,
+  "uncached_tokens_ref_resolved": 11243.179816372982,
+  "prereg_sha256": "23997ce21a58b33073b3d5e0a738927da36498c3360bb76727dd35542a39cf4d",
+  "prereg_file": "configs/agentload_prereg_2026-11-05_cut_a115.yaml",
+  "server_models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "Qwen/Qwen2.5-7B-Instruct",
+        "object": "model",
+        "created": 1793873223,
+        "owned_by": "sglang",
+        "root": "Qwen/Qwen2.5-7B-Instruct",
+        "parent": null,
+        "max_model_len": 49152
+      }
+    ],
+    "model_check": "ok"
+  },
+  "t0_unix": 1793873223.7730365,
+  "t0_utc": "2026-11-05T10:07:03.773+00:00",
+  "t0_monotonic_s": 6773869.907461138,
+  "first_metrics_scrape_unix": 1793873223.7893803,
+  "first_metrics_scrape_t_s": 0.016343659721314907,
+  "outcome": {
+    "abort_reason": null,
+    "t_abort_s": null,
+    "t_end_s": 8700.017870412208,
+    "t_end_incl_cancel_s": 8700.044273743406,
+    "sessions_planned": 1058,
+    "sessions_started": 1058,
+    "sessions_completed": 835,
+    "sessions_failed": 0,
+    "sessions_cancelled": 223,
+    "sessions_never_admitted": 0,
+    "requests_total": 12838,
+    "requests_ok": 12619,
+    "requests_error": 0,
+    "requests_cancelled": 219,
+    "max_inflight_seen": 232,
+    "metrics_scrapes": 1740,
+    "metrics_scrape_failures": 0,
+    "metrics_skipped_ticks": 0,
+    "errors_by_kind": {},
+    "gate": {
+      "n_cap": null,
+      "n_admitted": 1058,
+      "n_waited": 0,
+      "max_active_seen": 232,
+      "max_waiting_seen": 0,
+      "wait_s_max": 0.0,
+      "wait_s_mean": 0.0,
+      "n_still_waiting_at_end": 0
+    },
+    "output_ids_source_counts": {
+      "server_ids": 12619
+    },
+    "prompt_tokens_mismatch": 0,
+    "prompt_tokens_missing_in_response": 0
+  }
+}

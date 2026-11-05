@@ -1,0 +1,19 @@
+r15 pull: CUT-B seed 0 (Corollary 3 arrival-cut test, lambda' = 0.85 x lambda_ref), job 17256870, 2026-11-05
+
+Source clone on Nova: /work/classtmp/avalse/swapp/repo_r15_cut at 11b0e4e (tag r15-cut-reg), git status clean.
+Job 17256870 (pm-cut085, seed 0) COMPLETED 0:0 on nova22-gpu-2: submitted 03:57:14, started 04:21:14, ended 06:50:40 CST
+(sacct_17256870.txt here). Run directory results/agentload_e2_burst/20261105-042230; in-job analyses
+results/agentload_analysis_burst/20261105-065033 and results/agentload_analysis_burst2/20261105-065034; job log dir
+results/nova_job_logs/17256870-20261105-042115; logs/pm-cut085-17256870.out.
+CUT-B seeds 1 and 2 (jobs 17256871/72) were still running at this pull; they are pulled separately.
+
+Pull (06:51 CST):
+  on Nova:  tar -cf - <the 5 paths above> | xz -T2 -6 > /work/classtmp/avalse/swapp/pulls_r15/cut_b0_20261105.tar.xz (2,213,012 bytes)
+  sha256 on Nova and on the PC after scp: bf2733058e4dde7a0ace3094791fd8e04500a5cd90ac1509e17a4afeacc157c9 (equal)
+  on the PC: xz -dc ... | tar --force-local -x -C <this directory>; the remote archive was then deleted.
+
+Interim analysis (PC, worktree r15/tonight, PYTHONPATH="src;."): the registered classifier over the three CUT-A runs and this run,
+    python -m analysis.r15_cut classify --run-dirs <3 CUT-A dirs> <this run dir> --prereg <both CUT registrations>
+      --theory-git icml-cut-pred:results/theory/icml/cut_predictions.json --out-root <this>/analysis
+    -> analysis/agentload_analysis_r15_cut/20261105-065200/: CUT-A PASS (as in the CUT-A pull); CUT-B PENDING (seeds 1, 2 missing).
+  CUT-B's registered verdict is computed once seeds 1 and 2 are pulled.
