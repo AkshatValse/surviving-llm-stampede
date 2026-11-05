@@ -1,0 +1,31 @@
+\section{Limitations}\label{sec:limits}
+
+\paragraph{The theory.} Model~F is an idealization: it assumes that every turn misses, that requests complete in FIFO order and
+that a finished turn rejoins at once. The engine runs about 28 requests concurrently, vLLM preempts, and hits return as the backlog
+falls toward the onset, so model~F describes the trap, not the transitions into and out of it. We do not prove that the engine
+converges to model~F, and the theorem's limits are reached only geometrically: in the registered window about 33--37 generations
+after the burst, a transient of order 10\% remains, so we compare with the exact fluid as well as with the limits. The premium is
+proved positive for our workload at $\rho\ge1.04$; below that it rests on a floating-point bracket and a first-order expansion.
+
+\paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
+scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind
+(\S\ref{sec:validation}). The from-empty runs are single runs per rate, the trapped windows are at most 7500\,s long, and ``does not
+escape'' means within that horizon.
+
+\paragraph{The experiments.} Sessions are synthetic (random tokens, exponential 5\,s tool times, geometric turn counts, fixed tool
+outputs and output lengths, no shared prefixes), clients never retry or abandon, and real agent traces have tool times far shorter
+and more dispersed. Engines are colocated, with one GPU each, dense 7--8B models and pools of 150k to 956k tokens; disaggregated
+serving, offloading, larger models and parallelism are untested. Seeds are shared across tests. The rescue engages a fixed cap at
+a fixed time, and the arrival stop and the tool slowdown ran at one rate. Appendix~\ref{sec:limits-old} gives the full list.
+
+\section{Conclusion}\label{sec:conclusion}
+
+A burst can tip a prefix-cached agent server into a trap in which every turn misses; Lu et al.\ and we observed this
+independently. We have shown that the trap has an exact law. Idealized as a fluid FIFO server on which every turn misses, the
+trapped engine obeys a linear renewal recursion along FIFO orbits, so from any trapped state it converges to a self-similar regime
+fixed by a Perron root: the gap between turns grows linearly, the backlog grows at a fixed fraction of the excess load, the turns it
+serves are young and short, and it completes sessions faster than its all-miss capacity. Measured in 57 stuck runs on two engines,
+two GPUs and two models, with nothing fitted to trap data, these laws hold. The practical reading is Corollary~\ref{cor:trapthr}:
+the throughput an operator sees in a trap overstates the rate to which arrivals must be cut, and cutting below the all-miss
+capacity drains the trap only slowly and by turning sessions away. The other exit, a session cap that restores reuse, rescued every
+established trap we tried at the same load without shedding, and the engine stayed good after the cap was removed.

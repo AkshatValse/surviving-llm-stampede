@@ -1,0 +1,45 @@
+\section{Data-only results added in this version}\label{app:dataonly}
+
+Four analyses use only runs committed before 2026-11-02. Each was computed by one agent and then recomputed by a second agent
+with its own code from the raw files; where they differ we report the checked value and say so. They are post hoc. Scripts and
+outputs: \fpath{analysis/r15_dataonly/} and \fpath{results/r15_dataonly/} (\fpath{PROVENANCE.md} there).
+
+\paragraph{Persistence (D5).} Rolling 300\,s windows of the follow-up hit fraction; a trap starts at the first window after the
+trigger with hit fraction at most 0.2, and an escape is any later window with at least 0.5 before the run ends or an intervention
+begins (a rescue cap, a SHED stop). In 50 trapped FCFS runs (49 after a burst, registered and exploratory, and TOOLSLOW's trapped
+run) there was no escape; the highest window after onset reached 0.164. Trapped time totals 99--103\,h, depending on whether the
+trap is taken to start at the beginning or the end of its first window (the first computation gave 104.5\,h, which the recomputation
+did not reproduce), and the shortest trapped span is 6100--6400\,s, so a one-sided 95\% upper bound on a run's escape probability
+within such a span is $1-0.05^{1/50}=5.8$\%. Stock LPM escaped in 4 of its 9 trapped runs (several barely above 0.5), and LPM with its
+fallback disabled in its one trapped run. Of the 16 from-empty runs that collapsed, one recovered within its 3000\,s run (150k pool,
+1.30~$\lref$, seed~0).
+
+\paragraph{The trap outlives its trigger (D1).} In 16 stuck runs every trigger session (the burst's, or for TOOLSLOW the sessions
+with a slowed tool call) had left the system 558--6246\,s before the end: the 600k H200 paired test (6 of 6), BASIN bursts of 50 (1),
+60 (3) and 100 (3), SHED's 600\,s stop (2) and TOOLSLOW's trapped run (1). The 727--15{,}453 turns completed after the last trigger
+session left had no hit in 15 of these runs; in the TOOLSLOW run 4 of 5{,}937 hit, all within 715\,s after its last slowed session left. In
+the 24 registered 200-session runs on the A100 (SGLang 300k and native, vLLM, Llama) 3--30 burst sessions were still present at the
+end (at most 4.1\% of the sessions present; the first computation's ``5.8\%'' could not be reproduced), so for those runs we do not
+claim that the trap outlived its trigger.
+
+\paragraph{Pool occupancy in the trap.} From the engines' 5\,s metrics, the KV held by admitted requests (SGLang's used, non-evictable
+tokens, which also count locked prefixes; vLLM's cache usage) averaged over the window was 63--79\% of the pool in the six registered
+SGLang 300k BURST runs, 55--83\% across all 34 stuck SGLang FCFS runs with 300k and 600k pools, 85--94\% with the native pool and 92--94\%
+on vLLM, with follow-up hit fraction zero throughout. (The first computation's ``63--79\% in registered traps'' holds only for the
+SGLang 300k runs.)
+
+\paragraph{SLO goodput (D2).} Lu et al.\ define goodput as sessions completed per hour with slowdown at most 4 and at least 95\% of
+decode steps meeting an inter-token latency target~\citep{lu2026cachetrap}. We have no per-token latencies, so we omit the second
+condition, which makes our goodput an upper bound and our losses lower bounds. Slowdown is the session's elapsed time from its planned
+arrival, over an unloaded reference built from the NOBURST runs (first computation: per-turn minimum latencies; recomputation: a
+least-squares fit of latency on new-suffix and decode tokens; both reported). Against the same-seed NOBURST run, base sessions that
+arrived in the hour after the burst lost 99.2--100\% of goodput in all 30 registered BURST runs (no session met the target in 26), and
+those arriving in the evaluation window lost 100\% in all 30, for reference latencies up to twice the unloaded ones. In the evaluation
+window the CAPPED arms were within 0--1.7\% and the rescue runs within $-0.3$ to $+0.9$\% of NOBURST. In the first hour after the
+burst the cap cost 4--57\% (CAPPED) and the rescue 45--97\%; these two ranges depend on the reference, and a reference twice as large
+lowers them by a quarter to a third. Lu et al.\ report about 88\% from one run of a different system, which is not comparable in
+detail.
+
+\paragraph{Lu et al.'s model on our cells (D4).} \pending{after the independent check: onset predicted by their empirical cliff
+constant and by one fitted hit curve against the measured 0.5-hit crossings of eight cells; GPU dependence; their vulnerability
+condition in colocated serving; their drain estimate against the measured rescue release times; with sources and a fairness note.}

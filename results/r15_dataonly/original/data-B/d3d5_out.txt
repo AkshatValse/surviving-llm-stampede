@@ -1,0 +1,248 @@
+           cell               stage      arm       job  seed  mult  realized_0_3000  realized_full   t_end  collapsed     tau  exposure  n_exc                 exc          F2_T  fluid_upper
+82    a100_150k    agentload_e0_cap      NaN  17168876     0  1.10            1.249          1.209  3100.0      False     NaN    2500.0      0                      4.195000e+03     1.969355
+83    a100_150k    agentload_e0_cap      NaN  17168877     0  1.20            1.356          1.312  3100.0      False     NaN    2500.0      0                      2.603000e+03     1.969355
+84    a100_150k    agentload_e0_cap      NaN  17168878     0  1.30            1.463          1.416  3100.0       True  2700.0    2100.0      0                      1.740000e+03     1.969355
+85    a100_150k    agentload_e0_cap      NaN  17168879     0  1.45            1.622          1.569  3100.0       True   800.0     200.0      0                      1.063000e+03     1.969355
+86    a100_150k    agentload_e0_cap      NaN  17168880     0  1.60            1.780          1.723  3100.0       True   700.0     100.0      0                      7.210000e+02     1.969355
+87    a100_150k    agentload_e0_cap      NaN  17168881     0  1.80            1.990          1.926  3100.0       True   600.0       0.0      0                      4.820000e+02     1.969355
+6     a100_300k    agentload_e0_cap      NaN  17084750     0  1.25            1.407          1.362  3100.0      False     NaN    2500.0      0                      5.155119e+06     3.464312
+24    a100_300k  agentload_e2_burst  noburst  17093388     0  1.35            1.431          1.431  8800.0      False     NaN    8200.0      0                      1.898050e+06     3.464312
+26    a100_300k  agentload_e2_burst  noburst  17093394     1  1.35            1.431          1.361  8800.0      False     NaN    8200.0      0                      1.898050e+06     3.464312
+28    a100_300k  agentload_e2_burst  noburst  17093400     2  1.35            1.496          1.425  8800.0      False     NaN    8200.0      0                      1.898050e+06     3.464312
+7     a100_300k    agentload_e0_cap      NaN  17084751     0  1.50            1.673          1.619  3100.0      False     NaN    2500.0      0                      4.996310e+05     3.464312
+25    a100_300k  agentload_e2_burst  noburst  17093391     0  1.65            1.766          1.738  8800.0      False     NaN    8200.0      0                      1.565280e+05     3.464312
+27    a100_300k  agentload_e2_burst  noburst  17093397     1  1.65            1.696          1.662  8800.0      False     NaN    8200.0      0                      1.565280e+05     3.464312
+29    a100_300k  agentload_e2_burst  noburst  17093403     2  1.65            1.794          1.730  8800.0      False     NaN    8200.0      0                      1.565280e+05     3.464312
+8     a100_300k    agentload_e0_cap      NaN  17084752     0  1.75            1.938          1.876  3100.0      False     NaN    2500.0      0                      7.871600e+04     3.464312
+11    a100_300k    agentload_e0_cap      NaN  17084753     0  2.00            2.199          2.128  3100.0      False     NaN    2500.0      0                      1.842500e+04     3.464312
+0     a100_300k    agentload_e0_cap      NaN  17168506     3  2.00            2.013          1.948  3100.0      False     NaN    2500.0      0                      1.842500e+04     3.464312
+2     a100_300k    agentload_e0_cap      NaN  17168506     4  2.00            2.148          2.079  3100.0      False     NaN    2500.0      0                      1.842500e+04     3.464312
+4     a100_300k    agentload_e0_cap      NaN  17168506     5  2.00            1.971          1.908  3100.0      False     NaN    2500.0      0                      1.842500e+04     3.464312
+9     a100_300k    agentload_e0_cap      NaN  17084754     0  2.50            2.726          2.638  3100.0       True  1600.0    1000.0      0                      2.557000e+03     3.464312
+1     a100_300k    agentload_e0_cap      NaN  17168507     3  2.50            2.512          2.431  3100.0      False     NaN    2500.0      0                      2.557000e+03     3.464312
+3     a100_300k    agentload_e0_cap      NaN  17168507     4  2.50            2.665          2.579  3100.0      False     NaN    2500.0      0                      2.557000e+03     3.464312
+5     a100_300k    agentload_e0_cap      NaN  17168507     5  2.50            2.470          2.390  3100.0      False     NaN    2500.0      0                      2.557000e+03     3.464312
+10    a100_300k    agentload_e0_cap      NaN  17084755     0  3.00            3.248          3.143  3100.0       True   600.0       0.0      0                      8.350000e+02     3.464312
+76    a100_600k    agentload_e0_cap      NaN  17168870     0  2.50            2.726          2.638  3100.0      False     NaN    2500.0      0                      5.447278e+08     5.718211
+77    a100_600k    agentload_e0_cap      NaN  17168871     0  3.00            3.248          3.143  3100.0      False     NaN    2500.0      0                      7.460902e+06     5.718211
+78    a100_600k    agentload_e0_cap      NaN  17168872     0  3.50            3.765          3.644  3100.0      False     NaN    2500.0      0                      2.845530e+05     5.718211
+79    a100_600k    agentload_e0_cap      NaN  17168873     0  4.00            4.287          4.149  3100.0      False     NaN    2500.0      0                      2.540200e+04     5.718211
+80    a100_600k    agentload_e0_cap      NaN  17168874     0  4.50            4.804          4.649  3100.0      False     NaN    2500.0      0                      4.728000e+03     5.718211
+81    a100_600k    agentload_e0_cap      NaN  17168875     0  5.00            5.317          5.145  3100.0       True   600.0       0.0      0                      1.596000e+03     5.718211
+12  a100_native    agentload_e0_cap      NaN  17100938     0  1.50            1.676          1.622  3100.0      False     NaN    2500.0      0                               inf     7.070001
+14  a100_native    agentload_e0_cap      NaN  17100938     0  2.50            2.725          2.637  3100.0      False     NaN    2500.0      0                      2.434378e+17     7.070001
+30  a100_native  agentload_e2_burst  noburst  17102174     0  2.50            2.628          2.602  8800.0      False     NaN    8200.0      0                      2.434378e+17     7.070001
+32  a100_native  agentload_e2_burst  noburst  17102180     1  2.50            2.535          2.509  8800.0      False     NaN    8200.0      0                      2.434378e+17     7.070001
+34  a100_native  agentload_e2_burst  noburst  17102186     2  2.50            2.716          2.594  8800.0      False     NaN    8200.0      0                      2.434378e+17     7.070001
+16  a100_native    agentload_e0_cap      NaN  17100938     0  3.50            3.765          3.644  3100.0      False     NaN    2500.0      0                      2.692571e+11     7.070001
+31  a100_native  agentload_e2_burst  noburst  17102177     0  4.00            4.058          4.120  8800.0      False     NaN    8200.0      0                      1.616860e+09     7.070001
+33  a100_native  agentload_e2_burst  noburst  17102183     1  4.00            4.099          4.001  8800.0      False     NaN    8200.0      0                      1.616860e+09     7.070001
+35  a100_native  agentload_e2_burst  noburst  17102189     2  4.00            4.304          4.109  8800.0      False     NaN    8200.0      0                      1.616860e+09     7.070001
+13  a100_native    agentload_e0_cap      NaN  17100939     0  4.50            4.801          4.646  3100.0      False     NaN    2500.0      0                      2.435742e+07     7.070001
+15  a100_native    agentload_e0_cap      NaN  17100939     0  5.50            5.836          5.648  3100.0      False     NaN    2500.0      0                      5.940300e+04     7.070001
+17  a100_native    agentload_e0_cap      NaN  17100939     0  6.50            6.862          6.641  3100.0       True  1300.0     700.0      0                      2.612000e+03     7.070001
+46    h200_300k    agentload_e0_cap      NaN  17168377     0  1.10            1.191          1.153  3100.0      False     NaN    2500.0      0                      7.299600e+04     1.949097
+47    h200_300k    agentload_e0_cap      NaN  17168378     0  1.20            1.295          1.253  3100.0      False     NaN    2500.0      0                      2.326600e+04     1.949097
+48    h200_300k    agentload_e0_cap      NaN  17168379     0  1.30            1.400          1.354  3100.0      False     NaN    2500.0      1  1100(min0.38,800s)  8.965000e+03     1.949097
+42    h200_300k    agentload_e0_cap      NaN  17169668     1  1.30            1.327          1.284  3100.0      False     NaN    2500.0      0                      8.965000e+03     1.949097
+43    h200_300k    agentload_e0_cap      NaN  17169669     2  1.30            1.393          1.348  3100.0      False     NaN    2500.0      0                      8.965000e+03     1.949097
+49    h200_300k    agentload_e0_cap      NaN  17168380     0  1.40            1.503          1.454  3100.0       True  1600.0    1000.0      0                      4.094000e+03     1.949097
+44    h200_300k    agentload_e0_cap      NaN  17169670     1  1.40            1.429          1.383  3100.0      False     NaN    2500.0      0                      4.094000e+03     1.949097
+45    h200_300k    agentload_e0_cap      NaN  17169671     2  1.40            1.496          1.448  3100.0      False     NaN    2500.0      1  1700(min0.45,300s)  4.094000e+03     1.949097
+50    h200_300k    agentload_e0_cap      NaN  17168381     0  1.55            1.657          1.604  3100.0       True   600.0       0.0      0                      1.657000e+03     1.949097
+51    h200_300k    agentload_e0_cap      NaN  17168382     0  1.75            1.865          1.805  3100.0       True   600.0       0.0      0                      7.290000e+02     1.949097
+58    h200_600k    agentload_e0_cap      NaN  17169682     0  1.25            1.346          1.303  3100.0      False     NaN    2500.0      0                               NaN          NaN
+53    h200_600k  agentload_e2_burst  noburst  17171021     0  1.50            1.523          1.544  8800.0      False     NaN    8200.0      0                               NaN          NaN
+59    h200_600k    agentload_e0_cap      NaN  17169683     0  1.50            1.606          1.554  3100.0      False     NaN    2500.0      0                               NaN          NaN
+54    h200_600k  agentload_e2_burst  noburst  17171027     1  1.50            1.544          1.500  8800.0      False     NaN    8200.0      0                               NaN          NaN
+56    h200_600k  agentload_e2_burst  noburst  17171033     2  1.50            1.614          1.540  8800.0      False     NaN    8200.0      0                               NaN          NaN
+60    h200_600k    agentload_e0_cap      NaN  17169684     0  1.75            1.865          1.805  3100.0      False     NaN    2500.0      0                               NaN          NaN
+52    h200_600k  agentload_e2_burst  noburst  17171024     0  2.00            2.024          2.049  8800.0      False     NaN    8200.0      0                               NaN          NaN
+61    h200_600k    agentload_e0_cap      NaN  17169685     0  2.00            2.123          2.055  3100.0      False     NaN    2500.0      0                               NaN          NaN
+55    h200_600k  agentload_e2_burst  noburst  17171030     1  2.00            2.032          1.998  8800.0      False     NaN    8200.0      0                               NaN          NaN
+57    h200_600k  agentload_e2_burst  noburst  17171036     2  2.00            2.130          2.044  8800.0      False     NaN    8200.0      0                               NaN          NaN
+62    h200_600k    agentload_e0_cap      NaN  17169686     0  2.50            2.637          2.552  3100.0      False     NaN    2500.0      0                               NaN          NaN
+63    h200_600k    agentload_e0_cap      NaN  17169687     0  3.00            3.150          3.048  3100.0       True   700.0     100.0      0                               NaN          NaN
+64   llama_300k    agentload_e0_cap      NaN  17169565     0  1.25            1.425          1.379  3100.0      False     NaN    2500.0      0                      9.150627e+06     3.593409
+70   llama_300k  agentload_e2_burst  noburst  17170410     0  1.35            1.448          1.440  8800.0      False     NaN    8200.0      0                      3.368844e+06     3.593409
+72   llama_300k  agentload_e2_burst  noburst  17170416     1  1.35            1.448          1.364  8800.0      False     NaN    8200.0      0                      3.368844e+06     3.593409
+74   llama_300k  agentload_e2_burst  noburst  17170422     2  1.35            1.571          1.433  8800.0      False     NaN    8200.0      0                      3.368844e+06     3.593409
+65   llama_300k    agentload_e0_cap      NaN  17169566     0  1.50            1.693          1.639  3100.0      False     NaN    2500.0      0                      8.800910e+05     3.593409
+71   llama_300k  agentload_e2_burst  noburst  17170413     0  1.65            1.744          1.747  8800.0      False     NaN    8200.0      0                      2.716240e+05     3.593409
+73   llama_300k  agentload_e2_burst  noburst  17170419     1  1.65            1.738          1.663  8800.0      False     NaN    8200.0      0                      2.716240e+05     3.593409
+75   llama_300k  agentload_e2_burst  noburst  17170425     2  1.65            1.833          1.740  8800.0      False     NaN    8200.0      0                      2.716240e+05     3.593409
+66   llama_300k    agentload_e0_cap      NaN  17169567     0  1.75            1.956          1.893  3100.0      False     NaN    2500.0      0                      1.347780e+05     3.593409
+67   llama_300k    agentload_e0_cap      NaN  17169568     0  2.00            2.219          2.147  3100.0      False     NaN    2500.0      0                      3.021800e+04     3.593409
+68   llama_300k    agentload_e0_cap      NaN  17169569     0  2.50            2.744          2.656  3100.0       True  2000.0    1400.0      0                      3.768000e+03     3.593409
+69   llama_300k    agentload_e0_cap      NaN  17169570     0  3.00            3.270          3.164  3100.0       True   600.0       0.0      0                      1.121000e+03     3.593409
+18    vllm_300k    agentload_e0_cap      NaN  17162962     0  1.25            1.416          1.371  3100.0      False     NaN    2500.0      0                      1.880585e+07     3.792094
+36    vllm_300k  agentload_e2_burst  noburst  17166122     0  1.35            1.472          1.435  8800.0      False     NaN    8200.0      0                      6.771582e+06     3.792094
+38    vllm_300k  agentload_e2_burst  noburst  17166128     1  1.35            1.462          1.364  8800.0      False     NaN    8200.0      0                      6.771582e+06     3.792094
+40    vllm_300k  agentload_e2_burst  noburst  17166134     2  1.35            1.528          1.428  8800.0      False     NaN    8200.0      0                      6.771582e+06     3.792094
+19    vllm_300k    agentload_e0_cap      NaN  17162962     0  1.50            1.680          1.626  3100.0      False     NaN    2500.0      0                      1.708024e+06     3.792094
+37    vllm_300k  agentload_e2_burst  noburst  17166125     0  1.65            1.751          1.743  8800.0      False     NaN    8200.0      0                      5.077470e+05     3.792094
+39    vllm_300k  agentload_e2_burst  noburst  17166131     1  1.65            1.711          1.663  8800.0      False     NaN    8200.0      0                      5.077470e+05     3.792094
+41    vllm_300k  agentload_e2_burst  noburst  17166137     2  1.65            1.843          1.734  8800.0      False     NaN    8200.0      0                      5.077470e+05     3.792094
+21    vllm_300k    agentload_e0_cap      NaN  17162962     0  1.75            1.944          1.882  3100.0      False     NaN    2500.0      0                      2.453590e+05     3.792094
+20    vllm_300k    agentload_e0_cap      NaN  17162963     0  2.00            2.208          2.137  3100.0      False     NaN    2500.0      0                      5.120900e+04     3.792094
+22    vllm_300k    agentload_e0_cap      NaN  17162963     0  2.50            2.736          2.648  3100.0       True  1800.0    1200.0      0                      5.442000e+03     3.792094
+23    vllm_300k    agentload_e0_cap      NaN  17162963     0  3.00            3.259          3.154  3100.0       True   600.0       0.0      0                      1.403000e+03     3.792094
+
+                  runs  events  exposure  taus          F2_T     upper  n_exc             realized
+cell        mult                                                                                  
+a100_150k   1.10     1       0    2500.0        4.195000e+03  1.969355      0                 1.21
+            1.20     1       0    2500.0        2.603000e+03  1.969355      0                 1.31
+            1.30     1       1    2100.0  2700  1.740000e+03  1.969355      0                 1.42
+            1.45     1       1     200.0   800  1.063000e+03  1.969355      0                 1.57
+            1.60     1       1     100.0   700  7.210000e+02  1.969355      0                 1.72
+            1.80     1       1       0.0   600  4.820000e+02  1.969355      0                 1.93
+a100_300k   1.25     1       0    2500.0        5.155119e+06  3.464312      0                 1.36
+            1.35     3       0   24600.0        1.898050e+06  3.464312      0       1.43,1.36,1.43
+            1.50     1       0    2500.0        4.996310e+05  3.464312      0                 1.62
+            1.65     3       0   24600.0        1.565280e+05  3.464312      0       1.74,1.66,1.73
+            1.75     1       0    2500.0        7.871600e+04  3.464312      0                 1.88
+            2.00     4       0   10000.0        1.842500e+04  3.464312      0  1.95,2.08,1.91,2.13
+            2.50     4       1    8500.0  1600  2.557000e+03  3.464312      0  2.43,2.58,2.39,2.64
+            3.00     1       1       0.0   600  8.350000e+02  3.464312      0                 3.14
+a100_600k   2.50     1       0    2500.0        5.447278e+08  5.718211      0                 2.64
+            3.00     1       0    2500.0        7.460902e+06  5.718211      0                 3.14
+            3.50     1       0    2500.0        2.845530e+05  5.718211      0                 3.64
+            4.00     1       0    2500.0        2.540200e+04  5.718211      0                 4.15
+            4.50     1       0    2500.0        4.728000e+03  5.718211      0                 4.65
+            5.00     1       1       0.0   600  1.596000e+03  5.718211      0                 5.14
+a100_native 1.50     1       0    2500.0                 inf  7.070001      0                 1.62
+            2.50     4       0   27100.0        2.434378e+17  7.070001      0  2.64,2.60,2.51,2.59
+            3.50     1       0    2500.0        2.692571e+11  7.070001      0                 3.64
+            4.00     3       0   24600.0        1.616860e+09  7.070001      0       4.12,4.00,4.11
+            4.50     1       0    2500.0        2.435742e+07  7.070001      0                 4.65
+            5.50     1       0    2500.0        5.940300e+04  7.070001      0                 5.65
+            6.50     1       1     700.0  1300  2.612000e+03  7.070001      0                 6.64
+h200_300k   1.10     1       0    2500.0        7.299600e+04  1.949097      0                 1.15
+            1.20     1       0    2500.0        2.326600e+04  1.949097      0                 1.25
+            1.30     3       0    7500.0        8.965000e+03  1.949097      1       1.28,1.35,1.35
+            1.40     3       1    6000.0  1600  4.094000e+03  1.949097      1       1.38,1.45,1.45
+            1.55     1       1       0.0   600  1.657000e+03  1.949097      0                 1.60
+            1.75     1       1       0.0   600  7.290000e+02  1.949097      0                 1.80
+h200_600k   1.25     1       0    2500.0                 NaN       NaN      0                 1.30
+            1.50     4       0   27100.0                 NaN       NaN      0  1.54,1.50,1.54,1.55
+            1.75     1       0    2500.0                 NaN       NaN      0                 1.80
+            2.00     4       0   27100.0                 NaN       NaN      0  2.05,2.00,2.04,2.06
+            2.50     1       0    2500.0                 NaN       NaN      0                 2.55
+            3.00     1       1     100.0   700           NaN       NaN      0                 3.05
+llama_300k  1.25     1       0    2500.0        9.150627e+06  3.593409      0                 1.38
+            1.35     3       0   24600.0        3.368844e+06  3.593409      0       1.44,1.36,1.43
+            1.50     1       0    2500.0        8.800910e+05  3.593409      0                 1.64
+            1.65     3       0   24600.0        2.716240e+05  3.593409      0       1.75,1.66,1.74
+            1.75     1       0    2500.0        1.347780e+05  3.593409      0                 1.89
+            2.00     1       0    2500.0        3.021800e+04  3.593409      0                 2.15
+            2.50     1       1    1400.0  2000  3.768000e+03  3.593409      0                 2.66
+            3.00     1       1       0.0   600  1.121000e+03  3.593409      0                 3.16
+vllm_300k   1.25     1       0    2500.0        1.880585e+07  3.792094      0                 1.37
+            1.35     3       0   24600.0        6.771582e+06  3.792094      0       1.44,1.36,1.43
+            1.50     1       0    2500.0        1.708024e+06  3.792094      0                 1.63
+            1.65     3       0   24600.0        5.077470e+05  3.792094      0       1.74,1.66,1.73
+            1.75     1       0    2500.0        2.453590e+05  3.792094      0                 1.88
+            2.00     1       0    2500.0        5.120900e+04  3.792094      0                 2.14
+            2.50     1       1    1200.0  1800  5.442000e+03  3.792094      0                 2.65
+            3.00     1       1       0.0   600  1.403000e+03  3.792094      0                 3.15
+
+           cell                         label      arm  seed  mult      trigger  burst_n  t_trap       cut cut_reason  trapped_s  escaped  t_escape  active_at_trap  active_at_cut  hf_last1000 sched
+56    a100_150k          sglang-fcfs-r1-p150k      NaN     0  1.30  spontaneous      NaN  1200.0  3100.000        end   1000.000     True    2200.0              23             42     0.384742  FCFS
+57    a100_150k          sglang-fcfs-r1-p150k      NaN     0  1.45  spontaneous      NaN   800.0  3100.000        end   2300.000    False       NaN              21             73     0.000000  FCFS
+58    a100_150k          sglang-fcfs-r1-p150k      NaN     0  1.60  spontaneous      NaN   700.0  3100.000        end   2400.000    False       NaN              28             95     0.000000  FCFS
+59    a100_150k          sglang-fcfs-r1-p150k      NaN     0  1.80  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN              46            145     0.000000  FCFS
+12    a100_300k                sglang-fcfs-r1    burst     0  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             163            270     0.000000  FCFS
+14    a100_300k                sglang-fcfs-r1    burst     1  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             171            206     0.000000  FCFS
+16    a100_300k                sglang-fcfs-r1    burst     2  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             181            256     0.000000  FCFS
+60    a100_300k                sglang-fcfs-r0    burst     0  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             163            264     0.000000  FCFS
+66    a100_300k                sglang-fcfs-r0    burst     1  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             170            207     0.000000  FCFS
+72    a100_300k                sglang-fcfs-r0    burst     2  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             180            254     0.000000  FCFS
+76    a100_300k         sglang-fcfs-r1-rescue   rescue     0  1.35        burst    200.0  1200.0  1800.000  rescue_on    600.000    False       NaN             163            158     0.357352  FCFS
+77    a100_300k         sglang-fcfs-r1-rescue   rescue     1  1.35        burst    200.0  1200.0  1800.000  rescue_on    600.000    False       NaN             170            170     0.369007  FCFS
+78    a100_300k         sglang-fcfs-r1-rescue   rescue     2  1.35        burst    200.0  1200.0  1800.000  rescue_on    600.000    False       NaN             180            166     0.378589  FCFS
+86    a100_300k      sglang-fcfs-r1-shed-t600    burst     0  1.35        burst    200.0  1200.0  1800.001  shed_stop    600.001    False       NaN             163            159     0.268137  FCFS
+87    a100_300k      sglang-fcfs-r1-shed-t600    burst     1  1.35        burst    200.0  1200.0  1800.001  shed_stop    600.001    False       NaN             169            170     0.308416  FCFS
+88    a100_300k     sglang-fcfs-r1-shed-t3600    burst     0  1.35        burst    200.0  1200.0  1800.001  shed_stop    600.001    False       NaN             162            158     0.268577  FCFS
+89    a100_300k     sglang-fcfs-r1-shed-t3600    burst     1  1.35        burst    200.0  1200.0  1800.001  shed_stop    600.001    False       NaN             170            171     0.309501  FCFS
+85    a100_300k   sglang-fcfs-r1-toolslow-d30  noburst     2  1.35     toolslow      NaN  2300.0  8800.000        end   6500.000    False       NaN              52            135     0.000000  FCFS
+0     a100_300k           sglang-fcfs-r1-b100    burst     0  1.65        burst    100.0  1300.0  8800.000        end   7500.000    False       NaN              88            311     0.000000  FCFS
+1     a100_300k           sglang-fcfs-r1-b100    burst     1  1.65        burst    100.0  1300.0  8800.000        end   7500.000    False       NaN              91            280     0.000000  FCFS
+2     a100_300k           sglang-fcfs-r1-b100    burst     2  1.65        burst    100.0  1300.0  8800.000        end   7500.000    False       NaN              84            283     0.000000  FCFS
+3     a100_300k            sglang-fcfs-r1-b60    burst     0  1.65        burst     60.0  1400.0  8800.000        end   7400.000    False       NaN              56            284     0.000000  FCFS
+4     a100_300k            sglang-fcfs-r1-b60    burst     1  1.65        burst     60.0  1300.0  8800.000        end   7500.000    False       NaN              55            245     0.000000  FCFS
+5     a100_300k            sglang-fcfs-r1-b60    burst     2  1.65        burst     60.0  1400.0  8800.000        end   7400.000    False       NaN              50            242     0.000000  FCFS
+6     a100_300k            sglang-fcfs-r1-b50    burst     1  1.65        burst     50.0  1300.0  8800.000        end   7500.000    False       NaN              50            251     0.000000  FCFS
+13    a100_300k                sglang-fcfs-r1    burst     0  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             174            370     0.000000  FCFS
+15    a100_300k                sglang-fcfs-r1    burst     1  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             175            320     0.000000  FCFS
+17    a100_300k                sglang-fcfs-r1    burst     2  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             185            361     0.000000  FCFS
+63    a100_300k                sglang-fcfs-r0    burst     0  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             173            366     0.000000  FCFS
+69    a100_300k                sglang-fcfs-r0    burst     1  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             174            320     0.000000  FCFS
+74    a100_300k                sglang-fcfs-r0    burst     2  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             186            360     0.000000  FCFS
+75    a100_300k   sglang-fcfs-r1-rescue-smoke   rescue     0  1.65        burst    200.0   300.0   900.000  rescue_on    600.000    False       NaN             188            181     0.311061  FCFS
+79    a100_300k         sglang-fcfs-r1-rescue   rescue     0  1.65        burst    200.0  1200.0  1800.000  rescue_on    600.000    False       NaN             171            178     0.376509  FCFS
+80    a100_300k         sglang-fcfs-r1-rescue   rescue     1  1.65        burst    200.0  1200.0  1800.000  rescue_on    600.000    False       NaN             173            185     0.395187  FCFS
+81    a100_300k         sglang-fcfs-r1-rescue   rescue     2  1.65        burst    200.0  1200.0  1800.000  rescue_on    600.000    False       NaN             182            165     0.414938  FCFS
+7     a100_300k                sglang-fcfs-r1      NaN     0  2.50  spontaneous      NaN  1600.0  3100.000        end   1500.000    False       NaN              65            168     0.000000  FCFS
+8     a100_300k                sglang-fcfs-r1      NaN     0  3.00  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN              82            324     0.000000  FCFS
+55    a100_600k          sglang-fcfs-r1-p600k      NaN     0  5.00  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN             177            638     0.000000  FCFS
+19  a100_native         sglang-fcfs-r1-native    burst     0  2.50        burst    200.0  1400.0  8800.000        end   7400.000    False       NaN             188            725     0.000000  FCFS
+20  a100_native         sglang-fcfs-r1-native    burst     1  2.50        burst    200.0  1400.0  8800.000        end   7400.000    False       NaN             178            670     0.000000  FCFS
+22  a100_native         sglang-fcfs-r1-native    burst     2  2.50        burst    200.0  1500.0  8800.000        end   7300.000    False       NaN             186            694     0.000000  FCFS
+18  a100_native         sglang-fcfs-r1-native    burst     0  4.00        burst    200.0  1400.0  8800.000        end   7400.000    False       NaN             270           1404     0.000000  FCFS
+21  a100_native         sglang-fcfs-r1-native    burst     1  4.00        burst    200.0  1400.0  8800.000        end   7400.000    False       NaN             278           1307     0.000000  FCFS
+23  a100_native         sglang-fcfs-r1-native    burst     2  4.00        burst    200.0  1400.0  8800.000        end   7400.000    False       NaN             242           1331     0.000000  FCFS
+82  a100_native  sglang-fcfs-r1-rescue-native   rescue     0  4.00        burst    200.0  1400.0  2100.000  rescue_on    700.000    False       NaN             270            327     0.385442  FCFS
+83  a100_native  sglang-fcfs-r1-rescue-native   rescue     1  4.00        burst    200.0  1400.0  2100.000  rescue_on    700.000    False       NaN             278            312     0.421503  FCFS
+84  a100_native  sglang-fcfs-r1-rescue-native   rescue     2  4.00        burst    200.0  1400.0  2100.000  rescue_on    700.000    False       NaN             250            303     0.476895  FCFS
+9   a100_native         sglang-fcfs-r1-native      NaN     0  6.50  spontaneous      NaN  1300.0  3100.000        end   1800.000    False       NaN             232            699     0.000000  FCFS
+36    h200_300k           sglang-fcfs-r1-h200      NaN     0  1.40  spontaneous      NaN  1600.0  3100.000        end   1500.000    False       NaN              51             96     0.011949  FCFS
+37    h200_300k           sglang-fcfs-r1-h200      NaN     0  1.55  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN              50            221     0.000000  FCFS
+38    h200_300k           sglang-fcfs-r1-h200      NaN     0  1.75  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN              91            308     0.000000  FCFS
+40    h200_600k     sglang-fcfs-r1-h200-p600k    burst     0  1.50        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             182            609     0.000000  FCFS
+41    h200_600k     sglang-fcfs-r1-h200-p600k    burst     1  1.50        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             183            554     0.000000  FCFS
+43    h200_600k     sglang-fcfs-r1-h200-p600k    burst     2  1.50        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             151            534     0.000000  FCFS
+39    h200_600k     sglang-fcfs-r1-h200-p600k    burst     0  2.00        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             213           1127     0.000000  FCFS
+42    h200_600k     sglang-fcfs-r1-h200-p600k    burst     1  2.00        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             228           1024     0.000000  FCFS
+44    h200_600k     sglang-fcfs-r1-h200-p600k    burst     2  2.00        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             227           1063     0.000000  FCFS
+45    h200_600k     sglang-fcfs-r1-h200-p600k      NaN     0  3.00  spontaneous      NaN   700.0  3100.000        end   2400.000    False       NaN             155            715     0.000000  FCFS
+48   llama_300k        sglang-fcfs-r1-llama31    burst     0  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             173            227     0.000000  FCFS
+50   llama_300k        sglang-fcfs-r1-llama31    burst     1  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             181            178     0.000000  FCFS
+52   llama_300k        sglang-fcfs-r1-llama31    burst     2  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             179            221     0.000000  FCFS
+49   llama_300k        sglang-fcfs-r1-llama31    burst     0  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             173            335     0.000000  FCFS
+51   llama_300k        sglang-fcfs-r1-llama31    burst     1  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             174            284     0.000000  FCFS
+53   llama_300k        sglang-fcfs-r1-llama31    burst     2  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             188            318     0.000000  FCFS
+46   llama_300k        sglang-fcfs-r1-llama31      NaN     0  2.50  spontaneous      NaN  2000.0  3100.000        end   1100.000    False       NaN              63            117     0.000922  FCFS
+47   llama_300k        sglang-fcfs-r1-llama31      NaN     0  3.00  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN              66            259     0.000000  FCFS
+24    vllm_300k                     vllm-fcfs    burst     0  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             170            254     0.000000  FCFS
+26    vllm_300k                     vllm-fcfs    burst     1  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             177            202     0.000000  FCFS
+28    vllm_300k                     vllm-fcfs    burst     2  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             186            238     0.000000  FCFS
+30    vllm_300k                     vllm-fcfs    burst     0  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             166            249     0.000000  FCFS
+32    vllm_300k                     vllm-fcfs    burst     1  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             175            200     0.000000  FCFS
+34    vllm_300k                     vllm-fcfs    burst     2  1.35        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             185            242     0.000000  FCFS
+25    vllm_300k                     vllm-fcfs    burst     0  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             174            354     0.000000  FCFS
+27    vllm_300k                     vllm-fcfs    burst     1  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             177            298     0.000000  FCFS
+29    vllm_300k                     vllm-fcfs    burst     2  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             186            347     0.000000  FCFS
+31    vllm_300k                     vllm-fcfs    burst     0  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             176            362     0.000000  FCFS
+33    vllm_300k                     vllm-fcfs    burst     1  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             177            299     0.000000  FCFS
+35    vllm_300k                     vllm-fcfs    burst     2  1.65        burst    200.0  1200.0  8800.000        end   7600.000    False       NaN             189            375     0.000000  FCFS
+10    vllm_300k                     vllm-fcfs      NaN     0  2.50  spontaneous      NaN  1800.0  3100.000        end   1300.000    False       NaN              68            135     0.000000  FCFS
+11    vllm_300k                     vllm-fcfs      NaN     0  3.00  spontaneous      NaN   600.0  3100.000        end   2500.000    False       NaN              83            303     0.000000  FCFS
+61    a100_300k                 sglang-lpm-r1    burst     0  1.35        burst    200.0  1300.0  8800.000        end   2800.000     True    4100.0             159             10     1.000000   LPM
+62    a100_300k                 sglang-lpm-r0    burst     0  1.35        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             157            262     0.000000   LPM
+67    a100_300k                 sglang-lpm-r1    burst     1  1.35        burst    200.0  1300.0  8800.000        end   3400.000     True    4700.0             161              7     1.000000   LPM
+68    a100_300k                 sglang-lpm-r0    burst     1  1.35        burst    200.0  1300.0  8800.000        end   3000.000     True    4300.0             158              7     1.000000   LPM
+73    a100_300k                 sglang-lpm-r1    burst     2  1.35        burst    200.0  1300.0  8800.000        end   5500.000     True    6800.0             165             58     0.647630   LPM
+54    a100_300k                 sglang-lpminf    burst     1  1.65        burst    200.0  1300.0  8800.000        end   5900.000     True    7200.0             172            194     0.465278   LPM
+64    a100_300k                 sglang-lpm-r1    burst     0  1.65        burst    200.0  2800.0  8800.000        end   6000.000    False       NaN             163            354     0.000000   LPM
+65    a100_300k                 sglang-lpm-r0    burst     0  1.65        burst    200.0  2900.0  8800.000        end   5900.000    False       NaN             162            361     0.000000   LPM
+70    a100_300k                 sglang-lpm-r1    burst     1  1.65        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             171            318     0.000000   LPM
+71    a100_300k                 sglang-lpm-r0    burst     1  1.65        burst    200.0  1300.0  8800.000        end   7500.000    False       NaN             170            317     0.000000   LPM
+
+                              runs  escaped   trapped_s
+sched trigger     cut_reason                           
+FCFS  burst       end           49        0  369800.000
+                  rescue_on     10        0    6300.000
+                  shed_stop      4        0    2400.004
+      spontaneous end           16        1   32800.000
+      toolslow    end            1        0    6500.000
+LPM   burst       end           10        5   55000.000

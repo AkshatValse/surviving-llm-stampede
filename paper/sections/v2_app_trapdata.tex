@@ -1,0 +1,64 @@
+\section{Model F against the engine: full tables}\label{app:trapdata}
+
+\paragraph{Inputs and definitions.} Each cell's costs come from its frozen cell model (\fpath{analysis/theory/cells/*.yaml}): the
+calibrated miss prefill of turn $k$ plus the all-miss decode share, chosen so that $1/\sum_kc_kG_k$ equals the first-principles
+model's $\mu_b$. vLLM, the H200 and Llama take one speed factor fitted to their own E0a token rate, as in the paper's earlier
+predictions. A run is stuck if its follow-up hit fraction over its window is below 0.2: $[5700,8700)$\,s for E2-protocol runs,
+$[1500,3000)$\,s for unstable from-empty (E0b) runs. The composition statistic is the mean prompt of the turns completed in the
+window; the gap slope is the least-squares slope, over the window, of the 300\,s medians of the gap between a turn's completion
+and the same session's previous one; completions and backlog slope are over the window. Source:
+\fpath{results/theory/icml/trap_check.md} and \fpath{.json}, produced by \fpath{analysis/theory/icml/run_check.py}; summary
+numbers by \fpath{support.py} into \fpath{support.json}. A referee recomputed six statistics for 22 of the runs from the raw files
+with independent code and matched them to five or more digits.
+
+\paragraph{From-empty collapses.} The 13 runs that lost the good state from empty are younger traps, observed over
+$[1500,3000)$\,s:
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}l c c c c c@{}}
+\toprule
+cell, rate & $\rho$ & $\bar L$ meas.\ / pred. & gap slope / $\gamma$ & $D/\lref$ / pred. & backlog / pred.\\
+\midrule
+SGLang 300k 2.5 & 2.49 & 7{,}755 / 7{,}274 & 0.058 / 0.048 & 1.42 / 1.46 & 0.94 / 0.70\\
+SGLang 300k 3.0 & 2.99 & 6{,}613 / 6{,}754 & 0.078 / 0.060 & 1.66 / 1.57 & 0.91 / 0.71\\
+H200 300k 1.4 & 1.38 & 9{,}422 / 9{,}233 & 0.009 / 0.014 & 1.26 / 1.16 & 0.49 / 0.64\\
+H200 300k 1.55 & 1.53 & 8{,}965 / 8{,}866 & 0.018 / 0.019 & 1.24 / 1.21 & 0.72 / 0.65\\
+H200 300k 1.75 & 1.72 & 8{,}613 / 8{,}444 & 0.031 / 0.026 & 1.34 / 1.27 & 0.76 / 0.66\\
+H200 600k 3.0 & 2.90 & 6{,}939 / 6{,}868 & 0.042 / 0.057 & 1.78 / 1.61 & 0.75 / 0.71\\
+Llama 300k 3.0 & 2.96 & 6{,}714 / 6{,}754 & 0.060 / 0.060 & 1.64 / 1.57 & 0.87 / 0.72\\
+native 6.5 & 6.33 & 5{,}332 / 5{,}064 & 0.109 / 0.131 & 2.40 / 2.19 & 0.83 / 0.79\\
+150k pool 1.45 & 1.51 & 8{,}369 / 8{,}879 & 0.020 / 0.019 & 1.27 / 1.13 & 0.81 / 0.66\\
+150k pool 1.6 & 1.66 & 8{,}071 / 8{,}528 & 0.020 / 0.024 & 1.30 / 1.18 & 0.83 / 0.67\\
+150k pool 1.8 & 1.87 & 7{,}909 / 8{,}123 & 0.033 / 0.031 & 1.25 / 1.23 & 0.94 / 0.68\\
+600k pool 5.0 & 4.89 & 5{,}591 / 5{,}581 & 0.089 / 0.103 & 2.27 / 1.97 & 0.75 / 0.76\\
+vLLM 300k 3.0 & 2.94 & 6{,}598 / 6{,}826 & 0.063 / 0.059 & 1.60 / 1.60 & 0.90 / 0.71\\
+\bottomrule
+\end{tabular}
+\end{center}
+The composition is within $-5.7$\% and $+6.6$\% and the gap-slope ratio between 0.62 and 1.30 (mean 0.98). Completions and backlog
+slopes run above the asymptotic values, as a young trap's should: the limits are approached only geometrically in the generation
+index (Appendix~\ref{app:trap}).
+
+\paragraph{E2-protocol runs beyond Table~\ref{tab:trap}.} The other stuck runs of the E2 protocol behave like the registered ones:
+the SGLang 300k grid with the waiting-prefix refresh disabled (r0: composition 8{,}406--9{,}532 against 8{,}606 and 9{,}324), the
+BASIN runs with bursts of 50, 60 and 100 sessions (8{,}372--9{,}272 against 8{,}606), SHED's 600\,s stop, TOOLSLOW's trapped run and
+stock LPM past its 128-request fallback. Across all 57 runs the engine completes 0.90--1.21 times $D$, 1.055 on average; seven are
+below $D$ (the late-forming BASIN traps of 50 and 60 sessions, seed~1, at 0.90 and 0.91; native 2.5~$\lref$ seed~1; H200 1.5~$\lref$
+seed~1; three LPM runs). The measured token ratios are 0.95--1.12 against 1.01--1.05 from the composition alone, so the model's
+$\lmiss$ is a few percent low in congestion, most for Llama and vLLM (the paper's checks of its congestion assumptions,
+Appendix~\ref{app:proofs}).
+
+\paragraph{The slope rule and the plans.} The client's constant-rate plan fixes each seed's base arrival times before any run, and
+reproduces the measured window arrival rates exactly. Seed~1's plan delivers 0.8--8.9\% fewer arrivals than nominal over the window
+in every cell and rate (5.8\% at 300k, 7.9\% on vLLM and 8.9\% on Llama at 1.35~$\lref$). The plug-in $\lambda_{\mathrm{window}}
+(\text{plan})-D$ lies within 0.01\,/s of the measured backlog slope in 49 of the 57 runs and within 0.002\,/s in 18, with median
+residual $-0.0022$\,/s because the engine completes slightly more than $D$. On the 36 runs of registered protocols (30 independent
+plans; the 12 vLLM runs are six plans run twice) it falls on the measured side of the registered threshold in 33 runs and for 27
+plans, against 23 for always predicting ``trapped''. The exceptions are H200 1.5~$\lref$ seed~1 (plug-in 0.04849 against a threshold
+of 0.04847), Llama 1.65~$\lref$ seed~1 (above it by 0.00005) and Llama 1.35~$\lref$ seed~0 (0.0205 against a measured 0.0052).
+
+\paragraph{Self-similarity.} By Theorem~\ref{thm:trap}(d), among completed sessions with similar $T$ that arrive in
+$[2500,7000)$\,s, the sojourn should grow linearly in the arrival time with slope about $E[z^T-1]$. Measured over predicted
+slope, per seed: 0.86--1.19 in every turn-count bin on the H200 at 600k (160--400 sessions per bin), 0.85--0.96 for short sessions on
+the native pool at 2.5~$\lref$, 0.2--1.6 (noisy, 40--120 sessions per bin) on SGLang 300k, vLLM and Llama, and 0.1--0.8 for long
+sessions at high $z$, where right-censoring at 8700\,s keeps only the faster ones. This check is descriptive, not a test.
