@@ -141,3 +141,33 @@ def test_busy_period_subcritical(cell300):
     N = tr["N"]
     i = int(np.argmax(N < 0.5))
     assert N[i] < 0.5 and abs(tr["t"][i] / tau - 1) < 0.03
+
+
+def test_cut_plans_equal_the_constant_rate_plan_before_the_cut():
+    """The cut test's ramp plan (rate_max 1.65 x lambda_ref, S_ARRIVALS candidates, S_THIN keep) keeps every candidate before
+    2400 s, so its pre-cut sessions are the constant-rate 1.65x BURST plan's (same idx, so the same specs)."""
+    from analysis.theory.icml import cut_predict as cp
+    from agentload.workload import S_ARRIVALS, make_rng, poisson_times
+    lr = cp.lam_ref()
+    base = poisson_times(make_rng(1, S_ARRIVALS), 1.65 * lr, 0.0, 8700.0)
+    plan, _ = cp.build_cut_plan(1, 0.85)
+    pre = [p for p in plan if p.origin == "base" and p.arrival_s < 2400.0]
+    assert [p.arrival_s for p in pre] == [float(t) for t in base[base < 2400.0]]
+    assert [p.idx for p in pre] == list(range(len(pre)))
+    post = [p.arrival_s for p in plan if p.origin == "base" and p.arrival_s >= 2400.0]
+    assert 0.6 < len(post) / ((base >= 2400.0).sum() * 0.85 / 1.65) < 1.4
+
+
+def test_plan_fifo_is_deterministic_and_conserves_sessions():
+    from analysis.theory.icml import cut_predict as cp
+    from analysis.theory.icml.run_check import cell_model
+    from analysis.theory.icml.trap_renewal import trap_costs
+    m, _ = cell_model("a100_300k")
+    tc = trap_costs(m)
+    plan, _ = cp.build_cut_plan(0, 1.15)
+    a = cp.plan_fifo(plan, tc, 1.33)
+    b = cp.plan_fifo(plan, tc, 1.33)
+    assert np.array_equal(a["ends"], b["ends"])
+    st = cp.backlog_stats(a["starts"], a["ends"], 3000.0, 8700.0)
+    n_in = ((a["starts"] < 8700.0)).sum() - (a["ends"] < 8700.0).sum()
+    assert n_in > 32 and st["N_end"] > 32          # still trapped (N above n_b) at the end of the run
