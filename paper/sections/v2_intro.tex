@@ -35,7 +35,8 @@ classical~\citep{kleinrock1975aloha,carleial1975bistable,nelson1987stochastic}.
 of a throughput curve, $\dot n=\lambda-\mu(n)$; read literally in congestion, sessions then complete at the curve's low end and
 accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs
 complete sessions faster than the all-miss capacity measured with caching disabled ($\lref$, the unit of every rate below), by up
-to 2.4 times (one from-empty run at 6.5~$\lref$), while their backlog grows at about two thirds of the quasi-static rate. The gap matters to an operator: in model~F below, a cut to just below the throughput
+to 2.4 times (one from-empty run at 6.5~$\lref$), while over the 57 stuck runs of our paired-test protocol their backlog grows, on average, at about two thirds of the
+quasi-static rate. The gap matters to an operator: in model~F below, a cut to just below the throughput
 measured in an all-miss trap does not clear it.
 
 \paragraph{Contributions.}
@@ -46,7 +47,7 @@ its cycles obey a linear renewal recursion (Theorem~\ref{thm:trap}). Below $\lmi
 classical; above it, the recursion's Perron root $z$ gives the convergence of every trapped state to a self-similar regime in which
 the gap between a session's turns grows at $z-1$, the backlog at $\lambda(1-E[z^{-T}])$ and completions at $D=\lambda E[z^{-T}]$, with the turn mix tilted to
 $G_kz^{-k}$. We decompose $D/\lmiss$ into a turn-count factor and a cost-growth factor, a youth premium above 1 for our workload
-(Theorem~\ref{thm:premium}), and conclude that in model~F the throughput measured in a trap overstates the recovery threshold: only
+at every load we checked (Theorem~\ref{thm:premium} for $\rho\ge1.04$), and conclude that in model~F the throughput measured in a trap overstates the recovery threshold: only
 $\lambda'<\lmiss$ drains it, after a busy period that diverges at the threshold (Corollary~\ref{cor:trapthr}). The self-similar
 regime itself is known~\citep{khanin2001steady}, the recursion is a discrete renewal equation of Lotka--Leslie
 type~\citep{feller1968introduction}, the critical case is the fluid counterpart of heavy-traffic state-space
@@ -65,10 +66,11 @@ earlier runs. A pre-registered 30\,s tool slowdown lasting 1800\,s with no burst
 trapped the engine in 3 of 3 runs while their paired no-burst runs stayed good, and on these runs, in one cell whose outcome every
 frozen model predicted, the theory met all four pooled scores. A second slowdown, at 1.65~$\lref$, chosen so that our two frozen
 predictors disagree, trapped 1 of 3 runs, as the calibrated simulator had predicted seed by seed, against the first-principles
-model's plan-averaged TRAPS. After a burst, a cut in arrivals to below the trapped throughput of the same seeds' uncut runs, but
-above the all-miss capacity, left all three CUT-A runs trapped, and a cut below the all-miss capacity drained the three CUT-B traps
-only slowly, all still stuck 6300\,s after the cut, as model~F predicted. Each arm's registered rule rejected the naive reading, and
-CUT-A's also the quasi-static one, but not intermediate readings (a flat backlog fits CUT-A as well over $[3000,8700)$\,s); what
+model's plan-averaged TRAPS; its one trapped run also met the four pooled scores, and across the four runs trapped by a slowdown
+a fifth, per-run slope check failed twice. After a burst, a cut in arrivals to below the trapped throughput of the same seeds' uncut runs, but
+above the all-miss capacity, left all three CUT-A runs trapped, and a cut below the all-miss capacity shrank the three CUT-B backlogs
+only slowly, all still trapped 6300\,s after the cut, as model~F predicted. Each arm's registered rule rejected the naive reading, and
+CUT-A's also the quasi-static one, but not intermediate readings (constant completions at the nominal cut rate fit CUT-A as well over $[3000,8700)$\,s); what
 singles out model~F against them is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 \item \textbf{A first-principles account of entry} (\S\ref{sec:entry}). We derive the closed-population throughput curve $\mu(n)$ from
 the pool, the workload and a cost model fitted to server-log timing only. Its all-miss onset is the sessions in tool calls plus one
@@ -77,7 +79,7 @@ reading of Lu et al.'s concurrent model on our colocated cells, with one hit cur
 disaggregated serving and do not use the curve to predict hits), the measured cliff moved out on the H200, by 6.7 and 10.9 sessions
 at the two pools against 5.8 and 6.6 from the tool-call term, and on the five cells frozen before their runs were read our crossings err by 1.5 sessions on average, against 4.1.
 \item \textbf{Control as two exits} (\S\ref{sec:control}). In model~F, starving the trap needs $\lambda'<\lmiss$, and on the engine a
-registered cut to 0.85~$\lref$ drained it only slowly (CUT-B); refusing arrivals (SHED) sheds sessions: in a registered test a 3600\,s stop drained the trap and refused 355--378 sessions. Restoring reuse with a
+registered cut to 0.85~$\lref$ shrank its backlog only slowly, all three runs still trapped at 8700\,s (CUT-B); refusing arrivals (SHED) sheds sessions: in a registered test a 3600\,s stop drained the trap and refused 355--378 sessions. Restoring reuse with a
 session cap, which leaves model~F, does not: in registered tests the cap rescued 9 of 9 established zero-hit traps at the same
 offered load without shedding a session, at a price of 386--569\,s of waiting at the client per paused session and 45--97\% of the
 goodput of the hour after the burst, and the engine stayed good after the cap was removed.

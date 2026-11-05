@@ -13,9 +13,9 @@ controller, Basin\footnote{Their Basin controller is unrelated to our BASIN-1 an
 attraction of the good state.}, combines fixed session priority, admission by predicted peak context, decode-memory lending and
 shedding; on H200 hardware an arrival-time prototype of it achieves 1.20--1.70 times Continuum's goodput, and the predictor-driven
 design is evaluated in simulation. Against this, we add an exactly analysed idealization of the trapped state with its tests
-(\S\ref{sec:trap}--\ref{sec:validation}), the reading that the throughput measured in a trap exceeds the drain threshold
-(Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which every turn misses; CUT-A is consistent
-with it; their systems keep some reuse), a first-principles entry model with an
+(\S\ref{sec:trap}--\ref{sec:validation}), an engine test of the reading that the throughput measured in a trap exceeds the drain
+threshold (Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which every turn misses; CUT-A and
+CUT-B are consistent with it; their systems keep some reuse), a first-principles entry model with an
 out-of-sample record (\S\ref{sec:entry}), the registered and replicated rescue of an established zero-hit trap at the same offered
 load without shedding, with release and persistence (\S\ref{sec:control}), and registered matched-arm evidence on colocated engines,
 including a second engine (\S\ref{sec:evidence}). They have real traces, disaggregated serving, a larger model, SLO goodput and a full

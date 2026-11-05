@@ -4,8 +4,8 @@ Quasi-static models describe the collapsed state as the falling branch of a thro
 whose low end is Lu et al.'s low-reuse departure rate $D_{\mathrm{low}}$~\citep{lu2026cachetrap} and, in our earlier model, the
 all-miss capacity $\lmiss$ (which we used only for the window, \S\ref{sec:entry}). Read literally in congestion, such an equation
 makes a trapped engine complete sessions at that low end and accumulate them at the excess over it. With every turn missing, our
-engines do neither: every stuck run of the retrospective check completes sessions at 1.10--2.40~$\lref$, and the backlog grows on average at
-model~F's $\alpha$ (mean ratio 0.99), not at the excess load (\S\ref{sec:validation}). Here we characterize the trap exactly, within an explicit idealization of the trapped engine.
+engines do neither: every stuck run of the retrospective check completes sessions at 1.10--2.40~$\lref$, and over the 57 E2-protocol runs the backlog grows on
+average at model~F's $\alpha$ (mean ratio 0.99), not at the excess load (\S\ref{sec:validation}). Here we characterize the trap exactly, within an explicit idealization of the trapped engine.
 
 \paragraph{Model F.} Let a session have $T$ turns, $G_k=P(T\ge k)$ for $k=1,\dots,K$ with $G_K>0$, and let turn $k$ cost $c_k>0$
 GPU seconds when it misses. The costs come from the iteration-cost model of \S\ref{sec:entry}, fitted only to server-log

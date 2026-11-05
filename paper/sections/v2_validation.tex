@@ -69,20 +69,22 @@ deliver fewer arrivals than nominal (below).
 \item \emph{Youth premium.} Every stuck run completes sessions above $\lref$, at 1.10--2.03~$\lref$ (up to 2.40 in the from-empty
 runs), and on average 1.055 times $D$ (0.90--1.21). Part of the excess over $D$ is a congested engine computing prompt tokens
 faster than the 32-session reference behind $\lref$, most on the H200 and the native pool (Appendix~\ref{app:trapdata}); on vLLM
-and Llama the completion excess is not explained.
+and Llama the completion excess is not explained. That speed-up does not make the sign: divided by each run's measured
+token-rate ratio (0.95--1.12), completions still exceed $\lref$ by a factor of 1.08--1.81 in every one of the 57 runs
+(\fpath{analysis/theory/icml/premium_over_tokrate.py}).
 \item \emph{Backlog.} Over model~F's $\alpha$, the backlog slope has mean 0.99 and median 1.06 across the 57 runs (per run 0.00
-to 1.62, with the plans' window arrivals), where the quasi-static equation, completions at $\lmiss$, gives 1.36--1.59.
+to 1.62, varying mostly with the plans' window arrivals; $\alpha$ at the nominal rate), where the quasi-static equation, completions at $\lmiss$, gives 1.36--1.59.
 \end{itemize}
 These are statements about the runs taken together; per run the gap and backlog statistics scatter widely, mostly with the plan's
 arrivals over the window. The same composition and gap laws hold for the 13 from-empty runs that were stuck over $[1500,3000)$\,s, at $\rho=1.4$
 to 6.3 (composition within $-5.7$\% and $+6.6$\%; gap-slope ratio 0.63--1.37, mean 1.03), on the pool sweep and on the H200, but
 their backlog slopes run above model~F's $\alpha$, by 6--35\% in 11 of the 13, and their completions by up to 15\%; in
-model~F the two add up to the arrival rate, which may reflect window arrival rates above nominal in these single seed-0 runs (not
-checked; Appendix~\ref{app:trapdata}). Self-similarity (Theorem~\ref{thm:trap}(d)) is visible only where samples are large and censoring is
+model~F the two add up to the arrival rate, which may reflect window arrival rates above nominal in these single seed-0 runs (3.8--13.1\%
+above in all 13, by \fpath{trap_check.json}; Appendix~\ref{app:trapdata}). Self-similarity (Theorem~\ref{thm:trap}(d)) is visible only where samples are large and censoring is
 small: the sojourn of sessions of similar length grows with their arrival time at 0.86--1.19 of the predicted slope on the H200 at
 600k and at 0.85--0.96 for short sessions on the native pool, but at 0.2--1.6 in the noisier cells and 0.1--0.8 for long sessions,
 which right-censoring biases (descriptive; Appendix~\ref{app:trapdata}). The earlier heuristic round-robin layer of our model already reproduced the
-backlog slope at 300k numerically (0.63--0.64); Theorem~\ref{thm:trap} gives the law exactly, in closed form, for every cell.
+backlog slope at 300k numerically (0.63--0.64 of $\lambda-\lmiss$); Theorem~\ref{thm:trap} gives the law exactly, in closed form, for every cell.
 
 \paragraph{The registered slope rule, explained post hoc.} Our registered trap rule calls a BURST run trapped only if its
 backlog slope exceeds $0.5(\lambda-\lref)$ (\S\ref{sec:evidence}). At 1.35~$\lref$ Theorem~\ref{thm:trap}(c) puts the true
@@ -149,7 +151,7 @@ simulator's modal calls, but with $P(\text{NO-TRAP})=0.41$. Outcome: NO-TRAP, as
 (log score $-0.89$); over the six TOOLSLOW-W and TOOLSLOW-D15 runs the simulator was right in 6, the per-seed modal calls in 6
 and the fluid verdict in 4. The stuck run passed S1--S4 (composition $+0.1$\%, gap slope $1.02\gamma$, completion $+10$\% of $D$,
 backlog slope $-15$\% of $\alpha$); its S5 plug-in missed the 0.01\,/s tolerance by 0.0004\,/s, and with one eligible run the
-refutation rule does not apply. Across the four runs trapped by a tool slowdown alone, S1--S4 pass in both cells, and S5 is close
+refutation rule does not apply. Across the four blind runs trapped by a tool slowdown alone, S1--S4 pass in both cells, and S5 is close
 in 3 of 4 and on the correct side in 3 of 4. Of the frozen exploratory measures, the sessions alive at 2100\,s were off by 4 in
 seed~1 (reference accuracy 1), the outstanding requests at 3300\,s by 7 in seed~0 (reference 5), and seed~0's first 150\,s window
 below a follow-up hit of 0.5 came one bin early; pred2's plan walk missed seed~0's sessions alive at 3000\,s by 51.
@@ -160,7 +162,7 @@ tag \texttt{icml-cut-pred} (commit \texttt{2f90267}, pushed at 02:25:43 CST on 2
 Model~F predicts that all six runs stay stuck over $[5700,8700)$\,s; that CUT-A, although its rate is below the trapped throughput
 of the same seed's uncut run, does not clear, its backlog dipping by less than 15\% on 300\,s bins and growing again in seeds 0 and 2
 (predicted slopes $S$ of the backlog over $[3000,8700)$\,s of $+0.0039$ and $+0.0028$\,/s; seed~1's plan has few post-cut arrivals,
-and its predicted slope is $-0.0026$\,/s); and that CUT-B drains slowly (predicted slopes $-0.0095$ to $-0.0131$\,/s) and would empty
+and its predicted slope is $-0.0026$\,/s); and that CUT-B's backlog shrinks slowly (predicted slopes $-0.0095$ to $-0.0131$\,/s) and would empty
 only at about 27{,}100\,s, the busy period of Theorem~\ref{thm:trap}(a), far beyond the run.
 
 The decision rule was registered after the predictions were pushed and before any CUT job (commit \texttt{11b0e4e}, tag
@@ -198,7 +200,7 @@ cut, up to 19.1\%), and more than 150 sessions present over the last 300\,s. Mod
 against 176 over $[2100,2400)$\,s in seed~0).
 
 The pass is narrower than Corollary~\ref{cor:trapthr}. Both comparators assume a constant throughput, so the registered rule
-rejects only the constant-throughput readings, those in which the trap drains at the throughput it showed or completes sessions at
+rejects only the two constant-throughput readings it was built against, in which the trap drains at the throughput it showed or completes sessions at
 the all-miss capacity: over $[3000,8700)$\,s, completions equal to the nominal cut rate fit as well as model~F, and both match the
 measured slopes to within the engine's run-to-run jitter (0.0001--0.0005\,/s, from the identical pre-cut parts of runs with the same
 plan). One result singles out model~F: in the late window, scored post hoc against slopes frozen with the predictions, the
@@ -214,22 +216,22 @@ content of Corollary~\ref{cor:trapthr}, and on the engine it held within the run
 clear'' means within 8700\,s.
 
 \emph{CUT-B outcome: pass.} After the cut to 0.85~$\lref$ (realized 0.81--0.88~$\lref$ over $[3000,8700)$\,s) the backlog
-drained, slowly, at $-0.0085$, $-0.0126$ and $-0.0124$\,/s over $[3000,8700)$\,s, against model~F's frozen $-0.0095$, $-0.0131$
+fell, slowly, at $-0.0085$, $-0.0126$ and $-0.0124$\,/s over $[3000,8700)$\,s, against model~F's frozen $-0.0095$, $-0.0131$
 and $-0.0123$ and the naive comparator's $-0.033$, $-0.043$ and $-0.034$, so all three seeds were theory-favoured and all three
 slopes were negative. All three runs were still stuck at 8700\,s (hit 0.000 over $[5700,8700)$\,s; 140, 77 and 89 sessions present,
 against model~F's 139, 79 and 94). Here persistence discriminates: from the backlog over $[3000,3300)$\,s, the naive reading would
 have reached the hit-recovery onset $n_b=32.7$ at 5656--7245\,s, and a drain at the completion rate seen just before the cut (1.68,
 1.65 and 1.23~$\lref$ over $[1800,2400)$\,s) at 4877--7598\,s; model~F's fluid empties only at about 27{,}100\,s, the busy period of
 Theorem~\ref{thm:trap}(a). A reading in which the trap completes sessions at the all-miss capacity, not a registered comparator for
-this arm, fits the slopes about as well. Model~F's distinctive prediction for CUT-B, completions below that capacity as the trapped
+this arm, fits the slopes about as well: had it been one, seed~0 would have favoured it (error 0.00036 against model~F's
+0.00099\,/s), and CUT-B would still have passed, 2 of 3. Model~F's distinctive prediction for CUT-B, completions below that capacity as the trapped
 mix ages, held after the fact: 0.918, 0.932 and 0.974~$\lref$ over $[5700,8700)$\,s against model~F's 0.918, 0.955 and 0.979, with
 served prompts of 10.9--11.5k tokens against 8.4--8.8k in the uncut runs, although at the frozen tolerance of 0.006\,/s the
 all-miss capacity also lies (just) inside. The frozen secondary predictions held too: completions within 0.002\,/s, the served
-prompt within 1\%, and a negative trend of the median gap in all three seeds. CUT-B's runs ran on two nodes, and ``drained slowly''
-is within 8700\,s.
+prompt within 1\%, and a negative trend of the median gap in all three seeds. CUT-B's runs ran on two nodes, and none left the trap within 8700\,s.
 
 Together, on the engine a cut below the trapped throughput but above the all-miss capacity left every run trapped, and a cut below
-the all-miss capacity drained the trap only slowly: the pattern of Theorem~\ref{thm:trap}(a) and Corollary~\ref{cor:trapthr}. Each
+the all-miss capacity shrank the backlog only slowly, every run still trapped at 8700\,s: the pattern of Theorem~\ref{thm:trap}(a) and Corollary~\ref{cor:trapthr}. Each
 arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one; what singles out model~F against
 intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 \end{itemize}

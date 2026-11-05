@@ -251,3 +251,25 @@ Nova result was read by this session.
   `results/theory/icml/backlog_over_alpha.json` (force-added), from `trap_check.json` only.
 - Timeline: CUT-B and TOOLSLOW-D15 pulls and verdicts (06:51, 08:23, 08:25, 08:35, 08:36 CST) from the pull directory names.
 - Only `\repourl` is still pending.
+
+## Final fix round (lead's triage of the review of 54d3529), applied 2026-11-05
+
+Source: `notes/review_54d3529/` on `r15/tonight` (662bb3f). The blind recompute of CUT-B and TOOLSLOW-D15 agreed on every number
+(289 comparisons); the Brier scores (0.044 / 0.045) are not used, since the draft reports no Brier score.
+
+- Must-fix: the abstract is `abstract_proposed.tex` verbatim (1913 form characters); intro: "constant completions at the nominal
+  cut rate fit CUT-A as well" replaces the false "flat backlog"; the round-15 provenance exports (push_times, sacct, sacct_utc) and
+  the README line describing the re-export were checked out from `origin/r15/tonight`, so the CUT-B and TOOLSLOW-D15 jobs show
+  COMPLETED with end times; App. prov now says the sacct file was re-exported after the last job ended.
+- Should-fix: CUT-B's quasi-static counterfactual (seed 0 would favour it; still 2 of 3); the from-empty window arrivals checked
+  (3.8-13.1% above nominal in all 13, recomputed by `backlog_over_alpha.py`, which now also writes the window-arrival ratios and
+  slope/(lam - lam_miss)); "over the 57 E2-protocol runs" on the 0.99; the TOOLSLOW-D15 fluid miss in the old limitations and
+  appendix_supp; CUT-B's backlog "shrank" (not "drained") everywhere, every run still trapped at 8700 s ("drained" kept for SHED
+  and the rescue; also the model-F prediction sentence now says the backlog shrinks); the S5 misses in the intro and conclusion,
+  and the trapped TOOLSLOW-D15 run's four pooled scores; "the two constant-throughput readings it was built against".
+- R6 closed: `analysis/theory/icml/premium_over_tokrate.py` (reads trap_check.json only) reproduces the reviewer's check exactly:
+  completions over lref divided by each run's token-rate ratio (0.95-1.12) are 1.08-1.81, minimum BASIN-60 seed 1; the sentence is
+  in the youth-premium bullet. Output `results/theory/icml/premium_over_tokrate.json` (force-added).
+- Claims 10-13 and N1-N5 as triaged ("two thirds" over the 57 runs, checked at 0.647; premium proved for rho >= 1.04; "model F, the
+  trapped engine idealized as ..."; "an engine test of the reading", "CUT-A and CUT-B are consistent with it"; "of lam - lam_miss";
+  "alpha at the nominal rate"; "four blind runs"; the timeline caption's pull-record source; the stale NUMBERS.md rows).

@@ -28,17 +28,19 @@ a fixed time, the arrival stop ran at one rate, and the tool slowdowns at two. A
 
 A burst can tip a prefix-cached agent server into a trap in which its cache stops paying; Lu et al., who posted first, and we
 observed this independently (in their disaggregated system the hit rate falls to about 0.3, in ours every turn misses). Idealized, the
-trap has an exact law: as a fluid FIFO server on which every turn misses, the trapped engine obeys a linear renewal recursion along
+trap has an exact law: model~F, the trapped engine idealized as a fluid FIFO server on which every turn misses, obeys a linear
+renewal recursion along
 FIFO orbits, so from any trapped state it converges to the known self-similar regime~\citep{khanin2001steady}, fixed by a Perron
 root: the gap
 between turns grows linearly, the backlog grows at a fraction of the excess load (0.6 to 0.8 at our loads), and the turns it serves
 are young and short; for our workload it completes sessions faster than its all-miss capacity. Checked retrospectively on 57 stuck
 runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws hold for the runs taken
-together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown alone. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
+together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown alone, in four of the five pre-set scores (a per-run slope check failed in
+two). The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
 trap does not clear it, and a cut below the all-miss capacity drains the trap only slowly and by turning sessions away.
 On the engine, a cut to below the completion rate seen just before it, and below the trapped throughput of the same seeds' uncut
 runs, but above the all-miss capacity, left all three traps in place to the end of the run, and a cut below the all-miss capacity
-drained the trap only slowly, as Theorem~\ref{thm:trap}(a) and Corollary~\ref{cor:trapthr} say; each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one; what singles out model~F
+shrank the backlog only slowly, all three runs still trapped at 8700\,s, as Theorem~\ref{thm:trap}(a) and Corollary~\ref{cor:trapthr} say; each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one; what singles out model~F
 against intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 The other exit, a session cap that restores reuse, rescued all 9 established traps of our registered tests at the same load without
 shedding, and the engine stayed good after the cap was removed.
