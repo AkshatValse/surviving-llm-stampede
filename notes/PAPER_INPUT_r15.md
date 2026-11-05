@@ -422,7 +422,7 @@ This is the cell that discriminates between the models.
 | calibrated simulator, exact plans, `mixed` (PRIMARY) | S / G / G → NO-TRAP | **correct**, 3/3 per seed |
 | simulator, `separate_prefill_priority` | S / G / G → NO-TRAP | correct, 3/3 |
 | pred2 fluid verdict (n(2100) = 51.1 > n_u = 31.8) | TRAPS (S / S / S) | **wrong**: 1/3 per seed; seeds 1 and 2 recovered |
-| pred2 per-seed layer | modal S / G / G; P(TRAPS) / P(NO-TRAP) / P(MIXED) = 0.58 / 0.41 / 0.01 | modal 3/3; log score of the outcome ln 0.409 = −0.894; per-seed log-likelihood −0.868 (STUCK) and −0.892 (GOOD); Brier 0.087 and 0.091 |
+| pred2 per-seed layer | modal S / G / G; P(TRAPS) / P(NO-TRAP) / P(MIXED) = 0.58 / 0.41 / 0.01 | modal 3/3; log score of the outcome ln 0.409 = −0.894; per-seed log-likelihood −0.868 (STUCK) and −0.892 (GOOD) (T1 adds 0); Brier over the declared six T1 + T2 runs 0.044 (STUCK) and 0.045 (GOOD), T2 alone 0.087 and 0.091 |
 
 - Over the six T1 and T2 runs, per-seed agreement was: simulator 6/6 (both modes), pred2's per-seed modal call 6/6, pred2's
   fluid verdict 4/6.
@@ -529,3 +529,26 @@ This is the cell that discriminates between the models.
     - All of this is folded into section 3 above.
   - Scripts and outputs: session scratchpad `tonight/verify_cut_a_recompute/` and `tonight/verify_cut_a_skeptic/` (not
     committed).
+- **CUT-B and TOOLSLOW-D15: blind recompute (one agent, own code, ran no classifier): full agreement.**
+  - 289 field-by-field comparisons with the official outputs, 0 disagreements; the largest relative difference is 1.45e-13.
+  - Recomputed:
+    - CUT-B: S over both windows, λ′_plan, the frozen D_trap (to 3e-17), comparators, STUCK, calls, the manipulation check
+      (pre-cut sessions bit-exact; post-cut arrivals a subset of the control's candidates; kept-count z), the binding, and
+      the secondary measures;
+    - T2: hit_eval, slopes, STUCK/GOOD, the manipulation check (every in-window call add_s = 15 exactly, none outside),
+      plans byte-identical to the controls, the binding, the exploratory measures and the scoring.
+  - **Declared scoring, corrected.** `PREDICTIONS_r15.md` §4 declares Brier "over the 6 STUCK outcomes and over the 6 GOOD
+    outcomes", i.e. T1 and T2 together. Those six-run means are 0.0436 (STUCK) and 0.0453 (GOOD). The 0.087 / 0.091 reported
+    first are T2's three runs alone. The log-likelihood sums are unchanged, since T1 contributes 0.
+  - **Counterfactual worth one clause in the paper.** Had the quasi-static comparator also been part of CUT-B's rule, seed 0
+    would have been QS-FAVOURED (|S − S_qs| = 0.00036 < |S − S_theory| = 0.00099). The verdict would still be PASS (2 of 3).
+  - **Naming caution.** In `cut_runs.csv` the column `naive_slope_3000_8700` is the D_pre-based comparator, reported only.
+    The registered naive comparator is `naive_slope` in `cut_verdict.json`, and every number in this note uses the
+    registered one.
+  - **Cosmetic, no effect on any number.** The analysis-side `meta.json` of the PC classifier runs records hardware
+    "Apple M3 Max CPU (simulation)", a default of the analysis metadata, although the analyses ran on Akshat-PC. It also
+    records dirty = true, from the uncommitted notes and pulled results at the time; `analysis/`, `configs/` and `src/` were
+    clean.
+  - **Borderline exploratory value.** For T2 seed 2, the follow-up hit over [1800, 1950) s was 100/197 = 0.508, just above 0.5,
+    so its t_fu150 "none" is two hits from 1800.
+  - Scripts and outputs: session scratchpad `tonight/recompute_cutb_t2/` (not committed).
