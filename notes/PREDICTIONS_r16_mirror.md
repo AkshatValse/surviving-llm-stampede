@@ -7,6 +7,20 @@ tag `r16-mirror-reg`. Code: `analysis/theory/icml/mirror_predict.py` (prediction
 rules, scoring). Frozen numbers: `results/theory/r16/mirror_predictions.json`; frozen client plans:
 `results/theory/r16/mirror_plans/`. Registration: `configs/agentload_prereg_2026-11-05_mirror_k20.yaml`.
 
+## Errata to the prose (added after the tag, 2026-11-05 about 16:30 CST)
+
+The independent pre-upload audit of the paper draft (8a212bd) found two wording errors in this note. Both were found
+before any output of the MIRROR BURST, NOBURST or E0a jobs was read; only the cache-off smoke test 17264039 had been
+checked (its config). The tagged text, the frozen numbers in `mirror_predictions.json` and the rules are unchanged, and
+neither error enters a rule.
+- "Lull ... the backlog grows 1.4x faster than the excess load" (below) quotes the asymptotic alpha / (lambda - lambda_miss)
+  = 1.398 of Theorem 1(a), not the plan-driven prediction. Over the window rule M4 scores, [6000, 8700) s, model F's frozen
+  plan-driven slopes are 0.0789 / 0.0857 / 0.0930 /s (seeds 0-2). That is 1.65 / 1.95 / 1.79 times the plans'
+  quasi-static slope lambda_plan - lambda_miss (0.0478 / 0.0441 / 0.0518 /s). M4 scores against these per-seed slopes,
+  as the headline table gives them.
+- W6's parenthetical "(model F: by 270-330 s)" does not match the frozen wave medians. Those give 311.7 / 333.6 /
+  287.2 s, i.e. 287-334 s. W6 tests only the order.
+
 ## What is tested, and why it is decisive
 
 Theorem 2 says a trapped engine completes sessions at D = lambda_miss H(z) Gamma(z). Gamma >= 1 comes from the cost growth; H

@@ -8,7 +8,9 @@ For the paper session (nova-reframe), from the lead, 2026-11-05 about 14:35 CST.
 Theorem 2 factors the trapped completion rate as D = lambda_miss H(z) Gamma(z):
 - Gamma(z) >= 1 comes from context growth;
 - H(z) comes from the turn-count law, and is about 1 for the geometric turn count of our workload, which is why every
-  trapped run so far completes sessions above its all-miss capacity (the youth premium).
+  trapped run at a load above the all-miss capacity completes sessions above it (the youth premium). CUT-B's runs, cut
+  to below it, completed 0.92-0.97 lambda_ref, as model F predicts. (Corrected 16:30 after the audit; the earlier text
+  said "every trapped run so far".)
 
 The theorem therefore predicts that the premium reverses when agents run to a fixed step budget, since a nearly
 deterministic T gives H(z) well below 1. MIRROR tests this blind:
@@ -20,7 +22,9 @@ deterministic T gives H(z) well below 1. MIRROR tests this blind:
     burst cohort must pass through 20 FIFO cycles, each longer than the last, before any of it can finish;
   - the cohort then completes in a wave, with its median completion at 5135-5195 s by seed;
   - completions then stay near half the all-miss capacity (0.49-0.60 lambda_ref over [6600, 8700) s), while the backlog
-    grows 1.4 times faster than the excess load.
+    grows 1.65-1.95 times as fast as the plan's excess load lambda_plan - lambda_miss over [6000, 8700) s (1.4 times
+    asymptotically). (Corrected 16:30 after the audit; the earlier text gave only the asymptotic 1.4, which is not what
+    rule M4 scores. See the errata in notes/PREDICTIONS_r16_mirror.md.)
 - **The alternatives.** Every throughput-curve reading predicts steady completions near 1.05 lambda_ref and no wave: the
   quasi-static one, Lu et al.'s dN/dt = lambda - X(N)/K, and our Eq. (fluid). The standard workload's measured traps sit
   at 1.05-1.48 lambda_ref in the first window and 1.01-1.35 in the second.
@@ -60,7 +64,7 @@ deterministic T gives H(z) well below 1. MIRROR tests this blind:
 | 1 | 0.070 | 5135 s | 4876-5299 | 0.599 | +0.0857 / +0.0441 |
 | 2 | 0.093 | 5157 s | 4788-5376 | 0.486 | +0.0930 / +0.0518 |
 
-1.35 x (secondary): the wave times are 4883 / 4802 / 4870 s. Each is earlier than at 1.65 x, by 270-330 s per seed; this is
+1.35 x (secondary): the wave times are 4883 / 4802 / 4870 s. Each is earlier than at 1.65 x, by 287-334 s per seed (corrected after the audit from "270-330 s"); this is
 registered secondary W6.
 
 ## Registered rules (`analysis/r16_mirror.py`; registration commit bc81ee7, tag `r16-mirror-reg`, pushed 14:07:37 CST)
