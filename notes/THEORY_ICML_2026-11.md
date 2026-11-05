@@ -214,9 +214,18 @@ of wait per second of trap age), so at equal rho the gap grows at the same slope
 work-conserving order and zero think time. The all-miss server's busy period from sessions with remaining works
 w_1, ..., w_n is the total progeny of a Galton-Watson process in which a session begets Poisson(lambda W) sessions, where W
 is its total work. It ends with probability exp(-lambda (1 - q) sum_i w_i), where q is the least root in [0, 1] of
-q = E[exp(-lambda W(T) (1 - q))] (Kendall 1951; Takacs 1962). With rho > 1, q < 1. For backlogs of hundreds of sessions,
-each holding about 20 GPU-seconds of remaining work, a spontaneous exit from the trap is negligible except very near
-rho = 1. We state this for orientation only and claim nothing new.
+q = E[exp(-lambda W(T) (1 - q))] (Kendall 1951; Takacs 1962). With rho > 1, q < 1. This is a lower bound on a
+spontaneous exit from the trap, because hits return before the queue empties.
+
+For the 300k cell we take the fluid backlog 3000 s after the burst, with V_tot taken as N times a mean remaining work:
+an order-of-magnitude estimate. With that, the bound is:
+
+| rho | 1.02 | 1.05 | 1.10 | 1.35 | 1.65 |
+|---|---|---|---|---|---|
+| bound | 0.15 | 7e-3 | 3e-5 | 6e-22 | 2e-53 |
+
+So a spontaneous exit matters only within a few percent of lambda_miss. We state this for orientation and claim nothing
+new.
 
 **Remark 6 (processor-sharing variant = the paper's RR layer).** The paper's RR layer advances every session continuously,
 1/theta(t) turns per second; this is processor sharing in the turn clock. The same proof with the time change
