@@ -1,0 +1,242 @@
+{
+ "definitions": "The secondary / exploratory measures on a GPU run dir, with the frozen analysis helpers (analysis.throughput):\n    out_2100_2400 = outstanding_mean over [2100, 2400) (requests in flight + gated sessions, time-average); out_3300 =\n    outstanding_at(3300); alive_T = backlog_at(sessions, T) (sessions in the system, right-continuous); t_fu150 = start of\n    the first 150-s window [1200 + 150 k, + 150) whose hit_frac_followup (ok turns >= 2 completing in it, cached / prompt >\n    windows.cached_frac_threshold) is < 0.5; hit_eval = hit_frac_turns over [5700, 8700) (the frozen endpoint's hit).",
+ "runs": [
+  {
+   "run_dir": "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-210448",
+   "label": "sglang-fcfs-r1-toolslow-d10",
+   "seed": 0,
+   "rate_mult": 1.35,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 10
+   },
+   "t_end_s": 8700.015232961625,
+   "hit_eval": 0.9313010823945218,
+   "out_2100_2400": 2.870056496600929,
+   "out_3300": 1.0,
+   "alive_2100": 22.0,
+   "alive_2400": 10.0,
+   "alive_3000": 9.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-210648",
+   "label": "sglang-fcfs-r1-toolslow-d10",
+   "seed": 1,
+   "rate_mult": 1.35,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 10
+   },
+   "t_end_s": 8700.016100420617,
+   "hit_eval": 0.9300358790363916,
+   "out_2100_2400": 2.294269082974618,
+   "out_3300": 0.0,
+   "alive_2100": 15.0,
+   "alive_2400": 6.0,
+   "alive_3000": 14.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-215143",
+   "label": "sglang-fcfs-r1-toolslow-d10",
+   "seed": 2,
+   "rate_mult": 1.35,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 10
+   },
+   "t_end_s": 8700.016194625758,
+   "hit_eval": 0.9341739687967514,
+   "out_2100_2400": 2.965924036183078,
+   "out_3300": 0.0,
+   "alive_2100": 15.0,
+   "alive_2400": 10.0,
+   "alive_3000": 10.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-220113",
+   "label": "sglang-fcfs-r1-toolslow-d30",
+   "seed": 0,
+   "rate_mult": 1.35,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 30
+   },
+   "t_end_s": 8700.013406314887,
+   "hit_eval": 0.9312859036676977,
+   "out_2100_2400": 18.95237256916553,
+   "out_3300": 1.0,
+   "alive_2100": 49.0,
+   "alive_2400": 16.0,
+   "alive_3000": 9.0,
+   "t_fu150": 1950.0
+  },
+  {
+   "run_dir": "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-220954",
+   "label": "sglang-fcfs-r1-toolslow-d30",
+   "seed": 1,
+   "rate_mult": 1.35,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 30
+   },
+   "t_end_s": 8700.025227199309,
+   "hit_eval": 0.9300358790363916,
+   "out_2100_2400": 24.43321025360999,
+   "out_3300": 0.0,
+   "alive_2100": 38.0,
+   "alive_2400": 20.0,
+   "alive_3000": 14.0,
+   "t_fu150": 1950.0
+  },
+  {
+   "run_dir": "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-224211",
+   "label": "sglang-fcfs-r1-toolslow-d30",
+   "seed": 2,
+   "rate_mult": 1.35,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 30
+   },
+   "t_end_s": 8700.01800864935,
+   "hit_eval": 0.0,
+   "out_2100_2400": 33.751811531872164,
+   "out_3300": 51.0,
+   "alive_2100": 39.0,
+   "alive_2400": 44.0,
+   "alive_3000": 62.0,
+   "t_fu150": 2100.0
+  },
+  {
+   "run_dir": "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-155125",
+   "label": "sglang-fcfs-r1",
+   "seed": 0,
+   "rate_mult": 1.35,
+   "tool_slowdown": null,
+   "t_end_s": 8700.011996374466,
+   "hit_eval": 0.9312859036676977,
+   "out_2100_2400": 1.7400653540746558,
+   "out_3300": 2.0,
+   "alive_2100": 7.0,
+   "alive_2400": 8.0,
+   "alive_3000": 9.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-161834",
+   "label": "sglang-fcfs-r1",
+   "seed": 1,
+   "rate_mult": 1.35,
+   "tool_slowdown": null,
+   "t_end_s": 8700.012522192672,
+   "hit_eval": 0.9300358790363916,
+   "out_2100_2400": 1.6317228847090413,
+   "out_3300": 0.0,
+   "alive_2100": 7.0,
+   "alive_2400": 6.0,
+   "alive_3000": 14.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-211253",
+   "label": "sglang-fcfs-r1",
+   "seed": 2,
+   "rate_mult": 1.35,
+   "tool_slowdown": null,
+   "t_end_s": 8700.012480577454,
+   "hit_eval": 0.9341880341880342,
+   "out_2100_2400": 2.562126171647906,
+   "out_3300": 0.0,
+   "alive_2100": 4.0,
+   "alive_2400": 10.0,
+   "alive_3000": 10.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-160218",
+   "label": "sglang-fcfs-r1",
+   "seed": 0,
+   "rate_mult": 1.65,
+   "tool_slowdown": null,
+   "t_end_s": 8700.0144104762,
+   "hit_eval": 0.933522929257021,
+   "out_2100_2400": 3.6626703547686157,
+   "out_3300": 8.0,
+   "alive_2100": 17.0,
+   "alive_2400": 9.0,
+   "alive_3000": 12.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-184259",
+   "label": "sglang-fcfs-r1",
+   "seed": 1,
+   "rate_mult": 1.65,
+   "tool_slowdown": null,
+   "t_end_s": 8700.01473488193,
+   "hit_eval": 0.9343357441948992,
+   "out_2100_2400": 2.173141258272044,
+   "out_3300": 1.0,
+   "alive_2100": 9.0,
+   "alive_2400": 7.0,
+   "alive_3000": 11.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261025-000053",
+   "label": "sglang-fcfs-r1",
+   "seed": 2,
+   "rate_mult": 1.65,
+   "tool_slowdown": null,
+   "t_end_s": 8700.011861689389,
+   "hit_eval": 0.9211777615215802,
+   "out_2100_2400": 2.857105138826484,
+   "out_3300": 2.0,
+   "alive_2100": 2.0,
+   "alive_2400": 12.0,
+   "alive_3000": 8.0,
+   "t_fu150": null
+  }
+ ],
+ "provenance": {
+  "git": {
+   "commit": "8aaabdb364ab156aed7c681828ad3b6d169e50e8",
+   "dirty": true,
+   "branch": "r15/tonight"
+  },
+  "argv": [
+   "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\analysis\\r15_sim_toolslow.py",
+   "measure",
+   "--out",
+   "results/theory/r15/toolslow_measured_r14.json",
+   "--run-dirs",
+   "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-210448",
+   "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-210648",
+   "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-215143",
+   "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-220113",
+   "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-220954",
+   "results/nova/toolslow_shed_1716990x_pulled_20261101-154800/results/agentload_e2_burst/20261031-224211",
+   "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-155125",
+   "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-161834",
+   "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-211253",
+   "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-160218",
+   "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261024-184259",
+   "results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/20261025-000053"
+  ],
+  "created": "2026-11-05T02:20:14-0600",
+  "file_sha256": {
+   "analysis/r15_sim_toolslow.py": "0b1541a2e203ff36fba858e3ec8a0eaac72998af3ea725bf02712c3a056de638",
+   "analysis/throughput.py": "ca4cf885a5c4034530e06a703255c817dacfdfb52adbfb28b28b0c1d2116ec81",
+   "analysis/load.py": "edea89771e2054e2cf257b7a0b65fe788ad4bf46d861efece2816164eb52b547",
+   "configs/agentload_analysis.yaml": "e3330b60e672b141def55f51d8dba4a01a19a2220cbf1720b6c28061aa5658b8"
+  }
+ }
+}
