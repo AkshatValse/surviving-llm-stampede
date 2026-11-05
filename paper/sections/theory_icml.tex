@@ -32,14 +32,15 @@ where $h_n\ge0$, $h_n=0$ for $n\ge K$, and $\sum_nh_n$ is the remaining all-miss
 \item If $\rho=1$, the backlog stays bounded.
 \item If $\rho>1$, let $z>1$ solve $\lambda\sum_kc_kG_kz^{-k}=1$. Then, as $t\to\infty$:
   \begin{itemize}[leftmargin=*,nosep]
-  \item $V(t)/t\to z-1$. More precisely, the gap between a session's turns becomes proportional to the remaining work,
-  $V\approx\frac{z-1}{\rho-1}V_{\mathrm{tot}}$. That is, it is proportional to the trap's age counted from its virtual origin
-  $-V_{\mathrm{tot}}(0)/(\rho-1)$;
+  \item the gap between a session's turns grows as $V(t)/t\to z-1$;
   \item the backlog grows as $N(t)/t\to\alpha=\lambda(1-E[z^{-T}])$, and sessions complete at $D=\lambda E[z^{-T}]$;
-  \item the sessions present, and the turns served, have the tilted turn mix $G_kz^{-k}/\sum_jG_jz^{-j}$;
-  \item a session that arrives at time $u$ finishes near $(u+c)z^{T}-c$, where $c=V_{\mathrm{tot}}(0)/(\rho-1)$.
+  \item the sessions present, and the turns served, have the tilted turn mix $G_kz^{-k}/\sum_jG_jz^{-j}$.
   \end{itemize}
+\item If $\rho>1$, a session that arrives at time $u$ finishes near $(u+c)z^{T}-c$, where $c=V_{\mathrm{tot}}(0)/(\rho-1)$.
 \item As $\rho\downarrow1$, $\alpha/(\lambda-\lmiss)\to E[T]/\bar k_c$, where $\bar k_c=\sum_kkc_kG_k/\sum_kc_kG_k$.
+\item If $\rho>1$, the gap becomes proportional to the remaining work, $V=\frac{z-1}{\rho-1}V_{\mathrm{tot}}$ up to a
+  geometrically vanishing error. That is, it is proportional to the trap's age counted from its virtual origin
+  $-V_{\mathrm{tot}}(0)/(\rho-1)$.
 \end{enumerate}
 \end{theorem}
 
@@ -70,7 +71,13 @@ fluid backlog settles at a positive level. A stochastic queue at $\rho'=1$ would
 \noindent The proofs (Appendix~\ref{app:trap}) are elementary. FIFO and work conservation give
 $f(u)=V(0)+W(u)$, with $W$ the work that has joined since time~0. FIFO maps each generation of joins onto the next
 generation of completions, which turns the nonlinear fluid into the recursion above, with nonnegative coefficients summing
-to~$\rho$. A finite-memory renewal lemma and its Perron root then give the rest. Model~F is the request-level FCFS analogue of
+to~$\rho$. A finite-memory renewal lemma and its Perron root then give the rest. The self-similar regime of
+Theorem~\ref{thm:trap}(c)--(d) is not new as a steady solution, with constant flows from the empty state. It is the
+single-station case of the steady solutions of fluid FIFO re-entrant lines~\citep{khanin2001steady}. That paper treats
+deterministic stages, and its closing remark covers a fixed fraction of the flow leaving at each node. The renewal
+recursion adds that every trapped trajectory, from any initial state, converges to this regime, geometrically per
+generation and with an explicit virtual origin (part~(f)). Theorem~\ref{thm:premium} and Corollary~\ref{cor:trapthr} are, as far as
+we found, new. Model~F is the request-level FCFS analogue of
 an overloaded processor-sharing queue, whose branching (Crump--Mode--Jagers) structure is classical
 \citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}. The paper's layer RR is the processor-sharing
 version; its growth differs from model~F's by about 2\%. Lu et al.\ state that arrivals below their low-reuse departure

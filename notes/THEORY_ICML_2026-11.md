@@ -29,6 +29,14 @@ session costs c_k all-miss GPU seconds, and a session has T turns, with G_k = P(
   - **Self-similarity.** With c = V_tot(0)/(rho - 1), a session that arrives at time u finishes at about
     (u + c) z^T - c.
   - **Near the threshold.** alpha / (lambda - lambda_miss) -> E[T] / kbar_c, with kbar_c the cost-weighted mean turn index.
+  - **Prior work (added 2026-11-05).** The self-similar regime itself is not new. As a steady solution (constant flows
+    from the empty state), with the Perron equation, linear growth, the z-tilted class mix and departures lambda E z^{-T},
+    it is the single-station case of the steady solutions of Khanin, Khmelev, Rybko & Vladimirov (2001).
+    - They treat deterministic stages.
+    - Their closing remark extends their theorem to lines where a fixed fraction of the flow leaves at each node, which
+      is our random T.
+    - What Theorem 1 adds is that every trapped trajectory, from any initial state, obeys the renewal recursion, and
+      therefore converges to that regime with an explicit virtual origin and rate (section 5).
 - **Theorem 2 (youth premium).** D / lambda_miss = H(z) Gamma(z).
   - H depends only on the turn-count law: H = 1 for a geometric T, and lies in [1 - q^K, 1] for the truncated geometric.
   - Gamma depends on the cost growth: Gamma >= 1 for non-decreasing costs, with equality only for constant costs.
@@ -74,7 +82,8 @@ past its 128-request fallback), the native pool, vLLM, the H200 at 300k and 600k
     registered FAIL point.
 
 **Why this direction (section 1).** It is the only one of the candidates whose central object, the trapped state, neither
-our paper nor Lu et al. nor the classical metastability literature characterizes. It is provable with elementary tools,
+our paper nor Lu et al. nor the classical metastability literature characterizes. The steady overloaded regime of a FIFO
+re-entrant line is, however, in Khanin et al. (2001); section 5 says what is new against it. It is provable with elementary tools,
 and it is tested by existing data across eight cells, with no parameter fitted to any trap measurement.
 
 ## 1. Choice of direction
@@ -237,7 +246,8 @@ the trapped composition, alpha / lambda_miss and D / lambda_miss are functions o
 when every c_k is divided by s (a uniform GPU speed-up) and lambda is scaled to keep rho. gamma is dimensionless (seconds
 of wait per second of trap age). So at equal rho, two engines whose cost vectors are proportional have gaps that grow at
 the same slope. Our H200 cell models are a uniform speed-up of the A100 costs, so this holds for them, but it is not a
-general hardware claim.
+general hardware claim. The invariance is the single-station case of the normalization x_j = x~_j / x~_0,
+v_j = v~_j x~_0 / c_i of Khanin et al. (2001), conditions (1̄)-(3̄) to (1.1).
 
 **Remark 5 (stochastic version; classical).** Take Poisson arrivals, i.i.d. T, deterministic costs c_k, any
 work-conserving order and zero think time.
@@ -520,8 +530,11 @@ c -> c/s, omega is unchanged and lambda_miss -> s lambda_miss. []
 - Proposition 5 (the cycle identity, gap/R_M = V_I/M) is an accounting relation. Theorem 1(c)-(d) gives the cycle's growth
   law and composition, so gap/R_M = sum_i (P_{k_i} + d)/M grows like alpha t (P_z + d)/M.
 - The paper states these phenomena qualitatively (the young backlog, the above-capacity completions) and computes RR
-  numerically. New here: the exact growth law (the Perron root of a renewal recursion), the closed forms for D, gamma and
-  the trapped composition, the H x Gamma decomposition, the open-system threshold theorem, and the check across every cell.
+  numerically.
+  - New relative to the paper: the exact growth law (the Perron root of a renewal recursion), the closed forms for D,
+    gamma and the trapped composition, the H x Gamma decomposition, the open-system threshold theorem, and the check across
+    every cell.
+  - In the wider literature, the closed forms of the steady regime are not new. They are Khanin et al. (2001); see below.
 
 **Against Lu et al. (arXiv:2611.02543):**
 - They define D_low as the low-reuse departure rate that their curve approaches once reuse has collapsed, and they state
@@ -549,11 +562,48 @@ c -> c/s, omega is unchanged and lambda_miss -> s lambda_miss. []
   - Overloaded processor sharing: Jean-Marie & Robert (1994) for the growth rate; Grishechkin (1992) for the
     Crump-Mode-Jagers correspondence; Puha, Stolyar & Williams (2006) for the fluid limit.
   - Overloaded multiclass FIFO, without re-entry and with abandonment instead: Jennings & Puha (2013).
-- Model F is a single-station FIFO re-entrant line in the sense of Kumar (1993), in overload, with visit-dependent service.
-  The reduction of its nonlinear fluid to a linear renewal recursion along FIFO orbits, the Perron-root growth law and the
-  H x Gamma decomposition are, as far as a targeted search found, new.
-- The scout search (2026-11-05) found no renewal or Perron characterization along FIFO orbits for overloaded re-entrant
-  multiclass FIFO, and no result on growing per-visit service in overload. This search is limited, not exhaustive.
+- **Khanin, Khmelev, Rybko & Vladimirov (2001), "Steady solutions for FIFO networks", Moscow Math. J. 1(3):407-419.**
+  The reframe session's literature check found it on 2026-11-05. I read the journal PDF in full; MathNet lists it as mmj28.
+  - **Setting.** They study fluid FIFO re-entrant lines with stage-dependent mean service times ("viscosities") v_j, and
+    look for steady solutions: constant flows from the empty state.
+  - **The overloaded node.** At an overloaded node the queue grows linearly, and the flows satisfy
+    x_s = x_{s-1} / sum_{j in J_i} x_{j-1} v_j (their 2.3; Lemma 2.4 gives x(j, a) = x(j-1, a) a_{i(j)}).
+    - At a single node with n deterministic stages this is x_s = a^s with sum_j v_j a^j = 1: our Perron equation, with
+      z = 1/a and T = n.
+    - The steady flows give gamma = z - 1, the z^{-k} composition and departures lambda z^{-n}.
+  - **Random T.** Their closing remark extends their uniqueness theorem to lines "with additional inflows at each node and
+    a fixed fraction of the flow leaving the system at each node". In a fluid, that is our random T.
+  - **Invariance.** Their normalization ((1̄)-(3̄) to (1.1)) is Corollary 4's invariance.
+  - **What they prove:**
+    - existence of steady solutions (Brouwer);
+    - uniqueness for Kelly-type lines (equal viscosities at a node; Theorem 3.1);
+    - uniqueness for lines with at most two classes per node, or n <= 4. There the iterates of their fixed-point maps
+      converge geometrically (Propositions 2.8-2.9); these are maps on flow vectors, not fluid trajectories;
+    - a two-node non-uniqueness example (Example 2.6).
+  - **What they leave open.** Non-steady trajectories: "for solutions that are not necessary steady the question of
+    uniqueness remains open".
+- **Model F and what is new.** Model F is a single-station FIFO re-entrant line (Kumar 1993; Khanin et al. 2001) in
+  overload, with visit-dependent service.
+  - **Not new.** The self-similar regime of Theorem 1(c)-(d), as a steady solution, is the single-station case of Khanin
+    et al. (deterministic stages; fractional exits by their remark). So is Lemma 1, whose uniqueness is trivial at a single
+    station.
+  - **New, as far as we found:**
+    - (i) From an arbitrary trapped state, the nonlinear fluid reduces to a linear renewal recursion along FIFO orbits
+      (Lemma 2(iv)). Hence every trapped trajectory converges to the steady regime: Theorem 1(c)-(d) as limits from any
+      initial state. The convergence comes with the exact virtual origin, V = (gamma/(rho - 1)) V_tot + O(theta^n)
+      (Theorem 1(f)), and the per-generation rate (Remark 8).
+    - (ii) The critical case (Theorem 1(b)).
+    - (iii) Theorem 2: the youth premium D > lambda_miss, its H x Gamma decomposition, its conditions and the truncation
+      counterexample.
+    - (iv) Corollary 3: the throughput measured in a trap overstates the recovery threshold.
+  - **Elementary or classical.** Theorem 1(e) is an elementary expansion of the steady equation. Theorem 1(a) is the
+    classical fluid busy period.
+- **Search record.**
+  - The scout search (2026-11-05) found no renewal or Perron characterization along FIFO orbits for overloaded re-entrant
+    multiclass FIFO, and no result on growing per-visit service in overload. It **missed** Khanin et al. (2001).
+  - Two further targeted searches after that find (2026-11-05) found no work on the convergence of non-steady overloaded
+    FIFO re-entrant trajectories, on the critical case, or on a premium of trapped completions over capacity.
+  - All of these searches are limited, not exhaustive.
 - Kendall's busy-period branching (Remark 5) is classical and claimed as such.
 
 **Not claimed:**
@@ -875,6 +925,20 @@ Tag `icml-trap-pred` (`6b47a6c`) was pushed to the private origin on 2026-11-05 
   measured trapped throughput exceeds the drain threshold.
 - (4) A post-hoc account of the registered low-rate fragility.
 
+**Attribution the paper must carry.** Related work must credit Khanin et al. (2001) for the steady (self-similar) regime:
+- the Perron equation;
+- linear growth;
+- the z-tilted mix;
+- the departure flow.
+
+The paper claims as new, as far as we found, only:
+- the convergence of every trapped trajectory to that regime (the renewal recursion, Theorem 1(b), (c)-(d) as limits, and
+  (f));
+- Theorem 2;
+- Corollary 3.
+
+See section 5.
+
 **Suggested abstract sentence (about 360 characters):** "We prove that a trapped engine is an overloaded re-entrant FIFO
 queue whose cycle obeys a linear renewal recursion; with no parameter fitted to trap data, its Perron root gives the trapped
 turn mix within a few percent, the linear growth of the turn gap and a completion rate above all-miss capacity, so throughput
@@ -956,3 +1020,22 @@ under the session scratchpad: `skepticA/`, `skepticB/`, `skepticC/`).
   - Novelty claims were reworded against the paper's RR layer (which already gave about 0.63) and against Lu et al.
     (whose D_low drain statement is qualitatively our threshold).
 - Blindness confirmed: every run directory used was pulled between 2026-10-24 and 2026-11-01.
+
+**Literature correction after the referees (2026-11-05).** The reframe session's literature check found Khanin,
+Khmelev, Rybko & Vladimirov, "Steady solutions for FIFO networks", Moscow Math. J. 1(3):407-419 (2001). None of the three
+referees or the scout search had found it. I read the full PDF; the journal header, MathNet (mmj28) and the paper agree on
+the citation.
+- **What it covers.** Its steady solutions contain the self-similar regime of Theorem 1(c)-(d) for deterministic stages:
+  - the Perron equation;
+  - gamma = z - 1;
+  - the z^{-k} mix;
+  - departures.
+
+  Its closing remark covers fractional exits (random T), and its normalization is Corollary 4.
+- **What was reworded.** Novelty was reworded in sections 0, 3 (Corollary 4), 5 and 9, and in both LaTeX drafts.
+  Theorem 1's statements and proofs are unchanged. The claims of novelty are now limited to:
+  - convergence from any trapped state (the renewal recursion, Theorem 1(b), (c)-(d) as limits, and (f));
+  - Theorem 2;
+  - Corollary 3.
+- **Citations checked against Crossref.** Kendall (1951) is JRSS-B 13(2):151-173, doi 10.1111/j.2517-6161.1951.tb00080.x.
+  Jean-Marie & Robert (1994) is Queueing Systems 17(1-2):129-136.

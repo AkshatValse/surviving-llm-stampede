@@ -160,7 +160,7 @@ average rate $\sum_kP_k\pi_k/\sum_kc_k\pi_k$.
 $\partial_xF(1,1)=-\bar k_c$. So $z'(1)=1/\bar k_c$. Then $E[z^{-T}]=1-(z-1)E[T]+O((z-1)^2)$, so
 $\alpha=\lmiss(E[T]/\bar k_c)(\rho-1)+O((\rho-1)^2)$.
 
-\emph{The cycle and the remaining work.} The following sharpening was pointed out by an independent referee. For
+\emph{(f), the cycle and the remaining work.} The following sharpening was pointed out by an independent referee. For
 $u\ge b_{K-1}$, all class-$k$ descendants of the initial requests have joined, and the arrivals' class-$k$ requests joined
 by $u$ are those whose first request joined by $f^{-(k-1)}(u)$. Hence
 \[
@@ -251,6 +251,14 @@ falls to a level $w_b$ with probability $\exp(-\lambda(1-q)(\sum_iw_i-w_b))$~\ci
 3000\,s after the registered burst on the 300k cell. Emptying then has probability 0.12 at $\rho=1.02$, $4\times10^{-3}$ at
 1.05 and about $10^{-22}$ at 1.35. So a spontaneous exit from a trap of hundreds of sessions matters only within a few percent
 of $\lmiss$.
+\item \emph{Steady solutions of FIFO re-entrant lines.} \citet{khanin2001steady} study fluid FIFO re-entrant lines with
+stage-dependent service times. They look for steady solutions: constant flows from the empty state. At an overloaded node
+the flows satisfy $x_s=x_{s-1}/\sum_{j\in J_i}x_{j-1}v_j$. At a single station with deterministic stages this gives
+$x_s=a^s$ with $\sum_jv_ja^j=1$, which is Lemma~\ref{lem:perron}'s equation with $z=1/a$. So the self-similar regime of
+Theorem~\ref{thm:trap}(c)--(d) is their steady solution, and their normalization gives Corollary~\ref{cor:trapinv}. They
+remark that their result extends to a fixed fraction of the flow leaving at each node, which is a random~$T$. They prove
+existence, and uniqueness in special cases, and leave non-steady trajectories open. Lemma~\ref{lem:orbit} and
+Theorem~\ref{thm:trap} treat those for model~F: every trapped trajectory converges to the steady regime.
 \item \emph{Overloaded multiclass FIFO.} The closest overloaded multiclass FIFO analysis we found has abandonment and no
 re-entry~\citep{jennings2013fluid}. Model F is a single-station re-entrant line~\citep{kumar1993reentrant} in overload.
 Fluid metastability of queues with load-dependent service is discussed by Dong~\citep{dong2022metastability}, and
@@ -283,11 +291,14 @@ and it does not discriminate: any drain time between 600 and 3{,}600\,s would fi
 loads from 1.1 to 6.5~$\lref$, the E2-protocol fluid and stochastic slope-test power, and per-seed plug-ins. The scoring
 rules S1--S5 are stated in \fpath{notes/PREDICTIONS_icml_trap.md}.
 
-% Bib entries to add (verified by the theory session's literature check, 2026-11-05):
+% Bib entries to add (verified by the theory session's literature check, 2026-11-05; khanin2001steady from the journal PDF
+% and MathNet mmj28; kendall1951some and jeanmarie1994transient against Crossref):
+% @article{khanin2001steady, author={Khanin, K. and Khmelev, D. and Rybko, A. and Vladimirov, A.}, title={Steady solutions
+%   for {FIFO} networks}, journal={Moscow Mathematical Journal}, volume={1}, number={3}, pages={407--419}, year={2001}}
 % @article{grishechkin1992processor, author={Grishechkin, S.}, title={On a relationship between processor-sharing queues and
 %   {Crump--Mode--Jagers} branching processes}, journal={Adv. Appl. Probab.}, volume={24}, number={3}, pages={653--698}, year={1992}}
 % @article{jeanmarie1994transient, author={Jean-Marie, A. and Robert, P.}, title={On the transient behavior of the processor
-%   sharing queue}, journal={Queueing Systems}, volume={17}, pages={129--136}, year={1994}, doi={10.1007/BF01158692}}  % year: 1994 vs 1995 in sources; check
+%   sharing queue}, journal={Queueing Systems}, volume={17}, number={1-2}, pages={129--136}, year={1994}, doi={10.1007/BF01158692}}
 % @article{puha2006overloaded, author={Puha, A. L. and Stolyar, A. L. and Williams, R. J.}, title={The fluid limit of an
 %   overloaded processor sharing queue}, journal={Math. Oper. Res.}, volume={31}, number={2}, pages={316--350}, year={2006}}
 % @article{jennings2013fluid, author={Jennings, O. B. and Puha, A. L.}, title={Fluid limits for overloaded multiclass {FIFO}
@@ -295,7 +306,7 @@ rules S1--S5 are stated in \fpath{notes/PREDICTIONS_icml_trap.md}.
 % @article{kumar1993reentrant, author={Kumar, P. R.}, title={Re-entrant lines}, journal={Queueing Systems}, volume={13},
 %   pages={87--110}, year={1993}}
 % @article{kendall1951some, author={Kendall, D. G.}, title={Some problems in the theory of queues}, journal={J. R. Stat. Soc. B},
-%   volume={13}, number={2}, pages={151--185}, year={1951}}  % pages: sources differ (151--158 / 151--185); check
+%   volume={13}, number={2}, pages={151--173}, year={1951}, doi={10.1111/j.2517-6161.1951.tb00080.x}}
 % @book{feller1968introduction, author={Feller, W.}, title={An Introduction to Probability Theory and Its Applications, Vol. I},
 %   edition={3}, publisher={Wiley}, year={1968}}
 % @article{dong2022metastability, author={Dong, Jing}, title={Metastability in queues}, journal={Queueing Systems},
