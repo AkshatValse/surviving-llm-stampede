@@ -1,0 +1,2 @@
+label,rate_mult,n_runs,n_trap,n_good_before,n_hysteresis,n_recovered,n_aborted,frac_hysteresis,frac_trap_any,meets_strict,meets_loose
+sglang-fcfs-r1-mirror-k20,1.65,1,1,1,1,0,0,1.0,1.0,False,False

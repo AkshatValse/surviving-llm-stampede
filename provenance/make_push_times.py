@@ -18,6 +18,10 @@ The export of 2026-11-05 (round 15) writes only the rows of that night (R15_ROWS
 2026-11-01, so its times are CST (UTC-6) and its columns are named *_cst; the outputs above are unchanged:
 
     python provenance/make_push_times.py --activity github_activity_2026-11-05.json         --sacct sacct_cited_jobs_2026-11-05.txt --r15 > provenance/push_times_2026-11-05.tsv
+
+The export of the evening of 2026-11-05 (round 16, MIRROR) writes only that round's rows (R16_ROWS), also in CST:
+
+    python provenance/make_push_times.py --activity github_activity_2026-11-05-r16.json         --sacct sacct_cited_jobs_2026-11-05-r16.txt --r16 > provenance/push_times_2026-11-05-r16.tsv
 """
 import argparse
 import csv
@@ -88,6 +92,17 @@ R15_ROWS = [
     ("CUT registrations (tag r15-cut-reg): CUT-A", "11b0e4e", "CUT-A", "17256867"),
     ("CUT registrations (tag r15-cut-reg): CUT-B", "11b0e4e", "CUT-B", "17256870"),
 ]
+# round 16, MIRROR (2026-11-05 afternoon, CST); used with --r16, alone
+R16_ROWS = [
+    ("MIRROR registration and predictions (tag r16-mirror-reg): smoke", "bc81ee7", "MIRROR smoke", "17264039"),
+    ("MIRROR registration and predictions (tag r16-mirror-reg): BURST 1.65x", "bc81ee7", "MIRROR BURST 1.65x", "17264055"),
+    ("MIRROR registration and predictions (tag r16-mirror-reg): NOBURST 1.65x", "bc81ee7", "MIRROR NOBURST 1.65x", "17264058"),
+    ("MIRROR registration and predictions (tag r16-mirror-reg): E0a (failed pre-check)", "bc81ee7", "MIRROR E0a", "17264061"),
+    ("MIRROR registration and predictions (tag r16-mirror-reg): BURST 1.35x", "bc81ee7", "MIRROR BURST 1.35x", "17264062"),
+    ("MIRROR registration and predictions (tag r16-mirror-reg): E0a (resubmitted)", "bc81ee7", "MIRROR E0a", "17264093"),
+    ("erratum to the note's writing time (18ac5e6)", "18ac5e6", "MIRROR BURST 1.65x", "17264055"),
+    ("errata to the note's prose after the paper audit (d8c49b7)", "d8c49b7", "MIRROR BURST 1.65x", "17264055"),
+]
 CST = timezone(timedelta(hours=-6))
 
 
@@ -114,9 +129,10 @@ def main():
     ap.add_argument("--sacct", default="sacct_cited_jobs_2026-10-30.txt")
     ap.add_argument("--extra", action="store_true", help="also the rounds 11-14 rows")
     ap.add_argument("--r15", action="store_true", help="only the round-15 rows (2026-11-05), in CST")
+    ap.add_argument("--r16", action="store_true", help="only the round-16 MIRROR rows (2026-11-05), in CST")
     args = ap.parse_args()
     global CDT
-    if args.r15:          # every r15 time (GitHub and Slurm) is after the end of daylight saving time
+    if args.r15 or args.r16:  # every r15/r16 time (GitHub and Slurm) is after the end of daylight saving time
         CDT = CST
     activity = json.loads((HERE / args.activity).read_text(encoding="utf-8"))
     activity.sort(key=lambda a: (a["timestamp"], a["id"]))
@@ -150,11 +166,11 @@ def main():
 
     sys.stdout.reconfigure(newline="\n")  # LF on Windows too
     out = csv.writer(sys.stdout, delimiter="\t", lineterminator="\n")
-    z = "cst" if args.r15 else "cdt"
+    z = "cst" if (args.r15 or args.r16) else "cdt"
     out.writerow(["event", "commit", f"committer_time_{z}", f"first_on_github_{z}", "github_ref_update",
                   "activity_id", f"event_created_{z}", "batch", "first_job", f"submit_{z}", f"start_{z}",
                   f"end_{z}", "push_minus_submit_s", "push_minus_start_s"])
-    rows = R15_ROWS if args.r15 else ROWS + (EXTRA_ROWS if args.extra else [])
+    rows = R16_ROWS if args.r16 else R15_ROWS if args.r15 else ROWS + (EXTRA_ROWS if args.extra else [])
     for event, commit, batch, job in rows:
         full = git("rev-parse", commit + "^{commit}").stdout.strip()
         committed = git("log", "-1", "--format=%cd", "--date=format:%Y-%m-%d %H:%M:%S", full).stdout.strip()

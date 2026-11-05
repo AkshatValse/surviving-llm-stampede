@@ -20,6 +20,10 @@ neither error enters a rule.
   as the headline table gives them.
 - W6's parenthetical "(model F: by 270-330 s)" does not match the frozen wave medians. Those give 311.7 / 333.6 /
   287.2 s, i.e. 287-334 s. W6 tests only the order.
+- The push time. GitHub's activity log (export of 22:28Z, `provenance/github_activity_2026-11-05-r16.json`) records the
+  creation of branch `r16/mirror` at bc81ee7 at 20:07:35Z, i.e. 14:07:35 CST. The "about 14:07:37" above was not read from
+  that log. The erratum 18ac5e6 reached GitHub at 14:49:22 CST, with daa9dd4. That is before the BURST, NOBURST and E0a
+  jobs were submitted (14:50:52-53), and after the cache-off smoke test 17264039 had started (14:49:07).
 
 ## What is tested, and why it is decisive
 

@@ -1143,7 +1143,7 @@ steady near-capacity rate that every throughput-curve reading predicts?
 - Rules M1-M4 (decisive) and W5-W10 (secondary): analysis/r16_mirror.py.
 - Frozen predictions: notes/PREDICTIONS_r16_mirror.md and results/theory/r16/mirror_predictions.json.
 - The tolerances come from model F's timing on committed standard-workload runs (factor 0.9223).
-**Freeze:** commit bc81ee7, tag r16-mirror-reg, pushed 14:07:37 CST. Erratum 18ac5e6 corrects the writing time in the note.
+**Freeze:** commit bc81ee7, tag r16-mirror-reg, pushed 14:07:35 CST (GitHub activity log: branch r16/mirror created at bc81ee7, 20:07:35Z). Erratum 18ac5e6 corrects the writing time in the note.
 **Nova:** frozen clone repo_r16_mirror at bc81ee7, built from a 649 MB bundle (sha256 eb9812c0..., equal on both ends after
 an append; the first scp was cut by the lead's own timeout).
 - Smoke test 17264039: MODE=miss, 300 s, the workload confirmed in config_effective.yaml.

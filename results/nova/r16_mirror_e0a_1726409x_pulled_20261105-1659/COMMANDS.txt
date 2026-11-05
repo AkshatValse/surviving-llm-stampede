@@ -1,0 +1,20 @@
+Read-only pull of the MIRROR smoke test and E0a jobs (r16), 2026-11-05 16:59 CST, by the lead session.
+
+On Nova (nova-login-1), from the frozen clone /work/classtmp/avalse/swapp/repo_r16_mirror (HEAD bc81ee7 = tag r16-mirror-reg,
+no dirty paths):
+    bash /work/classtmp/avalse/swapp/pulls_r16/nova_pull.sh e0a 17264039 17264061 17264093
+      -> ../pulls_r16/e0a_20261105-1659.tar.xz, 1638772 bytes,
+         sha256 3ab5012bca1bc77b1d99660fed24e73c99344430a2eb29f483cfbf9bd9c047f0
+    (nova_pull.sh packs each job's log and every run directory and in-job analysis the log names.)
+On the PC:
+    scp nova:/work/classtmp/avalse/swapp/pulls_r16/e0a_20261105-1659.tar.xz .   (sha256 matched)
+    xz -dc e0a_20261105-1659.tar.xz | tar --force-local -xf - -C results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659
+    then the remote archive was deleted.
+
+Jobs:
+    17264039  smoke test, MODE=miss, 300 s, cache off (pm-mire0s)
+    17264061  E0a, FAILED its pre-run time-budget check (needs 7080 s incl. the POP-64 check; --time 01:30:00); no run started
+    17264093  E0a resubmitted with --time 02:15:00 (pm-mire0a): closed POP 32 seeds 0-2 + the POP-64 check, cache off
+E0a calibration (results/agentload_analysis_miss/20261105-162735/calibration.json): lambda_miss_turns_based 0.075967 /s
+(1.062 lambda_ref of the standard workload), lambda_miss (sessions) 0.071666 /s, all-miss uncached tokens 12,120 /s.
+No registered rule uses E0a (secondary W10 reports it).

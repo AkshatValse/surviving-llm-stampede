@@ -1,0 +1,83 @@
+research_question: 'r16 MIRROR (real engine, paired arms): for a STEP-CAPPED agent
+  workload (T = min(Geometric(1/1000), 20): about 98% of sessions run exactly 20 turns;
+  every other constant equals configs/agentload_e2_burst.yaml), does the trapped engine
+  behave as model F''s renewal law predicts -- a near-blackout of session completions
+  for about 40 min after the burst, then a completion wave when the burst cohort finishes
+  its 20th turn, then completions BELOW the all-miss capacity (the youth premium of
+  Theorem 2 reversed by the turn-count factor H < 1) -- rather than as every throughput-curve
+  reading predicts (steady completions near the all-miss capacity)? The registered
+  rules and frozen predictions are in analysis/r16_mirror.py and notes/PREDICTIONS_r16_mirror.md.'
+assumptions_note: 'This file is configs/agentload_e2_burst.yaml with exactly two values
+  changed: workload.mean_turns 15 -> 1000 and workload.max_turns 60 -> 20 (and this
+  text and meta.notes). Same engine, pool (300k), burst (200 sessions in [1200, 1260)
+  s), 8700-s runs, lambda_ref (the registered E0a value of the STANDARD workload,
+  used only to place the arrival rates as multiples) and paired arms as the E2 protocol:
+  BURST = this config; NOBURST = arrivals.burst=null (same plan without the burst
+  sessions). One arm per job, so every arm gets content_salt=1. The step-capped workload''s
+  own all-miss capacity (model: 1.046 x lambda_ref) is measured separately by an E0a
+  run of this workload (MODE=miss with GEN_EXTRA setting the same two values), which
+  no rule uses for its thresholds.'
+server:
+  base_url: http://127.0.0.1:24056
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  extra_body:
+    ignore_eos: true
+    repetition_penalty: 1.0
+    top_p: 1.0
+  request_token_ids: true
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 1000
+  max_turns: 20
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: server
+  content_salt: 1
+arrivals:
+  kind: constant
+  rate_mult: 1.65
+  lambda_ref: prereg/inputs/2026-10-23/calibration.json:lambda_miss_turns_based
+  uncached_tokens_ref: prereg/inputs/2026-10-23/calibration.json:all_miss_uncached_tokens_per_s
+  burst:
+    n: 200
+    t_s: 1200
+    width_s: 60
+  analysis_t_burst_s: 1200
+gate:
+  n_cap: null
+run:
+  duration_s: 8700
+  seed: 1
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+metrics:
+  enabled: true
+  interval_s: 5.0
+canary:
+  tokens: 1024
+  resident_min_frac: 0.5
+  max_cached_after_flush: 15
+  idle_wait_s: 120
+  idle_poll_s: 2
+  kv_in_use_max: 0.02
+meta:
+  hardware: NVIDIA A100 80GB PCIe, 81920 MiB
+  engine_label: sglang-fcfs-r1-mirror-k20
+  arm: burst
+  notes: 'r16 MIRROR: E2 protocol with the step-capped workload (mean_turns 1000,
+    max_turns 20)'
+  start_state_verified: true
+  start_state_detail: 'canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed,
+    3 unverifiable); see canary_1_*.json'
+  prereg_sha256: 88e20ce2201b34c2baf246dfbc9690b947828092f3fd4b18eaccab53e3b5601b
+  prereg_file: configs/agentload_prereg_2026-11-05_mirror_k20.yaml
+output:
+  root: results
+  name: agentload_e2_burst

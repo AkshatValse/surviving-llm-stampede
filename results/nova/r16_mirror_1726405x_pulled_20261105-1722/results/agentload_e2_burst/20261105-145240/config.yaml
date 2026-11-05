@@ -1,0 +1,84 @@
+research_question: >-
+  r16 MIRROR (real engine, paired arms): for a STEP-CAPPED agent workload (T = min(Geometric(1/1000), 20): about 98% of
+  sessions run exactly 20 turns; every other constant equals configs/agentload_e2_burst.yaml), does the trapped engine
+  behave as model F's renewal law predicts -- a near-blackout of session completions for about 40 min after the burst,
+  then a completion wave when the burst cohort finishes its 20th turn, then completions BELOW the all-miss capacity (the
+  youth premium of Theorem 2 reversed by the turn-count factor H < 1) -- rather than as every throughput-curve reading
+  predicts (steady completions near the all-miss capacity)? The registered rules and frozen predictions are in
+  analysis/r16_mirror.py and notes/PREDICTIONS_r16_mirror.md.
+
+assumptions_note: >-
+  This file is configs/agentload_e2_burst.yaml with exactly two values changed: workload.mean_turns 15 -> 1000 and
+  workload.max_turns 60 -> 20 (and this text and meta.notes). Same engine, pool (300k), burst (200 sessions in
+  [1200, 1260) s), 8700-s runs, lambda_ref (the registered E0a value of the STANDARD workload, used only to place the
+  arrival rates as multiples) and paired arms as the E2 protocol: BURST = this config; NOBURST = arrivals.burst=null (same
+  plan without the burst sessions). One arm per job, so every arm gets content_salt=1. The step-capped workload's own
+  all-miss capacity (model: 1.046 x lambda_ref) is measured separately by an E0a run of this workload (MODE=miss with
+  GEN_EXTRA setting the same two values), which no rule uses for its thresholds.
+
+server:
+  base_url: http://127.0.0.1:8000
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  # repetition_penalty/top_p pinned so a model generation_config (from memory Qwen2.5-Instruct sets repetition_penalty 1.05) cannot make one engine
+  # run penalty kernels the other does not; temperature 0 is greedy, so top_k is irrelevant (not sent).
+  # UNVERIFIED that both engines accept these fields on /v1/completions: the Stage-0 probe shows HTTP status.
+  extra_body: {ignore_eos: true, repetition_penalty: 1.0, top_p: 1.0}
+  request_token_ids: false
+
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 1000                      # r16 MIRROR: step-capped turn count, T = min(Geometric(1/1000), 20)
+  max_turns: 20
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: auto                 # real-engine jobs pin server|synthetic via the job script (OUTPUT_FEEDBACK, required
+                                        # unless MODE=smoke); never compare cells with different sources (analysis guard)
+
+arrivals:
+  kind: constant
+  rate_mult: 1.6                         # overridden per run by the job script
+  lambda_ref: "<RESULTS_DIR>/calibration.json:lambda_miss_turns_based"   # placeholder: set via --set
+  uncached_tokens_ref: "<RESULTS_DIR>/calibration.json:all_miss_uncached_tokens_per_s"   # placeholder: set via --set (the job script does);
+                                         # E0a's all-miss uncached prefill tokens/s, the reference of trap criterion (a). Analysis only.
+  burst: {n: 200, t_s: 1200, width_s: 60}     # the BURST and CAPPED arms; the NOBURST arm sets arrivals.burst=null
+  analysis_t_burst_s: 1200                    # t_b the post-burst window is anchored to, recorded in EVERY arm (must equal burst.t_s)
+
+gate:
+  n_cap: null                            # CAPPED arm only: int, or "<dir>/mu_curve.json:n_cap" (Stage-C argmax mu(n)); the job script
+                                         # sets it from N_CAP / CAP_FILE. Client-side FIFO gate between session arrival and first request.
+
+run:
+  duration_s: 8700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+
+metrics:
+  enabled: true
+  interval_s: 5.0
+
+canary:                                  # start-state check around every cache flush (python -m agentload canary; also uses
+                                         # this file's server/metrics sections). Metric names are CANDIDATES (unverified).
+  tokens: 1024
+  resident_min_frac: 0.5                 # prime: 2nd identical canary request must report cached_tokens >= 0.5 * tokens
+  max_cached_after_flush: 15             # check: after the flush the canary may hit < 1 vLLM block (16 tokens)
+  idle_wait_s: 120
+  idle_poll_s: 2
+  kv_in_use_max: 0.02
+
+meta:
+  hardware: "NVIDIA A100 80GB (set by the job script)"
+  engine_label: "unset"                  # e.g. sglang-fcfs-r1 (policy, waiting-prefix-refresh flag)
+  arm: ""                                # burst | noburst | capped (set by the job script; paired arms share seed, rate and plan)
+  notes: "r16 MIRROR: E2 protocol with the step-capped workload (mean_turns 1000, max_turns 20)"
+
+output:
+  root: results
+  name: agentload_e2_burst

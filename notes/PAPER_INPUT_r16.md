@@ -67,7 +67,7 @@ deterministic T gives H(z) well below 1. MIRROR tests this blind:
 1.35 x (secondary): the wave times are 4883 / 4802 / 4870 s. Each is earlier than at 1.65 x, by 287-334 s per seed (corrected after the audit from "270-330 s"); this is
 registered secondary W6.
 
-## Registered rules (`analysis/r16_mirror.py`; registration commit bc81ee7, tag `r16-mirror-reg`, pushed 14:07:37 CST)
+## Registered rules (`analysis/r16_mirror.py`; registration commit bc81ee7, tag `r16-mirror-reg`, pushed 14:07:35 CST per GitHub's activity log)
 
 Per BURST run, the rules are:
 - M1: blackout completions <= 0.30.

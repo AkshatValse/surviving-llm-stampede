@@ -55,7 +55,7 @@ def main(argv=None) -> int:
     lr = float(pred["lambda_ref"])
     plt.rcParams.update({"font.size": 7.5, "axes.labelsize": 7.5, "xtick.labelsize": 6.8, "ytick.labelsize": 6.8,
                          "font.family": "serif", "mathtext.fontset": "stix", "legend.fontsize": 6.6})
-    fig, axs = plt.subplots(1, 2, figsize=(7.0, 2.3), layout="constrained")
+    fig, axs = plt.subplots(1, 2, figsize=(6.6, 2.35), layout="constrained")
     for i, name in enumerate(STD_165):
         r = load_run(os.path.join(ROOT, STD + name))
         c, rate, nb = bins_of(r, lr)
@@ -76,8 +76,8 @@ def main(argv=None) -> int:
         axs[1].plot(c, nb, color=ORANGE, lw=1.1, label="step-capped, measured (blind)" if i == 0 else None)
     for v, lab in ((pred["lambda_miss_standard_model_over_ref"], None), (pred["lambda_miss_model_over_ref"], None)):
         axs[0].axhline(v, color=MUTED, lw=0.6, ls=":")
-    axs[0].text(T1 - 60, pred["lambda_miss_model_over_ref"] + 0.08, r"all-miss capacity $\lambda_{\rm miss}$",
-                ha="right", va="bottom", fontsize=6.4, color=MUTED)
+    axs[0].text(T0 + 200, min(pred["lambda_miss_model_over_ref"], pred["lambda_miss_standard_model_over_ref"]) - 0.07,
+                r"all-miss capacities", ha="left", va="top", fontsize=6.4, color=MUTED)
     axs[0].set_ylabel(r"completions / 300 s  ($\times\lambda_{\rm ref}$)")
     axs[1].set_ylabel("sessions in the system")
     for ax, t in zip(axs, ("(a) completions after the burst", "(b) backlog")):
