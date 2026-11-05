@@ -1,0 +1,108 @@
+{
+  "experiment": "probe_open",
+  "status": "done",
+  "argv": [
+    "experiments/prefix_meta_probe_run.py",
+    "open",
+    "--spec",
+    "configs/r6_predict.yaml",
+    "--workers",
+    "1",
+    "--tag",
+    "codex_verify_b2_mixed_seed0",
+    "--set",
+    "engine.batching=mixed",
+    "--set",
+    "probe.open.seeds=[0]",
+    "--set",
+    "probe.open.lambdas=[0.10,0.22]",
+    "--out-root",
+    "C:\\Users\\Akshat\\Documents\\Codex\\2026-10-24\\cl\\work\\prediction-verification\\reruns"
+  ],
+  "git": {
+    "commit": "64bc4e3cab4887ecc219e160ff2a84106bd74277",
+    "dirty": false,
+    "branch": "r6/validation"
+  },
+  "seeds": [
+    0
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "pyyaml": "6.0.1",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-10-24T03:55:27",
+  "end_time": "2026-10-24T03:55:27",
+  "wall_s": 0.2237997055053711,
+  "quick": false,
+  "workers": 1,
+  "overrides": [
+    "engine.batching=mixed",
+    "probe.open.seeds=[0]",
+    "probe.open.lambdas=[0.10,0.22]"
+  ],
+  "tag": "codex_verify_b2_mixed_seed0",
+  "n_runs": 2,
+  "timing": {
+    "total_sim_s": 6000.0,
+    "total_run_wall_s": 0.09804019995499402,
+    "wall_s_per_10k_sim_s": 0.16340033325832337,
+    "max_run_wall_s": 0.05119819997344166
+  },
+  "engine_effective": {
+    "iter_fixed_s": 0.00924,
+    "iter_floor_s": 0.00126,
+    "per_token_s": 6.26e-05,
+    "decode_attn_s": 0.00031,
+    "attn_ctx_norm": 8192,
+    "prefill_attn_s": 2.24e-09,
+    "prefill_attn_ctx": "mid",
+    "prefill_chunk_budget": 8192,
+    "max_running_seqs": 256,
+    "kv_memory_tokens": 300000,
+    "cache_enabled": true,
+    "skip_ahead": false,
+    "admission_limited_by_prefill_budget": true,
+    "batch_decode_iterations": true,
+    "free_kv_on_session_end": true,
+    "batching": "mixed"
+  },
+  "workload_effective": {
+    "initial_context_tokens": 2000,
+    "new_prompt_tokens": 550,
+    "decode_tokens": 100,
+    "mean_turns": 15,
+    "max_turns": 60,
+    "tool_time_mean_s": 5.0,
+    "tool_time_dist": "exp",
+    "tool_time_cv": 1.5
+  },
+  "section_effective": {
+    "policy": "fcfs_lru",
+    "lambdas": [
+      0.1,
+      0.22
+    ],
+    "lambda_miss": null,
+    "lam_mults": null,
+    "seeds": [
+      0
+    ],
+    "horizon_s": 3000.0,
+    "unstable_backlog_stop": 3000,
+    "stable_final_backlog_below": 50.0,
+    "stable_trend_window_s": 1500.0,
+    "stable_trend_max_rise": 10.0,
+    "search": null,
+    "engine": {},
+    "workload": {}
+  },
+  "base_config": "configs/prefix_meta_r5.yaml",
+  "search": null
+}

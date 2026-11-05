@@ -567,3 +567,464 @@ Peak 0.2194 sessions/s at n = 20 (n = 24 within 0.5 %; n = 16 is 20 % lower), μ
 ## 2026-10-30 — vLLM E0b complete: the 3.0 × run is unstable too; the six-run bracket equals the registered one
 **Setup:** Job 17162963's last run (3.0 × vLLM λ_ref, `agentload_e0_cap/20261030-162428`) finished after the registration; both E0b jobs COMPLETED 0:0. Six-run bracket on the login node → `agentload_analysis_stable/20261030-172042` (the jobs' own per-job brackets: `-155754` for 17162962, `-171731` for 17162963). Data: `results/nova/e0b_vllm_1716296x_pulled_20261030-172810/` (archive sha256 `4f982631…`; the five-run bracket used by the registration is byte-identical to `prereg/inputs/2026-10-30-vllm/lambda_cap_bracket.json`).
 **Result:** 3.0 × unstable (final queue 247.1, fitted rise +175). Six-run bracket: largest all-stable 2.0 ×, first unstable 2.5 ×, monotone, no guard warnings, the same as the five-run bracket the registration used. The registration's disclosed deviation (registered before the 3.0 × run ended) had no effect.
+
+## 2026-10-31 — vLLM registered paired test: PASS at both registered points; frozen mechanism checks met except two detector false alarms in CAPPED
+**Question:** On vLLM 0.32.0, at the rates its own window registers (1.35 and 1.65 × λ_ref), does a 200-session burst trap the server while the paired NOBURST arm stays good and a client-side cap of 20 recovers? And do the frozen round-11 mechanism predictions (refill-then-evict, online detector) hold?
+**Setup:** Registration `configs/agentload_prereg_2026-10-30_vllm.yaml` (`5a6fbcd`, committed 16:23:59 CDT on 2026-10-30; PREREG_SHA256 `8f2d5b44…5f84`, carried by every run's `meta.json`). Cell `vllm-fcfs`, 300k-token pool (18,750 blocks of 16), Qwen2.5-7B on A100 80GB PCIe (nova22-gpu-[1-3], hardware string checked by each job), λ_ref = 0.06566 sessions/s, cap 20, seeds 0–2; BURST (200 sessions in 60 s at t = 1200 s) / NOBURST / CAPPED on common random numbers, one 8700 s arm per job. Jobs **17166121–17166138** (submitted 16:24:36, all COMPLETED 0:0; starts 16:25:42 – 21:51:12, ends 18:55:07 on 10-30 – 00:20:24 on 10-31) from `repo_next/` at `5a6fbcd`, unchanged throughout. **Memory request change (scheduling only):** at 18:21 CDT on 10-30 the then-pending jobs 17166124–17166138 had MinMemoryNode lowered from 128G to 48G (sacct ReqMem: 128G for 17166121–23, 48G for the rest) so that they could start on A100 nodes held back by other users' host-memory use; the job script, its arguments and the registration are unchanged, and a vLLM job peaks at about 20 GB of host memory. Verdict on the login node in `repo_next/` (2026-10-31 02:08): `summarize burst2` over the 18 run dirs listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt` with `--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-30_vllm.yaml` → `agentload_analysis_burst2/20261031-020837/` (no guard errors or warnings). Pulled read-only as one xz archive (sha256 `aedfb5b2…` checked at both ends; remote archive deleted) into `results/nova/e2_vllm_1716612x_pulled_20261031-020956/` (`cacf833`): 18 run dirs, 18 job-log dirs, the verdict dir, `logs/pm-e2v-17166121..38.out`, `sacct_17166121-17166138.txt`. Then the frozen r11 scripts (copied unchanged from `f1338e3`; hashes in the pull's `r11_mechanism/frozen/SHA256SUMS`) on the pulled runs, and `analysis/r9_vllm_e2_derived.py` for the bands and the client-side numbers (pull's `derived/`).
+**Result (registered rule):** the registered analysis gives PASS at both cells (`kill_test_pass_rule_only: true`; both cells in the registered window, valid pairing). The tool also prints `pre_registered: true` and `kill_test_pass_decisive: true`, which it assigns by commit order (see "Verified vs. not").
+
+| λ (× λ_ref) | arm | seed 0 | seed 1 | seed 2 | count |
+|---|---|---|---|---|---|
+| 1.35 | BURST | trapped | draining | trapped | trapped 2/3 |
+| 1.35 | NOBURST | good | good | good | 3/3 |
+| 1.35 | CAPPED | recovered | recovered | recovered | 3/3 |
+| 1.65 | BURST | trapped | indeterminate | trapped | trapped 2/3 |
+| 1.65 | NOBURST | good | good | good | 3/3 |
+| 1.65 | CAPPED | recovered | recovered | recovered | 3/3 |
+
+Every BURST run has hit 0.000 over the evaluation window (t_b + 4500 s to 8700 s) and an uncached-prefill rate of 0.948–1.018 × vLLM's all-miss rate (1.35 ×: 1.012, 1.007, 0.995; 1.65 ×: 1.018, 1.014, 0.948). Trapped runs: backlog slope 0.0142 and 0.0170 against the threshold 0.0115 (1.35 ×), 0.0324 and 0.0341 against 0.0213 (1.65 ×); mean backlog 221.6, 220.5 and 314.2, 330.1 sessions. The two non-trapped BURST runs are both seed 1, the seed with the fewest arrivals, and both are stuck: 1.35 × seed 1 is labelled DRAINING because its slope is −0.00005 sessions/s (flat; backlog 200.5, hit 0.000, token rate 1.007 ×), and 1.65 × seed 1 is INDETERMINATE (slope 0.0183 < 0.0213; backlog 281.3). NOBURST and CAPPED: hit 0.930–0.933, mean backlog 7.0–10.9, |slope| ≤ 0.001; in the evaluation window the two arms are indistinguishable (the gate had drained). The pattern (trapped, stuck, trapped at both rates, seed 1 the odd one) repeats the six exploratory vLLM BURST runs (17102318–23), whose arrival plans these runs share: base arrivals in [5700, 8700) are 285, 245, 278 (1.35 ×) and 347, 307, 342 (1.65 ×), identical across the three arms of a seed and to the exploratory runs.
+**Against the blind predictions (B3v, `notes/PREDICTIONS_vllm.md`, tag `r9-vllm-predictions-frozen` pushed 12:32 CDT 10-30, before any of these jobs existed):** B3v predicted PASS at both points in all four configurations; the real result is PASS at both. BURST trapped was predicted 7–9/10 per point, real 2/3 at each (consistent at three seeds). The stuck-but-not-trapped runs, predicted as INDETERMINATE, appear once as INDETERMINATE and once as DRAINING by a slope of −5 × 10⁻⁵ sessions/s, a label B3v did not produce; no BURST run recovered, as predicted. NOBURST good and CAPPED recovered were predicted 10/10, real 6/6 and 6/6. Trapped token rate predicted 0.99–1.07 ×, real 0.995–1.018 × in three trapped runs and **0.948 × in the fourth (1.65 ×, seed 2), below the predicted range** (inside the registered ±15 %).
+**Frozen mechanism predictions (`configs/r11_mechanism_predict.yaml`, `f1338e3`, pushed 18:20:13 CDT 10-30):** all 18 runs are blind by the frozen rule (earliest sacct End 18:55:07 > 18:20:13). (a) NOBURST/CAPPED: follow-up hit 1.000 (3 dp) and gap/R 0.014–0.022 (< 0.05) in 12/12; BURST: hit 0.000 and gap/R 6.44–8.78 (> 2; R = 28.1–30.2 s, median gap 183–261 s) in 6/6. (b) BURST: mean `vllm:kv_cache_usage_perc` 0.920–0.937 (≥ 0.90) and uncached-token rate 0.871–0.955 × 10,348.6 tok/s (in [0.85, 1.15]) in 6/6; the lowest ratio is again 1.65 × seed 2. (c) Detector: BURST first alarm 100–120 s after the burst in 6/6 (≤ 300 s); **two false alarms in good arms, both CAPPED seed 2**: 1.35 × at 2080 s (2 ticks) and 1.65 × at 2020 s (4 ticks), 880 and 820 s after the burst; hits back (H > 0.8 for 300 s) from 2190 and 2180 s; no alarm in the other 10 good-arm runs. (d) Engine-TTFT rule: BURST 170–210 s after the burst in 6/6, no alarm in 12/12 good arms. **Frozen decision rule: not met**: it allows at most one good-arm run failing (a) or (c), and two fail (c). No BURST run failed (b), so the b_failure clause (drop refill-then-evict for vLLM) is not triggered; the two alarms are reported as detector false alarms, as the frozen file directs. Post hoc (`derived/r11_detector_false_alarm_context_posthoc.csv`): both alarms fall during the CAPPED drain, with 20 sessions admitted and 123–143 waiting at the gate; the 60 s follow-up hit fell from about 0.7–0.95 to 0.06–0.17 for 20–40 s and was above 0.8 again about 110–160 s later. That is a short excursion of the capped engine at n = 20, the cap that sits within 0.5 % of n = 24 on vLLM's steep cliff.
+**Client side (post hoc, computed as for the 300k E2; pull's `derived/e2_vllm_client_side.csv`, `e2_vllm_client_side_summary.csv`, `e2_vllm_capped_drain.csv`):** CAPPED gate: 322, 334, 404 (1.35 ×) and 499, 402, 462 (1.65 ×) sessions waited; the base-stream share among them was 43–53 % and 53–63 % (17–26 % and 22–31 % of all base arrivals); mean wait 435–501 s and 413–526 s; longest 859–1053 s and 892–1052 s; none censored; at most 3 gated sessions per run arrived before the burst (≤ 9.2 s) and at most 9 after the gate first emptied (≤ 9.8 s). The gate queue first emptied 1521–2027 s (1.35 ×) and 1848–2735 s (1.65 ×) after the burst, 0.99–1.52 × the registration's estimate (1529, 1800 s) and 1.05–1.63 × the fluid estimate from the population at the burst. Mean turn latency of ok requests completed in [5700, 8700): BURST 179.5–188.1 s (1.35 ×) and 226.9–261.4 s (1.65 ×); NOBURST 1.38–1.53 s; CAPPED 1.37–1.58 s; before the burst ([300, 1200)) 1.42–1.67 s in every arm. Sessions unfinished at 8700 s: BURST 20.2–24.2 % and 25.8–31.2 %; NOBURST 0.7–1.1 %; CAPPED 0.6–0.9 %. Realized base arrival rates in the window: 1.447, 1.244, 1.411 × λ_ref (nominal 1.35) and 1.762, 1.558, 1.736 × (nominal 1.65); BURST runs completed 1.18–1.28 × and 1.30–1.42 × λ_ref, the good arms as many sessions as arrived.
+**Blindness scope:** B3v is blind in time to every one of these runs; its BURST-arm predictions at 1.35 and 1.65 × are blind on the predicting worker's side only (the lead knew the exploratory BURST outcome). r11: all 18 runs are blind in time; the bands were chosen on committed SGLang E2 runs and the six exploratory vLLM BURST runs, whose arrival plans the registered BURST arms repeat, so the BURST checks are a replication on new executions and only NOBURST and CAPPED are out of sample. Before the verdict was run (2026-10-31 02:08), this session had opened no run dir, per-job analysis or `pm-e2v` `.out` file of these jobs, only `sacct` states. The freeze note's statement that no output had been opened by 18:20 is its author's, not checked here. The memory change above was made after the first three jobs had started and before any ended, and it does not touch the code or arguments of any job.
+**Verified vs. not:** Verified: the 18 accounting records (all COMPLETED 0:0, nodes nova22-gpu-[1-3]); `repo_next/` HEAD `5a6fbcd` with a clean tree; the registration hash on Nova and in all 18 `meta.json`; the archive checksum; the frozen scripts byte-identical to `f1338e3` and to `origin/r11/strengthen`, and `analysis/load.py` unchanged since the freeze; zero request errors and no guard warnings. Commit order: `5a6fbcd` was committed 37 s before the submission but first reached GitHub at 16:26:35 CDT (the creation of branch `r9/vllm-register` in GitHub's activity log), 1 min 59 s after the submission and after the first two jobs started (16:25:42, 16:26:17), before any job ended. So the decisive label the tool prints rests on commit order, not on the push log, and the paper should report the registered analysis's PASS. Not verified: anything beyond one model, one GPU type, the 300k pool and three seeds; the TTFT rule's alarm-free window in good arms is checked from the first alarm only (none occurred).
+**Interpretation:** vLLM, a second engine with its own measured window, fails the way SGLang does: at a load it carries indefinitely from empty (NOBURST good 6/6), a 200-session burst leaves it all-miss for the remaining 7500 s (stuck 6/6, trapped by the registered rule 4/6), and a client-side cap at its measured peak prevents that (6/6). The trapped pool is full (KV usage 0.92–0.94) and rewritten at about the all-miss rate, as refill-then-evict predicts. The frozen prediction that missed is the detector's specificity: during the CAPPED drain at cap 20 the follow-up hit dips below 0.2 for a few ticks in one seed at each rate, which a deployed alarm on this rule would report.
+## 2026-10-31 — B1 basin test PASS: a burst of 25 is absorbed, a burst of 100 traps (3/3 seeds each); E0F not replicated (2.5 × stable on fresh seeds)
+**Question:** Does the good state have a finite basin on the real engine (registered B1: at 1.65 × λ_ref, does a burst of 100 trap and one of 25 not)? And does the from-empty edge (2.0 × stable, 2.5 × unstable on seed 0) replicate on fresh seeds 3-5 (exploratory E0F)?
+**Setup:** B1 jobs 17168500-02 (n = 100, seeds 0-2) and 17168503-05 (n = 25, seeds 0-2), one BURST arm each, 1.65 ×, 60 s burst at 1200 s, 8700 s runs, labels `sglang-fcfs-r1-b100` / `-b25`, registrations `configs/agentload_prereg_2026-10-30_b100.yaml` / `_b25.yaml` (tag `r11-basin-reg` `9b67c26`, GitHub push 20:04:30 CDT Fri; submitted 21:12:45). E0F jobs 17168506 (2.0 ×) and 17168507 (2.5 ×), seeds 3 4 5, 3000 s from empty, label `sglang-fcfs-r1-e0bfresh`. All from `repo_r11_basin` at `9b67c26`, COMPLETED 0:0 (sacct End 00:31:05 to 04:01:04 Sat), A100 80GB PCIe on nova22-gpu-1/2/3, start state verified and canaries rc 0 in every run. Pulled read-only to `results/nova/b1_e0f_1716850x_pulled_20261031-040517/` (archive sha256 `aaa04afb…` on both ends, remote deleted). Verdict: `analysis.basin classify --endpoints configs/r11_basin_predict.yaml --run-dirs <6> --prereg <b100, b25>` at `19c58e9` (baselines n = 0 / 200 found by the tool: the committed 1.65 × runs of jobs 17093387-404) → `analysis/agentload_analysis_basin/20261031-040758`; re-run with `analysis/basin.py` as tagged (`9b67c26`): identical decision and per-run numbers. E0F: `summarize stable` over the six runs → `analysis/agentload_analysis_stable/20261031-040957`; realized rates and a descriptive B1 time course by `analysis/r11_b1_e0f_derived.py` → `analysis/derived/`.
+**Result (B1):**
+
+| n | seed 0 | seed 1 | seed 2 | hit_eval | backlog slope /s |
+|---|---|---|---|---|---|
+| 0 (committed) | GOOD | GOOD | GOOD | 0.934 / 0.934 / 0.921 | ≈ 0 |
+| **25** | **GOOD** (recovered) | **GOOD** | **GOOD** | 0.933 / 0.934 / 0.923 | -0.0005 / 0.0011 / 0.0001 |
+| **100** | **STUCK** (trapped) | **STUCK** (trapped) | **STUCK** (trapped) | 0.000 ×3 | 0.0318 / 0.0344 / 0.0361 (threshold 0.0232) |
+| 200 (committed) | STUCK | STUCK | STUCK | 0.000 ×3 | 0.028-0.036 |
+
+n100 STUCK 3/3 and TRAPPED 3/3, n25 GOOD 3/3: **`basin_pass` true (PASS)**; no pre-stated alternative outcome, no endpoint problem, every run bound to its registration, `registration_diff` forbidden list empty. n = 100 has hit < 0.2 in every 100 s window from 1300 s on; n = 25 never drops below 0.83 in any 100 s window and its hit_eval is within 0.002 of the n = 0 run of the same seed.
+**Result (E0F):** all six stable (final queue 0, rise ≤ 0): 2.0 × seeds 3/4/5 (realized 2.01 / 2.15 / 1.97 ×), 2.5 × seeds 3/4/5 (2.51 / 2.67 / 2.47 ×). Replication rule (2.0 × 3/3 stable AND 2.5 × ≥ 2/3 unstable): **not replicated**. Fallback: over all 12 from-empty runs (seeds 0, 3, 4, 5), stable at every realized rate ≤ 2.665 ×, unstable at 2.726 × (seed 0's 2.5 ×) and 3.25 ×; monotone in realized rate. Pooled nominal bracket unchanged (2.5 × stable 3/4).
+**Against predictions:** Simulator bundle 1 (`notes/PREDICTIONS_r11_basin.md`, blind in time for all 12 runs): PASS, every per-run call (n100 STUCK+TRAPPED ×3, n25 GOOD ×3, E0F stable ×6) and NOT replicated all match; hit within 0.006, n100 slopes within 0.0005 /s per seed; token ratio 1.013-1.037 against a descriptive 1.03-1.05. Theory (`r13-theory-pred`, pushed 02:05:30 Sat): P(STUCK) 1.000 / 0.042 and P(PASS) 0.995 match (P of this exact outcome 0.88); its specific N_crit 53.4 / committor-50% at n ≈ 50 is untested by B1 (B2 tests it). The n = 100 runs ended 00:28-01:51, before the theory push: blind by access only. The theory froze no E0F prediction; its JSON's F2 escape probabilities (0.150 / 0.691 at 2.0 / 2.5 ×) imply P(2.5 × stable 3/3) = 0.03.
+**Verified vs. not:** Verified: the registered verdict at HEAD and at the tag, agreement with the jobs' in-job trap_v2 and stable analyses, archive hash, run identities (label, seed, rate, burst n, prereg sha) from meta.json. Not verified: that nobody read the n = 100 in-job summaries before 02:05:30 Sat (`/work/classtmp` is `noatime`; no commit references them). `analysis/seed_effects.py`, which the frozen endpoints name for realized rates, does not exist; the same quantity (n_base / duration / λ_ref) was computed instead. `r13-theory-pred2` (E0F theory predictions) is not on GitHub as of 04:13 CDT; any E0F prediction pushed later is not blind.
+**Interpretation:** The good state at 1.65 × is metastable with a finite basin: it absorbs a 25-session burst without trace and tips within 100 s after a 100-session burst, a critical size between 25 and 100 in every seed. The seed-0 2.5 × instability that set the from-empty edge is an arrival-count effect; the registered window (hi 2.0 ×) stands as frozen. Paper input: `notes/PAPER_INPUT_basin.md`.
+## 2026-10-31 — LPM-INF (L1 step 2): stock LPM without its 128-request FCFS fallback does not collapse on the seeds where stock LPM did (exploratory)
+**Question:** At 1.65 × λ_ref, stock SGLang 0.5.22 LPM collapsed to the all-miss trap on seeds 0 and 1 in both grid replicates. The post-hoc crossing analysis (`analysis/lpm_crossing.py`, `notes/LPM_CROSSING_r11.md` on `r11/strengthen`) found every collapse coincided with the waiting queue passing 128. Above 128, `_determine_active_policy` silently switches LPM to FCFS order. If the fallback is removed, does LPM still collapse?
+**Setup:** Cell `sglang-lpminf`: POLICY=lpm, REFRESH=1, LPM_INF=1. That is the stock `envs/sglang` plus the job-local hook `slurm/hooks/lpm_inf/sitecustomize.py` (md5 `be788ae7…`), which raises `schedule_policy.WAITING_QUEUE_PREFIX_MATCH_MAX` from 128 to 1e9 in every process that imports it. BURST arm only, E2 protocol (200 sessions in 60 s at 1200 s, 8700 s run), 300k pool, 1.65 × λ_ref = 0.11803 sessions/s, seeds 0–2.
+- Frozen inputs, all on `r11/lpminf` at `5064580` (tag `r11-lpminf-pred`): the exploratory registration `configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml` (`derive-exploratory`, PREREG_SHA256 `f4454c5b…`), the endpoints and decision rule `configs/r11_lpminf_predict.yaml`, and the blind simulator predictions `notes/PREDICTIONS_r11_lpminf.md` (S1 bundle 2). Pushed to GitHub 2026-10-31 02:02:46 UTC (21:02:46 CDT Fri; `gh api …/activity`, branch creation at `5064580`), before submission.
+- Jobs **17168743 / 17168744 / 17168745** (seeds 0 / 1 / 2), submitted 2026-10-30 22:07:40 with `--nice=56` from `$W/repo_r11_lpm` (HEAD `5064580`, clean, untouched since). sacct: all COMPLETED 0:0, elapsed 2:29:41–2:29:45, on nova22-gpu-2 / -1 / -1, ended 03:51:56, 04:12:05 and 04:23:48 CDT Sat. MaxRSS 6.1–6.6 GB of 48 G.
+- Verdict on the login node: `summarize burst2 --run-dirs <3> --out-root results --set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-30_grid_sglang-lpminf.yaml` → `agentload_analysis_burst2/20261031-042736`. No guard warnings; `pre_registered: false`, exploratory as designed.
+- Pulled read-only into `results/nova/lpminf_1716874x_pulled_20261031-042548/` (`fc8b028`). Archive sha256 `ce1eb62d…`, verdict-dir archive `7903a474…`; both checked on both ends, and the remote archives deleted.
+- Endpoints: `analysis/r11_lpminf_eval.py` (constants read from the frozen file) → `results/r11_lpminf_eval/20261031-eval/`.
+- Controls. All five cells have the same `plan.csv` sha256 per seed (common random numbers).
+  - Stock LPM `sglang-lpm-r1`: 17097090 / 096 / 102. `-r0`: 17097091 / 097 / 103. Grid pull `r7_native_grid_vllm_pulled_20261025-145126`.
+  - FCFS `sglang-fcfs-r1`, E2 BURST: 17093390 / 396 / 402 (`e2_170933xx_pulled_20261025-144558`). `-r0`: 17097089 / 095 / 101.
+
+**Manipulation check (frozen):**
+- **Hook items: all three runs pass.** `lpm_inf_markers.txt` holds `128 -> 1000000000` from the server pid and from exactly one child of it (pids 3826316, 3327643, 3330171, each with parent = the server pid the job printed). The CPU self-test in `flag_check.txt` reported value 1e9, `schedule_policy.py` md5 `b8ec334a…`, hook md5 `be788ae7…`, and LPM active at a queue of 300. The control without the variable gave 128 and FCFS.
+- **Scheduler cost** (`get_next_batch_to_run` s/s in 60-s bins whose mean queue is > 128):
+  - seed 0: 42 of 42 bins ≥ 0.008 (median 0.0130, min 0.0107);
+  - seed 1: 94 of 94 bins (median 0.0144, min 0.0119).
+  - Both **PASS**: the queue did pass 128, and LPM's prefix matching kept running there. Stock LPM and FCFS sit at 0.0027–0.0031 s/s in such bins (the fallback level).
+- **Seed 2:** the queue never passed 128 (max 120), so the scheduler-cost item is **UNINFORMATIVE**, not failed. The patched constant was never consulted at a value where it matters, so this run is in effect a third stock-LPM replicate.
+- **Not proven:** that the marking child is the scheduler. It is inferred: it is the only spawned child that imports `schedule_policy`, and the scheduler cost shows LPM active above 128. The log does not name the process.
+
+**Result (W = [5700, 8700) s):**
+
+| seed | cell | token hit W | collapse | trap_v2 | uncached / all-miss | slope (thr 0.0232) | p50 / p99 latency W (s) | unfinished | queue max | longest > 128 (s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | **LPM-INF** | **0.595** | no | draining | 0.84 | −0.025 | 12.0 / 210.7 | 104 | 165 | 1150 |
+| 0 | stock LPM r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.05 / 1.00 | 0.032 / 0.035 | 218 / 263; 229 / 279 | 354 / 361 | 334 / 345 | 5820 / 5650 |
+| 0 | FCFS r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.03 / 1.04 | 0.032 / 0.031 | 241 / 278; 235 / 271 | 370 / 366 | 356 / 342 | 6250 / 6265 |
+| 1 | **LPM-INF** | **0.419** | no | indeterminate | 0.92 | 0.016 | 149.0 / 230.8 | 194 | 184 | 2780 |
+| 1 | stock LPM r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.02 / 1.02 | 0.030 / 0.031 | 200 / 238; 199 / 238 | 318 / 317 | 290 / 287 | 6005 / 5800 |
+| 1 | FCFS r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.03 / 1.03 | 0.028 / 0.028 | 202 / 240; 202 / 240 | 320 / 320 | 299 / 298 | 6210 / 6130 |
+| 2 | LPM-INF (hook inert: queue ≤ 120) | 0.557 | no | draining | 0.88 | −0.015 | 13.5 / 113.9 | 59 | 120 | 0 |
+| 2 | stock LPM r1 / r0 | 0.442 / 0.816 | no / no | indeterminate / recovered | 0.92 / 0.34 | 0.004 / −0.011 | 73 / 118; 1.6 / 31 | 105 / 11 | 122 / 121 | 0 / 0 |
+| 2 | FCFS r1 / r0 | 0.000 / 0.000 | yes / yes | trapped / trapped | 1.03 / 1.03 | 0.036 / 0.036 | 213 / 256; 214 / 256 | 361 / 360 | 338 / 336 | 6475 / 6385 |
+
+- **Latency and starvation.** No turn waited more than 600 s in any run (the INF maximum is 241 s). INF miss-turn latency over W, p50 / p99: 131 / 215 s (s0), 183 / 234 s (s1), 89 / 118 s (s2). Every unfinished INF session is a base session; all 200 burst sessions finished.
+- **Token hit over time** (900-s bins, s0 / s1):
+  - INF: 0.93; 0.51; 0.23 / 0.19; 0.30 / 0.29; then 0.51–0.60 / 0.30–0.44.
+  - Stock r1: 0.93; 0.51 / 0.49; 0.30 / 0.12; 0.08 / 0.00; then 0.00 to the end.
+- **Queue.** It first passed 128 at almost the same time in INF and stock r1 (s0: 2475 vs 2525 s; s1: 1855 vs 1865 s) and stayed above it for at least 300 s in both (INF's sustained crossings begin at 3245 and 3270 s). After that, INF's 900-s mean queue stayed at 82–168, while stock's kept growing to 255–294.
+- **Timing.** The hit dip to 0.19–0.23 at 1800–2700 s comes before either queue reaches 128. So the fallback does not start the decline; it turns the decline into a collapse.
+
+**Decision rule (frozen, exploratory):** INF does not collapse on seed 0 and does not collapse on seed 1, so the outcome is **consistent** with the 128-request fallback causing stock LPM's collapse.
+- Trade-off clause, against the same-seed stock run with the same refresh flag (r1): INF has fewer unfinished sessions on all three seeds (104 vs 354, 194 vs 318, 59 vs 105) and a lower p99 over W (211 vs 263, 231 vs 238, 114 vs 118 s). No trade-off.
+- Against r0, the rule's literal test fires on seed 2 only (59 vs 11 unfinished, p99 114 vs 31 s). On that seed the queue never reached 128 in any LPM run, so the hook was inert, and the difference is replicate-to-replicate variation (see below).
+
+**Against the blind predictions** (`PREDICTIONS_r11_lpminf.md`, mixed primary):
+- Collapse flag: no collapse predicted on 3/3, and the engine did not collapse on 3/3 (**match 3/3**). The predicted decision outcome, "consistent", also matches.
+- Token hit: predicted 0.093 / 0.080 / 0.100, engine 0.595 / 0.419 / 0.557. The differences, 0.50 / 0.34 / 0.46, all exceed the 0.1 tolerance (**numeric miss 3/3**).
+- trap_v2: trapped predicted 3/3, engine draining / indeterminate / draining (**state miss 3/3**). The predicted disagreement between the primary endpoint and trap_v2 did not occur, because the engine did not stay near the all-miss rate.
+- The labelled secondary (separate batching: 0.38–0.42; s0 indeterminate, s1 trapped, s2 indeterminate) is closer. Seed 1's 0.419 lies inside its range and s0 and s2 lie above it, but it also misses the states.
+- The simulator was expected to be pessimistic about LPM: it has no partial hits and no LRU touch of waiting prefixes by LPM's matching. It turned out far more pessimistic than the 0.1 tolerance allows. Its predicted unfinished counts (334 / 295 / 321) are also far off (engine 104 / 194 / 59).
+
+**Verified vs. not:**
+- Verified: the sacct records; the archive hashes on both ends; the clone's HEAD `5064580` and clean status; the hook markers and self-tests; the scheduler-cost check on seeds 0–1; identical `plan.csv` across all five cells per seed; the burst2 verdict (no guard warnings); and the evaluator (5 tests in `tests/test_r11_lpminf_eval.py` pin the numbers).
+- Not verified: that the marking child is the scheduler by name (inferred, see above).
+- Not verified: the run-to-run variation of the engine at a fixed configuration. Only seed 2 gives a glimpse: three LPM runs that all stayed below 128, and so all ran effectively the same configuration, gave token hit 0.44, 0.56 and 0.82.
+- Not tested: any rate other than 1.65 ×, or any other seed.
+
+**Interpretation:** Exploratory: three seeds, one rate, two informative seeds.
+- On the two arrival streams where stock LPM collapsed in 4 of 4 runs, the same engine with only the 128-request switch disabled (verified active above 128) did not collapse. Token hit over the last 3000 s was 0.59 and 0.42, against 0.000, with a bounded queue and fewer unfinished sessions.
+- This is the causal step the post-hoc crossing analysis could not take. It supports the reading that stock LPM's collapse at 1.65 × is caused by its silent FCFS fallback, not by LPM ordering as such.
+- It does not show that pure LPM restores the good state. Seed 1 is indeterminate, with 189 requests outstanding at the end and an uncached-token rate at 0.92 × the all-miss rate, and no INF run recovers by the registered rule.
+- It cannot separate the two things the fallback switches off together: LPM's ordering, and the LRU touch of waiting requests' prefixes by LPM's matching.
+- It does not support a claim at other rates or a pooled estimate. With n = 2 informative seeds the result is directional only.
+
+## 2026-10-31 — H200 cell (SGLang, 300k pool): the window compresses to (1, 1.3) × λ_ref, too narrow to register; no kill test on H200
+**Question:** Does the SGLang 300k cell replicate on a different GPU (one H200 NVL instead of one A100 80GB PCIe), with the same model, revision, engine, pool and protocol? And what happens to the metastable window when the GPU is faster but the pool and the tool time stay fixed?
+**Setup:** Cell `sglang-fcfs-r1-h200` (E0a `sglang-nocache-h200`): SGLang 0.5.22, Qwen2.5-7B-Instruct `a09a3545`, `KV_TOKENS=300000` (server log: `max_total_num_tokens=300000`, `context_len=49152`), FCFS with waiting-prefix refresh, `OUTPUT_FEEDBACK=server`. Hardware: nova25-gpu-3, "NVIDIA H200 NVL, 143771 MiB", driver 580.178.04. Attention backend `fa3`, SGLang's Hopper default (server log of all 20 jobs). The A100 cells ran FlashInfer. The job log's `attn=flashinfer` text is only the script default. All jobs ran from the dedicated clone `repo_h200/` at `5a6fbcd` (clean tree, push URL disabled), with `--gres=gpu:h200:1` and one run per job. All COMPLETED 0:0:
+- smoke 17166807 (900 s);
+- E0a 17166810–12 (POP 32, seeds 0–2) and the POP-64 check 17166813;
+- Stage C 17166818–22, 828, 830, 832, 834 (n = 16, 20, 24, 28, 32, 40, 48, 96, 300; same closed protocol as the A100 Stage C: synchronized start, window [900, 2700) s);
+- E0b 17168377–82 (one 3000 s from-empty run each at 1.1, 1.2, 1.3, 1.4, 1.55 and 1.75 × λ_ref).
+
+The E0b grid was chosen after E0a by the plan's rule (`commands_corrected.sh`: R_bound = (24/68.8)/λ_ref = 1.80 < 2.2 gives "1.1 1.2 1.3 1.4 1.55 1.75"), before any Stage C or E0b result was read. Combines ran on the login node (`envs/swapp`, nice), each output dir taken from the tool's printed `out_dir`:
+- calibration `agentload_analysis_miss/20261030-204701` (3 runs);
+- POP-64 check `agentload_analysis_miss_popcheck/20261030-204702`;
+- curve: `summarize closed --primary-label sglang-fcfs-r1-h200` over the nine runs → `agentload_analysis_closed/20261031-023040` (no guard warnings);
+- bracket: `summarize stable` over the six → `agentload_analysis_stable/20261031-023042` (no guard warnings).
+
+Data: `results/nova/h200_wave1_pulled_20261031-023416/` (`d108056`; archive sha256 `ff2f6951…` checked at both ends, remote archive deleted). Inputs copied byte-exact into `prereg/inputs/2026-10-31-h200/`, hashes checked at both ends. Cost: 16.3 GPU-h (sacct elapsed).
+**Result (E0a):** λ_miss 0.1933 sessions/s, **turns-based 0.19388 ± 0.0062**; all-miss uncached tokens **29,866 ± 23 tok/s**: 2.71 × and 2.66 × the A100 cell (0.07153, 11,243). POP-64 check: tokens 31,232 (ratio 1.046, inside the runbook's 5 %); turns-based 0.2132 (ratio 1.100, outside 5 %). On the A100 300k cell the POP-64 check gave tokens +3.2 % and sessions −4 %; on the A100 native cell, turns-based −6 %. POP 32 is therefore close to saturation on the H200 but not certainly at it, and λ_ref may be a few percent low.
+**Result (Stage C, one run per n):**
+
+| n | 16 | 20 | 24 | 28 | 32 | 40 | 48 | 96 | 300 |
+|---|---|---|---|---|---|---|---|---|---|
+| μ sessions/s | 0.219 | 0.279 | 0.327 | 0.369 | **0.386** | 0.329 | 0.274 | 0.218 | 0.225 |
+| μ turns-based | 0.211 | 0.262 | 0.311 | 0.350 | **0.367** | 0.312 | 0.259 | 0.211 | 0.226 |
+| hit fraction (turns) | 0.929 | 0.925 | 0.901 | 0.839 | 0.744 | 0.456 | 0.215 | 0.000 | 0.000 |
+
+- Peak 0.3861 sessions/s at n = 32; n = 28 is within 4.3 % (`n_cap_ambiguous`).
+- μ_max/λ_ref = **1.99** (turns-based 1.89).
+- 0.5-hit crossing ≈ 38.8 (linear between 32 and 40).
+- μ falls 43 % from n = 32 to n = 96, and never below 1.13 × λ_miss (sessions-based).
+- Against the A100 300k cell (peak 0.233 at n = 24, μ_max/λ_ref 3.26, 0.5-hit crossing ≈ 32.1, hit 0.000 by n = 48, minimum μ 0.68 × λ_miss), the H200's cliff sits further out and is shallower.
+
+**Result (E0b):**
+- Stable at 1.1, 1.2 and 1.3 ×: final queue 0, trend −0.01, −0.03 and −2.3.
+- **Unstable at 1.4 ×** (final queue 50.4, fitted rise +48.6 over the last 1500 s), 1.55 × (177.7, +115.6) and 1.75 × (272.6, +170.7).
+- Bracket: largest all-stable 1.3 × (0.252 sessions/s), first unstable 1.4 × (0.271), monotone.
+- The 1.4 × run sits just above the queue threshold of 50, with a clear rising trend.
+
+**Registration rule (`836063a`, restated in the weekend's COORD rules before any H200 Stage C or E0b result was read):**
+- Window (1, hi) with hi = min(μ_max/λ_ref, largest all-stable E0b multiple) = min(1.99, 1.3) = **1.3** (`hi_source: lambda_cap_e0b`).
+- Points m1 = 1 + (hi − 1)/3 = 1.10 and m2 = 1 + 2(hi − 1)/3 = 1.20, rounded to 0.05.
+- The `boundary_margin_rel` band is (1.1, 1.17), and neither point lies inside it. `analysis.prereg fill` therefore returns **INCOMPLETE** (`prereg/inputs/2026-10-31-h200/fill_rulecheck_INCOMPLETE.yaml`: `lambda_outside_window` for both points).
+- The cap rule would have given n_cap 28 (μ(28) within 5 % of μ(32)) and a capped-drain limit of 1.73 ×. Neither of those binds; the window does.
+- **No registration and no E2 for this cell**, as the rules require.
+- An exploratory pair was considered and is not possible with the frozen code. `prereg derive-exploratory` needs a FILLED parent. The only FILLED 300k SGLang parent is the A100 registration, and its hardware check refuses the H200 calibration (`calibration hardware must equal the registered hardware`). Making it work would need a code change, so no BURST run was made.
+
+**Window compression (the measurement this cell delivers):** pool (300k) and tool time (Exp(5 s)) are the same as on the A100. The H200 raises the all-miss rate 2.71 ×, but the curve's peak only 1.66 × and the from-empty edge 1.76 × (0.143 → 0.252 sessions/s).
+- In units of λ_miss, the window shrinks from (1, 2.0) to (1, 1.3), i.e. from 1.0 to 0.3 λ_miss wide.
+- In absolute terms it shrinks from 0.072 to 0.058 sessions/s wide.
+- μ_max/λ_ref falls from 3.26 to 1.99.
+- The edge as a fraction of the peak stays similar: 2.0/3.26 = 0.61 on the A100, 1.3/1.99 = 0.65 on the H200.
+
+**Against predictions:**
+1. **Simulator:** no blind simulator prediction exists for this cell.
+2. **The checker's a-priori estimate** (`COORD/h200_scope_and_check.md`, written 2026-10-30 ~18:20, before any H200 job ran; not committed, so not blind by the project's standard). It expected a pool-set cliff at n ≈ 24–28 on either GPU, and put μ_max/λ_ref at 1.2–1.7 and hi at 1.1–1.5.
+   - The real hi (1.3) lies inside its range.
+   - The real μ_max/λ_ref (1.99) and peak (n = 32) lie above it, and above the plan's R_bound of 1.80, because the cliff moved out.
+3. **The round-13 first-principles theory:** tag `r13-theory-pred`, commit `997d2c4`, pushed 02:05:30 CDT 2026-10-31, before the combine; files `notes/PREDICTIONS_r13_theory.md` and `results/theory/merged/h200_300k.json`. I read it only after the combine and the registration check. Predictions on the turns-based estimator, against the measurements:
+
+   | quantity | predicted | measured |
+   |---|---|---|
+   | μ_max | 0.372 | 0.367 (−1.3 %) |
+   | window | 1.92 | 1.89 |
+   | peak n | ≈ 32.5 | 32 |
+   | 0.5-hit crossing | 37.3 | ≈ 38.8 |
+   | hit at the peak | ≈ 0.69 | 0.74 |
+   | F2 edge | 1.39 × | bracket [1.3, 1.4) |
+
+   - It also predicted that the cliff would move out while the window narrowed; it did.
+   - None of its three H200 refutation conditions fires: window 1.89 < 2.4; hit(32) 0.744 ≥ 0.5; hit(48) 0.215 < 0.5.
+   - Its F2 escape probabilities at the six E0b multiples (0.04, 0.12, 0.28, 0.52, 0.84, 0.98) give a log-likelihood of −1.36 for the observed outcomes.
+   - Beyond the peak the real cliff is softer than predicted (fluid / annealed): μ(40) 0.312 vs 0.257 / 0.278; μ(48) 0.259 vs 0.197 / 0.201; hit(48) 0.215 vs 0.000 / 0.013.
+   - The official scoring is the theory session's; these are this session's readings of the frozen file.
+
+**Blindness scope:** the per-job n = 16–32 μ values (Stage C 17166818–22) were seen by the cell operator and Akshat at about 22:28 CDT, and not by the lead or the theory agents. n ≥ 40 and the E0b edge are fully blind. After the lead's hold (~22:40 CDT 2026-10-30), only `sacct` states were read until "theory predictions frozen" arrived (~02:25 CDT 2026-10-31).
+**Verified vs. not:**
+- Verified:
+  - the 20 accounting records;
+  - `repo_h200/` HEAD `5a6fbcd`, clean;
+  - the hardware string in every banner and every analysis;
+  - `fa3` and the 300k pool in every server log;
+  - no Traceback, OOM or CUDA error in any server log, only SGLang's context-length warning (49,152 > 32,768), as on the A100;
+  - the archive and input hashes;
+  - the rule check by `fill`.
+- Not verified:
+  - the seed-to-seed spread of the curve and of the edge (one run per n and per multiple; the 1.4 × run is close to the stability threshold);
+  - whether POP 32 saturates the H200 in turns (ratio 1.10);
+  - the effect of the attention backend (fa3 here, FlashInfer on the A100) separately from the GPU.
+
+**Interpretation:** The H200 neither refutes nor tests the mechanism. At this pool the window is too narrow for the registered rule to place two λ points at least 10 % from its edges, so no paired kill test was run. What the cell does show is that the window is not a property of the engine alone. It depends on the ratio of the pool-limited peak to the compute-limited all-miss rate. At a fixed pool and tool time, a faster GPU raises λ_miss more than it raises the peak, and the window compresses from 1.0 to 0.3 λ_miss. A larger pool widens it: 5.5 × for the A100 native pool.
+**Extra Stage C (submitted after this entry's data, at the lead's request):** 17169612–14 (n = 36, 44, 52, one n per job, same protocol and label, nice 0), to bracket the theory's predicted cliff. Their predictions are frozen in `r13-theory-pred`, so they are blind. They are not part of the nine-point curve above or of the registration check.
+
+## 2026-10-31 — H200 300k: three extra Stage C points (n = 36, 44, 52) are a blind test of the r13 cliff; the real cliff past n ≈ 38 is gradual, not abrupt
+**Question:** Where exactly does the H200 300k curve fall, and does the frozen r13 theory's predicted all-miss onset (n_b 41.3; n_half 37.3) hold between the measured grid points 32, 40 and 48?
+**Setup:** Jobs 17169612 (n = 36), 17169613 (44) and 17169614 (52), at the lead's request. They are one n per job, with the same protocol, label (`sglang-fcfs-r1-h200`), clone (`repo_h200` at `5a6fbcd`) and `--time=01:30:00` as the nine Stage C jobs, at nice 0. All COMPLETED 0:0 on nova25-gpu-3 (starts 02:39, 02:50, 03:15 CDT). The theory's predictions were pushed at 02:05:30 (`r13-theory-pred`), before submission (02:33), so these points are blind on everyone's side. Supplementary 12-point curve on the login node: `summarize closed --primary-label sglang-fcfs-r1-h200 --name agentload_analysis_closed_supp12` over the nine runs plus these three → `agentload_analysis_closed_supp12/20261031-040909` (no guard warnings). Data: `results/nova/h200_stageC_extra_1716961x_pulled_20261031-040933/` (archive sha256 `c069b0b8…` checked at both ends, remote archive deleted). The registration check (nine-point curve, `prereg/inputs/2026-10-31-h200/`) is unchanged.
+**Result:**
+
+| n | 32 | 36 | 40 | 44 | 48 | 52 |
+|---|---|---|---|---|---|---|
+| μ sessions/s | 0.386 | **0.374** | 0.329 | **0.299** | 0.274 | **0.269** |
+| μ turns-based | 0.367 | **0.354** | 0.312 | **0.280** | 0.259 | **0.250** |
+| hit fraction (turns) | 0.744 | **0.613** | 0.456 | **0.318** | 0.215 | **0.156** |
+| r13 μ turns-based, fluid / annealed | 0.377 / 0.371 | 0.359 / 0.348 | 0.257 / 0.278 | 0.197 / 0.221 | 0.197 / 0.201 | 0.197 / 0.198 |
+| r13 hit, fluid / annealed | 0.70 / 0.69 | 0.56 / 0.53 | 0.27 / 0.28 | 0.00 / 0.08 | 0.00 / 0.01 | 0.00 / 0.00 |
+
+The peak stays at n = 32; n = 36 is the new runner-up, within 3.2 %. The 0.5-hit crossing is ≈ 38.9 (linear between 36 and 40; 38.8 from the nine-point curve).
+**Against the frozen theory:**
+- Up to n = 36 the theory is close: μ within 2 % (annealed −1.6 %), hit 0.53–0.56 against 0.61.
+- From n = 40 on, the real curve falls gradually and the theory falls abruptly. At n = 44, 48 and 52 the theory is all-miss (hit ≤ 0.08), but the real hit is still 0.32, 0.22 and 0.16. Real μ is 1.27–1.29 × the annealed prediction at the three points, 1.29–1.45 × λ_miss (turns-based) against the theory's floor of 1.0.
+- The predicted all-miss onset n_b = 41.3 is therefore too early. Measured hit only reaches 0 somewhere between n = 52 and 96.
+- No refutation rule fires: the rules test the window, hit(32) and hit(48), and these points do not change any of them.
+- This matches the theory's own stated likeliest failure mode (open problem 2 in `PREDICTIONS_r13_theory.md`): its eviction-age assumption does not concentrate at this pool on the H200.
+
+**Verified vs. not:** Verified: the three accounting records, the archive hash, the 12-run combine (no guards). Not verified: seed-to-seed spread (one run per n).
+**Interpretation:** The fluid model gets the rising branch and the peak of the H200 curve right blind, and the cliff's midpoint to within about 1.5 sessions. It does not get the tail past the midpoint. The real engine keeps a partial hit rate (0.16–0.32) well past the model's all-miss onset. The model treats eviction as a sharp threshold; on the real engine it is spread out. For the window this matters little, because the window is set by the peak and the E0b edge. For the paper's mechanism text, the all-miss collapse is a gradual slide on the H200 (hit 0.74 → 0.16 over n = 32–52), not a cliff at a single n.
+
+## 2026-10-31 — H200 300k E0b reseeds at 1.3 and 1.4 ×: 1.3 × is stable in 3/3; 1.4 × is stable in 2/3, so the edge is stochastic there; the registration check is unchanged
+**Question:** How firm is the H200 300k from-empty edge? The single seed-0 run at 1.4 × ended at queue 50.4, just over the threshold of 50.
+**Setup:** At the lead's request, jobs 17169668 (1.3 ×, seed 1), 17169669 (1.3 ×, seed 2), 17169670 (1.4 ×, seed 1) and 17169671 (1.4 ×, seed 2). They use the same protocol (MODE=cap, one 3000 s from-empty run each), label `sglang-fcfs-r1-h200`, `CALIB_FILE` (`agentload_analysis_miss/20261030-204701`) and clone (`repo_h200` at `5a6fbcd`) as E0b 17168377–82. Nice 0, `--deadline`; all COMPLETED 0:0 on nova25-gpu-3 (starts 03:28–04:04 CDT). Supplementary 10-run bracket on the login node: `summarize stable --name agentload_analysis_stable_supp10` over the six original and four new runs → `agentload_analysis_stable_supp10/20261031-050254` (no guard warnings). Data: `results/nova/h200_e0b_reseeds_1716966x_pulled_20261031-050308/` (archive sha256 `dadb1f4f…` checked at both ends, remote archive deleted).
+**Result:**
+- 1.3 ×: seed 1 stable (final queue 0, trend +0.03); seed 2 stable (0, +0.26). With seed 0, **3/3 stable**.
+- 1.4 ×: seed 1 stable (final queue 0, trend −0.01); seed 2 stable (0, −2.3). With seed 0 (unstable: 50.4, +48.6), **2/3 stable**.
+- Ten-run bracket: largest all-stable 1.3 ×, first rate not all-stable 1.4 ×, monotone. This is the same as the six-run bracket that the registration check used.
+
+**Against predictions:** the frozen r13 F2 escape probability (tag `r13-theory-pred`) is 0.28 at 1.3 × and 0.52 at 1.4 ×, i.e. P(stable) 0.72 and 0.48. Observed: 3/3 and 2/3. Both are consistent at three seeds. No simulator prediction exists.
+**Interpretation:** The registration conclusion does not change. hi is the largest multiple at which every run is stable: still 1.3, so the rule's points stay 1.10 and 1.20, outside the margin band. But the edge is not a hard threshold. At 1.4 × an empty engine stays good in two of three seeds and escapes in one, so the edge lies in the stochastic band 1.3–1.4 ×. That is what a first-passage (escape) edge looks like, not a deterministic stability boundary. The paper should quote the H200 edge as "stable at 1.3 × in 3/3 seeds, at 1.4 × in 2/3".
+## 2026-10-31 — Rescue of an established trap (R1, R4): decisive PASS in both cells, 9/9 RESCUED, no relapse, nothing shed
+**Question:** Once the burst has trapped the engine (all-miss, backlog growing), does a client-side session cap at the knee of μ(n), engaged late and removed after the gate drains, bring the engine back to the good state, and does that state then persist with the cap removed at the same load (plans R1, R4)?
+**Setup:** Registrations (tag `r11-rescue-reg`, `f0bc3ad`, GitHub push 22:39:02 CDT Fri): R1 `configs/agentload_prereg_2026-10-31_rescue.yaml` (cell `sglang-fcfs-r1-rescue`, 300k pool, 1.35 and 1.65 × λ_ref, cap 20 engaged at 1,800 s), R4 `configs/agentload_prereg_2026-10-31_rescue_native.yaml` (`sglang-fcfs-r1-rescue-native`, native pool, 4.0 ×, cap 64 at 2,100 s), seeds 0–2; the E2 burst (200 in [1200, 1260)), 8,700-s runs; over-cap sessions pause at the next tool call and resume before new arrivals; release at the first 10-s tick ≥ t_on + 600 s after both queues have been empty for 300 s. Per-run rule and decision rule frozen in `analysis/rescue.py` (RULE, STUCK, PROFILES, CHECK) and in the rule text. Jobs (submitted 23:01 CDT Fri, all COMPLETED 0:0, from the frozen clone `repo_r11_rescue` at `f0bc3ad`): smoke 17168965; R1 17168966–71; R4 17168972–74. In-job `analysis.rescue check-run` ok in all 10. Data `results/nova/rescue_1716896x_pulled_20261031-070502/` (archive sha256 `2ac2309c…`, `c6ea41e`). Verdicts on a clean tree with the registrations as `--prereg` and bundle 3 as `--predictions`: `…/results/agentload_analysis_rescue_r1/20261031-071720` (`be50593`), `…_r4/20261031-071748` (`454ff7a`). Controls: the committed same-seed E2 BURST / NOBURST runs (common random numbers; pairing checks clean).
+**Result:** R1 **PASS at both test points** (1.35 ×: 3/3 RESCUED; 1.65 ×: 3/3), R4 **PASS** (3/3); decisive; 0 relapses, 0 late releases (so REFUTED does not apply), 0 failed sessions (the no-shed claim stands), every same-seed BURST control stuck (FU-hit 0.000 after t_on). Every run VALID: FU-hit 0.000–0.002 over the 300 s before the engage with 139–172 (R1) and 298–324 (R4) outstanding. Releases 4,550 / 3,980 / 4,400 s (1.35 ×), 4,920 / 4,430 / 4,570 s (1.65 ×), 6,000 / 5,980 / 6,140 s (R4). Post-release FU-hit 0.994–1.000, every 300-s window ≥ 0.93, uncached-token rate 0.08–0.12 × (R1) and 0.23–0.27 × (R4) the all-miss rate, RECOVERED at 8,700 s in 9/9. Hits come back within three minutes of the engage (first 60-s bin ≥ 0.8 at t_on + 120 s in 9/9); the drain of the backlog takes the rest (t_recovered 3,300–4,330 s and 5,670–5,790 s).
+**Persistence (descriptive, `…/results/rescue_paper_data/20261031-071938/persistence.csv`):** with the cap removed the runs stayed good for the remaining 3,780–4,720 s (R1) and 2,560–2,720 s (R4): mean outstanding 1.9–2.8 and 8.8–11.8, in-system above the cap 0–4.5% of the time (max 27 against 20; 43–55 against 64). Over the same interval the same-seed BURST controls sat at FU-hit 0.000 with 195–317 and 1,133–1,178 outstanding; each rescue run matched its NOBURST control (follow-up counts within 7, same hit, backlog, latency and unfinished count at 8,700 s; every burst session completed).
+**Costs (descriptive, `costs.csv`):** no session shed; 121–143 (R1) and 220–251 (R4) sessions paused, 386–569 s per paused session; 196–344 and 1,050–1,101 sessions waited at admission, 408–683 s on average (max 1,318 s); delay 38–78 session-h (R1) and 222–230 (R4); completed share 0.987–0.995, equal to NOBURST's; BURST: 0.50–0.81 completed and 206–1,404 sessions unfinished, 377–1,588 session-h of engine queueing. The E2 CAPPED arm (cap from t = 0, prevention) costs about the same at 300k (40–65 delay session-h) and much less at the native pool (18–21).
+**Against predictions (both pushed before any rescue run started; the nine jobs started 02:23–04:27 CDT and ended 04:53–06:57 CDT Sat, after bundle 3 at 21:30:40 CDT Fri and the theory at 02:05:30 CDT Sat):** bundle 3 predicted PASS in both cells (R1 20/20 per rate, R4 `R4s_t2100` 16/20, exact plans 9/9) and 0 relapses: held. Release times inside the 20-seed band 9/9; within ±600 s of the seed's exact-plan prediction 6/6 at 300k (median +375 s, all late at 1.35 ×) and 0/3 native (+800 to +1,750 s: the GPU drains the native gate slower, as the non-blind CAPPED check warned; delay session-h 1.5–3 × predicted). Pause counts within 3 (300k) and 13 (native) of the exact predictions; completed shares equal to four decimals in 6/9. Theory (`r13-theory-pred`): RESCUED everywhere (not refuted); release within ±15% in 2/3 (1.35 ×: +18.8, +3.9, +14.9%), 3/3 (1.65 ×: +12.8, +1.6, +4.8%) and 0/3 (R4: +19.0, +18.7, +21.8% vs 5,040 s); relapse 0/9, consistent with P = 0.002 / 0.025 / ≈ 0.
+**Verified vs. not:** Verified: sacct and exit codes, the check-run JSONs, archive checksum, registration binding (decisive needs every run bound to the committed file and started after its last commit: no blockers), pairing with the controls, the hardware rule. Not verified: behaviour after a release while the cap still binds (release only happens after 300 s with empty queues); other caps, engage times or an online trigger (AIMD-pause is simulation only); more than three seeds.
+**Interpretation:** The trap is metastable, not absorbing: removing load by session count, at the curve's knee and without dropping anyone, moves the engine back to the high-hit branch, and the good state then sustains itself at the same arrival rate that the uncapped control cannot escape. That is the operational complement of the kill test: the same μ(n) curve that predicts the trap gives the cap that cures it. The cure costs explicit waiting (minutes per affected session), roughly 4–5 × less than the engine queueing of doing nothing; preventing the trap with the cap from the start is cheaper still at the native pool. Paper input: `notes/PAPER_INPUT_rescue.md`.
+
+## 2026-10-31 — KV-pool sweep (A100, 150k and 600k tokens): the frozen theory hits every 600k quantity; at 150k it finds the cliff but overstates the peak by 11.5% and puts the from-empty edge too low
+**Question:** Does the frozen round-13 theory (tags `r13-theory-pred` and `r13-theory-pred2`) predict, out of sample and with nothing refitted, the thrashing curve, window and from-empty edge of the calibrated A100 SGLang cell when only the KV pool changes (halved to 150,000 tokens, doubled to 600,000)? And which predictor of the cliff wins: the theory's n_half (with the tool-call term), the capacity ratio M/E_S, or the exogenous-gap closures (Che, Yao)?
+**Setup:**
+- Engine and clone: SGLang 0.5.22, Qwen2.5-7B, FCFS with the waiting-prefix refresh, `--max-total-tokens` 150000 / 600000, labels `sglang-fcfs-r1-p150k` / `-p600k`, from the lead's clone `$W/repo_r13_pool` at `5a6fbcd` (clean; all 30 `meta.json` record it). λ_ref 0.07153 (300k E0a, pool-independent).
+- Stage C (closed, synchronized start, 900 s warmup + 1800 s, one run per n): 600k 17168864–66 (n 24–96, 300); 150k 17168867–69 (n 6–24, 300).
+- E0b (from empty, 3000 s, seed 0): 600k 17168870–75 (2.5–5.0 ×); 150k 17168876–81 (1.1–1.8 ×).
+- All 18 jobs COMPLETED 0:0 on nova22-gpu-[1-3]. Every server log has `max_total_num_tokens` equal to the requested pool, and the hardware string is `NVIDIA A100 80GB PCIe, 81920 MiB` in every run.
+- Combined analyses on the login node: `summarize closed --primary-label <label>` gives `agentload_analysis_closed/20261031-112200` (600k) and `-112201` (150k); `summarize stable` gives `agentload_analysis_stable/20261031-112202` (600k) and `-112204` (150k). No guard warnings.
+- Pulled read-only as an xz archive (sha256 `fcf51ad6…0035`, checked at both ends; remote archive deleted) into `results/nova/pool_sweep_1716886x_pulled_20261031-112342/`: run dirs, job logs (server logs), per-job and combined analyses, `logs/pm-pool-*.out`, sacct with Start/End, the submit log.
+- Scoring: `experiments/r13_pool_score.py` (reads the frozen JSONs from the git tags) writes `derived/`.
+**Result:**
+- **600k:** μ_max 0.408 turns / 0.428 sessions at n = 48, a peak ratio of **5.71 / 5.98**. Hit is 0.92 up to n = 48, then 0.78 (56), 0.24 (64), 0.13 (80), 0.006 (96). The 0.5-hit crossing is **60.1**. E0b is stable at 2.5–4.5 × (final queue 0) and unstable at 5.0 × (queue 538, rise 321): bracket **[4.5, 5.0)**, or [4.80, 5.32) at the realized rates.
+- **150k:** μ_max 0.120 / 0.118 at n = 12, a peak ratio of **1.68 / 1.65**. Hit is 0.93 at n ≤ 10, then 0.84 (12), 0.71 (14), 0.56 (16), 0.13 (20), 0.05 (24). The crossing is **16.5**. The all-miss branch gives 0.066 / 0.063 turns at 20 / 24, but 0.108 at n = 300, so the closed collapse is shallow. E0b is stable at 1.1 × and 1.2 × (queue 3.3, rise 1.4) and unstable from 1.3 × (queue 24, rise 12): bracket **[1.2, 1.3)**, or [1.36, 1.46) at the realized rates.
+- The seed-0 plans arrive 6–14% above nominal.
+**Against predictions** (frozen rules: turns-based, F1 μ_max/window ±10%, fluid n_half ±3, bracket steps):
+- **600k: all hits.** Window 5.47 vs 5.71 (−4.2%); peak n 45 vs 48; n_half 60.03 vs 60.14; F2 edge 4.53 brackets [4.5, 5.0) exactly (A's crossing, 4.82, too). Log-likelihood of the six outcomes: F2 −0.93, A −0.54.
+- **150k:**
+  - Cliff: hit. n_half 16.91 vs 16.52; peak n 14, next to the measured 12; F1 hit(20) 0.133 vs 0.133 measured.
+  - Height: **miss.** F1 μ_max and window +11.5% (1.87 vs 1.68). This is the declared upward bias, and the freeze lists 150k's MF margin as 0.01 s.d.
+  - E0b edge: **miss** by two grid steps. F2 1.09 × predicts 1.1 × unstable (P = 0.51), but it was stable. A's crossing, 1.47 ×, is two steps the other way. Log-likelihood: F2 −2.14, A −2.95, F2 at the realized rates −3.59.
+- **Refutation rules:** neither fired (150k window 1.68 < 2.5 and hit(24) 0.049 < 0.5; 600k window 5.71 ≥ 4.5 and hit(48) 0.921 ≥ 0.5).
+- **Rivals (pred2 rule, nearest crossing):** the frozen n_half wins at both pools (errors +0.38 / −0.11). M/E_S errs −2.94 / −4.01 and M/E_lb −2.30 / −3.26. The T3(b) tool-call term is supported at both pools (16.52 > 15.96, 60.14 > 58.65), with only a 0.56-session margin at 150k. Che W = Z and Yao-Little cross at 26.5 / 23.9 (150k) and 105.9 / 95.7 (600k), 7–46 sessions late. At the measured near-zeros they still give hit ≈ 0.5–0.55.
+- **Window law (A100/H200 × 300k/600k, plus 150k and native):**
+  - Measured peak ratios (turns): A100 1.68 / 3.15 / 5.71 / 6.48 at 150k / 300k / 600k / native; H200 1.89 / 2.98 at 300k / 600k (the H200 values are as given to this cell by the H200 session, not read here).
+  - Pool-doubling factor 1.81 (A100) and 1.58 (H200), against 1.67 predicted for both. H200/A100 speed ratio 0.60 at 300k and 0.52 at 600k, against 0.59 / 0.58.
+  - The edge-bracket midpoint is 0.71–0.93 of the window in all six cells. The F2 bracket is right in 5 of 6; 150k is the miss.
+**Verified vs. not:**
+- *Verified:* 18 sacct records; clone hash and clean `meta.json`; pool size in every server log; hardware string; archive hash; no guard warnings; the frozen JSONs read from the tag objects (not a worktree); the pred2 lookups equal the frozen JSON at its points (pred2's own check; 600k n = 96 is outside the lookup and is read from the frozen JSON grid).
+- *Blindness, verified from sacct and GitHub's activity log:* every job Start (06:50:13 to 10:08:26 CDT) is after both pushes (02:05:30 and 04:20:20 CDT). Eligible was 02:30:32, but nothing started before 06:50. Both prediction sets are blind in time for all 30 runs.
+- *Not verified / limits:* one run per n and one seed per multiple, so the brackets are single-path outcomes (the F2 P(unstable) at 4.5 × is 0.47). The E0b grid steps differ between pools. The H200 numbers in the law table were not checked here.
+**Interpretation:**
+- The pool enters the theory where it says it does. The cliff position follows M/E_S plus the tool-call sessions at both pools to within half a session, and at 600k the window and edge follow too.
+- The weak side is the small pool. The model's good-state height and its from-empty escape (F2) are both off at 150k, in opposite senses: the height is too high, yet the edge is too low. So F2's escape rate is too fast where the window is narrow.
+- Capacity-ratio predictors of the collapse are early by 2–4 sessions, and exogenous-gap closures miss the collapse entirely, as Proposition E said.
+- Numbers, scoring table, suggested paragraph and figure spec: `notes/PAPER_INPUT_pool.md`.
+
+## 2026-10-31 — H200 at a 600k-token pool: the window reopens to (1, 2.5) × λ_ref; pre-registration filled and the paired test submitted
+**Question:** On the same H200, does doubling the KV pool (300k → 600k) restore a registrable window, as the window law predicts? That completes the 2×2 (A100 / H200 × 300k / 600k). And do the frozen pred2 predictions for this cell hold?
+**Setup:** The lead asked for this cell at ~03:00 CDT (Akshat's authorization for Nova use covers it).
+- **Cell:** `sglang-fcfs-r1-h200-p600k`, `KV_TOKENS=600000` (server log of all 15 jobs: `max_total_num_tokens=600000`). Everything else is as in the H200 300k cell: SGLang 0.5.22, Qwen2.5-7B `a09a3545`, fa3, FCFS with refresh, nova25-gpu-3, clone `repo_h200` at `5a6fbcd`, one run per job, nice 0.
+- **λ_ref:** reused from the H200 300k E0a (17166810–12; λ_miss is pool-independent: A100 300k 0.0715 vs native 0.0718).
+- **Stage C:** 17169672–80 (n = 32, 40, 48, 56, 64, 72, 80, 96, 300).
+- **E0b:** 17169682–87 (1.25, 1.5, 1.75, 2.0, 2.5, 3.0 ×). The default grid was chosen by the plan's rule R_bound = (n_peak/68.8)/λ_ref ≥ 3, i.e. n_peak ≥ 40. The lead's reasoning, from the frozen closed form, was n_b ≈ 13.55 + 2 × 27.76 ≈ 69 at 600k, with the 300k peak already at 32.
+- **Timing:** all 15 jobs were held by `--begin=2026-10-31T05:00:00` and carried `--deadline`. All COMPLETED 0:0 (starts 05:27–08:25). The blind predictions `r13-theory-pred2` (commit `cfa7712`) were pushed at 04:20:20 CDT, before any of these jobs could start.
+- **Combines** (login node; out_dirs parsed from the tools' output):
+  - curve: `summarize closed --primary-label sglang-fcfs-r1-h200-p600k` → `agentload_analysis_closed/20261031-092435`;
+  - bracket: `summarize stable` → `agentload_analysis_stable/20261031-092436`;
+  - no guard warnings in either.
+- **Data:** `results/nova/h200p600k_stageC_e0b_171696xx_pulled_20261031-092822/` (archive sha256 `10682cc6…` checked at both ends, remote archive deleted).
+
+**Result (Stage C, one run per n):**
+
+| n | 32 | 40 | 48 | 56 | 64 | 72 | 80 | 96 | 300 |
+|---|---|---|---|---|---|---|---|---|---|
+| μ sessions/s | 0.427 | 0.522 | **0.592** | 0.581 | 0.477 | 0.403 | 0.298 | 0.269 | 0.232 |
+| μ turns-based | 0.412 | 0.505 | **0.577** | 0.569 | 0.466 | 0.379 | 0.281 | 0.254 | 0.231 |
+| hit fraction (turns) | 0.930 | 0.927 | 0.897 | 0.804 | 0.654 | 0.478 | 0.227 | 0.140 | 0.000 |
+
+- Peak 0.5917 sessions/s at n = 48; n = 56 is within 1.8 % (`n_cap_ambiguous`).
+- μ_max/λ_ref = **3.05** (turns-based 2.98).
+- 0.5-hit crossing ≈ 71.0 (linear between 64 and 72).
+- The grid has no n = 16, 20 or 24 (`grid_incomplete`, a warning only).
+
+**Result (E0b):** stable at 1.25, 1.5, 1.75, 2.0 and 2.5 × (final queue 0; trend 0.0 to −0.10); **unstable at 3.0 ×** (final queue 620.2, fitted rise +433). Bracket: largest all-stable 2.5 × (0.485 sessions/s), first unstable 3.0 ×, monotone.
+**Pre-registration:** `configs/agentload_prereg_2026-10-31_h200_p600k.yaml`, FILLED and valid, PREREG_SHA256 `6be6e232…578e`.
+- **Commit:** `4d1d431` on `r12/h200-prereg` (parent `5a6fbcd`; committed 09:26:38 CDT; GitHub `branch_creation` at 14:26:41Z = 09:26:41 CDT); merged into `r12/h200` (`e12138f`, a merge).
+- **Window:** (1, 2.5) × λ_ref, with hi from E0b (`lambda_cap_e0b`; μ_max/λ_ref = 3.05 does not bind).
+- **λ points:** 1.5 and 2.0 × by the ⅓/⅔ rule of `836063a`, no rounding needed, inside the band (1.1, 2.25).
+- **Cap:** n_cap **48** (`smallest_within_margin`); capped-drain limit 2.87 ×.
+- **Warnings only:** `n_cap_ambiguous`, `grid_incomplete`.
+- **Inputs:** `prereg/inputs/2026-10-31-h200-p600k/`, copied byte-exact, hashes checked at both ends; `calibration.json` is a byte copy of the H200 300k E0a calibration.
+- **Sync to Nova:** an 8 KB bundle `5a6fbcd..r12/h200-prereg`, pulled `--ff-only` into `repo_h200` while no H200 job was running. `repo_h200` is at `4d1d431`, clean.
+
+**E2 submitted** at 09:27:44 CDT (Nova clock), after `check-job` passed for all six (λ, arm) with `--duration-s 8700 --t-burst-s 1200 --set trap_v2.eval_from_s=4500`.
+- **Jobs:** 18 one-arm jobs, **17171020–17171037**, seed-major: for seed 0, 1, 2 → for 1.5 then 2.0 × → BURST, NOBURST, CAPPED.
+- **Arguments:** `KV_TOKENS=600000`; `N_CAP=48` on CAPPED; `CALIB_FILE=prereg/inputs/2026-10-31-h200-p600k/calibration.json`; `--gres=gpu:h200:1 --time=03:10:00 --deadline=2026-11-01T11:40:00`; nice 0. The lead revised nice 58 → 0 because an H200 job can hold at most 4 of the 11 cap slots.
+- **Script:** `$W/submit_h200p600k_e2.sh`; IDs `E2P6_*` in `h200_jobs.env`.
+
+**Against the blind pred2 predictions** (`results/theory/pred2/h200_600k.json` at `r13-theory-pred2`; read after the combine and the registration check; turns-based estimator; tolerances of `notes/THEORY_r13_scoring.md`):
+
+| quantity | predicted | measured | result |
+|---|---|---|---|
+| μ_max (annealed / F1) | 0.620 | 0.577 | +7.3 %, inside ±10 %; the freeze note expected 4–12 % high on the H200 |
+| window | 3.20 (fluid 3.27) | 2.98 | +7.3 %, a hit |
+| peak n | ≈ 53 (fluid 53.7) | flat top {48, 56} | a hit |
+| 0.5-hit crossing | 66.6 (fluid) / 64.8 (F1) | ≈ 71.0 | +4.4 / +6.2, outside ±3: **a miss** |
+| E0b bracket | [2.5, 3.0) (F2 edge 2.57 ×) | [2.5, 3.0) | equal, a hit |
+| registration consequence | 1.5 / 2.0 ×, cap 48 | 1.5 / 2.0 ×, cap 48 | **exactly as registered** |
+
+- F2 log-likelihood of the six E0b outcomes: −0.50.
+- Up to n = 64 the curve matches the frozen prediction to within 7 % in μ (0.412–0.577 vs 0.419–0.609 annealed; largest gap −6.5 % at n = 56). hit is 0.93–0.65 vs 0.93–0.55.
+- Past the midpoint the same soft tail as at 300k appears. hit(72) is 0.478 vs 0.147 (annealed), hit(80) 0.227 vs 0.019, hit(96) 0.140 vs 0.000. μ(72) is 0.379 vs 0.262; μ(80–96) is 0.25–0.28 vs 0.20.
+- Rival scoring (pred2 §6): the frozen n_half (66.6) beats the rival M/E_S (≈ 55.5) for the measured crossing of 71.0. T3(b)'s tool-call term is supported, since 71.0 > M/E_S + (n_b − M/E_S)/2 ≈ 62.7.
+- pred2's N2 rule for the 300k cell (`hit(36) ≥ 0.5 and hit(44) < 0.5`, P = 0.80) holds on the measured 0.613 and 0.318. The 300k crossing (38.9) also beats its rival (27.8).
+
+**The 2×2 window law (μ_max/λ_ref, sessions-based; from-empty edge):**
+
+| pool | A100 | H200 |
+|---|---|---|
+| 300k | 3.26; 2.0 × | 1.99; 1.3 × (1.4 × 2/3) |
+| 600k | (pool-sweep cell, another session) | 3.05; 2.5 × |
+
+On the H200, doubling the pool raises the peak 1.53 × (0.386 → 0.592), moves it out 1.5 × in n (32 → 48), and moves the edge from 1.3 to 2.5 ×.
+**Verified vs. not:**
+- Verified:
+  - the 15 accounting records;
+  - the pool size in every server log;
+  - the input hashes at both ends;
+  - the registration's validity, commit and push time;
+  - check-job for all six (λ, arm);
+  - the 18 job IDs and their submit lines (sampled with `scontrol`/`sacct`: label, pool, arm, cap, deadline, gres).
+- Not verified:
+  - seed-to-seed spread of the curve and of the edge (one run per n and per multiple);
+  - n < 32 (not run);
+  - anything about E2's outcome.
+
+**Interpretation:** The window is set by pool and speed together. The faster GPU closes it at 300k, and doubling the pool reopens it, to an edge (2.5 ×) above the A100 300k cell's (2.0 ×). The frozen fluid model predicted the registration this cell actually produced, blind. As at 300k, it gets the rising branch, the peak and the edge, but misplaces the tail past the midpoint, where the real engine keeps a partial hit rate. The kill test now runs at 1.5 and 2.0 × λ_ref, where the frozen pred2 E2 block predicts a good NOBURST state (hit 0.932) and a trapped BURST arm (backlog ≈ 458 and 867 sessions).
+**Next:** the 18 E2 jobs, about 4.5 waves of 2.5 h on the 4 H200s; first ends ≈ 12:00 Sat, last ≈ 22:00 Sat if the cap allows four at once. Pull what has finished before the VPN drops (~14:00 Sat), the rest on Sun 08:00–11:30. Then run `summarize burst2 --prereg configs/agentload_prereg_2026-10-31_h200_p600k.yaml` with the E2 overrides (`--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500`).
+
+## 2026-10-31 — BASIN-2 bracketed: 40 sessions absorbed, 60 trap (3/3 seeds each), 50 traps seed 1 only; pred2's rule held, its per-seed probabilities missed seed 0
+**Question:** Where on the engine is the edge of the good state's basin at 1.65 × λ_ref? Registered B2: is a burst of 40 GOOD and a burst of 60 STUCK, each in ≥ 2/3 seeds (n = 50 reported, not in the rule)? And how do the frozen theory predictions (pred2: per-seed P(STUCK) from each seed's burst composition; b_c = 53.4) score?
+**Setup:** Jobs 17169893-95 (n = 40), 17169896-98 (n = 60), 17169899-901 (n = 50), seeds 0-2 each, one BURST arm per job at 1.65 × (λ = 0.118031), burst uniform in [1200, 1260) s, 8700 s runs, W = [5700, 8700) s. Labels `sglang-fcfs-r1-b40/-b50/-b60`. Registrations `configs/agentload_prereg_2026-10-31_b{40,50,60}.yaml` (FILLED; tag `r14-basin2-reg` = `621d88f`, committed 01:58:38, GitHub push 02:10:48 CDT); the analysis-only fix `19c58e9` was pushed at 03:12:59, before any job. Submitted 04:21:40-41; all from `repo_r14_basin2` at `621d88f`, COMPLETED 0:0 (sacct End 12:39:49-15:10:34), A100 80GB PCIe on nova22-gpu-1/2/3; every run start-state verified, not aborted, git clean, canaries exit 0, config sha256 equal to the tagged cell configs. Pulled read-only to `results/nova/b2_1716989x_pulled_20261031-154500/` (archive sha256 `58e77d7e…`, 22,205,520 bytes, on both ends; remote deleted). Verdict: `analysis.basin classify --endpoints configs/r11_basin_predict.yaml --run-dirs <9 B2 + 6 B1> --prereg <b40 b50 b60 b100 b25>` at `4dd21e0` → `analysis/agentload_analysis_basin/20261031-154526` (baselines n = 0 / 200 found by the tool). Descriptive time course: `experiments/r14_b2_derived.py` → `analysis/derived/b2_time_course_*.csv`. Scoring against the frozen pred2 files (read from git at tag `r13-theory-pred2`): `experiments/r14_b2_score.py` → `analysis/derived/b2_scoring.{json,csv}`.
+**Result:**
+
+| n | seed 0 | seed 1 | seed 2 | hit_eval | backlog slope /s |
+|---|---|---|---|---|---|
+| 0 (committed) | GOOD | GOOD | GOOD | 0.934 / 0.934 / 0.921 | ≈ 0 |
+| 25 (B1) | GOOD | GOOD | GOOD | 0.933 / 0.934 / 0.923 | ≈ 0 |
+| **40** | **GOOD** (recovered) | **GOOD** | **GOOD** | 0.934 / 0.934 / 0.925 | -0.0005 / 0.0011 / 0.0001 |
+| **50** | **GOOD** (recovered) | **STUCK** (trapped) | **GOOD** (recovered) | 0.933 / 0.000 / 0.924 | -0.0005 / 0.0456 / 0.0001 |
+| **60** | **STUCK** (trapped) | **STUCK** (trapped) | **STUCK** (trapped) | 0.000 ×3 | 0.0295 / 0.0435 / 0.0396 (threshold 0.0232) |
+| 100 (B1) | STUCK | STUCK | STUCK | 0.000 ×3 | 0.032-0.036 |
+| 200 (committed) | STUCK | STUCK | STUCK | 0.000 ×3 | 0.028-0.036 |
+
+n40 GOOD 3/3, n60 STUCK 3/3: **`bracketed` true**; every run bound to its registration and counted, `b2_not_counted`, endpoint problems and window mismatches empty, `registration_diff` forbidden lists empty. Seven-point curve, STUCK counts 0/3, 0/3, 0/3, 1/3, 3/3, 3/3, 3/3 at n = 0, 25, 40, 50, 60, 100, 200; each seed's chain is monotone, with the edge in (50, 60] for seeds 0 and 2 and (40, 50] for seed 1. Descriptive: the stuck runs have hit < 0.2 in every window from 1400 s (n50 s1, n60 s1) or 1500 s (n60 s0, s2), against 1300 s at n = 100; the GOOD runs' lowest 100 s window is 0.70-0.83, back above 0.8 the next window, and their hit_eval is within 0.004 of the same seed's n = 0 run; in every run all burst turns completed before W (last at 1510-1680 s in GOOD runs, 2454-4719 s in STUCK runs).
+**Against predictions:** pred2 (`r13-theory-pred2` = `cfa7712`, pushed 04:20:20, 80 s before submission; blind in time). Rule: P = 0.66 (uncalibrated 0.42; frozen exchangeable layer 0.94); it held. pred2's secondary prediction, A's deterministic level crossing on the exact plans (b40 G/G/G, b50 G/S/G, b60 S/S/S), is right in 9 of 9. Primary per-seed P(STUCK) (seeds 0/1/2): b40 0.78 / 0.36 / 0.09, b50 0.86 / 1.00 / 0.22, b60 1.00 / 1.00 / 0.81. **Misses: seed 0 at n = 40 (P(STUCK) 0.78, GOOD) and seed 0 at n = 50 (0.86, GOOD).** The declared claim that seed 0 is the most trap-prone and seed 2 the least is not borne out (STUCK counts over 40-60: 1 / 2 / 1; seed 1 is the most trap-prone); seed 2's b40 GOOD and b60 STUCK both held. Mean Brier over the nine STUCK outcomes, declared predictors: primary 0.174, uncalibrated 0.259, frozen exchangeable layer 0.096, realized-background band 0.062, A's labels 0.000; not declared, scored after the fact: the frozen composition-averaged column 0.111 (not a band, so not among the declared predictors) and P = 0.5 0.250. pred2's rows for the BASIN-1 sizes (all six right) are not blind: pred2 was pushed at 04:20:20, after the B1 outcomes were first read at about 04:07. Frozen critical sizes against the per-seed edges: b_c = 53.4 lies in seeds 0 and 2's (50, 60], not in seed 1's (40, 50]; the committor 50% (49.5) and composition-averaged 50% (48.4) lie only in seed 1's. The first theory set (`r13-theory-pred`, 0.139 / 0.547 / 1.000 per seed) is the exchangeable layer. The round-7 simulator sweep (not a B2 prediction) had 50 sessions TRAPPED in 6/10 at 1.65 × its λ_miss; the engine trapped 1/3.
+**Verified vs. not:** Verified: the archive hash and size of the local copy (kept only in the session scratchpad, `b2pull/b2_pull_lead.tar.xz`, not committed), re-checked again at ~16:20 together with its 388 files extracting byte-identical (cmp) to the pull dir; run identities (job, seed, burst n, label, prereg file) from meta.json, config.yaml and run_dirs_burst.txt; the jobs' in-job trap_v2 analyses agree with the registered classification run by run; the classification re-run at `4dd21e0` is identical, and `analysis/basin.py` as tagged (`621d88f`, git-less export) gives the same bracket, curve and per-run numbers (only `prereg_bound` reads False there); branch-push times from the GitHub activity API; the pred2 json and yaml at the tag are byte-identical to the `r13/pred2` worktree copies. An independent recompute from the raw `requests.csv` / `sessions.csv` / `meta.json` with no repo code (session scratchpad `b2_recompute/`, not committed) agrees: hit_eval and STUCK identical in all 21 runs (9 B2, 6 B1, 6 baselines), slope within 2e-17 /s, and for the B2 runs GOOD identical, outstanding within 5e-4, uncached-token deviation within 5e-6; every B2 config.yaml byte-identical to `621d88f` and every prereg sha256 equal to the registration at `621d88f`; no failures. Checked at pull time on Nova and recorded in `COMMANDS.txt`, not re-checkable now (the remote archive is deleted and this session does not access Nova): the Nova-side archive sha256 (same as the local copy) and the clone's clean `git status` at `621d88f`; each run's meta.json also records commit `621d88f`, dirty False. Provenance caveats: (1) the tags' own push times cannot be observed (the activity API shows no tag events), so the timing rests on the branch pushes of the tagged commits; `git ls-remote` shows the remote tags on the same tag objects as the local ones (`r14-basin2-reg` 692450e → 621d88f, `r13-theory-pred2` 6f0b504 → cfa7712), tagger dates 02:10:35 and 04:20:17; (2) the classification's meta.json says dirty = true at `4dd21e0` because `git status --porcelain` counts the untracked pull dir; `git diff HEAD` is empty for analysis/, src/ and configs/; (3) trap_v2's "outstanding" backlog is the time-mean number of requests in flight over [8400, 8700) s (`analysis/throughput.py` `outstanding_mean`), not sessions in system; the RECOVERED labels hold under either (GOOD runs' sessions in system 8.55-12.8, < 20). The baselines are six runs of the e2_170933xx pull (n = 0: jobs 17093391/97/403; n = 200: 17093390/96/402), not all 18.
+**Interpretation:** At 1.65 × the basin boundary lies between 40 and 60 sessions on the engine, and it differs between seeds: seed 1 tips by 50, seeds 0 and 2 only above 50 (by 60). The theory's coarse claims hold (the bracket, and pred2's secondary deterministic crossing on the exact plans for all nine runs). The deterministic b_c = 53.4 fits only two of three seeds: it lies inside the edge interval of seeds 0 and 2 but not of seed 1, and the model's 50% points (48.4-49.5) lie inside seed 1's only, so no single frozen size fits every seed. Its primary per-seed probabilities, built on the burst cohort's peak alone, pointed at the wrong seed: seed 0's heavy burst (calibrated 53.0 and 54.1 cohorts' worth at 40 and 50) did not trap, while seed 1 at 50 did. The plan statistics that also count the realized background (A's crossing; the realized-background band) separate or score the outcomes best. The B2 stuck runs stay at zero hits through W on base sessions alone: every burst turn had completed by 4719 s. At n = 100 and 200, by contrast, burst turns still complete inside W (each run's `requests.csv`). Paper input: `notes/PAPER_INPUT_basin2.md`.
+## 2026-11-01 — r14 TOOLSLOW (rule not met) and SHED (PASS), registered, scored against pred2
+
+**Question:** Does a temporary tool-latency increase with no burst trap the engine (TOOLSLOW)? Does stopping arrivals for a fixed time drain an established trap, and how many sessions does that refuse (SHED)?
+**Setup:** Registrations `configs/agentload_prereg_2026-10-31_{toolslow_d10,toolslow_d30,shed_t600,shed_t3600}.yaml` (tag `r14-extra-reg`, `b006291`, pushed 02:28:09 CDT on 10-31; analysis fix `db24efa` before any job). Jobs 17169902-07 (TOOLSLOW, seeds 0-2) and 17169908-11 (SHED, seeds 0-1), submitted 04:21:41-43 CDT on 10-31 from `$W/repo_r14_extra` at `b006291`, all COMPLETED 0:0. SGLang FCFS, 300k pool, A100, 1.35 x lambda_ref, 8700 s, window [5700, 8700) s. Pull: `results/nova/toolslow_shed_1716990x_pulled_20261101-154800/` (COMMANDS.txt).
+**Result:** SHED PASS: tau = 600 STUCK 2/2 (59 and 56 sessions refused), tau = 3600 GOOD 2/2 (355 and 378 refused). TOOLSLOW rule not met: delta = 10 GOOD 3/3; delta = 30 STUCK 1/3 (seed 2 trapped; seeds 0 and 1 recovered, hit 0.931 and 0.930, equal to their NOBURST controls). Registered analysis: `analysis/agentload_analysis_r14/20261101-154909`. Paper input: `notes/PAPER_INPUT_extra.md`.
+**Against predictions (pred2, blind in time):** SHED: tau = 600 STUCK (P 1.00) and tau = 3600 GOOD (P 0.998), rule P 0.997: held; the refused counts equal pred2's protocol check exactly. TOOLSLOW: delta = 10 GOOD (P 0.71 per seed): held 3/3; delta = 30 STUCK with P 1.00 per seed: wrong for seeds 0 and 1; rule P 0.80: failed.
+**Verified vs. not:** hit_eval of all 10 runs reproduced exactly by an independent stdlib script over requests.csv. The manipulation is present in every run: 664-1034 slowed tool calls, all starting in [1200, 2100) s, and no base arrival inside any stop. Every run is bound to its registration. Archive sha256 checked on both ends at pull time. Not done: an independent recompute of the slopes and trap_v2 labels (the decisive STUCK/GOOD calls rest on hit_eval, which was recomputed).
+**Interpretation:** An arrival stop longer than Proposition S's tau_min drains the trap but refuses hundreds of sessions, where the cap refuses none. A 30 s tool slowdown for 900 s sits near the edge, not past it: it trapped 1 of 3 seeds. The model's "no good state while slowed" overstated the risk of a temporary slowdown, and the registered causal test of the gap did not pass.
+## 2026-11-01 — H200 600k-pool registered paired test: PASS at both registered points (1.5 and 2.0 × λ_ref)
+**Question:** On the H200 with a 600k-token pool, at the two rates its own window registers, does a 200-session burst trap SGLang? And does the paired NOBURST arm stay good while a client-side cap of 48 recovers?
+**Setup:**
+- **Registration:** `configs/agentload_prereg_2026-10-31_h200_p600k.yaml`, commit `4d1d431`, PREREG_SHA256 `6be6e232…578e`, carried by every run's `meta.json`. Committed 09:26:38 CDT on 2026-10-31; GitHub `branch_creation` at 09:26:41 CDT, before the submission at 09:27:44 (Nova clock).
+- **Cell:** `sglang-fcfs-r1-h200-p600k`: SGLang 0.5.22, Qwen2.5-7B, `KV_TOKENS=600000`, fa3, one H200 NVL. λ_ref = 0.19388 sessions/s (the H200 E0a); points 1.5 and 2.0 ×; cap 48; seeds 0–2.
+- **Arms:** BURST (200 sessions in 60 s at t = 1200 s), NOBURST and CAPPED, on common random numbers; one 8700 s arm per job.
+- **Jobs:** 17171020–17171037 (seed-major), all COMPLETED 0:0 on nova25-gpu-3. Starts 09:27 on 10-31 to 21:59; ends 11:56 on 10-31 to 00:28 on 11-01 (CDT); 2:28:58–2:32:08 each. Run from `repo_h200` at `4d1d431`, unchanged throughout.
+- **Verdict:** run on the login node on 2026-11-01 15:44 CST: `summarize burst2` over the 18 run dirs listed in `results/nova_job_logs/<job>-*/run_dirs_burst.txt`, with `--set burst.trap_min_s=3000 --set burst.hit_eval_from_s=4500 --set trap_v2.eval_from_s=4500 --prereg configs/agentload_prereg_2026-10-31_h200_p600k.yaml` → `agentload_analysis_burst2/20261101-154448/`. No guard errors or warnings.
+- **Data:** pulled read-only in four parts, each an xz archive sha256-checked at both ends with the remote archive deleted:
+  - `results/nova/h200p600k_e2_partA_…20261031-120927/` (17171020–22);
+  - `_partA2_…20261031-154207/` (17171023–25);
+  - `_partB1_…20261031-170435/` (17171026–28);
+  - `_partB2_…20261031-193319/` (17171029–31);
+  - `_partB3_…20261101-154520/` (17171032–37, archive sha256 `a8016ebf…`). This part also holds the verdict dir (separate archive, sha256 `861e33d3…`) and `swapp/sacct_17171020-17171037.txt`.
+
+**Result:**
+- Verdict flags: `pre_registered: true`, `kill_test_pass_rule_only: true`, `kill_test_pass_decisive: true`.
+- Decisive cells: both (1.5 ×, 2.0 ×), in the registered window, with valid pairing.
+
+| λ (× λ_ref) | arm | seed 0 | seed 1 | seed 2 | count |
+|---|---|---|---|---|---|
+| 1.5 | BURST | trapped | indeterminate | trapped | trapped 2/3 |
+| 1.5 | NOBURST | good | good | good | 3/3 |
+| 1.5 | CAPPED | recovered | recovered | recovered | 3/3 |
+| 2.0 | BURST | trapped | trapped | trapped | 3/3 |
+| 2.0 | NOBURST | good | good | good | 3/3 |
+| 2.0 | CAPPED | recovered | recovered | recovered | 3/3 |
+
+- **BURST runs** (all six: hit 0.000 over the evaluation window, t_b + 4500 s to 8700 s):
+  - uncached-prefill rate: 1.095, 1.042, 1.093 × the all-miss rate at 1.5 ×; 1.113, 1.106, 1.112 × at 2.0 ×;
+  - mean backlog: 509.2, 485.6, 484.9 and 912.8, 872.5, 909.3 sessions;
+  - backlog slope: 0.0759, 0.0478, 0.0601 against the threshold 0.0485 (1.5 ×), and 0.1272, 0.0995, 0.1122 against 0.0969 (2.0 ×);
+  - session completion rate: 1.20–1.27 × and 1.40–1.45 × λ_ref, so the backlog grows.
+- The one indeterminate run (1.5 ×, seed 1) is stuck the same way: hit 0.000, token rate 1.042 ×, backlog 486. Its slope, 0.0478, is 1.3 % below the threshold. That is the same seed-1 pattern as on the A100 and on vLLM.
+- **NOBURST and CAPPED:** hit 0.929–0.936, mean backlog 22.5–34.1, |slope| ≤ 0.0018, uncached-token rate 0.09–0.14 × all-miss. Within a seed the two arms are indistinguishable in the evaluation window: the gate had drained.
+
+**Against the blind pred2 predictions** (`results/theory/pred2/h200_600k.json`, tag `r13-theory-pred2`, pushed 04:20:20 CDT on 10-31, before any p600k job could start; read after the verdict):
+- The predicted registration consequence (1.5 / 2.0 ×, cap 48) is the registration.
+- Trapped backlog: predicted 458 / 867, real 485–509 / 873–913. +6–11 % and +1–5 %, inside ±15 %.
+- Trapped token ratio: predicted 1.054 / 1.064, real 1.042–1.095 / 1.106–1.113. Outside ±0.03 in five of six runs (the real trap rewrites prefill about 4–5 % faster than predicted at 2.0 ×).
+- Trapped slope: predicted 0.052 / 0.117, real 0.048–0.076 / 0.099–0.127.
+- Fresh critical burst: predicted 114 / 91 sessions, below the registered 200, consistent with trapping in 5/6 runs and being stuck in 6/6.
+- There is no simulator prediction for this cell.
+
+**Verified vs. not:**
+- Verified:
+  - the 18 accounting records (COMPLETED 0:0);
+  - `repo_h200` HEAD `4d1d431`, clean;
+  - the registration hash in every run;
+  - every archive checksum;
+  - check-job before submission;
+  - the order: registration on GitHub before submission;
+  - no guard warnings.
+- Not verified: anything beyond one model, one GPU, the 600k pool and three seeds.
+
+**Interpretation:** On the H200, once the pool is large enough for a window to exist, the result is the same as on the A100. At a load it carries indefinitely from empty (NOBURST good 6/6), a 200-session burst leaves it all-miss for the remaining 7500 s (stuck 6/6, trapped by the registered rule 5/6). A client-side session cap at its measured peak prevents that (6/6). It joins the registered A100 300k, A100 native and vLLM paired tests, all of which pass at both of their registered points. The H200 300k cell, whose window is too narrow to register, is reported separately as window compression.
+
+## 2026-11-01 — Second model family (Llama-3.1-8B): same curve and window; registered paired test decisive PASS at 1.65 x, not at 1.35 x
+**Question:** Does the metastable trap depend on the model? With Llama-3.1-8B-Instruct instead of Qwen2.5-7B (same engine, GPU, 300k-token pool, workload and rules), where are the curve's peak and cliff and the from-empty edge, and does the registered paired test (BURST / NOBURST / CAPPED) pass?
+**Setup:** SGLang 0.5.22, FCFS with refresh, label `sglang-fcfs-r1-llama31`, `NousResearch/Meta-Llama-3.1-8B-Instruct` @ d10aef7 (its four shards byte-identical to meta-llama 0e9e39f2), `--max-total-tokens 300000` (every server log: `max_total_num_tokens=300000`), A100 80GB PCIe, from clone `$W/repo_llama31` (code `5a6fbcd`). E0a 17166823/29/31 (cache off, POP 32, 3 seeds) + POP-64 17166833, combined by CPU job 17168803; Stage C 17166814–16 (one run per n); E0b 17169565–70 (one 3000 s run per multiple); E2 17170409–26 (18 one-arm jobs, seed-major, 8700 s, burst of 200 sessions in 60 s at t = 1200 s), all COMPLETED 0:0. Registration `configs/agentload_prereg_2026-10-30_llama31.yaml`, commit `1559f8e` (07:49:13 CDT Sat; GitHub 07:49:15), FILLED, PREREG_SHA256 `e584ed87…`; check-job passed for all six (λ, arm) pairs; first E2 job started 12:41. Verdict on the login node with the frozen code: `summarize burst2 --prereg` with `trap_min_s` 3000, `hit_eval_from_s` 4500, `trap_v2.eval_from_s` 4500 → `agentload_analysis_burst2/20261101-154441`. Data: `results/nova/llama31_wave1_pulled_20261031-033750/`, `llama31_e0b_registration_pulled_20261031-075313/`, `llama31_e2_part{1..4}_pulled_*` and `llama31_e2_part5_verdict_pulled_20261101-154525/`.
+**Result (E0a, Stage C, E0b):** λ_miss (turns-based) **0.05964 ± 0.0020** sessions/s, all-miss **9,353 tok/s** (0.83 × Qwen's 0.07153 / 11,243); POP-64 tokens 1.018 ×. Curve μ sessions/s at n = 16, 20, 24, 28, 32, 40, 48, 96, 300: 0.166, **0.202**, 0.195, 0.123, 0.053, 0.037, 0.041, 0.051, 0.099; hit 0.936, 0.930, 0.868, 0.656, 0.203, 0.009, 0.003, 0, 0; peak n = 20 (n = 24 within 3.3%), μ_max / λ_ref 3.38 (turns 3.28), 0.5-hit crossing ≈ 29.4. E0b: stable 1.25–2.0 ×, unstable 2.5 and 3.0 ×, monotone. Registered: window (1, 2.0) × λ_ref, points **1.35 and 1.65 ×** (⅓/⅔ rule), cap **20** (`smallest_within_margin`), capped-drain limit 2.80 ×; warnings `n_cap_ambiguous`, `mu300_far_from_lambda_miss`.
+**Result (E2):** `pre_registered: true`, `kill_test_pass_decisive: true`, decisive cells: **1.65 × only**; no pairing problems, no guard problems.
+
+| λ (× λ_ref) | arm | seed 0 | seed 1 | seed 2 | count |
+|---|---|---|---|---|---|
+| 1.35 | BURST | indeterminate | draining | trapped | trapped 1/3 |
+| 1.35 | NOBURST | good | good | good | 3/3 |
+| 1.35 | CAPPED | recovered | recovered | recovered | 3/3 |
+| 1.65 | BURST | trapped | indeterminate | trapped | trapped 2/3 |
+| 1.65 | NOBURST | good | good | good | 3/3 |
+| 1.65 | CAPPED | recovered | recovered | recovered | 3/3 |
+
+Every BURST run sits at hit 0.000 over the evaluation window with an uncached-token rate of 1.012–1.050 × the all-miss rate (1.35 ×) and 1.030–1.054 × (1.65 ×), mean backlog 196–210 and 267–288 sessions. They differ only in the backlog slope against 0.5 (λ − λ_miss): at 1.35 × 0.0052 (indeterminate), −0.000003 (draining: backlog 196 → 181, still hit 0), 0.0157 (trapped) vs 0.0104; at 1.65 × 0.0243, 0.0114 (indeterminate), 0.0245 vs 0.0194. NOBURST good 6/6 (hit 0.925–0.935, backlog 7–10); CAPPED recovered 6/6, equal to NOBURST in the evaluation window (the gate had drained the burst). 1.35 × fails the 2/3 rule; 1.65 × passes it, so the registered test passes, decisively, at one of its two points.
+**Against the blind predictions:** simulator round 12 (`notes/PREDICTIONS_llama31.md`, tag `r12-llama31-predictions-frozen`, GitHub 02:14 Sat, before Stage C ended and E0b started): V1 (token costs × 1.21 to Llama's measured rate) got the peak n (20) and the cap (20) right, put μ*/λ_miss at 3.52 / 3.48 (real 3.28 turns), the cliff a little late (0.5-hit 30.6 / 31.6 vs 29.4; hit(32) 0.38 / 0.47 vs 0.20) and the edge at 2.5 × (mixed) / 2.0 × (separate) vs real 2.0 ×; V0 (unscaled) edge 2.0 ×. It predicted PASS at 1.35 and 1.65 × (BURST trapped 9/10 and 8/10 in V1 mixed, NOBURST 10/10, CAPPED 10/10): real 1/3 and 2/3 trapped. Every BURST run is stuck as predicted (hit 0, trapped token ratio 0.985–1.068 predicted, 1.012–1.054 real; backlog 181 / 252 predicted vs 196–210 / 267–288 real), but the slope test, which the simulator already flagged as the fragile part at low λ, fails in 3 of 6 real runs against about 1–2 in 10 simulated. Theory (lead's round 13, tags `r13-theory-pred` 02:05:30 and `r13-theory-pred2` 04:20:20): its registration-conditional run on the registered rates and cap (`a36f441`, `d12eef2` on `r12/llama31-theory-cond`, committed 07:52 before any E2 job started) gave trapped token ratio 1.004 / 1.013, BURST backlog 191 / 266, NOBURST hit 0.932 at 1.35 / 1.65 × (real 1.012–1.050 / 1.030–1.054, 196–210 / 267–288, 0.925–0.935); the lead scores the curve and window predictions.
+**Verified vs. not:** Verified: pool size, banners and model guard on every run (9/9 Stage C, 6/6 E0b, model string in config_effective.yaml), registration binding (check-job before submission; burst2 provenance: first and last commit `1559f8e` before every E2 run, committed clean), all 18 accounting records, every archive checksum at both ends, the per-run table. Not verified: anything beyond one model per family, one GPU type, the 300k pool and three seeds per point; one run per n and per E0b multiple (the cap choice n = 20 vs 24 is within noise).
+**Interpretation:** The mechanism does not depend on the model: Llama-3.1-8B has a 17% lower all-miss capacity but the same curve shape, peak location, window (edge 2.0 × λ_miss) and registered points as Qwen2.5-7B. After the burst every BURST run is stuck at zero hits at the all-miss token rate while every paired NOBURST stays good and every CAPPED arm recovers, at both points. The registered rule calls 3 of the 6 trapped, because the backlog slope at the lower point grows too slowly to clear 0.5 (λ − λ_miss) within 7500 s, so the decisive PASS rests on 1.65 × alone; 1.35 × is a FAIL by the registered rule, with stuck-but-not-trapped runs (the Qwen cell's 1.35 × had 1 such run in 3; here 2 in 3).

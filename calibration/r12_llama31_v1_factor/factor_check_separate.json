@@ -1,0 +1,65 @@
+{
+  "mode": "separate",
+  "target": 9353.0,
+  "tolerance_rel": 0.003,
+  "iterations": [
+    {
+      "factor": 1.0,
+      "sets": [
+        "engine.batching=separate_prefill_priority"
+      ],
+      "token_rate": 11146.80037037037,
+      "lambda_miss_turns": 0.07135894621141302,
+      "busy": 0.9999913200800533,
+      "dir": "results/r12_llama31_v1_check_separate/r7_lambda_miss/20261031-020728",
+      "wall_s": 2.2896878719329834,
+      "git": {
+        "commit": "cec7043fc51c53af217d6a93bb576e138f8c3136",
+        "dirty": false,
+        "branch": "r12/llama31-predict"
+      }
+    },
+    {
+      "factor": 1.1918,
+      "sets": [
+        "engine.batching=separate_prefill_priority",
+        "engine.per_token_s=7.4606680000e-05",
+        "engine.prefill_attn_s=2.6696320000e-09",
+        "engine.decode_attn_s=3.6945800000e-04"
+      ],
+      "token_rate": 9444.053333333335,
+      "lambda_miss_turns": 0.05931524220948678,
+      "busy": 0.9999272708964817,
+      "dir": "results/r12_llama31_v1_check_separate/r7_lambda_miss/20261031-020731",
+      "wall_s": 2.3808929920196533,
+      "git": {
+        "commit": "cec7043fc51c53af217d6a93bb576e138f8c3136",
+        "dirty": false,
+        "branch": "r12/llama31-predict"
+      }
+    },
+    {
+      "factor": 1.204,
+      "sets": [
+        "engine.batching=separate_prefill_priority",
+        "engine.per_token_s=7.5370400000e-05",
+        "engine.prefill_attn_s=2.6969600000e-09",
+        "engine.decode_attn_s=3.7324000000e-04"
+      ],
+      "token_rate": 9340.436296296297,
+      "lambda_miss_turns": 0.05969160795954698,
+      "busy": 0.9999798364503464,
+      "dir": "results/r12_llama31_v1_check_separate/r7_lambda_miss/20261031-020733",
+      "wall_s": 2.4307870864868164,
+      "git": {
+        "commit": "cec7043fc51c53af217d6a93bb576e138f8c3136",
+        "dirty": false,
+        "branch": "r12/llama31-predict"
+      }
+    }
+  ],
+  "accepted_factor": 1.204,
+  "accepted_rate": 9340.436296296297,
+  "residual_rel": -0.0013432806269328967,
+  "converged": true
+}

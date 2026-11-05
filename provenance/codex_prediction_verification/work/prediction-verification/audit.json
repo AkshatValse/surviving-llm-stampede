@@ -1,0 +1,66 @@
+{
+  "manifest": {
+    "entries": 48,
+    "unique_tags": 48,
+    "bad_meta": []
+  },
+  "reruns": {
+    "b1": {
+      "runs.csv": {
+        "compared_rows": 1,
+        "columns_per_row": 61,
+        "exact_string_mismatches": []
+      },
+      "windows.csv": {
+        "compared_rows": 27,
+        "columns_per_row": 32,
+        "exact_string_mismatches": []
+      }
+    },
+    "b2": {
+      "runs.csv": {
+        "compared_rows": 2,
+        "columns_per_row": 58,
+        "exact_string_mismatches": []
+      },
+      "windows.csv": {
+        "compared_rows": 60,
+        "columns_per_row": 32,
+        "exact_string_mismatches": []
+      }
+    },
+    "b3": {
+      "runs.csv": {
+        "compared_rows": 3,
+        "columns_per_row": 77,
+        "exact_string_mismatches": []
+      },
+      "windows.csv": {
+        "compared_rows": 261,
+        "columns_per_row": 32,
+        "exact_string_mismatches": []
+      }
+    }
+  },
+  "expected_turns": 14.761055049953429,
+  "b3_independent": {
+    "runs_checked": 126,
+    "mismatches": [],
+    "max_absolute_numeric_delta": 3.637978807091713e-12
+  },
+  "b2_independent": {
+    "runs_checked": 78,
+    "classification_mismatches": [],
+    "positive_trend_stable_runs": 42
+  },
+  "generated_table_rows_match_notes_exactly": true,
+  "logged_pytest_progress_counts": {
+    ".": 1017,
+    "F": 32,
+    "s": 2,
+    "x": 0,
+    "X": 0,
+    "E": 0
+  },
+  "logged_pytest_failed_lines": 32
+}

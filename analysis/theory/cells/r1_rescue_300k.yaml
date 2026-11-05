@@ -1,0 +1,19 @@
+# OUT-OF-SAMPLE (blind). Registered rescue test R1 on the a100_300k cell (configs/agentload_e2_rescue.yaml of the rescue
+# worktree): pause cap 20 engaged at 1800 s inside the 200-session-burst trap; release at the first 10-s tick >= t_on + 600 s
+# at which the gate queue and the resume deque have been empty for 300 s; RESCUED needs release by 7200 s and good after.
+base: a100_300k.yaml
+name: r1_rescue_300k
+description: "R1 rescue test on a100_300k (blind)"
+blind: true
+tests:
+  - kind: rescue
+    name: R1
+    multiples: [1.35, 1.65]
+    cap: 20
+    t_on_s: 1800
+    release_hold_s: 300
+    min_on_s: 600
+    release_check_s: 10
+    release_by_s: 7200
+    horizon_s: 8700
+    burst: {n: 200, t_s: 1200, width_s: 60}

@@ -1,0 +1,2273 @@
+{
+ "summary": {
+  "e0b_log_likelihood": {
+   "a100_300k": -0.605451711997366,
+   "a100_native": -0.43193762564925225,
+   "vllm_300k": -1.0566149651488206
+  },
+  "e0b_log_likelihood_total": -2.094004302795439,
+  "e0b_log_likelihood_secondary": {
+   "a100_300k": -1.0831172539096032,
+   "a100_native": -1.069213363618695,
+   "vllm_300k": -2.106761478408852
+  },
+  "e0b_log_likelihood_secondary_total": -4.2590920959371505,
+  "fitted_parameters": {
+   "a100_300k": [],
+   "a100_native": [],
+   "vllm_300k": [
+    "uniform speed factor s (every cost divided by s)"
+   ]
+  },
+  "uses_measured_mu_curve": {
+   "a100_300k": false,
+   "a100_native": false,
+   "vllm_300k": false
+  },
+  "n_rows": 224,
+  "seed_range_hits": 35,
+  "seed_range_rows": 70
+ },
+ "rows": [
+  {
+   "cell": "a100_300k",
+   "group": "all-miss",
+   "quantity": "lambda_miss turns-based (E0a, POP 32)",
+   "predicted": 0.07177082661088079,
+   "measured": 0.07153402100919228,
+   "rel_err": 0.003310391312381016,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "all-miss",
+   "quantity": "E0a uncached tokens/s",
+   "predicted": 11090.66387408682,
+   "measured": 11243.179816372982,
+   "rel_err": -0.01356519639257738,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "all-miss",
+   "quantity": "POP-64 / POP-32 E0a tokens",
+   "predicted": 1.000957228747344,
+   "measured": 1.0166678133515061,
+   "rel_err": -0.015453016607628406,
+   "in_seed_range": null,
+   "note": "check only (one POP-64 seed)"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "peak n (fluid)",
+   "predicted": 24.90674232579995,
+   "measured": 24.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "measured flat top (within 5%): [20.0, 24.0]"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "peak n (annealed F1)",
+   "predicted": 24.0,
+   "measured": 24.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu_max sessions/s (fluid)",
+   "predicted": 0.2478161040065956,
+   "measured": 0.2333322545719467,
+   "rel_err": 0.06207392741830675,
+   "in_seed_range": null,
+   "note": "turns-based measured 0.2255"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu_max sessions/s (annealed F1)",
+   "predicted": 0.23369883733011465,
+   "measured": 0.2333322545719467,
+   "rel_err": 0.0015710762270756506,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu_max turns-based (fluid)",
+   "predicted": 0.2478161040065956,
+   "measured": 0.225517314805372,
+   "rel_err": 0.09887839086975699,
+   "in_seed_range": null,
+   "note": "model-consistent estimator"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu_max turns-based (annealed F1)",
+   "predicted": 0.23369883733011465,
+   "measured": 0.225517314805372,
+   "rel_err": 0.03627891069829186,
+   "in_seed_range": null,
+   "note": "model-consistent estimator; primary for blind scoring"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "0.5-hit crossing n (fluid)",
+   "predicted": 31.492341420912283,
+   "measured": 32.16473616473616,
+   "rel_err": -0.020904718147853493,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "0.5-hit crossing n (annealed F1)",
+   "predicted": 30.468385207048737,
+   "measured": 32.16473616473616,
+   "rel_err": -0.05273946439353111,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(16) sessions/s fluid | annealed",
+   "predicted": "0.1765 | 0.1765",
+   "measured": 0.1755543126839591,
+   "rel_err": 0.005163419724086324,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(16) turns-based fluid | annealed",
+   "predicted": "0.1765 | 0.1765",
+   "measured": 0.1757615609392596,
+   "rel_err": 0.0039781869353215,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.004"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "hit(16) fluid | annealed",
+   "predicted": "0.932 | 0.932",
+   "measured": 0.9321199143468952,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(20) sessions/s fluid | annealed",
+   "predicted": "0.2161 | 0.2139",
+   "measured": 0.2238868137457633,
+   "rel_err": -0.04439713319705999,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(20) turns-based fluid | annealed",
+   "predicted": "0.2161 | 0.2139",
+   "measured": 0.2150157600895343,
+   "rel_err": -0.0049711659938877035,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.005"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "hit(20) fluid | annealed",
+   "predicted": "0.932 | 0.922",
+   "measured": 0.926833537545948,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(24) sessions/s fluid | annealed",
+   "predicted": "0.2462 | 0.2337",
+   "measured": 0.2333322545719467,
+   "rel_err": 0.0015710762270756506,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(24) turns-based fluid | annealed",
+   "predicted": "0.2462 | 0.2337",
+   "measured": 0.225517314805372,
+   "rel_err": 0.03627891069829186,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.092"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "hit(24) fluid | annealed",
+   "predicted": "0.910 | 0.872",
+   "measured": 0.8876835781041389,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(32) sessions/s fluid | annealed",
+   "predicted": "0.1078 | 0.1415",
+   "measured": 0.1149991290057621,
+   "rel_err": 0.23030320836754856,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(32) turns-based fluid | annealed",
+   "predicted": "0.1078 | 0.1415",
+   "measured": 0.1157692278916105,
+   "rel_err": 0.22211921036328952,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid -0.069"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "hit(32) fluid | annealed",
+   "predicted": "0.371 | 0.357",
+   "measured": 0.5052015604681405,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(48) sessions/s fluid | annealed",
+   "predicted": "0.0718 | 0.0719",
+   "measured": 0.0488884197069655,
+   "rel_err": 0.4710429850842759,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(48) turns-based fluid | annealed",
+   "predicted": "0.0718 | 0.0719",
+   "measured": 0.0629277494927625,
+   "rel_err": 0.1428498149303567,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.142"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "hit(48) fluid | annealed",
+   "predicted": "0.000 | 0.001",
+   "measured": 0.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(48) synchronized start, sessions | turns-based",
+   "predicted": "0.0712 | 0.0717",
+   "measured": "0.0489 | 0.0629",
+   "rel_err": 0.45717219373945867,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(96) sessions/s fluid | annealed",
+   "predicted": "0.0718 | 0.0718",
+   "measured": 0.0611105591797356,
+   "rel_err": 0.17556248783373896,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu(96) turns-based fluid | annealed",
+   "predicted": "0.0718 | 0.0718",
+   "measured": 0.0729766598344024,
+   "rel_err": -0.015585515351653511,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid -0.016"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "hit(96) fluid | annealed",
+   "predicted": "0.000 | 0.000",
+   "measured": 0.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(96) synchronized start, sessions | turns-based",
+   "predicted": "0.0783 | 0.0796",
+   "measured": "0.0611 | 0.0730",
+   "rel_err": 0.2814923164712085,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(300) synchronized start, sessions | turns-based",
+   "predicted": "0.1085 | 0.1103",
+   "measured": "0.1078 | 0.1114",
+   "rel_err": 0.0069481418206200855,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M)"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, fluid vs sessions",
+   "predicted": "all n<300: 0.208",
+   "measured": "below n_b only: 0.045",
+   "rel_err": 0.20793106639785058,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, annealed F1 vs sessions",
+   "predicted": "all n<300: 0.226",
+   "measured": "below n_b only: 0.117",
+   "rel_err": 0.22647423817281423,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, fluid vs turns-based",
+   "predicted": "all n<300: 0.075",
+   "measured": "below n_b only: 0.057",
+   "rel_err": 0.07473051657153598,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, annealed F1 vs turns-based",
+   "predicted": "all n<300: 0.109",
+   "measured": "below n_b only: 0.113",
+   "rel_err": 0.10904327837370416,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "mu at large n, turns-based (stationary mu_b)",
+   "predicted": 0.07183952770933337,
+   "measured": 0.0729766598344024,
+   "rel_err": -0.015582134447498525,
+   "in_seed_range": null,
+   "note": "measured at n = 96"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "closed",
+   "quantity": "all-miss threshold n_b (= closed form)",
+   "predicted": "32.70 (= 32.70)",
+   "measured": "collapse between measured grid points",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "measured hit: 16: 0.93, 20: 0.93, 24: 0.89, 32: 0.51, 48: 0.00, 96: 0.00"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref (fluid)",
+   "predicted": 3.464312131386412,
+   "measured": 3.2618361344731763,
+   "rel_err": 0.062074239344318834,
+   "in_seed_range": null,
+   "note": "turns-based measured 3.15"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref (annealed F1)",
+   "predicted": 3.26696168717134,
+   "measured": 3.2618361344731763,
+   "rel_err": 0.0015713703836908294,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref turns-based (annealed F1)",
+   "predicted": 3.26696168717134,
+   "measured": 3.152588259737175,
+   "rel_err": 0.03627921504843138,
+   "in_seed_range": null,
+   "note": "model-consistent; primary for blind scoring"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.25 x",
+   "predicted": 0.0005817765433079325,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.5 x",
+   "predicted": 0.00598644059975495,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.75 x",
+   "predicted": 0.037394486479579436,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 2 x",
+   "predicted": 0.15025854876383238,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 2.5 x",
+   "predicted": 0.6907021823486226,
+   "measured": "UNSTABLE",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 3 x",
+   "predicted": 0.9725011251382973,
+   "measured": "UNSTABLE",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "predicted bracket (stable, unstable)",
+   "predicted": "[2.0, 2.5]",
+   "measured": "[2.0, 2.5]",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "50% edge 2.34 x; log-likelihood of the observed outcomes -0.605"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "from-empty edge (secondary: A's level crossing)",
+   "quantity": "P(unstable) at the registered multiples",
+   "predicted": "1.25: 0.000, 1.5: 0.000, 1.75: 0.000, 2.0: 0.033, 2.5: 0.367, 3.0: 0.955",
+   "measured": "",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "50% edge 2.59 x; log-likelihood -1.083 (probabilities floored at 1e-3)"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "backlog [5700, 8700) mean",
+   "predicted": 215.44855564618868,
+   "measured": "232.2, 199.7, 221.4",
+   "rel_err": -0.010794305464031742,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "backlog slope (sessions/s)",
+   "predicted": 0.015930463197240383,
+   "measured": "0.02222, 0.003596, 0.01861",
+   "rel_err": 0.07593594963380883,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "session rate (sessions/s)",
+   "predicted": 0.07790607868994408,
+   "measured": "0.081, 0.09133, 0.084",
+   "rel_err": -0.08822201168627798,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "uncached token rate / E0a",
+   "predicted": 1.0055288608060187,
+   "measured": "1.025, 1.009, 1.019",
+   "rel_err": -0.012024691705271852,
+   "in_seed_range": false,
+   "note": "model ratio = trapped / model E0a"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "hit",
+   "predicted": 0.0,
+   "measured": "0, 0, 0",
+   "rel_err": null,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 6.924961519846659,
+   "measured": "6.916, 6.354, 6.79",
+   "rel_err": 0.0356373160289121,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 26.622233161043987,
+   "measured": "25.8, 26.2, 25.9",
+   "rel_err": 0.025246463198099537,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "post-burst backlog minimum",
+   "predicted": 153.4053651167976,
+   "measured": "146.7, 146.8, 135.2",
+   "rel_err": 0.07351550116723307,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "time of the minimum after the burst (s)",
+   "predicted": 1286.0,
+   "measured": "1050, 1300, 900",
+   "rel_err": 0.18707692307692317,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.35 x",
+   "quantity": "hit",
+   "predicted": 0.9322541649891649,
+   "measured": "0.9313, 0.93, 0.9342",
+   "rel_err": 0.0004481036223881499,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.35 x",
+   "quantity": "sessions in system n1",
+   "predicted": 8.467829605453247,
+   "measured": "9.224, 7.912, 9.657",
+   "rel_err": -0.05186209503216848,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.35 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 0.016851865491995743,
+   "measured": "0.019, 0.016, 0.02",
+   "rel_err": -0.08080733680023236,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.35 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 281.53049067362815,
+   "measured": "264.9, 306.6, 255.1",
+   "rel_err": 0.0217656327375809,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 CAPPED 1.35 x (cap 20)",
+   "quantity": "gate empty after the burst (s)",
+   "predicted": 1576.2839464975125,
+   "measured": "1547, 1847, 1904",
+   "rel_err": -0.10734273912363612,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "backlog [5700, 8700) mean",
+   "predicted": 304.2326503194234,
+   "measured": "331.8, 282.7, 311",
+   "rel_err": -0.01382254422927977,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "backlog slope (sessions/s)",
+   "predicted": 0.029257834558723807,
+   "measured": "0.03201, 0.02766, 0.03621",
+   "rel_err": -0.08453263334581146,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "session rate (sessions/s)",
+   "predicted": 0.08576405870195265,
+   "measured": "0.08967, 0.09667, 0.096",
+   "rel_err": -0.08868907707727425,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "uncached token rate / E0a",
+   "predicted": 1.0158750187473007,
+   "measured": "1.025, 1.029, 1.026",
+   "rel_err": -0.010541378694686276,
+   "in_seed_range": false,
+   "note": "model ratio = trapped / model E0a"
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "hit",
+   "predicted": 0.0,
+   "measured": "0, 0, 0",
+   "rel_err": null,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 8.98261071297359,
+   "measured": "9.672, 8.183, 8.478",
+   "rel_err": 0.023348351457136353,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 26.32657981571388,
+   "measured": "25.7, 25.6, 25.7",
+   "rel_err": 0.025710901910930384,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "post-burst backlog minimum",
+   "predicted": 174.34482449346564,
+   "measured": "172.1, 170.4, 162.4",
+   "rel_err": 0.03591696074548815,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "time of the minimum after the burst (s)",
+   "predicted": 803.0,
+   "measured": "300, 1200, 900",
+   "rel_err": 0.00375,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.65 x",
+   "quantity": "hit",
+   "predicted": 0.9322541649889765,
+   "measured": "0.9335, 0.9343, 0.9212",
+   "rel_err": 0.0027701538411429014,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.65 x",
+   "quantity": "sessions in system n1",
+   "predicted": 10.432870727195995,
+   "measured": "11.56, 10.92, 11.83",
+   "rel_err": -0.08769930734750113,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.65 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 0.020811941614903285,
+   "measured": "0.024, 0.022, 0.028",
+   "rel_err": -0.15627263723365062,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 NOBURST 1.65 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 230.25648498863322,
+   "measured": "213.4, 229.6, 188.1",
+   "rel_err": 0.09454833618428082,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_300k",
+   "group": "E2 CAPPED 1.65 x (cap 20)",
+   "quantity": "gate empty after the burst (s)",
+   "predicted": 1941.1237870703906,
+   "measured": "2693, 2021, 2127",
+   "rel_err": -0.14874192559295232,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "all-miss",
+   "quantity": "lambda_miss turns-based (E0a, POP 32)",
+   "predicted": 0.07177082661088079,
+   "measured": 0.07179742331825469,
+   "rel_err": -0.00037044097329238016,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "all-miss",
+   "quantity": "E0a uncached tokens/s",
+   "predicted": 11090.66387408682,
+   "measured": 11282.003728242735,
+   "rel_err": -0.016959740376341577,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "all-miss",
+   "quantity": "POP-64 / POP-32 E0a tokens",
+   "predicted": 1.0207854373180971,
+   "measured": 1.0119081634321494,
+   "rel_err": 0.008772805879772867,
+   "in_seed_range": null,
+   "note": "check only (one POP-64 seed)"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "peak n (fluid)",
+   "predicted": 74.13451954675035,
+   "measured": 64.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "measured flat top (within 5%): [64.0, 80.0]"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "peak n (annealed F1)",
+   "predicted": 69.5,
+   "measured": 64.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu_max sessions/s (fluid)",
+   "predicted": 0.5076076597205496,
+   "measured": 0.4788861047397107,
+   "rel_err": 0.059975753517529776,
+   "in_seed_range": null,
+   "note": "turns-based measured 0.4655"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu_max sessions/s (annealed F1)",
+   "predicted": 0.49486860316382686,
+   "measured": 0.4788861047397107,
+   "rel_err": 0.033374320670262754,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu_max turns-based (fluid)",
+   "predicted": 0.5076076597205496,
+   "measured": 0.4655240897843918,
+   "rel_err": 0.09040041291020798,
+   "in_seed_range": null,
+   "note": "model-consistent estimator"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu_max turns-based (annealed F1)",
+   "predicted": 0.49486860316382686,
+   "measured": 0.4655240897843918,
+   "rel_err": 0.06303543473556011,
+   "in_seed_range": null,
+   "note": "model-consistent estimator; primary for blind scoring"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "0.5-hit crossing n (fluid)",
+   "predicted": 93.7367040777801,
+   "measured": 93.42120789127966,
+   "rel_err": 0.0033771366654518423,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "0.5-hit crossing n (annealed F1)",
+   "predicted": 92.04188080335156,
+   "measured": 93.42120789127966,
+   "rel_err": -0.014764603445647123,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(24) sessions/s fluid | annealed",
+   "predicted": "0.2538 | 0.2538",
+   "measured": 0.2649976621456069,
+   "rel_err": -0.04241307909031085,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(24) turns-based fluid | annealed",
+   "predicted": "0.2538 | 0.2538",
+   "measured": 0.2515606480294627,
+   "rel_err": 0.008736053631717823,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.009"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "hit(24) fluid | annealed",
+   "predicted": "0.932 | 0.932",
+   "measured": 0.928785158587672,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(48) sessions/s fluid | annealed",
+   "predicted": "0.4263 | 0.4263",
+   "measured": 0.4311078555471622,
+   "rel_err": -0.011128581724581183,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(48) turns-based fluid | annealed",
+   "predicted": "0.4263 | 0.4263",
+   "measured": 0.4144508341898819,
+   "rel_err": 0.028614738773288018,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.029"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "hit(48) fluid | annealed",
+   "predicted": "0.932 | 0.932",
+   "measured": 0.9294406102433708,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(64) sessions/s fluid | annealed",
+   "predicted": "0.4882 | 0.4867",
+   "measured": 0.4788861047397107,
+   "rel_err": 0.01633259777445512,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(64) turns-based fluid | annealed",
+   "predicted": "0.4882 | 0.4867",
+   "measured": 0.4655240897843918,
+   "rel_err": 0.04550456044846003,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.049"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "hit(64) fluid | annealed",
+   "predicted": "0.932 | 0.932",
+   "measured": 0.930390492359932,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(80) sessions/s fluid | annealed",
+   "predicted": "0.4871 | 0.4502",
+   "measured": 0.4772179852957253,
+   "rel_err": -0.056597636111151615,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(80) turns-based fluid | annealed",
+   "predicted": "0.4871 | 0.4502",
+   "measured": 0.4637161235974384,
+   "rel_err": -0.02912891636026801,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.050"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "hit(80) fluid | annealed",
+   "predicted": "0.920 | 0.888",
+   "measured": 0.9221654086518952,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(96) sessions/s fluid | annealed",
+   "predicted": "0.0737 | 0.1730",
+   "measured": 0.1227768253429686,
+   "rel_err": 0.4093645006530945,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(96) turns-based fluid | annealed",
+   "predicted": "0.0737 | 0.1730",
+   "measured": 0.11599502434321,
+   "rel_err": 0.49176484182008123,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid -0.365"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "hit(96) fluid | annealed",
+   "predicted": "0.000 | 0.355",
+   "measured": 0.4188838416612589,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(96) synchronized start, sessions | turns-based",
+   "predicted": "0.0798 | 0.0811",
+   "measured": "0.1228 | 0.1160",
+   "rel_err": -0.3497964571498002,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(128) sessions/s fluid | annealed",
+   "predicted": "0.0737 | 0.0737",
+   "measured": 0.0666660326380494,
+   "rel_err": 0.10554172547874538,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu(128) turns-based fluid | annealed",
+   "predicted": "0.0737 | 0.0737",
+   "measured": 0.0730142611081087,
+   "rel_err": 0.00942034658632474,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.009"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "hit(128) fluid | annealed",
+   "predicted": "0.000 | 0.000",
+   "measured": 0.0072164948453608,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(128) synchronized start, sessions | turns-based",
+   "predicted": "0.0857 | 0.0871",
+   "measured": "0.0667 | 0.0730",
+   "rel_err": 0.28499227679496286,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(300) synchronized start, sessions | turns-based",
+   "predicted": "0.1108 | 0.1126",
+   "measured": "0.1006 | 0.1074",
+   "rel_err": 0.10226680836013699,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, fluid vs sessions",
+   "predicted": "all n<300: 0.170",
+   "measured": "below n_b only: 0.026",
+   "rel_err": 0.17011688167163916,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, annealed F1 vs sessions",
+   "predicted": "all n<300: 0.175",
+   "measured": "below n_b only: 0.037",
+   "rel_err": 0.17517187321054256,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, fluid vs turns-based",
+   "predicted": "all n<300: 0.152",
+   "measured": "below n_b only: 0.038",
+   "rel_err": 0.1521261478906518,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, annealed F1 vs turns-based",
+   "predicted": "all n<300: 0.202",
+   "measured": "below n_b only: 0.031",
+   "rel_err": 0.2023757574736439,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "mu at large n, turns-based (stationary mu_b)",
+   "predicted": 0.07369848352663744,
+   "measured": 0.0730142611081087,
+   "rel_err": 0.009371079130906255,
+   "in_seed_range": null,
+   "note": "measured at n = 128"
+  },
+  {
+   "cell": "a100_native",
+   "group": "closed",
+   "quantity": "all-miss threshold n_b (= closed form)",
+   "predicted": "94.86 (= 94.86)",
+   "measured": "collapse between measured grid points",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "measured hit: 24: 0.93, 48: 0.93, 64: 0.93, 80: 0.92, 96: 0.42, 128: 0.01"
+  },
+  {
+   "cell": "a100_native",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref (fluid)",
+   "predicted": 7.070000581087192,
+   "measured": 6.6699622717233735,
+   "rel_err": 0.05997609777490649,
+   "in_seed_range": null,
+   "note": "turns-based measured 6.48"
+  },
+  {
+   "cell": "a100_native",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref (annealed F1)",
+   "predicted": 6.892569969996503,
+   "measured": 6.6699622717233735,
+   "rel_err": 0.03337465628806505,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref turns-based (annealed F1)",
+   "predicted": 6.892569969996503,
+   "measured": 6.483855106065221,
+   "rel_err": 0.06303577998665577,
+   "in_seed_range": null,
+   "note": "model-consistent; primary for blind scoring"
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.5 x",
+   "predicted": 0.0,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 2.5 x",
+   "predicted": 1.2323475573339238e-14,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 3.5 x",
+   "predicted": 1.11417667314484e-08,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 4.5 x",
+   "predicted": 0.00012315815978147793,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 5.5 x",
+   "predicted": 0.049248736110534264,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 6.5 x",
+   "predicted": 0.6829670544606417,
+   "measured": "UNSTABLE",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (F2)",
+   "quantity": "predicted bracket (stable, unstable)",
+   "predicted": "[5.5, 6.5]",
+   "measured": "[5.5, 6.5]",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "50% edge 6.26 x; log-likelihood of the observed outcomes -0.432"
+  },
+  {
+   "cell": "a100_native",
+   "group": "from-empty edge (secondary: A's level crossing)",
+   "quantity": "P(unstable) at the registered multiples",
+   "predicted": "1.5: 0.000, 2.5: 0.000, 3.5: 0.000, 4.5: 0.000, 5.5: 0.000, 6.5: 0.345",
+   "measured": "",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "50% edge 6.58 x; log-likelihood -1.069 (probabilities floored at 1e-3)"
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "backlog [5700, 8700) mean",
+   "predicted": 564.8149211665523,
+   "measured": "601.2, 557, 583.2",
+   "rel_err": -0.026955043044218478,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "backlog slope (sessions/s)",
+   "predicted": 0.0696551872089472,
+   "measured": "0.08484, 0.08292, 0.0794",
+   "rel_err": -0.15450963141080112,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "session rate (sessions/s)",
+   "predicted": 0.10611258583531541,
+   "measured": "0.1093, 0.1033, 0.112",
+   "rel_err": -0.01948960463799637,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "uncached token rate / E0a",
+   "predicted": 1.0668419301176477,
+   "measured": "1.078, 1.074, 1.074",
+   "rel_err": -0.007881732303620192,
+   "in_seed_range": false,
+   "note": "model ratio = trapped / model E0a"
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "hit",
+   "predicted": 0.0,
+   "measured": "0, 0, 0",
+   "rel_err": null,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 4.452072650963586,
+   "measured": "4.572, 4.141, 4.272",
+   "rel_err": 0.028588213545687875,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 79.70530706788212,
+   "measured": "77.5, 77.9, 77.8",
+   "rel_err": 0.025368444269495492,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "post-burst backlog minimum",
+   "predicted": 205.9077098724047,
+   "measured": "167.7, 161.1, 154.8",
+   "rel_err": 0.27734311335238654,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 2.5 x",
+   "quantity": "time of the minimum after the burst (s)",
+   "predicted": 301.0,
+   "measured": "150, 150, 200",
+   "rel_err": 0.806,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 2.5 x",
+   "quantity": "hit",
+   "predicted": 0.9322541649891649,
+   "measured": "0.9313, 0.9291, 0.935",
+   "rel_err": 0.0005034001729147925,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 2.5 x",
+   "quantity": "sessions in system n1",
+   "predicted": 16.2920022265568,
+   "measured": "18.46, 15.59, 18.22",
+   "rel_err": -0.06474926625895305,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 2.5 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 0.010096713592627286,
+   "measured": "0.012, 0.01, 0.011",
+   "rel_err": -0.08211694612479227,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 2.5 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 489.6831105877497,
+   "measured": "445.7, 505.2, 449.8",
+   "rel_err": 0.04879655298297207,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 CAPPED 2.5 x (cap 64)",
+   "quantity": "gate empty after the burst (s)",
+   "predicted": 493.39158723459883,
+   "measured": "582.8, 511.6, 542",
+   "rel_err": -0.095468857428626,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "backlog [5700, 8700) mean",
+   "predicted": 1088.6635977057617,
+   "measured": "1139, 1098, 1114",
+   "rel_err": -0.025404702924287443,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "backlog slope (sessions/s)",
+   "predicted": 0.1518763335499577,
+   "measured": "0.1643, 0.1465, 0.1555",
+   "rel_err": -0.02283930351592598,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "session rate (sessions/s)",
+   "predicted": 0.13072162001256796,
+   "measured": "0.134, 0.137, 0.146",
+   "rel_err": -0.05955237202322647,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "uncached token rate / E0a",
+   "predicted": 1.0787237084263521,
+   "measured": "1.11, 1.106, 1.124",
+   "rel_err": -0.031010150740579504,
+   "in_seed_range": false,
+   "note": "model ratio = trapped / model E0a"
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "hit",
+   "predicted": 0.0,
+   "measured": "0, 0, 0",
+   "rel_err": null,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 7.064140443469798,
+   "measured": "6.862, 6.682, 6.96",
+   "rel_err": 0.03357497709760984,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 78.59947838332214,
+   "measured": "75.1, 75.4, 74.2",
+   "rel_err": 0.04939223475730501,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "post-burst backlog minimum",
+   "predicted": 232.9931529592354,
+   "measured": "231.1, 228.7, 201.5",
+   "rel_err": 0.056977860090286235,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 BURST 4 x",
+   "quantity": "time of the minimum after the burst (s)",
+   "predicted": 60.0,
+   "measured": "100, 100, 100",
+   "rel_err": -0.4,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 4 x",
+   "quantity": "hit",
+   "predicted": 0.9322541649891649,
+   "measured": "0.935, 0.9322, 0.929",
+   "rel_err": 0.00018802506976654213,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 4 x",
+   "quantity": "sessions in system n1",
+   "predicted": 27.797436165773785,
+   "measured": "33.63, 28.22, 28.54",
+   "rel_err": -0.07744111842110192,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 4 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 0.017312451623156925,
+   "measured": "0.022, 0.018, 0.019",
+   "rel_err": -0.11970584966998682,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 NOBURST 4 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 307.8343738896553,
+   "measured": "271.6, 309.5, 306.1",
+   "rel_err": 0.040918757516868624,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "a100_native",
+   "group": "E2 CAPPED 4 x (cap 64)",
+   "quantity": "gate empty after the burst (s)",
+   "predicted": 815.0445786012586,
+   "measured": "936.8, 836.6, 900.4",
+   "rel_err": -0.08552108018409167,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "all-miss",
+   "quantity": "lambda_miss turns-based (E0a, POP 32)",
+   "predicted": 0.0669711155169567,
+   "measured": 0.06566287289032151,
+   "rel_err": 0.01992362760033943,
+   "in_seed_range": null,
+   "note": "tokens fitted, turns predicted"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "all-miss",
+   "quantity": "E0a uncached tokens/s",
+   "predicted": 10348.969999999998,
+   "measured": 10348.97253582688,
+   "rel_err": -2.450317530871244e-07,
+   "in_seed_range": null,
+   "note": "E0a token rate (fitted: one speed factor)"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "all-miss",
+   "quantity": "POP-64 / POP-32 E0a tokens",
+   "predicted": 1.0010708643070096,
+   "measured": 1.0175554794204051,
+   "rel_err": -0.01620021261424002,
+   "in_seed_range": null,
+   "note": "check only (one POP-64 seed)"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "peak n (fluid)",
+   "predicted": 24.86863976346447,
+   "measured": 20.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "measured flat top (within 5%): [20.0, 24.0]"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "peak n (annealed F1)",
+   "predicted": 24.0,
+   "measured": 20.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu_max sessions/s (fluid)",
+   "predicted": 0.24900024299671528,
+   "measured": 0.2194433037954096,
+   "rel_err": 0.13469054963218227,
+   "in_seed_range": null,
+   "note": "turns-based measured 0.2108"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu_max sessions/s (annealed F1)",
+   "predicted": 0.23532237778720783,
+   "measured": 0.2194433037954096,
+   "rel_err": 0.0723607133011565,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu_max turns-based (fluid)",
+   "predicted": 0.24900024299671528,
+   "measured": 0.2107637245004451,
+   "rel_err": 0.18141887835251955,
+   "in_seed_range": null,
+   "note": "model-consistent estimator"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu_max turns-based (annealed F1)",
+   "predicted": 0.23532237778720783,
+   "measured": 0.2107637245004451,
+   "rel_err": 0.11652220202965181,
+   "in_seed_range": null,
+   "note": "model-consistent estimator; primary for blind scoring"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "0.5-hit crossing n (fluid)",
+   "predicted": 31.750782689604563,
+   "measured": 29.10120595144871,
+   "rel_err": 0.09104697388061177,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "0.5-hit crossing n (annealed F1)",
+   "predicted": 30.69315488599784,
+   "measured": 29.10120595144871,
+   "rel_err": 0.054703881935514086,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(16) sessions/s fluid | annealed",
+   "predicted": "0.1786 | 0.1785",
+   "measured": 0.1749992729625084,
+   "rel_err": 0.019911100987440394,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(16) turns-based fluid | annealed",
+   "predicted": "0.1786 | 0.1785",
+   "measured": 0.1739931633952362,
+   "rel_err": 0.02580870234399266,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.026"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(16) fluid | annealed",
+   "predicted": "0.932 | 0.932",
+   "measured": 0.9318624269954576,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(20) sessions/s fluid | annealed",
+   "predicted": "0.2181 | 0.2160",
+   "measured": 0.2194433037954096,
+   "rel_err": -0.015898929435274257,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(20) turns-based fluid | annealed",
+   "predicted": "0.2181 | 0.2160",
+   "measured": 0.2107637245004451,
+   "rel_err": 0.02462788938267642,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.035"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(20) fluid | annealed",
+   "predicted": "0.932 | 0.923",
+   "measured": 0.9260714285714284,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(24) sessions/s fluid | annealed",
+   "predicted": "0.2476 | 0.2353",
+   "measured": 0.2183324171960792,
+   "rel_err": 0.07781693991813562,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(24) turns-based fluid | annealed",
+   "predicted": "0.2476 | 0.2353",
+   "measured": 0.2096348431418703,
+   "rel_err": 0.12253466198819576,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.181"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(24) fluid | annealed",
+   "predicted": "0.910 | 0.877",
+   "measured": 0.8791741472172352,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(28) sessions/s fluid | annealed",
+   "predicted": "0.2254 | 0.2086",
+   "measured": 0.1188880471311158,
+   "rel_err": 0.7547873033485296,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(28) turns-based fluid | annealed",
+   "predicted": "0.2254 | 0.2086",
+   "measured": 0.1228449110462664,
+   "rel_err": 0.6982651853360939,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.835"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(28) fluid | annealed",
+   "predicted": "0.812 | 0.717",
+   "measured": 0.6583946078431373,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(32) sessions/s fluid | annealed",
+   "predicted": "0.1116 | 0.1402",
+   "measured": 0.0433330807962598,
+   "rel_err": 2.235854756610089,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(32) turns-based fluid | annealed",
+   "predicted": "0.1116 | 0.1402",
+   "measured": 0.054384533940827,
+   "rel_err": 1.5782983773605974,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +1.053"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(32) fluid | annealed",
+   "predicted": "0.441 | 0.381",
+   "measured": 0.0830449826989619,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(40) sessions/s fluid | annealed",
+   "predicted": "0.0670 | 0.0720",
+   "measured": 0.0411108894656065,
+   "rel_err": 0.7503616513172436,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(40) turns-based fluid | annealed",
+   "predicted": "0.0670 | 0.0720",
+   "measured": 0.0555136488372479,
+   "rel_err": 0.2962384184672349,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.208"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(40) fluid | annealed",
+   "predicted": "0.000 | 0.028",
+   "measured": 0.007457627118644,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(40) synchronized start, sessions | turns-based",
+   "predicted": "0.0664 | 0.0667",
+   "measured": "0.0411 | 0.0555",
+   "rel_err": 0.6146324424851148,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(48) sessions/s fluid | annealed",
+   "predicted": "0.0670 | 0.0671",
+   "measured": 0.0438886342997633,
+   "rel_err": 0.5294959606207281,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(48) turns-based fluid | annealed",
+   "predicted": "0.0670 | 0.0671",
+   "measured": 0.0592396254223423,
+   "rel_err": 0.1331518118163369,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid +0.132"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(48) fluid | annealed",
+   "predicted": "0.000 | 0.001",
+   "measured": 0.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(48) synchronized start, sessions | turns-based",
+   "predicted": "0.0666 | 0.0671",
+   "measured": "0.0439 | 0.0592",
+   "rel_err": 0.517623652727844,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(96) sessions/s fluid | annealed",
+   "predicted": "0.0670 | 0.0670",
+   "measured": 0.057221857510522,
+   "rel_err": 0.17163853650894223,
+   "in_seed_range": null,
+   "note": "rel_err of annealed"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu(96) turns-based fluid | annealed",
+   "predicted": "0.0670 | 0.0670",
+   "measured": 0.0686486752688206,
+   "rel_err": -0.023384892317048152,
+   "in_seed_range": null,
+   "note": "rel_err of annealed; fluid -0.023"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "hit(96) fluid | annealed",
+   "predicted": "0.000 | 0.000",
+   "measured": 0.0,
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(96) synchronized start, sessions | turns-based",
+   "predicted": "0.0743 | 0.0755",
+   "measured": "0.0572 | 0.0686",
+   "rel_err": 0.29763444153111296,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M) -- NOT the case here"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (Stage C protocol)",
+   "quantity": "mu(300) synchronized start, sessions | turns-based",
+   "predicted": "0.1036 | 0.1053",
+   "measured": "0.1050 | 0.1047",
+   "rel_err": -0.013154541538359122,
+   "in_seed_range": null,
+   "note": "graft of A; valid when trapped from t=0 (n E_1 > M)"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, fluid vs sessions",
+   "predicted": "all n<300: 0.708",
+   "measured": "below n_b only: 0.813",
+   "rel_err": 0.7082082978353959,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, annealed F1 vs sessions",
+   "predicted": "all n<300: 0.898",
+   "measured": "below n_b only: 1.056",
+   "rel_err": 0.8977975438041549,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, fluid vs turns-based",
+   "predicted": "all n<300: 0.488",
+   "measured": "below n_b only: 0.607",
+   "rel_err": 0.4875663872336388,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed (RMS)",
+   "quantity": "RMS rel err of mu, annealed F1 vs turns-based",
+   "predicted": "all n<300: 0.623",
+   "measured": "below n_b only: 0.774",
+   "rel_err": 0.6225874297264254,
+   "in_seed_range": null,
+   "note": "all-points RMS is the headline; the below-n_b subset is chosen by the model"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "mu at large n, turns-based (stationary mu_b)",
+   "predicted": 0.06704283249416441,
+   "measured": 0.0686486752688206,
+   "rel_err": -0.02339218882764861,
+   "in_seed_range": null,
+   "note": "measured at n = 96"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "closed",
+   "quantity": "all-miss threshold n_b (= closed form)",
+   "predicted": "32.83 (= 32.83)",
+   "measured": "collapse between measured grid points",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "measured hit: 16: 0.93, 20: 0.93, 24: 0.88, 28: 0.66, 32: 0.08, 40: 0.01, 48: 0.00, 96: 0.00"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref (fluid)",
+   "predicted": 3.79209361431423,
+   "measured": 3.341969276335986,
+   "rel_err": 0.13468835311129618,
+   "in_seed_range": null,
+   "note": "turns-based measured 3.21"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref (annealed F1)",
+   "predicted": 3.583789619530144,
+   "measured": 3.341969276335986,
+   "rel_err": 0.0723586374376491,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "window",
+   "quantity": "mu_max / lambda_ref turns-based (annealed F1)",
+   "predicted": 3.583789619530144,
+   "measured": 3.2097853051981065,
+   "rel_err": 0.11652004067884351,
+   "in_seed_range": null,
+   "note": "model-consistent; primary for blind scoring"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.25 x",
+   "predicted": 0.00015951211692766254,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.5 x",
+   "predicted": 0.0017548736143597754,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 1.75 x",
+   "predicted": 0.012152511986356584,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 2 x",
+   "predicted": 0.056900257662945486,
+   "measured": "stable",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 2.5 x",
+   "predicted": 0.42376343506167014,
+   "measured": "UNSTABLE",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "P(unstable 3000 s run) at 3 x",
+   "predicted": 0.8822243225810331,
+   "measured": "UNSTABLE",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (F2)",
+   "quantity": "predicted bracket (stable, unstable)",
+   "predicted": "[2.5, 3.0]",
+   "measured": "[2.0, 2.5]",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "50% edge 2.57 x; log-likelihood of the observed outcomes -1.057"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "from-empty edge (secondary: A's level crossing)",
+   "quantity": "P(unstable) at the registered multiples",
+   "predicted": "1.25: 0.000, 1.5: 0.000, 1.75: 0.000, 2.0: 0.007, 2.5: 0.177, 3.0: 0.693",
+   "measured": "",
+   "rel_err": null,
+   "in_seed_range": null,
+   "note": "50% edge 2.81 x; log-likelihood -2.107 (probabilities floored at 1e-3)"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "backlog [5700, 8700) mean",
+   "predicted": 206.3377531253111,
+   "measured": "227.3, 202.8, 217.6",
+   "rel_err": -0.04424471583703364,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "backlog slope (sessions/s)",
+   "predicted": 0.014499237664683109,
+   "measured": "0.01409, 0.0002376, 0.01633",
+   "rel_err": 0.4186162177481718,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "session rate (sessions/s)",
+   "predicted": 0.07163864814794407,
+   "measured": "0.08033, 0.08433, 0.07867",
+   "rel_err": -0.11678132347670594,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "uncached token rate / E0a",
+   "predicted": 0.9920989080253529,
+   "measured": "0.9965, 1, 1.007",
+   "rel_err": -0.009244427506840519,
+   "in_seed_range": false,
+   "note": "model ratio = trapped / model E0a"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "hit",
+   "predicted": 0.0,
+   "measured": "0, 0, 0",
+   "rel_err": null,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 6.640113717041425,
+   "measured": "6.709, 6.508, 6.715",
+   "rel_err": -0.0005849312098998202,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.35 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 28.91683979006993,
+   "measured": "28.8, 28.7, 28.5",
+   "rel_err": 0.008726969421043992,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "backlog [5700, 8700) mean",
+   "predicted": 288.2186563460298,
+   "measured": "308.7, 276.6, 300.1",
+   "rel_err": -0.023425754817083387,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "backlog slope (sessions/s)",
+   "predicted": 0.026713059362384037,
+   "measured": "0.03219, 0.01748, 0.03258",
+   "rel_err": -0.025567743355357043,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "session rate (sessions/s)",
+   "predicted": 0.07887035028201665,
+   "measured": "0.086, 0.09267, 0.08567",
+   "rel_err": -0.10487408533020696,
+   "in_seed_range": false,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "uncached token rate / E0a",
+   "predicted": 1.00223859867379,
+   "measured": "1.031, 1.025, 1.026",
+   "rel_err": -0.024557757124854796,
+   "in_seed_range": false,
+   "note": "model ratio = trapped / model E0a"
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "hit",
+   "predicted": 0.0,
+   "measured": "0, 0, 0",
+   "rel_err": null,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "gap/R (frozen loopvars)",
+   "predicted": 8.51886726927748,
+   "measured": "8.627, 8.054, 8.297",
+   "rel_err": 0.023164457035488827,
+   "in_seed_range": true,
+   "note": ""
+  },
+  {
+   "cell": "vllm_300k",
+   "group": "E2 BURST 1.65 x",
+   "quantity": "R = M/churn (s)",
+   "predicted": 28.597613606216264,
+   "measured": "27.8, 28, 27.9",
+   "rel_err": 0.02500407190739315,
+   "in_seed_range": false,
+   "note": ""
+  }
+ ]
+}

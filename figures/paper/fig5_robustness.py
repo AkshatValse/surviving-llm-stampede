@@ -23,6 +23,7 @@ import _style as S  # noqa: E402
 
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
+from matplotlib.legend_handler import HandlerTuple  # noqa: E402
 from matplotlib.lines import Line2D  # noqa: E402
 
 R7 = "results/r7_report/20261024-233554/pairs_summary.json"
@@ -110,9 +111,10 @@ def main() -> None:
     ax.axhline(ys[4] - 0.5, color=S.LGRAY, lw=0.5, zorder=0)
     ax.text(3.33, y_real - 0.6 - 0.02, "synthetic laws", fontsize=7, ha="right", va="top", color=S.GRAY, style="italic")
     ax.text(3.33, ys[4] - 0.6 - 0.02, "real-trace laws", fontsize=7, ha="right", va="top", color=S.GRAY, style="italic")
-    h = [Line2D([0], [0], marker="o", mfc=S.DARK, mec=S.DARK, lw=0, ms=4.6, label="PASS"),
-         Line2D([0], [0], marker="o", mfc="white", mec=S.DARK, lw=0, ms=5.0, label="FAIL")]
-    ax.legend(handles=h, loc="upper right", bbox_to_anchor=(1.0, 1.02), ncol=2, fontsize=7.5, columnspacing=1.0, handletextpad=0.2)
+    h = [Line2D([0], [0], marker="o", mfc=S.DARK, mec=S.DARK, mew=1.0, lw=0, ms=4.6),
+         (Line2D([0], [0], marker="o", mfc="white", mec=S.DARK, mew=1.0, lw=0, ms=5.0),
+          Line2D([0], [0], marker="x", mec=S.DARK, mew=1.0, lw=0, ms=3.6))]
+    ax.legend(handles=h, labels=["PASS", "FAIL"], handler_map={tuple: HandlerTuple(ndivide=1)}, loc="upper right", bbox_to_anchor=(1.0, 1.02), ncol=2, fontsize=7.5, columnspacing=1.0, handletextpad=0.2)
     fig.subplots_adjust(left=0.43, right=0.985, top=1 - 0.12 / fig_h, bottom=0.62 / fig_h)
     S.save(fig, "fig5_robustness")
     S.finish("fig5_robustness")

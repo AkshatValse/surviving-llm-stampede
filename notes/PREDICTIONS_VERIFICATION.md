@@ -4,7 +4,7 @@ This is an append-only verification record for frozen prediction commit 64bc4e3c
 
 Procedural deviations: the current prediction worktree is on r6/validation, not the older r6/separate-batching name in the frozen workflow. Verification reused that clean checkout instead of creating a fresh worktree; all rerun outputs and caches were isolated externally. The scientific reproduction checks pass, but strict B3-within-B2 containment fails and the existing full suite has 32 failures. This commit is an honest verification record, not authorization to merge, push, or certify that all checks passed.
 
-External evidence root: C:\Users\Akshat\Documents\Codex\2026-10-24\cl. References below beginning work/ or outputs/ are relative to that directory. The proposed prediction-fixes.patch remains unapplied. No E0b/E2 real data or remote cluster commands were used in this verification.
+External evidence root: the verifier's workspace C:\Users\Akshat\Documents\Codex\2026-10-24\cl on the PC. Archive note (2026-10-30): its work/prediction-verification/ folder and outputs/prediction-verification.txt are copied byte for byte, with the same layout, to provenance/codex_prediction_verification/ in this repository, so references below beginning work/prediction-verification/ or outputs/ resolve there. Nothing else from that workspace was copied; the proposed work/prediction-fixes.patch (section 5) stays in the external workspace only and remains unapplied. No E0b/E2 real data or remote cluster commands were used in this verification.
 
 ---
 Round 6 independent prediction verification — 2026-10-24
@@ -35,7 +35,7 @@ Compared rows by seed/variant/policy (and window bounds). Exact serialized value
 - B3: 3 run rows x 77 columns; 261 window rows x 32 columns. NOBURST and CAPPED recovered, BURST trapped.
 There were zero mismatches. Excluded run_id because subset enumeration changes it, and wall_s / wall_s_per_10k_sim_s because runtime measurements are not deterministic. This is scientific-field reproduction, not a byte-identical whole-file claim.
 
-Evidence is under work/prediction-verification/reruns/ in this Codex workspace. The three result timestamps are 20261024-035525, 20261024-035527, and 20261024-035530. The audit script and machine-readable evidence are work/prediction-verification/audit.py and audit.json.
+Evidence is under provenance/codex_prediction_verification/work/prediction-verification/reruns/ (copied from work/prediction-verification/reruns/ in the Codex workspace). The three result timestamps are 20261024-035525, 20261024-035527, and 20261024-035530. The audit script and machine-readable evidence are provenance/codex_prediction_verification/work/prediction-verification/audit.py and audit.json; audit.py keeps the absolute paths it ran with.
 
 2. Arithmetic, completeness, and existing tests
 All 48 manifest entries are unique; every referenced meta.json is status=done, git.dirty=false, simulation commit 630ab9edc7f40b33718771b4efb6a52da66b8eb6. Generated table rows match section 4 of PREDICTIONS.md exactly (heading levels differ intentionally).

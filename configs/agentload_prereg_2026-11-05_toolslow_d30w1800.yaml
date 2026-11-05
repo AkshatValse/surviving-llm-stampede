@@ -1,0 +1,275 @@
+research_question: 'Pre-registration of the E2 kill-test predictions for SGLang FCFS,
+  to be filled from the measured real-engine closed curve mu(n) (Stage C), the all-miss
+  capacity lambda_miss and all-miss prefill-token rate (E0a) and the from-empty stability
+  edge (E0b) BEFORE any E2 run: at which arrival rates lambda should a 200-session
+  burst trap the engine, and where should the no-burst and capped arms stay good?'
+assumptions_note: 'TEMPLATE: every `null` below is filled by `python -m analysis.prereg
+  fill` (formulas, not typed numbers), except the lambda points, the margin and the
+  sentence saying how they were chosen (lambda_selection), which are the lead''s decision.
+  The filled file must be COMMITTED before the first E2 job is submitted. The E2 job
+  script (`analysis.prereg check-job`) refuses to start unless the file is valid,
+  committed and clean and the job''s label, lambdas, cap, reference rates, hardware
+  and protocol are the registered ones, and writes the file''s sha256 into every run''s
+  meta.json. `analysis.summarize burst2 --prereg FILE` calls a verdict decisive only
+  for the registered cell (label == inputs.engine_cell_label exactly; ''fcfs'' substring
+  matches such as vllm-fcfs or -native do not count) at a registered lambda inside
+  the registered window, with every run bound to this file and started after its last
+  commit. Theory behind the boundaries (notes/THEORY_prefix_meta.md; all rates in
+  sessions/s): in a closed population of n sessions the engine completes mu(n) sessions/s.
+  For OPEN arrivals at rate lambda the backlog drifts at lambda - mu(n), so n grows
+  whenever mu(n) < lambda. If lambda < lambda_miss (= FCFS mu(infinity): everything
+  misses at large n) the closed curve never falls below the arrival rate and any burst
+  drains. If lambda_miss < lambda < max_n mu(n) the good state exists (n small, mu(n)
+  > lambda) but a burst that pushes n past the point where mu(n) = lambda on the falling
+  branch is not recoverable: the window of metastability. If lambda > max_n mu(n)
+  there is no good state at all. Independently, E0b says up to which lambda the system
+  STAYS in the good state when started from empty (finite horizon): above it the no-burst
+  arm itself escapes spontaneously (simulator: from-empty edge 2.41 x lambda_miss,
+  curve peak 4.07 x; 1/5 and 2/5 no-burst runs trapped at 2 x and 2.5 x within 65,000
+  s). The window therefore ends at min(max_n mu(n), E0b''s largest all-stable multiple).
+  The recovery threshold is lambda_miss, NOT mu(300): all n Stage-C sessions start
+  at t=0, so mu(300) over the measured window is transient-biased (simulator +65%);
+  it is kept under `checks` only. These are predictions from ONE run per n (noise
+  ~5-10% in mu; mu is bistable near its peak); a lambda near a boundary tests the
+  noise, not the theory, hence boundary_margin_rel.'
+status: FILLED
+frozen:
+  rule: Commit this file, FILLED, before submitting the first E2 job. Do not edit
+    it afterwards; a change is a new file with a new date and the reason.
+  committed_in: null
+  date: null
+inputs:
+  engine_cell_label: sglang-fcfs-r1-toolslow-d30w1800
+  mu_curve_json: prereg/inputs/2026-10-23/mu_curve.json
+  calibration_json: prereg/inputs/2026-10-23/calibration.json
+  e0b_bracket_json: prereg/inputs/2026-10-23/lambda_cap_bracket.json
+  e2_config: configs/agentload_e2_toolslow_d30w1800.yaml
+  mu_estimator: sessions
+  lambda_ref_key: lambda_miss_turns_based
+  uncached_tokens_ref_key: all_miss_uncached_tokens_per_s
+  fcfs_substr: fcfs
+protocol:
+  duration_s: 8700
+  t_burst_s: 1200
+  burst_n: 200
+  burst_width_s: 60
+  e2_config_sha256: 2020196c1821ea4719fc7c6780ff5a12d0a1a201de7eb78602115b45f28fbc0f
+  arms:
+  - noburst
+measured:
+  mu_by_n:
+    16: 0.17555431268395913
+    20: 0.2238868137457633
+    24: 0.23333225457194676
+    32: 0.1149991290057621
+    48: 0.048888419706965586
+    96: 0.06111055917973561
+    300: 0.10777649390658053
+  mu_300: 0.10777649390658053
+  mu_max: 0.23333225457194676
+  n_cap: 20
+  mu_n_cap: 0.2238868137457633
+  n_cap_rule: smallest n with mu(n) >= (1 - 0.05) * mu_max (closed.argmax_margin_warn)
+  n_cap_argmax: 24
+  n_cap_ambiguous: true
+  complete_grid: true
+  lambda_miss: 0.07166610543394326
+  lambda_miss_turns_based: 0.07153402100919228
+  lambda_ref: 0.07153402100919228
+  all_miss_uncached_tokens_per_s: 11243.179816372982
+  lambda_cap_e0b:
+    largest_all_stable_mult: 2.0
+    first_unstable_mult_above: 2.5
+    monotone: true
+  hardware: NVIDIA A100 80GB PCIe, 81920 MiB
+predicted_boundaries:
+  recovery_threshold:
+    rule: 'lambda_ref (FCFS mu(infinity) = lambda_miss; simulator R4: 0.989). NOT
+      mu(300): see checks'
+    sessions_per_s: 0.07153402100919228
+    mult_of_lambda_ref: 1.0
+  metastable_window:
+    rule: open interval (lambda_ref, min(mu_max, lambda_cap_e0b)), lambda_cap_e0b
+      = largest E0b all-stable multiple x lambda_ref
+    lo: 0.07153402100919228
+    hi: 0.14306804201838455
+    lo_mult: 1.0
+    hi_mult: 2.0
+    hi_source: lambda_cap_e0b
+  trapped_completion_rate:
+    rule: 'lambda_ref, INFORMATIONAL only: in a trap with a growing backlog the SESSION
+      completion rate runs above lambda_miss (young sessions have short prompts; simulator
+      1.14-1.46 x), so it is not the criterion'
+    value: 0.07153402100919228
+  trapped_uncached_token_rate:
+    rule: 'E0a''s all-miss uncached prefill tokens/s: criterion (a) compares the post-burst
+      prefill-token rate with it, +- rate_tolerance (simulator traps: 1.03-1.08 x)'
+    value: 11243.179816372982
+  capped_drain:
+    burst_n: 200.0
+    mu_n_cap: 0.2238868137457633
+    post_burst_available_s: 7200.0
+    drain_fit_frac: 0.8
+    max_drain_s: 5760.0
+    max_lambda: 0.1891645915235411
+    max_lambda_mult: 2.644400368591513
+    predicted_drain_s_by_mult:
+      '1.35': 1570.895881513852
+    rule: burst_n / (mu_n_cap - lambda) <= drain_fit_frac * (duration_s - t_burst_s
+      - end_window_s)
+  consistency:
+    mu_300_vs_lambda_miss_rel_dev: 0.5066466610723732
+    window_nonempty: true
+lambda_selection:
+  rule: 'TOOLSLOW cell T1 (r15), label sglang-fcfs-r1-toolslow-d30w1800: the E2 NOBURST
+    protocol (arm noburst only: the job glue sets arrivals.burst=null; the evaluation
+    window is anchored to analysis_t_burst_s = 1200), seeds 0, 1, 2 (one seed per
+    job), 300k pool, OUTPUT_FEEDBACK=server, 8700-s runs, 1.35 x lambda_ref. Protocol
+    from configs/agentload_e2_toolslow_d30w1800.yaml (a byte copy of configs/agentload_e2_toolslow_d30.yaml,
+    the registered r14 d30 config, except the workload.tool_slowdown values, their
+    comment lines and meta.notes): every tool call whose sleep STARTS in [1200, 3000)
+    s sleeps its drawn tool time plus 30 s (client option workload.tool_slowdown {t_s:
+    1200, width_s: 1800, add_s: 30}, logged per call in tool_calls.csv); tool calls
+    starting at or after 3000 s are normal. Only the window width differs from the
+    registered d30 cell (900 s there): same delay, same start, same rate, same seeds,
+    same controls. The slowdown changes no random draw: plan.csv equals the committed
+    E2 NOBURST run of the same seed at 1.35 x, its CRN control; the same-seed BURST
+    run at 1.35 x is reported beside it. HOW THE CELLS WERE CHOSEN (not blind to earlier
+    outcomes): T1 and T2 were chosen on 2026-11-05 after the registered r14 d30 cell
+    (configs/agentload_prereg_2026-10-31_toolslow_d30.yaml, jobs 17169905-17169907
+    (results/nova/toolslow_shed_1716990x_pulled_20261101-154800): 30 s added to tool
+    calls starting in [1200, 2100) s at 1.35 x) trapped 1 of its 3 seeds (STUCK in
+    seed 2 only, GOOD in seeds 0 and 1, so its registered rule failed), and after
+    reading simulator outputs (the calibrated simulator with a tool-slowdown hook
+    written after the d10 / d30 results were known, run on the exact client plans
+    and on random seeds). Every model we have (the calibrated simulator and the fluid
+    model pred2) predicts that T1 TRAPS, so T1 is a reliability test of the trigger
+    (does a tool-side slowdown with no added sessions trap the engine in at least
+    2 of 3 seeds?), not a test between models. T2 is the model-discrimination cell:
+    pred2''s fluid verdict (one plan-averaged call applied to every seed) and the
+    simulator''s exact-plan runs predict different outcomes for some of its seeds,
+    so T2 discriminates pred2 vs the simulator per seed. The models'' per-seed predictions
+    are not part of this file: they are frozen in their own committed files (which
+    also fix how each model output, including pred2''s per-seed layer, is scored),
+    pushed before the first job of these cells is submitted; the TRAPS / NO-TRAP /
+    MIXED call below depends on neither model. DECISION RULE: T1 (sglang-fcfs-r1-toolslow-d30w1800)
+    is decided alone, with no conjunction with any other cell: TRAPS iff STUCK in
+    >= 2 of the 3 registered seeds; NO-TRAP iff GOOD in >= 2 of 3; else MIXED (a cell
+    that meets both counts, possible only through runs that are both STUCK and GOOD,
+    is MIXED). The other r15 cell, sglang-fcfs-r1-toolslow-d15-165, is decided by
+    its own registration. Single point 1.35 x lambda_ref: the lower registered point
+    (m1) of configs/agentload_prereg_2026-10-24.yaml, same inputs (prereg/inputs/2026-10-23:
+    mu_curve, calibration, E0b bracket), same window (1, 2.0) x lambda_ref and the
+    same 1/3-2/3 rule written on 2026-10-23 before E0b was read; reused unchanged
+    so that each run pairs by seed (common random numbers) with the committed 300k
+    E2 NOBURST run at 1.35 x (jobs 17093387-17093404 (results/nova/e2_170933xx_pulled_20261025-144558)).
+    The measured values are those of cell sglang-fcfs-r1 (same hardware, pool, policy
+    and refresh flag; filled by analysis.r15_prereg fill, which runs analysis.prereg.fill
+    under sglang-fcfs-r1 with this cell''s E2 config, arm and rate and then sets only
+    inputs.engine_cell_label), so these runs stay out of the sglang-fcfs-r1 verdict.
+    The cell''s E2 config is registered by its sha256 (protocol.e2_config_sha256;
+    check-job refuses a job whose --e2-config bytes differ, and a run whose config.yaml
+    differs is not bound), the only authorised arm is protocol.arms and the only authorised
+    rate is lambda_selection.lambda_mults = [1.35]. Hardware: a run on hardware other
+    than ''NVIDIA A100 80GB PCIe, 81920 MiB'' is not bound (measured.hardware). FROZEN
+    PRIMARY ENDPOINTS: STUCK and GOOD exactly as configs/r11_basin_predict.yaml defines
+    them (its endpoints block, read by analysis/basin.py load_endpoints, unchanged),
+    evaluated per run over [t_burst_s + eval_from_s, duration_s) = [5700, 8700) s
+    with hit = pass_rule.hit_metric (a turn is a hit if cached_tokens / prompt_tokens
+    > 0.5, attributed by completion time): STUCK := hit_eval < 0.2 (the registered
+    constant burst.trap_hit_below); GOOD := trap_v2 RECOVERED (pass_rule recovered_*),
+    or (hit_eval > 0.8 and backlog slope <= slope_frac x (lambda - lambda_miss), the
+    registered trap_v2 slope threshold, lambda = the run''s resolved rate, 1.35 x
+    lambda_ref). A run counts only if it completed, is bound to this file, ran arm
+    noburst at 1.35 x on a registered seed, its plan.csv equals the same-seed control''s
+    (same columns and rows; sid, origin, idx and n_turns exactly, arrival_s and tool_time_total_s
+    within 1e-9 s), and the manipulation happened (checked from the run''s own files,
+    stricter than r14): meta.tool_slowdown is this cell''s block; its tool_calls.csv
+    is complete (its row count and its count of slowed calls equal meta.outcome.tool_slowdown)
+    and logs at least one tool call starting in [1200, 3000) s; every call starting
+    in that window has add_s = 30; no call starting outside it has add_s != 0; and
+    every call has t_ready = t_start + tool_s + add_s. Statistics per seed (CRN pairs),
+    no pooled intervals; a seed without a counted run counts against both TRAPS and
+    NO-TRAP; two counted runs of one seed leave the cell undecided until a human resolves
+    it. Classification: python -m analysis.r15_cells classify (this file as --prereg).
+    The pass_rule and kill_conditions below are the template''s three-arm rule, inherited
+    unchanged so the rule keys match the analysis; this one-arm cell is judged by
+    the endpoints and the decision rule above (analysis/r15_cells.py), not by the
+    paired PASS rule.'
+  lambda_mults:
+  - 1.35
+  boundary_margin_rel: 0.1
+  drain_fit_frac: 0.8
+  seeds:
+  - 0
+  - 1
+  - 2
+  native_pool_lambda_mult: null
+predictions:
+  lambda_below_recovery_threshold:
+    burst: 'not trapped: draining or recovered'
+    noburst: good
+    capped: recovered
+  lambda_inside_window:
+    burst: 'trapped: uncached prefill rate within +-rate_tolerance of E0a''s all-miss
+      rate, backlog slope > slope_frac*(lambda-lambda_miss)'
+    noburst: 'good through the run horizon (duration_s). HORIZON-DEPENDENT: the guarantee
+      is E0b''s finite-horizon from-empty stability; the simulator shows noise-driven
+      escapes (no-burst runs trapped) at 2 x and 2.5 x within 65,000 s, so a prediction
+      of ''good'' only holds for the horizon E0b was run at (3000 s) and the 8700
+      s runs here, and only below E0b''s edge'
+    capped: recovered by the end of the run IF the gate queue drains in time (capped_drain);
+      a cap at n_cap keeps the closed system on the rising branch of mu(n)
+  lambda_above_window:
+    burst: trapped
+    noburst: 'may escape spontaneously (E0b edge) or has no good state (mu_max): NOT
+      a prediction of ''good''; such lambdas are not registered'
+    capped: NOT recovered (cap at n_cap serves at most mu_n_cap)
+pass_rule:
+  statement: 'PASS per lambda iff, in >= pass_fraction_min of the seeds (>= min_seeds
+    seeds), the BURST arm is TRAPPED and the NOBURST arm is good and the CAPPED arm
+    is RECOVERED. The kill test passes iff some registered lambda of the registered
+    cell passes (decisive: see assumptions_note).'
+  rate_estimator: uncached_tokens
+  rate_tolerance: 0.15
+  slope_frac: 0.5
+  recovered_hit_above: 0.8
+  recovered_backlog_below: 20.0
+  recovered_backlog_metric: outstanding
+  end_window_s: 300.0
+  eval_from_s: 4500.0
+  min_eval_s: 600.0
+  slope_dt_s: 10.0
+  pass_fraction_min: 0.6666666666666666
+  min_seeds: 3
+  hit_metric: frac_turns_cached_gt50
+  cached_frac_threshold: 0.5
+  attribute_by: complete
+kill_conditions:
+- 'the NOBURST arm is not good in >= 1/3 of the seeds at some REGISTERED lambda inside
+  the window (whose upper edge is already capped by E0b''s from-empty stability edge:
+  the good state does not exist there over this horizon)'
+- the BURST arm is not trapped in >= 2/3 of the seeds at EVERY registered lambda (nothing
+  traps)
+- 'the CAPPED arm does not recover while the BURST arm traps AND the predicted gate
+  drain time fits the run (capped_drain): the cap does not rescue, the mechanism is
+  not session count'
+- the window (lambda_miss, min(mu_max, E0b edge)) is empty or narrower than the noise
+  of mu(n) and of E0b's bracket
+checks:
+  mu_300_is_a_check_only:
+    value: 0.10777649390658053
+    rel_dev_vs_lambda_miss: 0.5066466610723732
+    note: all n sessions start at t=0; mu(300) over the measured window is transient-biased,
+      so it does not set the window
+fill_problems:
+- severity: warn
+  code: mu300_far_from_lambda_miss
+  message: '|mu(300)/lambda_miss - 1| = 0.507: only a check (all n sessions start
+    together, so mu(300) in the 1800 s window is transient-biased: simulator +65%);
+    the registered recovery threshold is lambda_miss'
+- severity: warn
+  code: n_cap_ambiguous
+  message: 'n_cap=20: the runner-up n=20 is within 0.04048064783632819 (one run per
+    n; mu(n) near its peak is bistable and transient-biased in the Stage-C window):
+    the CAPPED arm''s cap is a noisy choice'

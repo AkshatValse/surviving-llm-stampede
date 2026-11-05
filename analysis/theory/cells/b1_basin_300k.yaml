@@ -1,0 +1,16 @@
+# OUT-OF-SAMPLE (blind). Registered basin test B1 on the a100_300k cell: bursts of 100 and 25 fresh sessions in 60 s at
+# 1.65 x lambda_ref; per run STUCK := hit < 0.2 over [5700, 8700) s; PASS iff 100 STUCK in >= 2/3 seeds and 25 GOOD in >= 2/3.
+base: a100_300k.yaml
+name: b1_basin_300k
+description: "B1 burst-size basin test on a100_300k (blind)"
+blind: true
+tests:
+  - kind: burst_basin
+    name: B1
+    multiple: 1.65
+    bursts: [100, 25]
+    sweep: [10, 40, 50, 60, 75, 150, 200]
+    t_s: 1200
+    width_s: 60
+    eval_window_s: [5700, 8700]
+    stuck_hit_below: 0.2

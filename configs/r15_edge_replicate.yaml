@@ -1,0 +1,159 @@
+# r15 REPLICATE-EDGE (EXPLORATORY): same-plan replicates of the 2.5 x from-empty edge of the A100 300k SGLang FCFS cell.
+#
+# Frozen rule file, read by analysis/r15_edge.py (python -m analysis.r15_edge classify ...). Every number the classifier and
+# the verdict use is in this file; the module refuses a file whose status is not FROZEN. Predictions frozen with it:
+# results/theory/r15/edge_preds.json and notes/PREDICTIONS_r15_edge.md.
+status: FROZEN
+exploratory: true
+name: r15_edge_replicate
+written: "2026-11-05, about 02:00 CST, branch r15/tonight (cut from r10/arxiv 8aaabdb), before any run of this cell existed"
+revised: >-
+  2026-11-05, about 03:00 CST, by the independent review, still before any run of this cell existed: the verdict order now
+  follows the design (PLAN-CONDITIONAL ESCAPE iff some plan's runs disagree, so a disagreement is an ESCAPE whatever the
+  replicate counts; INCOMPLETE only when no disagreement was seen), and a descriptive among-new-runs location was added
+
+question: >-
+  Is the 2.5 x from-empty edge of the A100 300k SGLang FCFS cell fixed by the workload path, or does the same plan escape on
+  some runs and not others (noise-induced escape at a fixed workload)? The two runs that define the edge at 2.5 x are
+  re-run on their identical plans (common random numbers: same arrival times, turn counts and tool times): seed 0
+  (collapsed at about 1600 s in job 17084754) and seed 4 (stable for 3000 s in job 17168507).
+
+how_this_cell_was_chosen: >-
+  EXPLORATORY, chosen tonight (2026-11-05, about 01:00-02:00 CST) after reading the existing E0b / E0F data: the data-B D3
+  table of trigger-free collapses and the N3 design review, which found that the arrival-count, turn-count and token-work
+  brackets of the four 2.5 x runs (seeds 0, 3, 4, 5) are equally deterministic and that no same-plan replicate exists. The two
+  plans were selected BECAUSE their outcomes are known (seed 0 unstable, seed 4 stable). The test cannot be decisive: MODE=cap
+  has no registration branch in slurm/common.sh validate_mode_inputs, so no run is bound to this file by the job glue; the
+  sample is 3 + 3 new runs; and the plans were picked after their outcomes were seen. It is reported as exploratory, with
+  every run, its node and its GPU.
+
+cell:
+  engine: "SGLang 0.5.22 (envs/sglang), --schedule-policy fcfs, SGLANG_ENABLE_WAITING_PREFIX_REFRESH=1, LPM_INF=0, radix cache on"
+  kv_tokens: 300000
+  model: Qwen/Qwen2.5-7B-Instruct
+  hf_revision: a09a35458c702b33eeacc393d103063234e8bc28
+  hardware: "NVIDIA A100 80GB PCIe, 81920 MiB"
+  engine_label: sglang-fcfs-r1-edgerep
+  mode: cap                                     # slurm/common.sh mode_cap: one 3000 s open-loop run per seed, from empty
+  agentload_config: configs/agentload_e0_cap.yaml
+  rate_mult: 2.5
+  lambda_ref: 0.07153402100919228               # prereg/inputs/2026-10-23/calibration.json lambda_miss_turns_based
+  resolved_rate_sessions_per_s: 0.17883505252298068
+  calib_file: prereg/inputs/2026-10-23/calibration.json
+  duration_s: 3000
+  output_feedback: server
+  request_token_ids: true
+
+jobs:                                           # one GPU each; the job glue flushes the cache and verifies it empty between runs
+  - name: A
+    seeds: [0, 4, 0]                            # run positions 1, 2, 3 = content salts 1, 2, 3 (slurm/common.sh run_gen RUN_IDX)
+  - name: B
+    seeds: [4, 0, 4]
+
+originals:                                      # counted as a 4th replicate of their plan by the verdict
+  "0":
+    run_dir: results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_e0_cap/20261023-151551-1
+    job: "17084754"
+    node: nova22-gpu-1
+    gpu_bus_id: "00000000:86:00.0"
+    commit: bf20ed4a8a5a88f8be32f602d0a5b34b935658b2
+    engine_label: sglang-fcfs-r1
+    content_salt: 1
+    run_position: 1
+    job_log_dir: results/nova/e0b_1708475x_pulled_20261024-150639/results/nova_job_logs/17084754-20261023-151432
+    known_outcome: UNSTABLE                     # this file's rule gives tau = 1600 s (data-B D3 gives the same)
+  "4":
+    run_dir: results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e0_cap/20261031-021452
+    job: "17168507"
+    node: nova22-gpu-3
+    gpu_bus_id: "00000000:06:00.0"
+    commit: 9b67c262084d3d50235c645eec71f3aa8b5bb68a
+    engine_label: sglang-fcfs-r1-e0bfresh
+    content_salt: 2
+    run_position: 2
+    job_log_dir: results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/nova_job_logs/17168507-20261031-012034
+    known_outcome: STABLE
+
+per_run_rule:
+  # The definition used tonight by data-B (scratch d3d5.py, the D3 table), applied unchanged to every run (originals included).
+  hit_metric: >-
+    follow-up hit fraction: over requests.csv rows with status ok and turn > 1, a turn is a hit iff cached_tokens /
+    max(prompt_tokens, 1) > 0.5 (missing cached or prompt tokens = miss); turns are attributed to 100 s bins by completion
+    time t_complete, bins [100 k, 100 (k + 1)) for k = 0 .. ceil(t_end / 100) - 1 with t_end = meta.outcome.t_end_s (else
+    run.duration_s); a completion at or after the last edge goes into the last bin
+  bin_s: 100.0
+  window_bins: 3                                # rolling 300 s window = bins i-2, i-1, i; window start = start of bin i minus 200 s
+  min_turns_per_window: 5                       # a window with fewer follow-up turns is invalid (skipped)
+  warm_s: 600.0                                 # a collapse window must START at or after this time
+  collapse_hit_at_most: 0.2
+  good_hit_at_least: 0.6
+  recover_hit_at_least: 0.5
+  text: >-
+    UNSTABLE iff some valid 300 s window starting at or after 600 s has follow-up hit <= 0.2, some valid window earlier in
+    the run (any start) had hit >= 0.6, and no valid later window (the windows of all later bins, overlapping ones included)
+    reaches >= 0.5; tau = the start of the first such window. STABLE otherwise. (A run with no window >= 0.6 before its low
+    windows is STABLE by this rule; the classifier reports it as stable_kind never_good so it cannot pass unnoticed.)
+  registered_comparison: >-
+    also recorded for every run, for comparison only: the registered from-empty stability verdict of the E0b protocol
+    (analysis.hysteresis.stable_verdict over analysis.windows.queue_trace with configs/agentload_analysis.yaml, as
+    analysis.summarize stable computes it: stable iff not aborted, final engine-queue bin < 50 and OLS rise <= 10 over the last
+    1500 s), and the verdict that rule would give
+
+manipulation_check: >-
+  plan.csv of the run equals the original's plan.csv of the same seed: same number of rows; sid, origin, idx and n_turns
+  identical; arrival_s and tool_time_total_s equal to |difference| <= 1e-9 s (byte equality is also recorded; on the PC the
+  regenerated plans differ only in the last bits of tool-time totals, at most 1.7e-13 s, a libm difference between Linux and
+  Windows). A run that fails it is not a replicate.
+
+validity:                                       # a new run counts as a replicate only if ALL hold
+  - >-
+    the manipulation check passes
+  - >-
+    meta.status finished, outcome.abort_reason null and outcome.t_end_s >= 2999 s (the full 3000 s run)
+  - >-
+    meta.start_state_verified true (the job glue's canary check after the flush passed)
+  - >-
+    config_effective.yaml equals the original's except server.base_url, workload.content_salt, arrivals.lambda_ref (path
+    string; the resolved value meta.lambda_ref_resolved must equal 0.07153402100919228 exactly), meta.engine_label,
+    meta.start_state_detail; and meta.resolved_rate_sessions_per_s equals 0.17883505252298068 exactly
+  - >-
+    meta.hardware equals the cell's hardware string; meta.engine_label equals the cell's engine_label; meta.git.dirty false;
+    the run's seed is 0 or 4 and its rate_mult 2.5
+  - >-
+    the engine is not shown to differ: when the job log dir (results/nova_job_logs/<job>-*) is present, the server_args dict
+    in its server.log equals the original job's except port and random_seed; the job banner's run parameters ENGINE, MODE,
+    POLICY, REFRESH, LPM_INF, RADIX, KV_TOKENS, CONTEXT_LEN, OUTPUT_FEEDBACK, REQUEST_TOKEN_IDS, STRICT_FLUSH, STRICT_FLAGS,
+    MODEL, SERVED_MODEL, HF_REVISION, HF_HOME and MULTS equal the original job's; and pip_freeze_sglang.txt,
+    pip_freeze_swapp.txt and hf_snapshot.txt equal the original job's (a missing job log dir leaves this unverified,
+    reported, and the run counts)
+
+verdict:
+  text: >-
+    Per plan p in {0, 4}: n_p = valid new replicates; the plan's runs are its original (counted as a 4th replicate, its
+    outcome computed by the same rule) and its n_p valid replicates. PLAN-CONDITIONAL ESCAPE iff some plan's runs disagree,
+    whatever n_0 and n_4 are. Otherwise REPRODUCIBLE iff seed 0 is UNSTABLE in all of at least 3 valid replicates and seed 4
+    is STABLE in all of at least 3 (3/3 and 3/3 with the planned jobs). Otherwise INCOMPLETE iff n_0 < 2 or n_4 < 2 (no
+    verdict). Otherwise (no disagreement, but a plan has only 2 valid replicates) CONSISTENT-PARTIAL.
+  min_replicates_per_plan: 2
+  replicates_for_reproducible: 3
+  disagreement_location: >-
+    For every plan with a disagreement the node (meta.hostname) and GPU (the PCI Bus-Id in the job banner's nvidia-smi
+    table) of every run are reported, and the disagreement is labelled WITHIN-GPU (two runs on the same node and Bus-Id
+    disagree), else WITHIN-NODE (two runs on the same node disagree), else ACROSS-NODES-ONLY (every node's runs agree; the
+    outcome then goes with the node, confounded with GPU speed). Only a within-node (and best a within-GPU) disagreement
+    is read as noise-induced escape at a fixed workload; across-nodes-only disagreement is read as a node effect. Also
+    reported, descriptive only: whether a plan's NEW runs disagree among themselves, and where (they share the date, the
+    commit and the engine build; a disagreement between the original and new runs only is also confounded with the date
+    and the job).
+  readings:
+    REPRODUCIBLE: "the 2.5 x edge is fixed by the workload path at these two plans (deterministic given the plan, at this n)"
+    PLAN-CONDITIONAL ESCAPE: "the same plan escapes on some runs and not others; noise-induced escape iff within-node"
+    CONSISTENT-PARTIAL: "no disagreement seen, fewer than 3 replicates of a plan: weaker form of REPRODUCIBLE"
+    INCOMPLETE: "no disagreement seen and fewer than 2 valid replicates of a plan: no verdict"
+  not_decisive: >-
+    exploratory whatever the outcome; the claim is stated as 'k of n same-plan replicates (dis)agreed', never as a test of
+    metastability or of the F2 escape law
+
+predictions_frozen_with_this_file:
+  json: results/theory/r15/edge_preds.json
+  notes: notes/PREDICTIONS_r15_edge.md

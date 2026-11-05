@@ -1,0 +1,27 @@
+# Validation cell 2 (measured). Zero fitted parameters.
+name: a100_native
+description: "SGLang 0.5.22 FCFS (label sglang-fcfs-r1-native), Qwen2.5-7B-Instruct, 1x A100 80GB PCIe, native KV pool 955,757 tokens"
+blind: false
+pool_tokens: 955757
+pool_source: "SGLang server log max_total_num_tokens = 955757 (no --max-total-tokens; the engine's own pool)"
+workload:
+  config: configs/agentload_e2_burst.yaml
+engine:
+  mode: separate
+  hit_prefill_tokens: auto
+costs:
+  calibration: calibration/round6_server_log_fit/calibration.yaml
+lambda_ref:
+  value: 0.0717974
+  source: "results/nova/r7_native_grid_vllm_pulled_20261025-145126/results/agentload_analysis_miss/20261025-054653/calibration.json: lambda_miss_turns_based"
+stage_c:
+  grid: [24, 48, 64, 80, 96, 128, 300]
+  window_s: [900, 2700]
+e0b:
+  multiples: [1.5, 2.5, 3.5, 4.5, 5.5, 6.5]
+  horizon_s: 3000
+e2:
+  multiples: [2.5, 4.0]
+  burst: {n: 200, t_s: 1200, width_s: 60}
+  window_s: [5700, 8700]
+  cap: 64

@@ -24,8 +24,11 @@ Registered decision rules (verbatim from the registrations' lambda_selection.rul
   TOOLSLOW  'causal test of the gap: d10 GOOD in >=2/3 seeds and d30 STUCK in >=2/3'   (seeds 0, 1, 2: 2 of 3 each)
   SHED      'tau600 STUCK in >=2/3 and tau3600 GOOD in >=2/3; sessions shed reported; compared with R1 (0 shed)'
             (seeds 0, 1: 2 of 2 each)
-A seed without a completed run counts against; a run not bound to its registration (``analysis.prereg.run_blockers``, when
---prereg is given) is reported and not counted.
+A seed without a completed run counts against; a run not bound to its registration (``analysis.prereg.run_blockers``; the CLI
+defaults --prereg to the four committed registrations, and a run whose binding was not checked is not counted) is reported and
+not counted. A run counts only if its manipulation happened (TOOLSLOW: slowed tool calls logged, all started inside the window;
+SHED: no base arrival inside the stop). Two counted runs of one seed leave that cell undecided (None), so no seed votes twice.
+(Review fixes after r14-extra-reg, before any job of these cells: stricter only.)
 
 CLI:  python -m analysis.r14_cells classify --run-dirs RUN [RUN ...] [--prereg FILE ...] [--control-root DIR]
                                             [--r1-dirs RUN ...] [--endpoints configs/r11_basin_predict.yaml] [--out-root results]
@@ -46,6 +49,7 @@ import pandas as pd
 
 from . import basin
 from . import prereg as prereg_mod
+from . import r14_prereg
 from .load import Run, load_run
 from .params import AnalysisParams, load_params
 
@@ -187,6 +191,8 @@ def decision(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
             cells[c["key"]]["sessions_shed_by_seed"] = {str(r["seed"]): r.get("sessions_shed") for r in recs}
 
     def tri(cell: Dict[str, Any], key: str) -> Optional[bool]:
+        if cell["duplicate_seeds"]:              # a resubmitted seed must not vote twice: undecided until a human resolves it
+            return None
         if cell[key] >= cell["need"]:
             return True
         if cell[key] + len(cell["missing_seeds"]) < cell["need"]:
@@ -242,11 +248,20 @@ def classify(run_dirs: Iterable[str | Path], ep: Dict[str, Any], p: AnalysisPara
             ts = r.meta.get("tool_slowdown") or {}
             if not (ts and math.isclose(float(ts.get("add_s", -1)), c["add_s"])):
                 probs.append(f"meta.tool_slowdown {ts} does not apply add_s = {c['add_s']}")
+            # the manipulation must have happened: slowed calls logged, all of them started inside [t_s, t_s + width_s)
+            if not rec.get("n_tool_calls_slowed"):
+                probs.append("no tool call was slowed (tool_calls.csv missing or empty): the manipulation did not happen")
+            elif ts:
+                t_s, t_e = float(ts.get("t_s", 0.0)), float(ts.get("t_s", 0.0)) + float(ts.get("width_s", 0.0))
+                if not (t_s <= rec["slowed_t_start_min"] and rec["slowed_t_start_max"] < t_e):
+                    probs.append(f"slowed tool calls started outside [{t_s}, {t_e})")
         else:
             rec.update(shed_pairing(r, controls.get(("burst", r.seed)), c["tau_s"]))
             rec["ramp_flat_over_window"] = ramp_flat_over_window(r, w0, w1)
             if not rec["ramp_flat_over_window"]:
                 probs.append("the ramp is not at the post-stop rate over the whole evaluation window")
+            if rec.get("run_base_arrivals_in_stop") not in (0, None):   # the manipulation must have happened
+                probs.append(f"{rec['run_base_arrivals_in_stop']} base arrivals inside the stop: arrivals did not stop")
         if not rec.get("paired"):
             probs.append(rec.get("pairing_problem") or "not paired")
         reg = pr_by_label.get(r.label)
@@ -255,8 +270,9 @@ def classify(run_dirs: Iterable[str | Path], ep: Dict[str, Any], p: AnalysisPara
             rec.update(prereg_file=reg[2], prereg_bound=not bl, prereg_blockers="; ".join(bl))
             if bl:
                 probs.append("not bound to its registration: " + "; ".join(bl))
-        else:
+        else:   # a run is counted only when its binding was checked (the CLI defaults --prereg to the four registrations)
             rec.update(prereg_file=None, prereg_bound=None, prereg_blockers="no --prereg for this label")
+            probs.append("binding not checked: no --prereg for this label")
         rec["problem"] = "; ".join(probs)
         rec["counted"] = not probs and not r.aborted
         rows.append(rec)
@@ -293,7 +309,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("classify", help="per-run STUCK / GOOD of the TOOLSLOW and SHED runs, CRN pairs, the registered rules")
     c.add_argument("--run-dirs", nargs="+", required=True)
-    c.add_argument("--prereg", nargs="*", default=[], help="the r14 registrations (binding of each run, by label)")
+    c.add_argument("--prereg", nargs="*", default=[str(REPO / c_["out"]) for c_ in r14_prereg.CELLS.values()],
+                   help="the r14 registrations (binding of each run, by label; default: the four committed files)")
     c.add_argument("--control-root", default=str(REPO / CONTROL_ROOT))
     c.add_argument("--r1-dirs", nargs="*", default=[], help="optional: R1 rescue runs at 1.35 x, reported beside SHED")
     c.add_argument("--endpoints", default=str(REPO / ENDPOINTS))

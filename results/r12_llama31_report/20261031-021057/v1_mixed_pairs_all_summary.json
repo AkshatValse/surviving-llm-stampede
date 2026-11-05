@@ -1,0 +1,719 @@
+{
+  "workload": "exp5",
+  "lambda_miss_turns": 0.05962888033453694,
+  "token_rate_miss": 9348.224074074074,
+  "cap_picked": 20,
+  "caps": [
+    {
+      "cap": 16,
+      "picked": false,
+      "sensitivity": true,
+      "extra_labelled": false
+    },
+    {
+      "cap": 20,
+      "picked": true,
+      "sensitivity": true,
+      "extra_labelled": false
+    },
+    {
+      "cap": 24,
+      "picked": false,
+      "sensitivity": true,
+      "extra_labelled": false
+    },
+    {
+      "cap": 28,
+      "picked": false,
+      "sensitivity": true,
+      "extra_labelled": false
+    },
+    {
+      "cap": 32,
+      "picked": false,
+      "sensitivity": true,
+      "extra_labelled": false
+    },
+    {
+      "cap": 40,
+      "picked": false,
+      "sensitivity": false,
+      "extra_labelled": true
+    }
+  ],
+  "multiples": [
+    {
+      "mult": 1.1,
+      "extra_labelled": true
+    },
+    {
+      "mult": 1.15,
+      "extra_labelled": false
+    },
+    {
+      "mult": 1.25,
+      "extra_labelled": false
+    },
+    {
+      "mult": 1.35,
+      "extra_labelled": false
+    },
+    {
+      "mult": 1.5,
+      "extra_labelled": false
+    },
+    {
+      "mult": 1.65,
+      "extra_labelled": false
+    },
+    {
+      "mult": 2.0,
+      "extra_labelled": false
+    },
+    {
+      "mult": 2.35,
+      "extra_labelled": false
+    }
+  ],
+  "arms": [
+    "no_burst",
+    "burst",
+    "cap_16",
+    "cap_20",
+    "cap_24",
+    "cap_28",
+    "cap_32",
+    "cap_40"
+  ],
+  "points": {
+    "1.1": {
+      "lam": 0.06559176836799065,
+      "extra_labelled": true,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 8,
+      "noburst_good": 10,
+      "burst_indeterminate": 2,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 6,
+          "cap_trapped": 2,
+          "per_arm_pass": false,
+          "same_seed_count": 4,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 6,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "1.15": {
+      "lam": 0.06857321238471747,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 8,
+      "noburst_good": 10,
+      "burst_indeterminate": 2,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 6,
+          "cap_trapped": 2,
+          "per_arm_pass": false,
+          "same_seed_count": 4,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 7,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "1.25": {
+      "lam": 0.07453610041817117,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 9,
+      "noburst_good": 10,
+      "burst_indeterminate": 1,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 5,
+          "cap_trapped": 2,
+          "per_arm_pass": false,
+          "same_seed_count": 4,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 8,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "1.35": {
+      "lam": 0.08049898845162488,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 9,
+      "noburst_good": 10,
+      "burst_indeterminate": 1,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 9,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 2,
+          "cap_trapped": 3,
+          "per_arm_pass": false,
+          "same_seed_count": 2,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 8,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "1.5": {
+      "lam": 0.08944332050180541,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 9,
+      "noburst_good": 10,
+      "burst_indeterminate": 1,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 5,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 8,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "1.65": {
+      "lam": 0.09838765255198595,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 8,
+      "noburst_good": 10,
+      "burst_indeterminate": 2,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 8,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 8,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 6,
+          "same_seed_pass": false
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 5,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 8,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 10,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "2": {
+      "lam": 0.11925776066907388,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 9,
+      "noburst_good": 10,
+      "burst_indeterminate": 1,
+      "noburst_trapped": 0,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 4,
+          "cap_trapped": 0,
+          "per_arm_pass": false,
+          "same_seed_count": 4,
+          "same_seed_pass": false
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 6,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 10,
+          "cap_recovered": 0,
+          "cap_trapped": 10,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    },
+    "2.35": {
+      "lam": 0.14012786878616182,
+      "extra_labelled": false,
+      "n_seeds": 10,
+      "need": 7,
+      "burst_trapped": 9,
+      "noburst_good": 9,
+      "burst_indeterminate": 1,
+      "noburst_trapped": 1,
+      "per_cap": {
+        "16": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "cap_recovered": 6,
+          "cap_trapped": 0,
+          "per_arm_pass": false,
+          "same_seed_count": 5,
+          "same_seed_pass": false
+        },
+        "20": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "24": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "cap_recovered": 10,
+          "cap_trapped": 0,
+          "per_arm_pass": true,
+          "same_seed_count": 9,
+          "same_seed_pass": true
+        },
+        "28": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "cap_recovered": 0,
+          "cap_trapped": 0,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        },
+        "32": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "cap_recovered": 0,
+          "cap_trapped": 7,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        },
+        "40": {
+          "n_seeds": 10,
+          "need": 7,
+          "burst_trapped": 9,
+          "noburst_good": 9,
+          "cap_recovered": 0,
+          "cap_trapped": 10,
+          "per_arm_pass": false,
+          "same_seed_count": 0,
+          "same_seed_pass": false
+        }
+      }
+    }
+  },
+  "dirs": {
+    "lambda_miss": "results\\r12_llama31_v1_mixed\\r7_lambda_miss\\20261031-020928",
+    "curves": "results\\r12_llama31_v1_mixed\\r7_curves\\20261031-020930",
+    "edge": "results\\r12_llama31_v1_mixed\\r7_edge\\20261031-020933"
+  }
+}

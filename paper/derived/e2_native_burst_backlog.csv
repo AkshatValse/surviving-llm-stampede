@@ -1,7 +1,7 @@
-rate_mult,seed,state,run_dir,backlog_1300_1500,backlog_min_after_burst,t_min_after_burst_s,backlog_eval_first300,backlog_eval_last300,backlog_eval_start_registered,backlog_end_registered,backlog_slope,slope_threshold,rate_sessions,lambda,lambda_miss
-2.5,0,trapped,results/agentload_e2_burst/20261025-174410,169.678,167.675,150,482.338,711.222,465,711.223,0.0848355,0.0538481,0.109333,0.179494,0.0717974
-2.5,1,trapped,results/agentload_e2_burst/20261025-182014,165.266,161.064,150,443.247,657.865,446,657.866,0.0829226,0.0538481,0.103333,0.179494,0.0717974
-2.5,2,trapped,results/agentload_e2_burst/20261025-201414,160.341,154.762,200,478.89,689.02,474,689.021,0.079395,0.0538481,0.112,0.179494,0.0717974
-4,0,trapped,results/agentload_e2_burst/20261025-174409,239.371,231.069,100,914.471,1378.96,885,1378.96,0.164319,0.107696,0.134,0.28719,0.0717974
-4,1,trapped,results/agentload_e2_burst/20261025-201340,234.354,228.689,100,899.67,1284.83,881,1284.83,0.146483,0.107696,0.136999,0.28719,0.0717974
-4,2,trapped,results/agentload_e2_burst/20261025-205154,211.047,201.467,100,901.438,1320.96,888,1320.96,0.155477,0.107696,0.145999,0.28719,0.0717974
+rate_mult,seed,state,run_dir,run_path,backlog_1300_1500,backlog_min_after_burst,t_min_after_burst_s,backlog_eval_first300,backlog_eval_last300,backlog_eval_start_registered,backlog_end_registered,backlog_slope,slope_threshold,rate_sessions,lambda,lambda_miss
+2.5,0,trapped,results/agentload_e2_burst/20261025-174410,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-174410,169.678,167.675,150,482.338,711.222,465,711.223,0.0848355,0.0538481,0.109333,0.179494,0.0717974
+2.5,1,trapped,results/agentload_e2_burst/20261025-182014,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-182014,165.266,161.064,150,443.247,657.865,446,657.866,0.0829226,0.0538481,0.103333,0.179494,0.0717974
+2.5,2,trapped,results/agentload_e2_burst/20261025-201414,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-201414,160.341,154.762,200,478.89,689.02,474,689.021,0.079395,0.0538481,0.112,0.179494,0.0717974
+4,0,trapped,results/agentload_e2_burst/20261025-174409,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-174409,239.371,231.069,100,914.471,1378.96,885,1378.96,0.164319,0.107696,0.134,0.28719,0.0717974
+4,1,trapped,results/agentload_e2_burst/20261025-201340,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-201340,234.354,228.689,100,899.67,1284.83,881,1284.83,0.146483,0.107696,0.136999,0.28719,0.0717974
+4,2,trapped,results/agentload_e2_burst/20261025-205154,results/nova/e2_native_vllm_burst_pulled_20261026-101256/results/agentload_e2_burst/20261025-205154,211.047,201.467,100,901.438,1320.96,888,1320.96,0.155477,0.107696,0.145999,0.28719,0.0717974
