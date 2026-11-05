@@ -18,7 +18,8 @@ two differ by 1.3\%, well inside the tolerance.
 \item \emph{TOOLSLOW-W} (pre-registered: tag \texttt{r15-reg}, commit \texttt{e05a262}, pushed at 03:18:36 CST, before the first job
 was submitted at 03:21:38; designed after the 30\,s TOOLSLOW arm, whose slowdown ended at 2100\,s, trapped 1 of 3, and after
 reading simulator outputs, so it is blind in outcome only): no burst; every tool call that starts in
-$[1200,3000)$\,s takes 30\,s longer, at 1.35~$\lref$, seeds 0--2, paired with the committed NOBURST runs. The registered rule calls the
+$[1200,3000)$\,s takes 30\,s longer, at 1.35~$\lref$, seeds 0--2, paired with the committed NOBURST runs of 2026-10-24/25 (same plans, not run alongside). The
+registered rule calls the
 cell TRAPS if at least 2 of the 3 runs are stuck, NO-TRAP if at least 2 are good, and MIXED otherwise; its trapped runs, if any, are
 scored by S1--S5. Outcome: TRAPS. All three runs were stuck (hit 0.000 over $[5700,8700)$\,s; backlog slopes 0.0192, 0.0184
 and 0.0232\,/s against a threshold of 0.0125\,/s), while their paired NOBURST runs stayed good (hit 0.930--0.934); on the same
@@ -36,7 +37,8 @@ band, and the sessions alive at 2100 and 3000\,s met their reference accuracy; t
 \item \emph{TOOLSLOW-D15} (pre-registered with TOOLSLOW-W under tag \texttt{r15-reg}; jobs 17256873--75 submitted at 03:57:14
 CST; designed, like TOOLSLOW-W, after the 900\,s arm and after reading simulator outputs, so it is blind in outcome only):
 no burst; every tool call that starts in
-$[1200,2100)$\,s takes 15\,s longer, at 1.65~$\lref$, seeds 0--2, paired with the committed NOBURST runs, under the same three-way
+$[1200,2100)$\,s takes 15\,s longer, at 1.65~$\lref$, seeds 0--2, paired with the committed NOBURST runs of 2026-10-24/25 (same plans, not run alongside), under
+the same three-way
 rule; its stuck runs, if any, are scored by S1--S5. It was chosen so that our two frozen predictors disagree: the calibrated
 simulator, run on the exact client plans, called seed~0 stuck and seeds 1 and~2 good (NO-TRAP) in both modes, while the
 first-principles model's plan-averaged fluid verdict called every seed stuck (TRAPS); the model's per-seed layer made the
@@ -74,7 +76,8 @@ positive in at least 2 of 3 (model~F predicts that clause from seeds 0 and 2); C
 theory-favoured and $S<0$ in at least 2 of 3. Either arm fails if a comparator is favoured, or the run leaves the trap, in at least
 2 of 3 seeds; otherwise it is mixed. The
 rule was fixed after the per-seed predictions had been read, and it differs from the draft rule simulated in the prediction note in
-five ways: it adds the quasi-static comparator (stricter); where the note counted a run that leaves the trap as not
+five ways: it adds, for CUT-A only, the quasi-static comparator (stricter; the prediction note had put it 0.010--0.011\,/s from
+model~F's slope there and within 0.002\,/s in CUT-B, where it was not added); where the note counted a run that leaves the trap as not
 theory-favoured, the rule also counts it toward a fail (stricter); it takes $D_{\mathrm{trap}}$ from the frozen controls instead of
 each run's own completion rate over $[1800,2400)$\,s (stricter for seeds 0 and~1, looser for seed~2); it adds $S<0$ in at least 2 of
 3 to CUT-B (stricter); and it moves CUT-A's sign clause from $[3000,8700)$ to $[5700,8700)$\,s, as the note recommended (looser: in
@@ -152,7 +155,7 @@ $\rho=1.577$, $D/\lmiss=0.771$ ($H=0.699$, $\Gamma=1.103$; the standard workload
 $\alpha/(\lambda-\lmiss)=1.398$ (standard 0.65) at 1.65~$\lref$, and $\rho=1.291$, $D/\lmiss=0.870$ ($H=0.825$, $\Gamma=1.055$;
 standard 1.126) and $\alpha/(\lambda-\lmiss)=1.447$ at 1.35~$\lref$ (\fpath{results/theory/r16/mirror_predictions.json}). Its frozen
 per-seed predictions, from the plan-driven FIFO on each seed's exact client plan (rates in $\lref$; wave: the median completion time
-of the 200 burst sessions; slopes in sessions/s, model~F against the quasi-static $\lambda_{\mathrm{plan}}-\lmiss$):
+of the 200 burst sessions; slopes over $[6000,8700)$\,s in sessions/s, model~F against the quasi-static $\lambda_{\mathrm{plan}}-\lmiss$):
 \begin{center}\footnotesize
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}c c c c c c@{}}
@@ -180,9 +183,13 @@ if its run is stuck (the frozen endpoints of the basin tests) and M1--M4 hold, C
 in 2 of 3 and is NO-TRAP, leaving model~F untested, with NOT-TRAPPED in 2 of 3. A run counts only if it is the registered cell's,
 completed, bound to the registration and driven by the frozen plan. Registered secondary checks, reported but not in the verdict:
 W5, the wave within $0.05(F_{\mathrm{cal}}-1200\,\mathrm{s})$ of the calibrated time $F_{\mathrm{cal}}=1200+0.9223(F-1200)$\,s; W6,
-the wave earlier at 1.35 than at 1.65~$\lref$ in each seed (model~F: by 270--330\,s); W7, the mean prompt of the turns completed over
+the wave earlier at 1.35 than at 1.65~$\lref$ in each seed (model~F: by 287--334\,s); W7, the mean prompt of the turns completed over
 $[5700,8700)$\,s within 5\% of model~F's; W8, the late completions within 0.25~$\lref$ of model~F's; W9, every NOBURST control good;
-W10, the workload's measured all-miss capacity, and whether the late completions lie below it. The tolerances come from committed
+W10, the workload's measured all-miss capacity, and whether the late completions lie below it. The prediction note committed
+with the registration quoted the asymptotic 1.4 for the backlog's growth in the late window and 270--330\,s for W6's shift; both
+were corrected in an erratum (commit \texttt{d8c49b7} on \texttt{r16/mirror}, after the tag and before any MIRROR run output
+was read), and M4 scores the per-seed slopes of the table above and W6 only the order of the waves, so neither error enters a
+rule. The tolerances come from committed
 data only: on the six committed standard-workload BURST runs, model~F's plan-driven FIFO times the burst sessions' completions about
 8\% late (measured over model elapsed time 0.9125--0.9327 per run, mean 0.9223), which M2's 15\% covers and W5's factor removes; M1,
 M3 and the CURVE threshold lie between model~F's values and the quasi-static ones, fixed from those values and from the standard

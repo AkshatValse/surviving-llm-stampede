@@ -2,11 +2,11 @@
 
 \paragraph{Concurrent work.} Lu et al.~\citep{lu2026cachetrap}, who posted first, study the same phenomenon on hardware, on SGLang
 with prefill--decode disaggregation and a host KV tier, a hybrid mixture-of-experts model and real agent trajectories; they model it
-with a fluid population balance $\dot N=\lambda-X(N)/K$ over an empirical hit curve, study recovery in simulation and build a
-mitigation system. We add an exactly analysed idealization of the trapped state with its tests (\S\ref{sec:trap}--\ref{sec:validation}),
-an engine test of the reading that a trap's measured throughput exceeds the drain threshold (\S\ref{sec:control}; proved in model~F;
-their systems keep some reuse), a registered, replicated rescue of an established zero-hit trap at the same load without shedding,
-with release and persistence, registered matched-arm evidence on colocated engines, including a second engine (\S\ref{sec:stampede}),
+with a fluid population balance $\dot N=\lambda-X(N)/K$ over an empirical hit curve, restore service on hardware by removing the
+residual burst sessions, study recovery from an established trap in simulation and build a mitigation system. We add an exactly analysed idealization of the trapped state with its tests (\S\ref{sec:trap}--\ref{sec:validation}),
+an engine test of the reading that a trap's measured throughput exceeds the drain threshold (\S\ref{sec:control}; proved in model~F for our
+workload; their systems keep some reuse), a registered, replicated rescue of an established zero-hit trap at the same load without shedding,
+with the control removed and persistence tested, registered matched-arm evidence on colocated engines, including a second engine (\S\ref{sec:stampede}),
 and an entry model with an out-of-sample record (Appendix~\ref{app:entry}). They have real traces, disaggregated serving, a larger
 model, SLO goodput and a full mitigation system, which we do not; Appendix~\ref{app:lu} compares the two in detail.
 
@@ -19,13 +19,11 @@ al.~\citep{huang2022metastable}, whose trigger-and-control design our paired tes
 Markov chains~\citep{isaacs2025analyzing,habibi2024msf,alvaro2025formal}; Dong poses metastability in queues as an open
 problem~\citep{dong2022metastability}. As far as we found, none of these gives the bad regime's growth law or the composition of
 its population; service systems whose service slows in congestion show related bistability~\citep{chan2014speedup,dong2015slowdowns}.
-Overloaded processor sharing has a Crump--Mode--Jagers branching structure, linear growth and a fluid limit whose shape converges to
-an invariant one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}; overloaded multiclass FIFO queues with
-abandonment and no re-entry have fluid limits~\citep{jennings2013fluid}, and overloaded networks have bottleneck fluid
-approximations~\citep{chen1991discrete}. Re-entrant lines~\citep{kumar1993reentrant} and their fluid
-models~\citep{dai1996stability,bramson1996convergence} are studied mostly for stability, and for convergence to equilibria at load
-at most one; closest to model~F, Khanin et al.\ study steady solutions of fluid FIFO re-entrant lines~\citep{khanin2001steady}
-(\S\ref{sec:trap}). FIFO queues with feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic};
+Overloaded processor sharing and the steady solutions of fluid FIFO re-entrant lines~\citep{khanin2001steady}, the work closest to
+model~F, are discussed in \S\ref{sec:trap}; overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
+limits~\citep{jennings2013fluid}, and overloaded networks have bottleneck fluid approximations~\citep{chen1991discrete}. Re-entrant
+lines~\citep{kumar1993reentrant} and their fluid models~\citep{dai1996stability,bramson1996convergence} are studied mostly for
+stability, and for convergence to equilibria at load at most one. FIFO queues with feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic};
 round robin with feedback to the tail of the queue, which model~F is at the level of sessions, was analysed in equilibrium for
 time-shared systems~\citep{kleinrock1967timeshared,coffman1968feedback}; overloaded polling systems have a random fluid limit with a
 branching structure~\citep{remerova2014random}; and in heavy traffic multiclass FIFO feedback queues show state-space

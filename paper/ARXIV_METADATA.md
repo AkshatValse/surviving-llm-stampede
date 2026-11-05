@@ -3,25 +3,71 @@
 ## Reframe draft (2026-11-05, branch `claude/reframe-draft-211a57`): NOT for submission yet
 
 The draft below is under review by the authors (Akshat Valse; Dr. Ali Jannesari reviews before anything is posted). It is not
-submitted and nothing is posted. The repository URL and the MIRROR slot (Section 4.1, a ledger row, App. C) are still
-`\pending`; the TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's PAPER_INPUT parts 1, 2a
-and 2b.
+submitted and nothing is posted. The TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's
+PAPER_INPUT parts 1, 2a and 2b.
 
-**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. 64 pages: main text pp. 1-12
-(the references start low in the right column of p. 12), references pp. 12-17, appendices A-F pp. 18-64; 8 figures (Fig. 4, in
-Appendix C, is the MIRROR placeholder), 20 tables; clean build (pdflatex, bibtex, pdflatex x2; no errors, undefined references or
-overfull boxes). Abstract unchanged. Figures to upload: `fig1_e2_timeseries.pdf`, `fig_trap_universality.pdf`, `fig_rescue.pdf`
-(main text), `fig2_thrashing_curve.pdf`, `fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf`, `fig8_theory_curves.pdf`
-(Appendix E) and, with MIRROR's part 1, the MIRROR figure in place of the placeholder. The sources carry no comments with text, and
-`paper/sections/` holds only the 13 files `main.tex` inputs. Do not upload the other files in `figs/` (`fig4_mechanisms.pdf`,
-`fig5_robustness.pdf`, `fig6_policy_grid.pdf`, `fig9_theory_scaling.pdf`, `fig10_theory_fixed_points.pdf`, `fig_lpm_crossing.pdf`,
-`fig_trap_universality.png`, `README.md`).
+**Pending markers (9; the strict packager counts them in the sources and, independently, in the test build's PDF):** `\repourl`
+(the Code and data availability statement) and eight for MIRROR: Section 1 (contribution 2), Table 2 (the ledger's MIRROR row),
+Section 4.1 (the outcome), the Fig. 4 placeholder box and its caption (App. C), App. C's MIRROR outcome, Table 12
+(`tab:frozensum15`, MIRROR row) and Table 14 (`tab:ledger`, MIRROR row: jobs and outcome). Sentences that depend on MIRROR but carry
+no marker: Section 7 ("and MIRROR's runs", `v3_conclusion.tex`), App. E.1 (MIRROR among the tests registered on 2026-11-05,
+`v3_app_stampede.tex`), Section 3's pointer to Section 4.1 ("for a nearly deterministic T, H can be well below 1",
+`v3_theory.tex`), and the MIRROR row of Table 19 (`tab:prov`), which gets the runs' pull directory with part 1.
+
+**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. After the audit fix round: 65
+pages; main text pp. 1-12 (Section 8 and the three unnumbered statements end on p. 12, about four lines short of its foot; the
+references start on p. 13), references pp. 13-17, appendices A-F pp. 18-65 (A 18, B 21, C 22, D 26, E 26-63, F 63); 8 figures
+(Fig. 4, in Appendix C, is the MIRROR placeholder), 20 tables; clean build (pdflatex, bibtex, pdflatex x2; no errors, undefined
+references, overfull boxes or floats too large). Figures to upload: `fig1_e2_timeseries.pdf`, `fig_trap_universality.pdf`,
+`fig_rescue.pdf` (main text), `fig2_thrashing_curve.pdf`, `fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf`,
+`fig8_theory_curves.pdf` (Appendix E) and, with MIRROR's part 1, the MIRROR figure in place of the placeholder. The sources carry no
+comments with text, and `paper/sections/` holds only the 13 files `main.tex` inputs. Do not upload the other files in `figs/`
+(`fig4_mechanisms.pdf`, `fig5_robustness.pdf`, `fig6_policy_grid.pdf`, `fig9_theory_scaling.pdf`, `fig10_theory_fixed_points.pdf`,
+`fig_lpm_crossing.pdf`, `fig_trap_universality.png`, `README.md`).
+
+**Audit fix round (2026-11-05; independent audit of 8a212bd, lead's fix list `COORD/AUDIT_8a212bd_FIXLIST.md`):** the paper branch
+merged `claude/theory-icml-2164a9` (fdb80c9, which the paper cites; this branch's paper files kept; PDF byte-identical), then
+sections A and B of the fix list were applied (record in `notes/RESTRUCTURE_2026-11-05.md`, "Audit fix round"). Strict packager
+(`make_arxiv_pkg_v3.sh`, `PKG_NAME=inside-the-trap ALLOW_PENDING=9`): OK; 13 inputs, 7 figures, 9 markers in the sources and 9 in
+the PDF, test build 65 pages, no missing file, undefined reference or overfull box.
+
+**Categories (Akshat decides on the form; audit ARX-6):** primary cs.DC (LLM serving engines, SGLang and vLLM, and their admission
+and caching behaviour under load: Sections 2 and 5, App. E; the closest serving work, PEEK, CONCUR, MISA-T, VAMP and XPerf: Section 6
+and App. F). Cross-list cs.PF (performance modelling and measurement: the renewal law of the trapped server, model F, in Section 3,
+its tests on the engine in Sections 4 and 5, the first-principles throughput curve of App. E.9, the quasi-static fluid of App. E.4,
+metastability and recovery thresholds; the queueing and metastability work of Section 6). For the second cross-list, the lead's
+triage proposes cs.LG and the audit proposed cs.OS (the mechanism is classical OS thrashing: working sets, KV eviction,
+multiprogramming-level load control; ThunderAgent and Continuum, which treat agent KV as an OS memory problem, are in cs.OS). The
+withdrawn version's rationale (below) advised against cs.LG: the paper has no learning method, and moderators may remove such a
+cross-list.
+
+**License:** author decision; record the choice here (options under "License options" below).
+
+**Upload rule:** exactly the strict packager's tarball, built at posting with `ALLOW_PENDING=0`: `main.tex`, `main.bbl`, the 13
+files of `paper/sections/`, the seven figure PDFs listed above and, with MIRROR's part 1, the MIRROR figure PDF; nothing else from
+`paper/` (not `refs.bib`, `NUMBERS.md`, this file, `derived/`, `main.pdf` or the other files in `figs/`).
+
+**Release checklist (not markers in the paper; the repository decision is Akshat's):**
+- Repository and release build (audit ARX-3): add the paper branch to `public-release/config/refs.conf` and make it the tip branch
+  of `tools/tip.py`; build a fresh `provenance/REDACTIONS.md`; E.13's redaction counts ("four notes files", "one clause from each of
+  two commit messages", "five local tool-configuration files") are those of the 11-04 build: recompute them at the release build;
+  rerun the `\fpath` check against `git ls-tree -r` of the release tag in the built repository. If the stampede repository is
+  reused, add the changes on top of its public history; never rewrite it.
+- Release tag `trap-arxiv-v1` (Table 19's caption; audit ARX-2), a name never published. Never move the published `arxiv-v1`.
+- After MIRROR's part 1 is committed on `r16/mirror`: merge `r16/mirror` (which contains `r15/tonight`) into the paper branch with a
+  merge commit, so that the paper's tree holds the MIRROR and round-15 files it cites (the lead's trial merge is clean).
+- MIRROR provenance (audit ARX-4, with part 1): the lead exports GitHub's activity log and tag refs, adds `push_times` rows for
+  bc81ee7, 18ac5e6 and d8c49b7 and exports `sacct` for 17264039, 17264055-64 and 17264093 (on `r16/mirror`); then cite these files
+  in E.13, add the MIRROR rows to Table 18 (`tab:timeline-r15`) and the runs' pull directory to Table 19's MIRROR row.
+- Akshat confirms in his arXiv account that the withdrawn submission was never announced (App. E's opening says so; audit HON-5).
 
 **Comments field (suggested; recount pages if the text changes):**
 
 ```text
-64 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
-``` Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
+65 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
+```
+
+Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
 
 **Working title:** Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving (lead's advisor-eyes review, 2026-11-05; the title is Akshat's choice)
 
@@ -34,12 +80,14 @@ overfull boxes). Abstract unchanged. Figures to upload: `fig1_e2_timeseries.pdf`
 **Abstract (form text; the LaTeX abstract in `main.tex` expands to it with `count.py`):**
 
 ```text
-Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip a serving engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models, a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealized model of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly, the backlog grows at 0.6 to 0.8 of the excess load here, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs in two cells trapped by a tool slowdown alone met 4 of 5 pre-set scores, and after arrival cuts the traps persisted, backlogs rising or falling slowly, as predicted. Of two exits, refusing arrivals sheds sessions, while a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
+Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip an engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates), a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealization of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly, the backlog at 0.6 to 0.8 of the excess load here, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs in two cells trapped by a tool slowdown alone met 4 of 5 pre-set scores, and after arrival cuts the traps persisted, backlogs rising or falling slowly, as predicted. Of two exits, refusing arrivals sheds sessions; a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
 ```
 
-Count (`COORD/release-tools/count.py paper/main.tex`): 1913 form characters, limit 1920 (margin 7); no pending
-marker is left in the abstract. The text is the final review's proposal (`notes/review_54d3529/abstract_proposed.tex`
-on `r15/tonight`), used verbatim.
+Count (`COORD/release-tools/count.py paper/main.tex <out>`): 1917 form characters, limit 1920 (margin 3); no pending marker is left
+in the abstract. The text is the final review's proposal (`notes/review_54d3529/abstract_proposed.tex` on `r15/tonight`) with the
+audit's HON-16 change, "In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates)", paid for by
+four trims that drop no claim: "tip a serving engine" to "tip an engine", "the backlog grows at" to "the backlog at", ", while a
+session cap" to "; a session cap", and "an idealized model of the trapped state" to "an idealization of the trapped state".
 
 ---
 

@@ -12,15 +12,14 @@ two papers should cite each other and be clear about reused experiments." Timing
 `cd paper; pdflatex -interaction=nonstopmode main; bibtex main; pdflatex ... main; pdflatex ... main`: every step exits 0; no
 errors, no undefined references or citations, no multiply defined labels, no overfull boxes, no "Float too large".
 
-- 64 pages (94 before). Main text pp. 1-12: Section 8 and the three unnumbered statements end in the right column of p. 12, and
-  the references start low in that column (about seven lines of p. 12 are left for the MIRROR outcome); references pp. 12-17;
-  appendices pp. 18-64 (A 18, B 21, C 22, D 25, E 26-62, F 62).
-- 8 figures (11 before; Fig. 4 is the MIRROR placeholder in App. C), 20 tables. Abstract unchanged: 1913 form characters, margin
-  7 (`COORD/release-tools/count.py`). Title and `\repourl` unchanged.
-- Red `\pending{}` markers: `\repourl` and the MIRROR outcome (Section 1, Section 4.1, Table 2, Fig. 4, App. C, Tables
-  `tab:ledger` and `tab:frozensum15`).
-- First restructure commit 4f62b4c (63 pages); the second commit adds the review fixes, MIRROR, the comment strip and the
-  deletion of the unused section files.
+- After the audit fix round (below): 65 pages (64 at 8a212bd, 94 before the restructure). Main text pp. 1-12: Section 8 and the
+  three unnumbered statements end on p. 12, about four lines short of its foot, and the references start on p. 13; references
+  pp. 13-17; appendices pp. 18-65 (A 18, B 21, C 22, D 26, E 26-63, F 63).
+- 8 figures (Fig. 4 is the MIRROR placeholder in App. C), 20 tables. Abstract 1917 form characters, margin 3
+  (`COORD/release-tools/count.py`; 1913 before the audit's HON-16). Title and `\repourl` unchanged.
+- Red `\pending{}` markers (9, counted by the strict packager in the sources and in the PDF): `\repourl` and the MIRROR outcome
+  (Section 1, Section 4.1, Table 2, the Fig. 4 box and caption, App. C, Tables `tab:ledger` and `tab:frozensum15`).
+- Commits: 4f62b4c (first restructure, 63 pages), 8a212bd (second pass), ce56977 (merge of fdb80c9), then the audit fix round.
 
 ## New outline
 
@@ -96,7 +95,7 @@ item (c)'s two open analyses (R5, R17) were not done.
 - Old 3 (validation): the retrospective check, the slope rule and TOOLSLOW-W/TOOLSLOW-D15 -> 4, compressed; their full text, with
   the frozen exploratory measures (hits and misses), and the full CUT text -> App. C verbatim; CUT -> 5, compressed; the SHED
   retrodiction -> 5; old Table 1 -> App. B; the persistence paragraph -> 2.
-- Old 4 (entry) -> App. E.9 (verbatim, with Fig. 3); old Table 2 and its paragraph -> App. F.
+- Old 4 (entry) -> App. E.9 (verbatim, with Fig. 8, `fig:fpmu`); old Table 2 and its paragraph -> App. F.
 - Old 5 (two exits) -> 5; old Table 3 (rescue) -> App. E.7; its Lu et al. remarks -> App. F.
 - Old 6 (registered evidence base) and old Table 4 -> 2 (Table 1, without the round-15 rows, which are ledger rows).
 - Old 7 (related) -> 6 (the concurrent-work paragraph shortened; the full one, with the Basin footnote, -> App. F).
@@ -114,8 +113,9 @@ Wording that changed:
   and one looser" (App. C keeps the full list unchanged).
 - The ledger's entry row says the five blind cells are "3 in time, 2 by access only, one partly seen" (the H200 300k cell, n <= 32
   seen by its operating agent and the first author).
-- Section 2 restates the CAPPED result as "prevented the trap in every CAPPED run of the two pre-registered SGLang tests and of
-  vLLM" (18 of 18, Table `tab:e2`), with the 405-471 s wait at 300k.
+- Section 2 restates the CAPPED result as "prevented the trap in all 30 CAPPED runs of the five paired tests", with the 405-471 s
+  mean wait "in E2" (corrected in the second pass; this line, which described the first pass, was corrected after the audit,
+  F-15).
 - Prose in the appendices that pointed at dropped material was reworded (list under "Reference fixes" below).
 
 ## MIRROR (drafted from PAPER_INPUT_r16 part 0; outcomes pending)
@@ -169,7 +169,7 @@ Wording that changed:
   (a), (b), (d); the detector (c) failed (two CAPPED false alarms), so the decision rule was not met: Table 1, App. E.5 (both the
   short paragraph and the full mechanism-prediction paragraph).
 - H200 300k: Stage C values for n <= 32 seen by the operating agent and the first author before the theory freeze; no blind
-  simulator prediction: App. E.9 (Fig. 3 caption), E.10 (Table `tab:frozensum`, H200 paragraph), App. F (`tab:lu` caption), ledger
+  simulator prediction: App. E.9 (Fig. 8 caption), E.10 (Table `tab:frozensum`, H200 paragraph), App. F (`tab:lu` caption), ledger
   ("one partly seen"); 2 says the 300k H200 cell is a measurement, not a registered test.
 - BASIN-1: the theory's prediction blind by access only (the 100-session runs had ended before the 02:05:30 push; the 25-session
   runs had started): `tab:frozensum` and App. E.12 (rounds 11-14 paragraph, "no BASIN-1 run is blind in time").
@@ -186,7 +186,9 @@ Wording that changed:
 
 ## Reference fixes in the assembled appendices
 
-Labels that moved were repointed (`sec:e2` -> E.5, `sec:fp`/`app:fp` -> E.9, `sec:background` -> E.2, `sec:curve` -> E.3,
+Labels that moved were repointed (the audit of 8a212bd found two that were not: pointers to `app:proofs` for the fluid statements,
+the cap-rescue proof and the drain estimate, which moved into E.4, and to `sec:frozen` for the H200 and Llama paired tests, which
+moved into E.5; both repointed in the audit round, F-02 and F-10) (`sec:e2` -> E.5, `sec:fp`/`app:fp` -> E.9, `sec:background` -> E.2, `sec:curve` -> E.3,
 `sec:model`/`sec:props` -> E.4, `app:protocol` -> the table or subsection meant, `app:frozen` -> `tab:frozensum`, `tab:frozen*` ->
 `tab:frozensum`, `app:e2detail` -> E.5, CUT pointers -> 5). References to dropped material were removed or reworded: the fold
 proposition and its figure (E.4, E.9), Proposition E and its `tab:prov` row, the validation table `tab:fpval`, the simulator
@@ -225,6 +227,11 @@ Not in the PDF any more (the sources stay in `paper/sections/`). By topic:
   registration-fill paragraph (duplicate of the decision-rule subsection); the native, rescue and exploratory-vLLM registration
   paragraphs and the vLLM verdict paragraph (their commits and push times are in `tab:ledger`); "The sequence of stages", the E0F
   paragraph of old App. L (its content is in E.3), the drain-time estimates.
+  Correction after the audit of 8a212bd (F-01, F-06, F-09, F-15): some of these blocks (appendix_supp [9], [19], [20]; appendix
+  [12], [23], [24]; results [12], [13]) were not pure duplicates. They held facts found nowhere else: the 18:21 lowering of the
+  vLLM jobs' memory request, the three rescue-rule changes after the simulator review, the verdict tool's commit-order labels,
+  B3v's trapped token range, the first-principles vLLM drains, the engine check of the fluid drain estimate, the CAPPED arm's hit
+  dip and the rescue's 60 s-bin minima. The audit round restored each of them (E.4, E.5, E.7, E.10, E.11, E.12, E.15).
 - Old App. P: the LPM conjecture remark, covered orders at finite n, other orders, the quasi-static model in congestion (superseded
   by model F), the non-monotone tail and Bronson et al.'s terms.
 - The exploratory policy-grid figure `fig6_policy_grid.pdf` and its introductory paragraph (the LPM results and LPM-INF stay, E.8).
@@ -402,5 +409,123 @@ Not applied: the S1-S5 table (space); MIRROR drop mechanics beyond the list abov
 To keep the main text at 12 pages after these additions, about 25 lines were trimmed without dropping a claim or qualifier: the
 definition of pre-registered in Section 2's text (it is in Table 1's caption), a sentence of the composition bullet, the Kendall
 sentence (two of its four probabilities; all four stay in App. A), the Lu et al. sentence of Section 5's opening, the goodput
-sentence of the rescue (detail in App. D), the MIRROR rule sentence (in full in App. C), the concurrent-work paragraph and the
+sentence of the rescue (detail in App. D; its qualifiers, slowdown-only, own reference, post hoc, went with it, so this trim did
+drop qualifiers: restored in the audit round, HON-1), the MIRROR rule sentence (in full in App. C), the concurrent-work paragraph and the
 from-empty summary of Section 4. The MIRROR figure placeholder went to App. C for the same reason.
+
+## Audit fix round (2026-11-05): the independent audit of 8a212bd
+
+Requested by the lead session (cross-session message, about 16:40 CST): apply its triage of the independent pre-upload audit,
+`COORD/AUDIT_8a212bd_FIXLIST.md` (five reviewers: numbers, honesty and priority, mathematics, restructure losses, arXiv compliance;
+a skeptic confirmed 55 of 61 findings and refuted 6; reasoning in `COORD/audit_8a212bd/confirmed.json`). Order: the merge; sections
+A (20 must-fix and should-fix items) and B (31 nits); the 9 MIRROR and `\repourl` placeholders and section D's decisions
+(repository, title, categories, license) left alone; rebuild; the strict packager with ALLOW_PENDING=9; push.
+
+### 1. The merge (ARX-3)
+
+ce56977 merges `origin/claude/theory-icml-2164a9` (fdb80c9, the one commit this branch lacked; the paper cites it as the commit that
+added the scorer's unregistered gamma/z column). It brings `analysis/theory/icml/score_new.py` (S2'), `support.py` and
+`results/theory/icml/support.json` (gamma/z ratios) and the post-registration notes in `notes/PREDICTIONS_icml_trap.md`,
+`notes/PREDICTIONS_icml_cut.md` and `notes/THEORY_ICML_2026-11.md`. The five conflicts the lead named were resolved to this branch:
+`figures/theory_icml/fig_trap_universality.py`, `paper/figs/fig_trap_universality.pdf` and `.png`, `paper/sections/v2_app_trap.tex`
+(git's rename of `appendix_icml.tex`), and `paper/sections/theory_icml.tex` kept deleted. Nothing under `paper/` changed: two builds
+with a fixed SOURCE_DATE_EPOCH, before and after, give the same PDF byte for byte (md5 9e8882d4bd4ad0bb507d43d3e32321d2, 64 pages).
+
+### 2. Section A, applied
+
+- M1 (must-fix): Section 4.1 now says the backlog "grows 1.65--1.95 times as fast as the plan's excess load lambda_plan - lambda_miss
+  over [6000,8700) s (1.4 times asymptotically)"; App. C's table states that its slopes are over [6000,8700) s and gains the
+  erratum sentence (the prediction note quoted the asymptotic 1.4 and 270-330 s; corrected in d8c49b7 on `r16/mirror`, after the tag
+  and before any MIRROR run output was read; M4 scores the per-seed slopes and W6 only the order, so neither error enters a rule).
+- F-01 (must-fix): the 18:21 memory-request sentence is back in E.5's vLLM paragraph with its qualifier; the E.12 pointer goes to
+  `sec:vllm`; E.12 gains the three stricter rescue-rule changes (wording of 524fc0e) and E.15 a clause on them; E.11's vLLM
+  paragraph says the verdict tool labels the test pre-registered and decisive by commit order.
+- ARX-1: `ARXIV_METADATA.md` lists all nine markers and the unmarked MIRROR-dependent sentences; `NUMBERS.md`'s pending section
+  lists the nine markers and no longer names the 11-04 URL.
+- ARX-2: Table 19's tag is `trap-arxiv-v1`, recorded in `ARXIV_METADATA.md`.
+- ARX-3: the merge above; the release build and E.13's redaction counts are a checklist item in `ARXIV_METADATA.md`.
+- ARX-5: Table 19 gains rows for the model-F check, round 15 (the six pull directories by name, `analysis/r15_cut.py`, the three
+  tags), the data-only analyses and MIRROR (no pull directory yet: with part 1); the r13 row is relabelled "entry model (App. E.9)";
+  the figures row names `figures/theory_icml/` (Fig. 2) and `figures/r16/` (Fig. 4); `paper/figs/README.md` covers Figs. 2 and 4.
+- HON-1 (also F-04): the goodput sentence of Section 5 says "slowdown-only form ... (their inter-token-latency condition omitted,
+  our own unloaded reference; post hoc)", "all 30 registered BURST runs ... against the same-seed NOBURST run" and "(depending on
+  the reference)"; the intro says "in a slowdown-only goodput computed post hoc".
+- HON-2: App. D dates the analyses (computed on 2026-11-04/05, after Lu et al.'s paper appeared); Section 2 and the ledger's
+  status cell say so too.
+- HON-3: E.5 and App. F: "a larger and faster GPU (H200 profiles with about twice the cache and decode memory)", the 0.46-0.70
+  across their GPU and host-tier sweep, "differ in normalization and in memory".
+- HON-4: E.7: Lu et al. restore service on hardware by terminating the burst sessions, prevent the trap with their controller
+  active before the surge, and rescue an established trap in simulation.
+- HON-5: App. E's opening: "an earlier, longer draft of this work, which was withdrawn from arXiv before announcement and never
+  published (its sources are in the repository history)". Akshat confirms the status in his arXiv account (checklist).
+- M2: "proved in model F for our workload" (Section 6 and App. F's summary), "which for our workload lies below the trapped
+  throughput D(lambda) (Theorem 2)" (App. F), Corollary 3 retitled "the drain threshold is lambda_miss, not the trapped
+  throughput", "for our workload" in Sections 1, 5 (opening) and 8, "can thus complete" in Section 3, and Section 1's contribution
+  (1) "in model F with such a premium".
+- F1: Section 4.1: "every trapped run at a load above the all-miss capacity completing sessions above it (CUT-B's runs, cut to
+  below it, completed 0.92--0.97 lambda_ref, as model F predicts)"; the intro: "Trapped runs at loads above the all-miss capacity".
+- F3: Section 4 and the intro: "36 ... in the five registered paired-test cells, 30 registered runs and 6 earlier exploratory vLLM
+  runs on the same plans, on 30 distinct arrival plans"; the ledger: "36 in paired-test cells: 30 registered, 6 exploratory" (see
+  4 below); the slope-rule paragraph: "8 of the 9 below-threshold runs (6 of the 7 registered ones) are seed 1".
+- F4: "serves turns 9--41% shorter than the stationary mix (the tilted mix predicts 10--42%)".
+- F-02: the stale `app:proofs` pointers in E.2, E.4 and E.5 now point to the end of E.4, to Theorem 2 and Section 4, or to E.9
+  (burst sizes).
+- F-05: the ledger and Table 12: "rejects only the naive and quasi-static readings (a constant rate at the cut fits as well)".
+- F-06: E.5's vLLM paragraph restores B3v's token range and the first-principles drains with their blindness qualifier (524fc0e's
+  sentence); E.4 gains the engine check of the drain estimate (3-52%, -4 to +13%, 1.05-1.63 times); E.9 Weaknesses gains H2's vLLM
+  edge; E.10's earlier-rounds paragraph notes B3v's token range.
+- F-07: E.10 "Pools and the window law" gains the declared log-likelihood sentence, each number checked (`notes/LOG.md`,
+  `notes/PAPER_INPUT_pool.md`, 524fc0e `frozen_app.tex`, pred2's E0F declaration); no prediction file is cited for an outcome.
+- F-08: E.15 names the traces with citations (TraceLab, mini-SWE-agent, SWE-bench Verified) and `notes/lit/AGENT_TRACES.md`;
+  Section 7 cites TraceLab; E.5's definition of pre-registered cites suram2026cacheable (optional, done).
+
+### 3. Section B, applied
+
+ARX-6 (categories, license and upload rule recorded, not decided), ARX-8 (fence), ARX-9 (Feller "Third" edition and Ch. XIII at
+both places; Khanin DOI, checked: doi.org redirects to the AMS MMJ vol. 1(3) 2001 Khanin PDF; Huang et al.'s OSDI '22 URL, checked),
+HON-6, HON-8, HON-9, HON-10 (also in Section 6 and App. F's summary), HON-11, HON-12 (times checked in
+`provenance/sacct_cited_jobs_2026-11-05.txt`: 17256674-76 started 03:22:28), HON-13 (17169565-70 submitted 02:06:31, first start
+04:33:21, in `provenance/sacct_cited_jobs_2026-11-01.txt`), HON-14, HON-15, HON-16 (see 4), M3, M4, M5 (see 4), M6, M7, M8, M9, M11
+(App. A also lists what the tests do not cover), N1, N2, N3, N4 (also App. D's D1), F-09 (E.5 sentence; the optional 60 s-bin minima
+in E.7), F-10 (label `sec:h200llama`; E.5, E.12 and two `tab:ledger` cells repointed), F-11, F-12 (1)-(4), F-13 (the map written
+with references, plus Corollary 4 = the cap rescue here), F-15 (corrections above in this note).
+
+### 4. Changed from the fix list's text, and why
+
+- F3, ledger cell: the given text made Table 2 taller than a two-column top float may be (`\dbltopfraction` 0.7), and LaTeX moved
+  it behind the references (p. 18). The cell now reads "36 in paired-test cells: 30 registered, 6 exploratory"; the full breakdown
+  (6 earlier exploratory vLLM runs on the same plans; 30 plans) is in Section 4's text and in the intro.
+- HON-16: "(passed at 9 of 10 rates)" instead of "(the registered trap rule held at 9 of 10 rates)", for space; four trims pay for
+  it (`ARXIV_METADATA.md`); 1917 form characters.
+- M5: the main text states the conditioning and drops "orders of magnitude"; App. A adds that with unrealized turn counts the
+  probability is the product of per-session transforms, larger by Jensen's inequality (no new number; the skeptic's values are not
+  cited).
+- M1, erratum sentence: "M4 scores the per-seed slopes ... and W6 only the order of the waves" (W6 tests the order, not the shift).
+- F-01 (a): the wording of 524fc0e ("after a review of the simulator's predictions and before any rescue run"), not "before the
+  registration commit", which no committed record states.
+- ARX-5: two stale rows of Table 19 (robustness and mechanisms: simulator studies that the restructure cut, cited nowhere in this
+  version) were removed, so that the table fits a page.
+- HON-4 and HON-10 at E.7 are one sentence; HON-10's parenthetical is also used in Section 6 and App. F's summary.
+
+### 5. Not applied (all optional or outside the Do lines)
+
+HON-1's optional clause on the 540-840 s of trap before the cap engaged (space); F-07's other losses (the 150k collapse
+overstatement, the 600k soft tail, the H200 600k edge in realized rates; the verifier found the last two unscored); F-08's
+hysteresis and MPL-control credits (not in the Do); F-09's Fig. 1 caption alternative; dates for CUT's uncut controls in App. C
+(not in HON-15's Do). No item of sections A or B was skipped.
+
+### 6. Space
+
+The audit's qualifiers added about 22 main-text lines; the main text, statements included, still ends on p. 12, with about four
+lines left for MIRROR's part 1. Trims, all of redundancy (no claim or qualifier dropped): Section 3's opening (the intro states the
+quasi-static reading; Lu et al.'s D_low kept), Section 6's processor-sharing and Khanin sentences (they are in Section 3, with the
+same citations), the S1-S5 tolerances and TOOLSLOW-W's slope values in Section 4 (in full in App. C), the CUT sign clauses in
+Section 5 (in App. C), the engage times and caps in Fig. 3's caption (in the text), the turn-mix closeness in Fig. 2's caption (in
+Section 3), the source of the costs in Section 4's opening (in Section 3), and model F's definition and two clauses of the CUT recap
+in the conclusion.
+
+### 7. Build and package
+
+65 pages; clean build. Strict packager (`make_arxiv_pkg_v3.sh`, PKG_NAME=inside-the-trap, ALLOW_PENDING=9): "inputs: 13 files",
+"figures: 7", "pending markers in sources: 9 (allowed 9)", "test build: 65 pages; 'not found': 0; 'undefined': 0; overfull: 0",
+"pending markers in the PDF: 9 (allowed 9)", "OK".

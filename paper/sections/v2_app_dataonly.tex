@@ -1,6 +1,7 @@
 \section{Persistence, the trigger, pool occupancy and goodput}\label{app:dataonly}
 
-Four analyses (D1, D2, D5 and the pool occupancy) use only runs committed before 2026-11-02; a fifth, D4, a post-hoc
+Four analyses (D1, D2, D5 and the pool occupancy), computed on 2026-11-04/05 after Lu et al.'s paper appeared, use only runs
+committed before 2026-11-02; a fifth, D4, a post-hoc
 reading of Lu et al.'s model on our cells, is in Appendix~\ref{app:lu}. Each was computed by one agent and then recomputed by a second agent
 with its own code from the raw files; where they differ we report the checked value and say so. They are post hoc. Scripts and
 outputs: \fpath{analysis/r15_dataonly/} and \fpath{results/r15_dataonly/} (\fpath{PROVENANCE.md} there).
@@ -19,7 +20,7 @@ fallback disabled in its one trapped run. Of the 16 from-empty runs that collaps
 with a slowed tool call) had left the system 558--6246\,s before the end: the 600k H200 paired test (6 of 6), BASIN bursts of 50 (1),
 60 (3) and 100 (3), SHED's 600\,s stop (2) and TOOLSLOW's trapped run (1). The 727--15{,}453 turns completed after the last trigger
 session left had no hit in 15 of these runs; in the TOOLSLOW run 4 of 5{,}937 hit, all within 715\,s after its last slowed session left. In
-the 24 registered 200-session runs on the A100 (SGLang 300k and native, vLLM, Llama) 3--30 burst sessions were still present at the
+the 24 BURST runs of the four A100 paired tests (SGLang 300k and native, vLLM, Llama) 3--30 burst sessions were still present at the
 end (at most 4.1\% of the sessions present; the first computation's ``5.8\%'' could not be reproduced), so for those runs we do not
 claim that the trap outlived its trigger.
 

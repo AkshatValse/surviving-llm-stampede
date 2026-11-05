@@ -31,6 +31,22 @@ In the fill-3 build (fix round 3, 2026-10-31): Fig. 1 = F1 (`fig:e2`, Sec. 1), 2
 6 = F3 (`fig:edge`), 7 = F7 (`fig:e2native`) and 8 = F6 (`fig:grid`) in Appendix G, 9 = F9 (`fig:fpscale`, Appendix H),
 10 = F5 (`fig:robust`) and 11 = F4 (`fig:mech`) in Appendix I.
 
+In the restructured build (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`): Fig. 1 = F1 (`fig:e2`, Sec. 1), Fig. 2 =
+`fig_trap_universality.pdf` (`fig:trapuniv`, Sec. 4; below), Fig. 3 = `fig_rescue.pdf` (`fig:rescue`, Sec. 5; script
+`figures/paper/fig_rescue.py`), Fig. 4 = the MIRROR figure (`fig:mirror`, App. C; below), and in App. E Fig. 5 = F2 (`fig:curve`),
+6 = F3 (`fig:edge`), 7 = F7 (`fig:e2native`) and 8 = F8 (`fig:fpmu`). F4-F6, F9, F10, `fig_lpm_crossing.pdf` and
+`fig_trap_universality.png` are not used by this build and are not uploaded.
+
+- **`fig_trap_universality.pdf`** (Fig. 2; 7.00 x 2.15 in, double column), script `figures/theory_icml/fig_trap_universality.py`:
+  Theorem 1 against the 57 stuck E2-protocol runs and the 13 stuck from-empty runs, four panels (composition, completions over
+  lambda_miss, backlog growth, gap slope against gamma/z = 1 - 1/z), from `results/theory/icml/trap_check.json`,
+  `results/theory/icml/support.json` and `results/theory/icml/gap_slope_completion_time.json`. Not covered by `_style.py`'s
+  tracked-file check.
+- **MIRROR figure** (Fig. 4; a framed placeholder until MIRROR's part 1), script `figures/r16/fig_mirror.py` on `r16/mirror`: (a)
+  completions per 300 s bin after the burst, (b) the backlog, for the standard workload's three committed traps, model F's frozen
+  predictions for the step-capped workload (`results/theory/r16/mirror_predictions.json`) and the MIRROR runs. It replaces the
+  placeholder of `paper/sections/v3_app_blind.tex` with part 1, and its entry here is completed then.
+
 | file | width x height (in) | column |
 |---|---|---|
 | `fig1_e2_timeseries.pdf` | 7.00 x 3.90 | double |

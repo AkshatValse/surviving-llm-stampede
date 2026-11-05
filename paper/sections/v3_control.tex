@@ -5,7 +5,7 @@
 \includegraphics[width=\textwidth]{figs/fig_rescue.pdf}
 \caption{Trap, rescue, release and persistence: the registered rescue tests R1 and R4, seed 0 of each cell. Each rescue run
 (green) replays the arrival plan of a paired test's BURST run until a client-side session cap is engaged at $t_{\mathrm{on}}$
-(dash-dotted; 1800\,s for R1 on the 300k pool, cap 20; 2100\,s for R4 with the native pool, cap 64); the cap is removed at
+(dash-dotted); the cap is removed at
 $t_{\mathrm{rel}}$ (dotted) once both client queues have been empty for 300\,s. The same-seed BURST (vermillion) and NOBURST (blue)
 runs share its arrivals. Dashed: the burst of 200 sessions at 1200\,s. Top: follow-up hit fraction in 60\,s bins. Bottom:
 outstanding work, requests in the engine plus sessions held at the client (log scale); dashed green: sessions held at the
@@ -13,7 +13,7 @@ client. Seeds 1 and 2 behave alike (Table~\ref{tab:rescue}).}\label{fig:rescue}
 \end{figure*}
 
 An operator who sees a trapped engine complete sessions at some rate may expect a cut to just below that rate to clear it.
-Corollary~\ref{cor:trapthr} says that in model~F it does not: the trap clears only below $\lmiss$, after a busy period that diverges
+Corollary~\ref{cor:trapthr} says that in model~F, for our workload, it does not: the trap clears only below $\lmiss$, after a busy period that diverges
 as the cut approaches $\lmiss$. In the all-miss fluid at 1.65~$\lref$ (300k), a cut to $1.18\lmiss$, below $D=1.22\lmiss$, makes the
 backlog dip by 0.3\% and grow again, and a cut to $0.9\lmiss$ drains it only after about 15 hours (Appendix~\ref{app:trap}). That
 leaves two exits: starve the trap, which is slow and, done by refusing arrivals, sheds sessions; or leave model~F, by making turns hit
@@ -31,8 +31,7 @@ Proposition~\ref{prop:classic}(a). The decision rule, registered after the predi
 \texttt{r15-cut-reg}), compares each seed's backlog slope $S$ over $[3000,8700)$\,s with model~F's frozen slope and with two
 constant-throughput comparators: a naive one, in which the trap drains at the trapped throughput of the same seed's uncut control
 (1.32--1.41~$\lref$), and, for CUT-A, a quasi-static one, in which it completes sessions at $\lref$. A seed is theory-favoured if
-model~F's slope is strictly the closest; an arm passes if at least 2 of 3 seeds are theory-favoured and a sign clause holds (CUT-A: a
-positive slope over $[5700,8700)$\,s in 2 of 3, as model~F predicts from seeds 0 and 2; CUT-B: $S<0$ in 2 of 3), and fails if a
+model~F's slope is strictly the closest; an arm passes if at least 2 of 3 seeds are theory-favoured and a sign clause holds, and fails if a
 comparator is favoured, or the run leaves the trap, in 2 of 3. The rule was fixed after the per-seed predictions had been read, and it
 differs from the draft rule simulated in the prediction note in five ways: three stricter, one stricter for two seeds and looser for
 the third, and one looser, which in the note's simulation raised CUT-A's probability of passing from 0.82 to 0.99
@@ -81,9 +80,10 @@ Table~\ref{tab:rescue}). Hits returned within three minutes, the backlog drained
 client queues had been empty for 300\,s. With the cap removed, every run stayed good at the same arrival process for the remaining
 2560--4720\,s, matching its NOBURST control in follow-up hit fraction, outstanding work and turn latency, while the same-seed uncapped
 BURST run stayed at zero hits. The price is waiting at the client: 386--569\,s per paused session on average, 38--78 (300k) and 222--230
-(native) session-hours per run. In Lu et al.'s SLO goodput, the burst cost every uncapped
-run 99.2--100\% of the following hour's goodput, and the rescue 45--97\%, but the rescue restored the evaluation window's goodput to
-within 1\% of NOBURST (Appendix~\ref{app:dataonly}).
+(native) session-hours per run. In a slowdown-only form of Lu et al.'s SLO goodput (their
+inter-token-latency condition omitted, our own unloaded reference; post hoc, Appendix~\ref{app:dataonly}), the burst cost all 30
+registered BURST runs 99.2--100\% of the next hour's goodput against the same-seed NOBURST run, and the rescue 45--97\% (depending
+on the reference), but the rescue restored the evaluation window's goodput to within 1\% of NOBURST.
 
 \paragraph{What the rescue does and does not show.} Persistence here means that the drained state sustains itself once the cap no
 longer binds: the release rule waits until the gate is empty, so the tests do not cover a release while the cap still binds, and
@@ -91,5 +91,6 @@ the cap is engaged at a fixed time, not on an online signal. The frozen first-pr
 but 4 of its 9 release times fell outside its $\pm15$\% tolerance (R4 released 19--22\% late; Appendix~\ref{app:rescuetests} and Table~\ref{tab:frozensum}). Lu et
 al.\ restore service on hardware by terminating the burst sessions at the end of the burst, when the trap is incipient, prevent it
 with their controller active before the surge, and rescue an established trap in simulation by activating their controller late
-(and leaving it on; Appendix~\ref{app:lu}). What our tests add is a registered, replicated rescue of an \emph{established} zero-hit trap at the same
-offered load, without shedding, with release of the control and persistence of the good state after it.
+(and leaving it armed: its admission releases itself after a cool-down, but no reported run removes the controller and tests
+persistence; Appendix~\ref{app:lu}). What our tests add is a registered, replicated rescue of an \emph{established} zero-hit trap on
+the engine at the same offered load, without shedding, with the control removed and the good state persisting after it.

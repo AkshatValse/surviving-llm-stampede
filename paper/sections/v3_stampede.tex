@@ -5,7 +5,7 @@
 \caption{The registered stampede and recovery tests, all registered and run before Lu et al.'s paper appeared (details,
 registrations and timelines in Appendix~\ref{app:stampede}). BURST: 200 sessions within 60\,s at 1200\,s; NOBURST: the same
 Poisson stream without them; CAPPED: BURST behind a client FIFO session cap from the start. A rate passes if, in at least two of
-three seeds, BURST is trapped (zero-hit token rate within $\pm15$\% of the all-miss rate and backlog slope above $0.5(\lambda-\lref)$
+three seeds, BURST is trapped (uncached prefill token rate within $\pm15$\% of the all-miss rate and backlog slope above $0.5(\lambda-\lref)$
 over $[5700,8700)$\,s), NOBURST good and CAPPED recovered. Pre-registered: the filled registration was committed and pushed to GitHub
 before the jobs were submitted (the push log of our private development repository, exported in \fpath{provenance/}); registered:
 committed before submission, pushed later. Seeds 0--2 are shared across tests (common random numbers), so counts across tests are
@@ -72,8 +72,8 @@ independent, which shared seeds weaken, a one-sided 95\% bound on a run's probab
 the 16 from-empty collapses (150k pool, 1.30~$\lref$) recovered within its 3000\,s run. In 16 stuck runs every trigger session had
 left the system 558--6246\,s before the end, and the 727--15{,}453 turns completed after that had no hit in 15 runs (4 hits among
 5{,}937 turns in the trapped TOOLSLOW run): the trap outlives its trigger, as Lu et al.\ also observed on
-hardware~\citep{lu2026cachetrap}. In the 24 registered 200-session runs on the A100 we cannot say so: 3--30 burst sessions were still
-present at the end. These counts are post hoc (Appendix~\ref{app:dataonly}).
+hardware~\citep{lu2026cachetrap}. In the 24 BURST runs of the four A100 paired tests we cannot say so: 3--30 burst sessions were still
+present at the end. These counts are post hoc, computed after Lu et al.'s paper appeared (Appendix~\ref{app:dataonly}).
 
 \paragraph{What the record does not show.} The tests use synthetic sessions and dense 7--8B models on one GPU per engine; all but
 two use Qwen2.5-7B on the A100. The vLLM registration reached GitHub only after two of its jobs had started, so we call that test

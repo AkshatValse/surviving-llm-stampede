@@ -16,10 +16,11 @@ $R_1=1/\lmiss$ and $R_k=c_k+r_kR_{k+1}$. The model assumes:
 rejoins as class $k+1$;
 \item new sessions join as class-1 mass at rate $\lambda$;
 \item at time 0 a pending mass $m^0_k\ge0$ of each class is served first, with $V_0=\sum_kc_km^0_k>0$, through absolutely
-continuous class-completion functions $C^0_k$ on $[0,V_0]$ with $\sum_kc_kC^0_k(t)=t$.
+continuous non-decreasing class-completion functions $C^0_k$ on $[0,V_0]$ with $C^0_k(0)=0$, $\sum_kc_kC^0_k(t)=t$ and
+$C^0_k(V_0)=m^0_k$.
 \end{enumerate}
-A \emph{solution} consists of non-decreasing absolutely continuous $J_k$, $C_k$ (joins and completions after time 0, with
-$C^0_k(0)=0$) on $[0,\tau)$ such that
+A \emph{solution} consists of non-decreasing absolutely continuous $J_k$, $C_k$ (joins and completions after time 0) on
+$[0,\tau)$ such that
 \begin{itemize}[leftmargin=*,nosep]
 \item $J_1(t)=\lambda t$ and $J_{k+1}=r_kC_k$;
 \item $C_k=C^0_k$ on $[0,V_0]$, and $C_k(f(u))=m^0_k+J_k(u)$ for $u\ge0$ (FIFO);
@@ -84,7 +85,9 @@ are linear in $\pi\ge0$. By (iii), which needs only the unit work rate:
 \begin{itemize}[leftmargin=*,nosep]
 \item if $\rho\ge1$, then $V\ge\eta V_{\mathrm{tot}}(0)>0$ throughout, $b_{n+1}-b_n\ge\eta V_{\mathrm{tot}}(0)$, and
 $b_n\to\infty$;
-\item if $\rho<1$, then $b_n$ increases to the time at which $V_{\mathrm{tot}}$ vanishes (Proposition~\ref{prop:classic}(a)).
+\item if $\rho<1$, then $b_{n+1}-b_n=V(b_n)$ lies between $\eta V_{\mathrm{tot}}(b_n)$ and $V_{\mathrm{tot}}(b_n)$, where
+$V_{\mathrm{tot}}(b_n)=V_{\mathrm{tot}}(0)-(1-\rho)b_n$; so $b_n$ increases to $V_{\mathrm{tot}}(0)/(1-\rho)$, and
+$V(t)\le V_{\mathrm{tot}}(t)\to0$ there.
 \end{itemize}
 
 \emph{(iii).} With $j_k=J_k'$ and $\dot C_k=C_k'$, we have $\sum_kc_k\dot C_k=1$, $j_1=\lambda$ and $j_{k+1}=r_k\dot C_k$. Hence
@@ -120,7 +123,7 @@ particular $s=1$. So every other root lies outside the closed unit disk, at modu
 $\vartheta\in(\vartheta_0,1)$. Partial fractions give $g(s)/(1-A(s))=L/(1-s)+Q(s)$. Here $L=g(1)/A'(1)$ is the coefficient
 of $1/(1-s)$, that is, minus the residue at $s=1$, and $Q$, a rational function plus a polynomial, is analytic for
 $|s|<\vartheta_0^{-1}$. Cauchy's estimates on $|s|=\vartheta^{-1}$ finish the proof. This is the finite-memory case of the
-discrete renewal theorem~\citep{feller1968introduction}.
+discrete renewal theorem~\citep[Ch.~XIII]{feller1968introduction}.
 \end{proof}
 
 \begin{proof}[Proof of Lemma~\ref{lem:recursion}]
@@ -167,15 +170,17 @@ after the burst. So we compare with the exact fluid as well as with the limits.
 
 \begin{proof}[Proof of Proposition~\ref{prop:classic}]
 \emph{(a).} Let $\rho<1$ and take $u_0=0$. Summing the recursion, whose terms are all nonnegative, gives
-$\sum_{n\le M}\Delta_n\le V_{\mathrm{tot}}(0)+\rho\sum_{n\le M}\Delta_n$, and in the limit
+$\sum_{n\le N_0}\Delta_n\le V_{\mathrm{tot}}(0)+\rho\sum_{n\le N_0}\Delta_n$, and in the limit
 $\sum_n\Delta_n=V_{\mathrm{tot}}(0)/(1-\rho)$. Thus $b_n\uparrow\tau=V_{\mathrm{tot}}(0)/(1-\rho)$. For every orbit start
 $u_0\in[0,V_0)$, each $\Delta_n(u_0)$ is positive, since $\Delta_n\ge a_1\Delta_{n-1}$. Every $t<\tau$ lies on such an
 orbit, so the server is busy on $[0,\tau)$, and $V(b_n)=\Delta_n\to0$. (Equivalently, in the exact identity of
 Lemma~\ref{lem:recursion} the constant $V_{\mathrm{tot}}(0)/(1-\rho)$ is a particular solution, which gives $u_n\to\tau$ at once.) If
 $\rho\ge1$, the queue never empties: $V\ge\eta V_{\mathrm{tot}}(0)>0$ throughout, by the proof of Lemma~\ref{lem:orbit}(i).
 
-Without arrivals ($\lambda=0$, used for SHED; outside (F5)), the orbit argument does not apply. There, $V_{\mathrm{tot}}'=-1$ and
-$V\ge\eta V_{\mathrm{tot}}$ give $\tau=V_{\mathrm{tot}}(0)$ directly.
+Without arrivals ($\lambda=0$, used for SHED; outside (F5)), the orbit argument does not apply. A solution still exists: the
+construction of Lemma~\ref{lem:orbit}(i) runs up to the first zero of $V$, and each $C_k$ is $1/c_k$-Lipschitz, because
+$\sum_kc_kC_k(t)=t$ and every $C_k$ is non-decreasing. There, $V_{\mathrm{tot}}'=-1$ and $V\ge\eta V_{\mathrm{tot}}$ give
+$\tau=V_{\mathrm{tot}}(0)$ directly.
 
 \emph{(b), $\rho=1$.} Lemma~\ref{lem:renewal} with $b_k=a_k$ gives $\Delta_n(u_0)\to V_{\mathrm{tot}}(u_0)/\sum_kka_k$,
 uniformly in $u_0\in[0,V_0]$. Here $V_{\mathrm{tot}}(u_0)=V_{\mathrm{tot}}(0)$ and $\sum_kka_k=\bar k_c$. Every
@@ -241,7 +246,7 @@ the clock $x=\int_0^t ds/V(s)$ and the continuous renewal theorem; the kernel is
 non-lattice. This yields the Euler--Lotka equation $\lambda\sum_kc_kG_k\int_{k-1}^ke^{-\alpha_{\mathrm{PS}}a}\,da=1$ for the growth exponent
 $\alpha_{\mathrm{PS}}$, the backlog growth $\lambda(1-E[e^{-\alpha_{\mathrm{PS}}T}])$, departures $\lambda E[e^{-\alpha_{\mathrm{PS}}T}]$
 and the cycle slope $\alpha_{\mathrm{PS}}$. In overloaded processor sharing with service times $S$ the departures are
-$\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$, with $\alpha_{\mathrm{PS}}$ its own growth exponent, which can exceed $1/E[S]$: the
+$\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$ ($\alpha_{\mathrm{PS}}$ its own growth exponent), a rate that can exceed $1/E[S]$: the
 youth premium of Theorem~\ref{thm:premium} is the visit-indexed analogue of that property. This is the Crump--Mode--Jagers
 structure of overloaded processor sharing~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}, with
 reproduction rate $\lambda c_{\lfloor a\rfloor+1}$ at age~$a$; we do not write out the details. Near the threshold, the
@@ -250,13 +255,15 @@ $\alpha/(\lambda-\lmiss)$ is 0.647 and 0.666 under processor sharing at 1.35 and
 model~F.
 \item \emph{Stochastic version.} Take Poisson arrivals and any work-conserving order. The all-miss busy period started from
 realized remaining works $w_i$ is the total work of a Galton--Watson tree, finite exactly when its progeny is. It ends with
-probability $\exp(-\lambda(1-q)\sum_iw_i)$, where $q$ is the least root of $q=E[e^{-\lambda W(T)(1-q)}]$; the workload ever
-falls to a level $w_b$ with probability $\exp(-\lambda(1-q)(\sum_iw_i-w_b))$~\citep{kendall1951some}. Take $w$ from the fluid
-3000\,s after the registered burst on the 300k cell (\fpath{support.py}, \texttt{kendall\_numbers}). Emptying then has
-probability 0.35 at $\rho=1.01$, 0.12 at 1.02, $4\times10^{-3}$ at 1.05, $10^{-5}$ at 1.10, $4\times10^{-23}$ at 1.35 and
-$2\times10^{-54}$ at 1.65. These are orders of magnitude (a realized $w$ fluctuates around the fluid value), and hits return
-before the queue empties, so they are not bounds on a spontaneous exit; they say it matters only within a few percent of
-$\lmiss$. The branching description is classical and claimed as such.
+probability $\exp(-\lambda(1-\xi)\sum_iw_i)$, where $\mathcal W_T=\sum_{k\le T}c_k$ is a session's total all-miss work and $\xi$
+is the least root of $\xi=E[e^{-\lambda\mathcal W_T(1-\xi)}]$; the workload ever falls to a level $w_b$ with probability
+$\exp(-\lambda(1-\xi)(\sum_iw_i-w_b))$~\citep{kendall1951some}. Take $w$ from the fluid of a burst of 200 sessions into an
+empty engine on the 300k cell, 3000\,s after the burst, with the remaining work taken as realized and equal to the fluid's
+(\fpath{support.py}, \texttt{kendall\_numbers}). Emptying then has probability 0.35 at $\rho=1.01$, 0.12 at 1.02,
+$4\times10^{-3}$ at 1.05, $10^{-5}$ at 1.10, $4\times10^{-23}$ at 1.35 and $2\times10^{-54}$ at 1.65. A realized $w$
+fluctuates around the fluid value, and if only the class composition is known, with the turn counts unrealized, the probability is
+the product of per-session transforms, which by Jensen's inequality is larger. Hits return before the queue empties, so these
+numbers are not bounds on a spontaneous exit; they indicate that it matters only within a few percent of $\lmiss$. The branching description is classical and claimed as such.
 \item \emph{Steady solutions of FIFO re-entrant lines.} Model~F is a single-station re-entrant line~\citep{kumar1993reentrant}
 in overload. Khanin et al.~\citep{khanin2001steady} study steady (constant-flow) solutions of fluid FIFO re-entrant lines from the
 empty state, with stage-dependent service times. At an overloaded station the steady flows satisfy
@@ -281,7 +288,7 @@ is 5\,s shorter and its slope the same.
 $\rho\in[1.01,6.6]$. At 300k the registered window starts about 33 (1.65~$\lref$) or 37 (1.35~$\lref$) generations after the
 burst, so a transient of order $\vartheta^{35}\approx0.1$ remains; the asymptotic values and the exact fluid over the window
 differ by about 1\% for the composition and by 4--12\% for the backlog slope. No general rate is claimed: a nearly periodic kernel
-converges slowly (with $T=4$ always, the fluid is still 3\% off after 1000 generations).
+$\lambda c_kG_k$ converges slowly.
 \end{itemize}
 
 \paragraph{Corollary~\ref{cor:trapthr} illustrated.} All-miss fluid of the 300k cell at 1.65~$\lref$, where
@@ -316,6 +323,14 @@ growth; on one arrival path the backlog can keep falling slowly for the whole ru
 \item convergence of the fluid to the asymptotics;
 \item the busy period.
 \end{itemize}
+They do not test the exact identity of Lemma~\ref{lem:recursion} or the affine law of Theorem~\ref{thm:trap}(b),
+Remark~\ref{rem:trapinv}, Corollary~\ref{cor:trapthr} beyond the subcritical busy period, or the monotonicity in $z$ and the
+statement about $z_1$ in Theorem~\ref{thm:premium}; the bracket of \fpath{support.py} is a computation, not a test. The theory
+note \fpath{notes/THEORY_ICML_2026-11.md}, whose \S10 records the independent checks, numbers its statements as in an earlier
+draft: its Lemmas 1 and 2 are Lemmas~\ref{lem:perron} and~\ref{lem:orbit} here (its Lemma 2(iv) is
+Lemma~\ref{lem:recursion}); its Theorem 1(a), (b), (c), (d) with (f), and (e) are Proposition~\ref{prop:classic}(a),
+Proposition~\ref{prop:classic}(b), Theorem~\ref{thm:trap}(a), Theorem~\ref{thm:trap}(b) and Proposition~\ref{prop:classic}(c);
+and its Corollary 4 is Remark~\ref{rem:trapinv} (Corollary~\ref{cor:rescue} here is the quasi-static cap rescue).
 \fpath{analysis/theory/icml/run_check.py} produces \fpath{results/theory/icml/trap_check.md}
 (Appendix~\ref{app:trapdata}). That file covers all 57 stuck runs of the E2 protocol: SGLang 300k with and without the waiting-prefix refresh, BASIN, SHED, TOOLSLOW, LPM beyond its
 fallback, the native pool, vLLM, the H200 with 600k, and Llama-3.1-8B. It also covers the 13 unstable E0b runs, including the

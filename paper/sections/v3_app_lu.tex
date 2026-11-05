@@ -14,17 +14,19 @@ attraction of the good state.}, combines fixed session priority, admission by pr
 shedding; on H200 hardware an arrival-time prototype of it achieves 1.20--1.70 times Continuum's goodput, and the predictor-driven
 design is evaluated in simulation. Against this, we add an exactly analysed idealization of the trapped state with its tests
 (\S\ref{sec:trap}--\ref{sec:validation}), an engine test of the reading that the throughput measured in a trap exceeds the drain
-threshold (Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which every turn misses; CUT-A and
+threshold (Corollary~\ref{cor:trapthr}, proved for our workload in model~F, our idealization of an FCFS engine on which every turn misses;
+CUT-A and
 CUT-B are consistent with it; their systems keep some reuse), a first-principles entry model with an
 out-of-sample record (Appendix~\ref{app:entry}), the registered and replicated rescue of an established zero-hit trap at the same offered
-load without shedding, with release and persistence (\S\ref{sec:control}), and registered matched-arm evidence on colocated engines,
+load without shedding, with the control removed and persistence tested (\S\ref{sec:control}), and registered matched-arm evidence on colocated engines,
 including a second engine (\S\ref{sec:stampede}). They have real traces, disaggregated serving, a larger model, SLO goodput and a full
 mitigation system, which we do not.
 
 \paragraph{The cut and the rescue in their terms.} Lu et al.\ show in
 simulation that lowering post-surge arrivals reverses the outcome, and observe that the throughput measured in the collapsed state
 sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which
-every turn misses, sharpens this: there the cut must go below $\lmiss$, which lies below the trapped throughput $D(\lambda)$. Their
+every turn misses, sharpens this: there the cut must go below $\lmiss$, which for our workload lies below the trapped throughput $D(\lambda)$
+(Theorem~\ref{thm:premium}). Their
 GPU-only simulations point the same way: the trap persisted at a cut to 0.2 of their reference rate (12 sessions/min) while the
 trapped departures they measured were 0.20--0.31 of it. Their
 systems keep some reuse in the trap, though, and with a host tier one seed in three recovered at cuts above the trapped departures
@@ -32,7 +34,8 @@ they measured, so the corollary does not describe them.
 Lu et
 al.\ restore service on hardware by terminating the burst sessions at the end of the burst, when the trap is incipient, prevent it
 with their controller active before the surge, rescue an established trap in simulation by activating their controller late (and
-leaving it on), and report one hardware run in which CONCUR's hit rate fell
+leaving it armed: its admission releases itself after a cool-down, but no reported run removes the controller and tests
+persistence), and report one hardware run in which CONCUR's hit rate fell
 to 0.33 before its concurrency window contracted and recovered slowly, with the controller left on and no release
 test~\citep{lu2026cachetrap}.
 
@@ -68,7 +71,7 @@ $W=N\bar c$ over the prefix-cache capacity $C$, from measurements of the deploye
 deployments and explain mitigations rather than to predict the hit rate~\citep{lu2026cachetrap}. Read post hoc on our colocated
 cells, with $C=M$, $\bar c=\bar E$ and one $h$ fixed by the A100 300k crossing, it puts the 0.5-hit crossing in proportion to the pool
 and, with that curve carried across GPUs, at the same population on the H200. On the five cells whose crossings we predicted
-before their runs were read (three blind in time, two blind by access only), it errs by 4.1 sessions on average, against 1.5 for our
+before the runs that set them were read (three blind in time, two blind by access only, one of them partly seen), it errs by 4.1 sessions on average, against 1.5 for our
 frozen crossings (Table~\ref{tab:lu}). The measured crossing moved out on the H200, by 6.7 sessions at 300k and 10.9 at 600k, against
 5.8 and 6.6 from the tool-call term; refitting $h$ on the H200's own 300k cell still puts its 600k crossing 6.7 sessions out. Their
 vulnerability condition and drain estimate are stated for separate prefill and decode instances and for resident-first ordering
@@ -79,7 +82,7 @@ whose hit curve is empirical and system-specific. It was computed by one agent a
 the analyses of Appendix~\ref{app:dataonly}; the second computation also judged which readings are fair.
 \begin{itemize}[leftmargin=*,nosep]
 \item \emph{Onset} (Table~\ref{tab:lu}). With $h$ fixed by the A100 300k crossing, the reading errs by 4.66 sessions on average over
-the seven other cells and 4.11 over the five predicted before their runs were read, against 1.53 and 1.55 for our frozen crossings.
+the seven other cells and 4.11 over the five predicted before the runs that set them were read, against 1.53 and 1.55 for our frozen crossings.
 The comparison survives every charitable variant tried: the constant fitted to all eight cells (3.74 against 1.42), fitted on the four
 A100 pools only (3.57 against 1.53 over seven cells), left out one cell at a time (4.72), and crossings of the token hit fraction
 instead of the turn hit fraction (4.05 against 1.53 on the five cells). A hit curve that depends only on $W/C$ cannot move the onset
@@ -92,7 +95,7 @@ in service, which here moves along the curve:
 0.19--0.53 at our model's fluid peak, 0.38--0.90 at the 0.5-hit crossing and 0.67--0.95 at $n_b$, so the verdict depends on where $f$ is
 read. All eight cells are vulnerable, so they cannot test the condition's specificity. Their own classifier, which compares
 throughput bounds, flags all 17 cache-first cases among 36 simulated deployments (28 of 36 correct), and in simulation they find
-that a faster GPU raises the first trapped load in absolute terms. We do not score the condition.
+that a larger, faster GPU raises the first trapped load in absolute terms. We do not score the condition.
 \item \emph{Drain.} Their Eq.~4, $S/(D(N^*)-\lambda)$, is stated for resident-first ordering near the peak with healthy reuse, and its
 queue holds sessions awaiting their first call; most of a rescue backlog is admitted sessions paused at tool boundaries, whose next
 turn misses. Applied to R1 and R4 with the measured peak rate and backlog (release $=t_{\mathrm{on}}+(n_{\mathrm{on}}-c)/(\mu^*-\lambda)+300$\,s),

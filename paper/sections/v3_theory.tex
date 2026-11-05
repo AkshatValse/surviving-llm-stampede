@@ -1,10 +1,8 @@
 \section{Model F: a renewal law for the trap}\label{sec:trap}
 
-Quasi-static models describe the collapsed state as the falling branch of a throughput curve, $\dot N=\lambda-\mu(N)$,
-whose low end is Lu et al.'s low-reuse departure rate $D_{\mathrm{low}}$~\citep{lu2026cachetrap} and, in our earlier model, the
-all-miss capacity (Appendix~\ref{app:qs}). Read literally in congestion, such an equation makes a trapped engine complete sessions
-at that low end and accumulate them at the excess over it. With every turn missing, our engines do neither
-(\S\ref{sec:validation}). Here we characterize the trap exactly, within an explicit idealization of the trapped engine.
+The quasi-static reading of \S\ref{sec:intro}, whose curve has as its low end Lu et al.'s low-reuse departure rate
+$D_{\mathrm{low}}$~\citep{lu2026cachetrap} and, in our earlier model, the all-miss capacity (Appendix~\ref{app:qs}), fails on our
+engines (\S\ref{sec:validation}). Here we characterize the trap exactly, within an explicit idealization of the trapped engine.
 
 \paragraph{Model F.} Let a session have $T$ turns, $G_k=P(T\ge k)$ for $k=1,\dots,K$ with $G_K>0$, and let turn $k$ cost $c_k>0$
 GPU seconds when it misses. The costs come from an iteration-cost model fitted only to server-log timings
@@ -70,7 +68,7 @@ empties at $V_{\mathrm{tot}}(0)$;
 $\dot V_{\mathrm{tot}}=\rho-1$ whatever the service order, which gives the fluid busy period, and its stochastic counterpart is
 Kendall's branching description of the busy period~\citep{kendall1951some}. Part~(b) is the fluid counterpart of the state-space
 collapse of a critically loaded multiclass FIFO feedback queue~\citep{reiman1988multiclass,dai1995multiclass}; we prove it from
-Lemma~\ref{lem:recursion} with the discrete renewal theorem~\citep{feller1968introduction}. Part~(c) is an elementary expansion of
+Lemma~\ref{lem:recursion} with the discrete renewal theorem~\citep[Ch.~XIII]{feller1968introduction}. Part~(c) is an elementary expansion of
 the Perron equation.
 
 \begin{theorem}[youth premium]\label{thm:premium}
@@ -86,7 +84,7 @@ $E_\nu[c]/c_1>1/(1-q^K)$, let $z_1$ solve $\Gamma(z_1)=1/(1-q^K)$; then $D>\lmis
 $D/\lmiss-1=(\rho-1)(1-E[T]/\bar k_c)+O((\rho-1)^2)$.
 \end{theorem}
 
-\noindent In model~F the trapped server thus completes sessions faster than its all-miss capacity while its backlog diverges, because
+\noindent In model~F the trapped server can thus complete sessions faster than its all-miss capacity while its backlog diverges, because
 it serves a young backlog of short, cheap turns. The premium is not automatic: truncation lowers $H$, and with
 $T=\min(\mathrm{Geometric}(1/15),60)$ and slowly growing costs $c_k=1+10^{-3}(k-1)$ it is negative at every load checked; for a
 nearly deterministic $T$, $H$ can be well below 1 (\S\ref{sec:mirror}). For our workload ($c_{60}/c_1=17$--23), $E[T]/\bar k_c=0.60$--$0.62$
@@ -94,7 +92,7 @@ in all eight cells, and the premium is positive at every load we checked: proved
 $\rho\ge1.04$, shown by a monotone bracket ($H$ falling, $\Gamma$ rising; evaluated in floating point, not interval arithmetic) on
 $z\in[1+10^{-12},z_1]$, and only to first order below that (Appendix~\ref{app:trap}).
 
-\begin{corollary}[trapped throughput overstates the drain threshold]\label{cor:trapthr}
+\begin{corollary}[the drain threshold is $\lmiss$, not the trapped throughput]\label{cor:trapthr}
 In model~F at load $\lambda>\lmiss$, let the arrival rate change to $\lambda'$ at a time $t_0$ when the queue is busy. The
 queue then empties if and only if $\lambda'<\lmiss$, after the busy period $V_{\mathrm{tot}}(t_0)/(1-\lambda'/\lmiss)$. If
 $\lambda'>\lmiss$ the backlog grows as $\alpha(\lambda')t$; at $\lambda'=\lmiss$ the fluid backlog settles at a positive
@@ -116,8 +114,8 @@ is $\lambda G_k\Delta_{n-k}$. Summing its work, $\Delta_n=W(u_n)-W(u_{n-1})$, tu
 Eq.~\eqref{eq:renewal}, whose coefficients are nonnegative and sum to $\rho$ (Lemma~\ref{lem:recursion}). Tilting by $z^{-n}$ and a
 finite-memory renewal lemma give Theorem~\ref{thm:trap}(a) and Proposition~\ref{prop:classic}(b); the exact identity gives
 Theorem~\ref{thm:trap}(b); Proposition~\ref{prop:classic}(a) is a busy-period argument. Appendix~\ref{app:trap} gives complete
-proofs, the stochastic counterpart and a sketch of the processor-sharing variant; \fpath{tests/test_theory_icml.py} checks each
-statement numerically; independent AI-agent checks are recorded in \fpath{notes/THEORY_ICML_2026-11.md}, \S10.
+proofs, the stochastic counterpart and a sketch of the processor-sharing variant; \fpath{tests/test_theory_icml.py} checks most
+statements numerically (Appendix~\ref{app:trap} lists which); independent AI-agent checks are recorded in \fpath{notes/THEORY_ICML_2026-11.md}, \S10.
 
 \paragraph{What is new.} Eq.~\eqref{eq:renewal} is a discrete renewal equation~\citep{feller1968introduction} of Lotka--Leslie type:
 the arrivals $\lambda\Delta_n$ play the role of births, $G_k$ of survival and $\lambda c_kG_k$ of net maternity, and the tilted mix
@@ -128,7 +126,7 @@ deterministic stages, a closing remark extends their framework to a fixed fracti
 $T$), their normalization gives Remark~\ref{rem:trapinv}, and they leave open the uniqueness of non-steady trajectories. The processor-sharing
 version of model~F has the Crump--Mode--Jagers structure of overloaded processor sharing, whose fluid shape converges to an invariant
 one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}, and Theorem~\ref{thm:premium} is the visit-indexed
-analogue of its departures $\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$, with $\alpha_{\mathrm{PS}}$ its growth exponent, which can exceed
+analogue of its departure rate $\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$ ($\alpha_{\mathrm{PS}}$ its growth exponent), which can exceed
 $1/E[S]$~\citep{jeanmarie1994transient}. What we add, as far
 as a targeted search found (\S\ref{sec:related}), is the derivation of the recursion along FIFO orbits, which carries every solution
 from \emph{any} trapped state to the self-similar regime, geometrically in the generation index and with an exact virtual origin,
@@ -154,6 +152,6 @@ long before it returns, so (F1) is self-consistent, and becomes more so as the t
 requests held 55--83\% of it on average in the trapped SGLang runs with 300k and 600k pools (the engine's gauge, which also counts
 locked prefixes), and 85--94\% with the native pool and on
 vLLM. This is a heuristic consistency argument, not part of the theorem: $R_M$ is a turnover scale, not a pathwise eviction bound. With
-Poisson arrivals, Kendall's branching argument puts the probability that the all-miss queue ever empties from the fluid state 3000\,s
-after the registered burst at 0.35 for $\rho=1.01$ and $4\times10^{-23}$ at 1.35 (Appendix~\ref{app:trap}): orders of magnitude, not
-bounds, since hits return first.
+Poisson arrivals, Kendall's branching argument puts the probability that the all-miss queue ever empties at 0.35 for $\rho=1.01$ and
+$4\times10^{-23}$ at 1.35, for a burst of 200 sessions into an empty engine and the remaining work 3000\,s later taken as realized
+and equal to the fluid's (Appendix~\ref{app:trap}); these are not bounds, since hits return first.

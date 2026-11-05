@@ -34,10 +34,10 @@ as the cure, is classical~\citep{kleinrock1975aloha,carleial1975bistable,nelson1
 
 \paragraph{The question.} This paper asks what the trapped state \emph{is}. Quasi-static models treat it as the falling branch
 of a throughput curve, $\dot n=\lambda-\mu(n)$; read literally in congestion, sessions then complete at the curve's low end and
-accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs
-complete sessions faster than the all-miss capacity measured with caching disabled ($\lref$, the unit of every rate below), by up
-to 2.4 times (one from-empty run at 6.5~$\lref$), while over the 57 stuck runs of our paired-test protocol their backlog grows, on
-average, at about two thirds of the quasi-static rate. The gap matters to an operator: in model~F below, a cut to just below the
+accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs at
+loads above the all-miss capacity measured with caching disabled ($\lref$, the unit of every rate below) complete sessions faster
+than it, by up to 2.4 times (one from-empty run at 6.5~$\lref$), while over the 57 stuck runs of our paired-test protocol their backlog grows, on
+average, at about two thirds of the quasi-static rate. The gap matters to an operator: in model~F below, for our workload, a cut to just below the
 throughput measured in an all-miss trap does not clear it.
 
 \paragraph{Contributions.}
@@ -49,15 +49,15 @@ linear renewal recursion (Lemma~\ref{lem:recursion}). Below $\lmiss$ the trap dr
 with an exact virtual origin, in which the gap between a session's turns grows at $z-1$, the backlog at $\lambda(1-E[z^{-T}])$ and
 completions at $D=\lambda E[z^{-T}]$, with the turn mix tilted to $G_kz^{-k}$ (Theorem~\ref{thm:trap}). We decompose $D/\lmiss$
 into a turn-count factor and a cost-growth factor, a youth premium above 1 for our workload at every load we checked
-(Theorem~\ref{thm:premium} for $\rho\ge1.04$), and conclude that in model~F the throughput measured in a trap overstates the
+(Theorem~\ref{thm:premium} for $\rho\ge1.04$), and conclude that in model~F with such a premium the throughput measured in a trap overstates the
 recovery threshold (Corollary~\ref{cor:trapthr}). The self-similar regime itself is known~\citep{khanin2001steady}, the
 recursion is a discrete renewal equation of Lotka--Leslie type~\citep{feller1968introduction} and the premium has a
 processor-sharing analogue~\citep{jeanmarie1994transient}; what we add, as far as a targeted search found, is the derivation of the
 recursion along FIFO orbits, which carries every trapped state into the regime, and the two factors of the
 premium. Corollary~\ref{cor:trapthr} is not new as mathematics; its engine test is.
 \item \textbf{The law on the engine} (\S\ref{sec:validation}). With no parameter fitted to any trap measurement, model~F matches,
-across 57 stuck runs on SGLang and vLLM, two GPUs and two models (36 of them from registered protocols, on 30 distinct arrival
-plans), the trapped turn mix (within 3\% in 50 of them), the pooled linear growth of the gap (median ratio of measured to predicted
+across 57 stuck runs on SGLang and vLLM, two GPUs and two models (36 of them in the five registered paired-test cells, on 30 distinct arrival
+plans: 30 registered runs and 6 earlier exploratory vLLM runs on the same plans), the trapped turn mix (within 3\% in 50 of them), the pooled linear growth of the gap (median ratio of measured to predicted
 slope 1.01; per run 0.04--1.81) and completions above the all-miss capacity (in every run). These checks are retrospective. Blind
 in outcome, with tolerances set on the earlier runs, the four runs trapped by a tool slowdown alone in two pre-registered cells met
 four of the five pre-set scores; a per-run slope check failed in two of them.
@@ -69,7 +69,7 @@ all-miss capacity shrank the three CUT-B backlogs only slowly, all still trapped
 arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one, but not intermediate readings; what singles
 out model~F against them is post hoc. Refusing arrivals (SHED) drained a trap by shedding 355--378 sessions. Restoring reuse with a
 session cap, which leaves model~F, rescued 9 of 9 established zero-hit traps at the same offered load without shedding a session, at
-a price of 386--569\,s of waiting at the client per paused session and 45--97\% of the goodput of the hour after the burst, and
+a price of 386--569\,s of waiting at the client per paused session and, in a slowdown-only goodput computed post hoc, 45--97\% of the goodput of the hour after the burst, and
 the engine stayed good after the cap was removed.
 \item \textbf{A registered evidence base} (\S\ref{sec:stampede}, Appendix~\ref{app:stampede}): paired tests with matched no-burst
 and capped arms on common random numbers on two engines, two GPUs and two models, a dose response in burst size, registered
