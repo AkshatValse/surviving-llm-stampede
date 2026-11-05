@@ -1,0 +1,64 @@
+{
+  "experiment": "agentload_analysis_r15_cut",
+  "status": "finished",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+    "-m",
+    "analysis.r15_cut",
+    "classify",
+    "--run-dirs",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040702",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040722",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040746",
+    "results/nova/r15_cut_b0_17256870_pulled_20261105-065100/results/agentload_e2_burst/20261105-042230",
+    "results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/results/agentload_e2_burst/20261105-055259",
+    "results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/results/agentload_e2_burst/20261105-055344",
+    "--prereg",
+    "configs/agentload_prereg_2026-11-05_cut_a115.yaml",
+    "configs/agentload_prereg_2026-11-05_cut_b085.yaml",
+    "--theory-git",
+    "icml-cut-pred:results/theory/icml/cut_predictions.json",
+    "--out-root",
+    "results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/analysis"
+  ],
+  "git": {
+    "commit": "e0fd53cb375fa9731bd6cc01c12f1e0df82348cb",
+    "dirty": true,
+    "branch": "r15/tonight",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-11-05T08:25:38",
+  "end_time": "2026-11-05T08:25:43",
+  "wall_s": 5.377619,
+  "slurm_env": {},
+  "run_dirs": [
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040702",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040722",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040746",
+    "results/nova/r15_cut_b0_17256870_pulled_20261105-065100/results/agentload_e2_burst/20261105-042230",
+    "results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/results/agentload_e2_burst/20261105-055259",
+    "results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/results/agentload_e2_burst/20261105-055344"
+  ],
+  "prereg": [
+    "configs/agentload_prereg_2026-11-05_cut_a115.yaml",
+    "configs/agentload_prereg_2026-11-05_cut_b085.yaml"
+  ],
+  "control_root": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst",
+  "theory": "icml-cut-pred:results/theory/icml/cut_predictions.json"
+}

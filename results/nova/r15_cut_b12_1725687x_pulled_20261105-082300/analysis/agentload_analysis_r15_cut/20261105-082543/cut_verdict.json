@@ -1,0 +1,204 @@
+{
+  "verdict": {
+    "a115": {
+      "arm": "a115",
+      "name": "CUT-A",
+      "label": "sglang-fcfs-r1-cut-a115",
+      "lambda_mult": 1.15,
+      "rule": "per counted seed: UNSTUCK if the run is not STUCK on the frozen evaluation window (it counts against the theory); otherwise THEORY-FAVOURED iff |S - S_theory| < |S - S_naive| and |S - S_qs| (S the measured slope of N over [3000, 8700) s), NAIVE-FAVOURED (QS-FAVOURED) iff S_naive (S_qs) is strictly the closest, TIE otherwise; CUT-A PASS iff THEORY-FAVOURED in >= 2 of the 3 registered seeds and the slope of N over [5700, 8700) s is > 0 in >= 2 of the 3; FAIL iff NAIVE-FAVOURED, QS-FAVOURED or UNSTUCK in >= 2 of the 3 together; else MIXED; a run counts only if it is the registered cell's (label sglang-fcfs-r1-cut-a115, arm burst, rate_mult 1.65, a registered seed), completed (not aborted), bound to this registration (analysis.prereg.run_blockers empty) and its manipulation check passes",
+      "verdict": "PASS",
+      "n_theory_favoured": 3,
+      "n_against_theory": 0,
+      "n_sign_ok": 2,
+      "naive_d_trap": {
+        "0": 0.09557230209941714,
+        "1": 0.10053911353659345,
+        "2": 0.09460296282643499
+      },
+      "need": 2,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "missing_seeds": [],
+      "duplicate_seeds": [],
+      "per_seed": {
+        "0": {
+          "counted": true,
+          "run_dir": "results\\nova\\r15_cut_a_1725686x_pulled_20261105-063800\\results\\agentload_e2_burst\\20261105-040702",
+          "measured_slope": 0.004036748182308858,
+          "theory_slope": 0.003918496128594461,
+          "naive_slope": -0.00943195122222415,
+          "qs_slope": 0.014606329868000714,
+          "naive_pre_slope_reported": -0.035526315789473684,
+          "stuck": true,
+          "abs_err_theory": 0.00011825205371439676,
+          "abs_err_naive": 0.013468699404533008,
+          "abs_err_qs": 0.010569581685691855,
+          "call": "THEORY-FAVOURED",
+          "sign_slope": 0.007053070711015555,
+          "sign_ok": true
+        },
+        "1": {
+          "counted": true,
+          "run_dir": "results\\nova\\r15_cut_a_1725686x_pulled_20261105-063800\\results\\agentload_e2_burst\\20261105-040722",
+          "measured_slope": -0.0021698146140443496,
+          "theory_slope": -0.0025757792583638596,
+          "naive_slope": -0.020363674940102217,
+          "qs_slope": 0.008641417587298958,
+          "naive_pre_slope_reported": -0.0381578947368421,
+          "stuck": true,
+          "abs_err_theory": 0.00040596464431951005,
+          "abs_err_naive": 0.018193860326057867,
+          "abs_err_qs": 0.010811232201343307,
+          "call": "THEORY-FAVOURED",
+          "sign_slope": -0.00274431610279263,
+          "sign_ok": false
+        },
+        "2": {
+          "counted": true,
+          "run_dir": "results\\nova\\r15_cut_a_1725686x_pulled_20261105-063800\\results\\agentload_e2_burst\\20261105-040746",
+          "measured_slope": 0.0029471145579070966,
+          "theory_slope": 0.0028447489997296366,
+          "naive_slope": -0.009866120721171837,
+          "qs_slope": 0.013202821096070877,
+          "naive_pre_slope_reported": -0.0019298245614035175,
+          "stuck": true,
+          "abs_err_theory": 0.00010236555817746008,
+          "abs_err_naive": 0.012813235279078933,
+          "abs_err_qs": 0.01025570653816378,
+          "call": "THEORY-FAVOURED",
+          "sign_slope": 0.013146829928818937,
+          "sign_ok": true
+        }
+      }
+    },
+    "b085": {
+      "arm": "b085",
+      "name": "CUT-B",
+      "label": "sglang-fcfs-r1-cut-b085",
+      "lambda_mult": 0.85,
+      "rule": "per counted seed: UNSTUCK if the run is not STUCK on the frozen evaluation window (it counts against the theory); otherwise THEORY-FAVOURED iff |S - S_theory| < |S - S_naive| (S the measured slope of N over [3000, 8700) s), NAIVE-FAVOURED iff |S - S_naive| < |S - S_theory|, TIE otherwise; CUT-B PASS iff THEORY-FAVOURED in >= 2 of the 3 registered seeds and the slope of N over [3000, 8700) s is < 0 in >= 2 of the 3; FAIL iff NAIVE-FAVOURED or UNSTUCK in >= 2 of the 3 together; else MIXED; a run counts only if it is the registered cell's (label sglang-fcfs-r1-cut-b085, arm burst, rate_mult 1.65, a registered seed), completed (not aborted), bound to this registration (analysis.prereg.run_blockers empty) and its manipulation check passes",
+      "verdict": "PASS",
+      "n_theory_favoured": 3,
+      "n_against_theory": 0,
+      "n_sign_ok": 3,
+      "naive_d_trap": {
+        "0": 0.09557230209941714,
+        "1": 0.10053911353659345,
+        "2": 0.09460296282643499
+      },
+      "need": 2,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "missing_seeds": [],
+      "duplicate_seeds": [],
+      "per_seed": {
+        "0": {
+          "counted": true,
+          "run_dir": "results\\nova\\r15_cut_b0_17256870_pulled_20261105-065100\\results\\agentload_e2_burst\\20261105-042230",
+          "measured_slope": -0.008544937484324043,
+          "theory_slope": -0.009530676172886773,
+          "naive_slope": -0.03294072315204871,
+          "qs_slope": null,
+          "naive_pre_slope_reported": -0.05736842105263157,
+          "stuck": true,
+          "abs_err_theory": 0.0009857386885627293,
+          "abs_err_naive": 0.02439578566772467,
+          "abs_err_qs": null,
+          "call": "THEORY-FAVOURED",
+          "sign_slope": -0.008544937484324043,
+          "sign_ok": true
+        },
+        "1": {
+          "counted": true,
+          "run_dir": "results\\nova\\r15_cut_b12_1725687x_pulled_20261105-082300\\results\\agentload_e2_burst\\20261105-055259",
+          "measured_slope": -0.012599883343241086,
+          "theory_slope": -0.013099950899720894,
+          "naive_slope": -0.04281981529097941,
+          "qs_slope": null,
+          "naive_pre_slope_reported": -0.060614035087719294,
+          "stuck": true,
+          "abs_err_theory": 0.0005000675564798083,
+          "abs_err_naive": 0.030219931947738324,
+          "abs_err_qs": null,
+          "call": "THEORY-FAVOURED",
+          "sign_slope": -0.012599883343241086,
+          "sign_ok": true
+        },
+        "2": {
+          "counted": true,
+          "run_dir": "results\\nova\\r15_cut_b12_1725687x_pulled_20261105-082300\\results\\agentload_e2_burst\\20261105-055344",
+          "measured_slope": -0.01236531837034461,
+          "theory_slope": -0.012327918911156355,
+          "naive_slope": -0.03355033124748762,
+          "qs_slope": null,
+          "naive_pre_slope_reported": -0.027280701754385968,
+          "stuck": true,
+          "abs_err_theory": 3.739945918825385e-05,
+          "abs_err_naive": 0.021185012877143014,
+          "abs_err_qs": null,
+          "call": "THEORY-FAVOURED",
+          "sign_slope": -0.01236531837034461,
+          "sign_ok": true
+        }
+      }
+    }
+  },
+  "theory": {
+    "ignored_keys": [
+      "tag",
+      "theory",
+      "cell",
+      "lambda_ref",
+      "lambda_miss_model",
+      "n_b",
+      "n1_good_at_1p65",
+      "lat_good_s",
+      "base",
+      "pre_cut_identity_with_controls",
+      "committed_runs_noise_model",
+      "noise"
+    ],
+    "wrapper_key": "arms.<arm>.seeds.<seed>.w3000.theory_slope",
+    "git_ref": "icml-cut-pred",
+    "git_path": "results/theory/icml/cut_predictions.json",
+    "git_commit": "2f90267ba6d3e2d13f3a192b26b822eb8a6c525e",
+    "git_commit_unix": 1793867133.0,
+    "sha256": "eea771a235342ef69a494443a9ed8d47da50563be7ef4bbf2465eb71c7e65e03",
+    "slopes": {
+      "a115": {
+        "0": 0.003918496128594461,
+        "1": -0.0025757792583638596,
+        "2": 0.0028447489997296366
+      },
+      "b085": {
+        "0": -0.009530676172886773,
+        "1": -0.013099950899720894,
+        "2": -0.012327918911156355
+      }
+    },
+    "predates_all_counted_runs": true
+  },
+  "endpoint_problems": [],
+  "endpoints": {
+    "stuck_hit_below": 0.2,
+    "good_hit_above": 0.8,
+    "eval_window_s": [
+      5700.0,
+      8700.0
+    ],
+    "trapped_co_primary_n": [
+      100
+    ],
+    "source": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\configs\\r11_basin_predict.yaml"
+  },
+  "rules": {
+    "a115": "per counted seed: UNSTUCK if the run is not STUCK on the frozen evaluation window (it counts against the theory); otherwise THEORY-FAVOURED iff |S - S_theory| < |S - S_naive| and |S - S_qs| (S the measured slope of N over [3000, 8700) s), NAIVE-FAVOURED (QS-FAVOURED) iff S_naive (S_qs) is strictly the closest, TIE otherwise; CUT-A PASS iff THEORY-FAVOURED in >= 2 of the 3 registered seeds and the slope of N over [5700, 8700) s is > 0 in >= 2 of the 3; FAIL iff NAIVE-FAVOURED, QS-FAVOURED or UNSTUCK in >= 2 of the 3 together; else MIXED; a run counts only if it is the registered cell's (label sglang-fcfs-r1-cut-a115, arm burst, rate_mult 1.65, a registered seed), completed (not aborted), bound to this registration (analysis.prereg.run_blockers empty) and its manipulation check passes",
+    "b085": "per counted seed: UNSTUCK if the run is not STUCK on the frozen evaluation window (it counts against the theory); otherwise THEORY-FAVOURED iff |S - S_theory| < |S - S_naive| (S the measured slope of N over [3000, 8700) s), NAIVE-FAVOURED iff |S - S_naive| < |S - S_theory|, TIE otherwise; CUT-B PASS iff THEORY-FAVOURED in >= 2 of the 3 registered seeds and the slope of N over [3000, 8700) s is < 0 in >= 2 of the 3; FAIL iff NAIVE-FAVOURED or UNSTUCK in >= 2 of the 3 together; else MIXED; a run counts only if it is the registered cell's (label sglang-fcfs-r1-cut-b085, arm burst, rate_mult 1.65, a registered seed), completed (not aborted), bound to this registration (analysis.prereg.run_blockers empty) and its manipulation check passes"
+  }
+}

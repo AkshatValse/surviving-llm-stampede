@@ -1097,3 +1097,36 @@ Every BURST run sits at hit 0.000 over the evaluation window with an uncached-to
 **Interpretation:**
 - A cut below the trap's measured throughput but above the all-miss capacity left every run trapped. Over the last 3000 s the backlog regrew in seeds 0 and 2 at model F's frozen rates, and completions varied by plan as model F said; no constant-throughput reading fits.
 - This is the engine evidence for Corollary 3: the throughput a trapped engine shows overstates the arrival rate it can recover at. The evidence comes through the persistence and the late window, not through the registered comparison alone.
+
+## 2026-11-05 — r15 CUT-B PASS (slow drain, still stuck at 8700 s) and TOOLSLOW-D15 NO-TRAP (the simulator's per-seed call, against pred2's fluid verdict)
+
+**Question:**
+- CUT-B: with arrivals cut to 0.85 x lambda_ref, below the all-miss capacity, does the trap drain slowly, as model F says, or at the trapped throughput?
+- TOOLSLOW-D15 (T2): does a 15 s tool slowdown over [1200, 2100) s at 1.65 x lambda_ref trap the engine? This is the cell where the calibrated simulator (S/G/G) and pred2's fluid verdict (S/S/S) disagree.
+**Setup:**
+- CUT-B jobs 17256870-72 (`r15-cut-reg`, clone `repo_r15_cut` at `11b0e4e`). T2 jobs 17256873-75 (`r15-reg`, clone `repo_r15_tonight` at `e05a262`). All COMPLETED 0:0 by 08:33 CST; all 14 jobs of the night COMPLETED.
+- Pulls: `results/nova/r15_cut_b0_17256870_pulled_20261105-065100/`, `r15_cut_b12_1725687x_pulled_20261105-082300/`, `r15_a2_s0_17256873_pulled_20261105-082300/`, `r15_a2_s12_1725687x_pulled_20261105-083500/`. Each has its COMMANDS.txt and its sha256 checked on both ends.
+**Result:**
+- **CUT-B PASS.** Theory-favoured 3/3, S < 0 in 3/3, all STUCK (follow-up hit 0.000).
+  - S over [3000, 8700): -0.00854 / -0.01260 / -0.01237 /s against model F -0.00953 / -0.01310 / -0.01233 and naive -0.03294 / -0.04282 / -0.03355.
+  - N at 8700 s was 140 / 77 / 89 (model F 139 / 79 / 94).
+  - The final registered CUT verdict over all six runs: CUT-A PASS, CUT-B PASS (`.../r15_cut_b12_.../analysis/agentload_analysis_r15_cut/20261105-082543`).
+- **T2 NO-TRAP.** Seed 0 STUCK (hit 0.000); seeds 1 and 2 GOOD (hit 0.934 / 0.924, equal to their NOBURST controls). All counted, bound and paired (`.../r15_a2_s12_.../analysis/agentload_analysis_r15/20261105-083614`).
+**Against predictions:**
+- CUT-B:
+  - The registered naive reading would have reached the hit-recovery onset n_b = 32.7 at 5656-7245 s. The runs stayed stuck, so persistence discriminates here.
+  - The quasi-static reading (completions at the all-miss capacity, not a registered CUT-B comparator) fits the slopes about as well as model F.
+  - Model F's distinctive prediction held post hoc: completions below the all-miss capacity, 0.918 / 0.932 / 0.974 lambda_ref against 0.918 / 0.955 / 0.979.
+  - Its frozen secondary predictions hold: completion within 0.0017 /s, served prompt within 0.8% (10.9-11.5k tokens against 8.4-8.8k uncut), gap trend negative in 3/3.
+- T2:
+  - The simulator (both modes) is correct 3/3 per seed, and its cell call NO-TRAP is correct. pred2's fluid verdict TRAPS is wrong (1/3). pred2's per-seed modal call is correct 3/3.
+  - P(NO-TRAP) = 0.409, log score -0.894; Brier 0.087 / 0.091.
+  - The stuck seed passes S1-S4 of the trap-state law (composition +0.1%, gap 1.02 gamma, completion +10% of D, slope -15% of alpha). S5 is close-miss 0.0104 > 0.01.
+  - Exploratory misses: alive at 2100 s for seed 1 (+4); outstanding at 3300 s for seed 0 (+7); seed 0's t_fu150 one bin early.
+**Verified vs. not:**
+- Verified: the archive sha256 values; the registered classifiers; the provenance exports re-run after the last job (push_times_2026-11-05.tsv now has end times).
+- Pending at the time of writing: an independent blind recompute of CUT-B and T2 (subagent).
+- Not verified: the T2 design is blind in outcome only; 3 seeds per cell; CUT-B's quasi-static alternative was not registered.
+**Interpretation:**
+- On the engine, a cut below the trapped throughput but above the all-miss capacity left every run trapped (CUT-A). A cut below the all-miss capacity drained the trap only slowly, still trapped after 6300 s of cut (CUT-B). This is the pattern of Theorem 1(a) and Corollary 3.
+- In T2, the exact-plan simulator beat the plan-averaged fluid model on the one cell built to separate them. Whether a short tool slowdown traps the engine at 1.65 x depends on the arrival plan, as the per-seed layer said.

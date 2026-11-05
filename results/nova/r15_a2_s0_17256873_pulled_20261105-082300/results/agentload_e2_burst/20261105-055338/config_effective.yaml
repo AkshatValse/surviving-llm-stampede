@@ -1,0 +1,89 @@
+research_question: 'E2 (real engine, paired arms): at the PRE-REGISTERED arrival rates
+  lambda inside the measured metastable window (lambda_miss, min(max_n mu(n), E0b
+  from-empty stability edge)) -- the window comes from Stage C, E0a and E0b, not from
+  fixed multiples -- does a finite arrival burst of 200 sessions trap SGLang FCFS
+  prefix-cache serving (post-burst prefill-token rate stuck at the all-miss rate with
+  a growing backlog), while the no-burst arm stays good and a client-side cap at argmax
+  mu(n) recovers; and, in the grid, do LPM / LPM-without-128-fallback / vLLM FCFS
+  / SGLang waiting-prefix refresh change that?'
+assumptions_note: 'Burst of 200 sessions within 60 s (the simulator''s E2 burst; bursts
+  of >=100 trapped every work-conserving policy in the simulator, bursts of 25 recovered).
+  Timing is the SHORT protocol (deviation D1 in notes/NOVA_PLAN_prefix_meta.md): burst
+  at t=1200 s, run ends 7500 s later (8700 s total) so one run fits a 4 h job; the
+  simulator waited 25000 s after the burst. Analysis must be run with burst.trap_min_s=3000
+  and burst.hit_eval_from_s=4500 for this protocol (the job script passes these).
+  lambda_ref MUST be set to the calibration.json from E0a (placeholder fails loudly).
+  PAIRED ARMS (common random numbers: same seed => same Poisson arrivals and per-session
+  specs. The content salt is per run IN A JOB (RUN_IDX): with ONE arm per job (how
+  an 8700 s arm fits a 4 h job) every arm gets content_salt=1, so the arms share token
+  content as well as lengths and timing -- harmless, each job starts a fresh server;
+  the salt differs between arms only if several share a job): BURST = this config;
+  NOBURST = arrivals.burst=null (same plan without the burst sessions); CAPPED = BURST
+  plus gate.n_cap (client-side FIFO session cap at argmax mu(n) from Stage C). The
+  kill test is judged by `analysis.summarize burst2` (throughput criterion, kill_verdict_v2.json);
+  the hit-rate rule of `summarize burst` is secondary.'
+server:
+  base_url: http://127.0.0.1:36873
+  model: Qwen/Qwen2.5-7B-Instruct
+  request_timeout_s: 7200
+  extra_body:
+    ignore_eos: true
+    repetition_penalty: 1.0
+    top_p: 1.0
+  request_token_ids: true
+workload:
+  prompt_mode: tokens
+  initial_context_tokens: 2000
+  new_prompt_tokens: 550
+  decode_tokens: 100
+  mean_turns: 15
+  max_turns: 60
+  tool_time_mean_s: 5.0
+  tool_time_dist: exp
+  token_id_low: 1000
+  token_id_high: 100000
+  output_feedback: server
+  tool_slowdown:
+    t_s: 1200
+    width_s: 900
+    add_s: 15
+  content_salt: 1
+arrivals:
+  kind: constant
+  rate_mult: 1.65
+  lambda_ref: prereg/inputs/2026-10-23/calibration.json:lambda_miss_turns_based
+  uncached_tokens_ref: prereg/inputs/2026-10-23/calibration.json:all_miss_uncached_tokens_per_s
+  burst: null
+  analysis_t_burst_s: 1200
+gate:
+  n_cap: null
+run:
+  duration_s: 8700
+  seed: 0
+  max_inflight: 4000
+  max_errors: 100
+  preflight_wait_s: 120
+metrics:
+  enabled: true
+  interval_s: 5.0
+canary:
+  tokens: 1024
+  resident_min_frac: 0.5
+  max_cached_after_flush: 15
+  idle_wait_s: 120
+  idle_poll_s: 2
+  kv_in_use_max: 0.02
+meta:
+  hardware: NVIDIA A100 80GB PCIe, 81920 MiB
+  engine_label: sglang-fcfs-r1-toolslow-d15-165
+  arm: noburst
+  notes: E2 NOBURST + TOOLSLOW d15 (tool calls starting in [1200, 2100) s take +15
+    s; the cell runs at 1.65 x)
+  start_state_verified: true
+  start_state_detail: 'canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed,
+    3 unverifiable); see canary_1_*.json'
+  prereg_sha256: 8f58405d9a02f2531aaeb0849fdda6688bdd689b491de1427e19ad717c51948f
+  prereg_file: configs/agentload_prereg_2026-11-05_toolslow_d15_165.yaml
+output:
+  root: results
+  name: agentload_e2_burst

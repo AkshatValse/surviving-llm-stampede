@@ -313,7 +313,166 @@ All three are STUCK, with a follow-up hit of 0.000 over [5700, 8700) s.
 > constant rate comes within 0.004\,/s of all three seeds. Over $[3000,8700)$\,s the agreement is at the level of the engine's
 > run-to-run jitter (0.0001--0.0005\,/s).
 
-## 4. A2 / T2 TOOLSLOW d15 at 1.65× — pending (jobs 17256873–75)
+## 3b. CUT-B (λ′ = 0.85 λ_ref): registered verdict **PASS** (theory-favoured 3/3, S < 0 in 3/3)
+
+**Pulls and verdict.**
+- Seed 0: `results/nova/r15_cut_b0_17256870_pulled_20261105-065100/` (job 17256870, nova22-gpu-2; sha256 `bf273305…` both ends).
+- Seeds 1–2: `results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/` (abbreviated **BP**). Jobs 17256871 (nova22-gpu-2) and
+  17256872 (nova22-gpu-3), all COMPLETED 0:0; sha256 `37d73004…` both ends.
+- Final registered verdict over all six CUT runs: `BP/analysis/agentload_analysis_r15_cut/20261105-082543/` (CUT-A PASS as
+  before; CUT-B PASS).
+- Secondary and alternative comparisons: `BP/analysis/icml_cut_secondary_cut_b.json`.
+
+**Validity.**
+- All three runs are counted, bound to the CUT-B registration, finished at 8700 s, and STUCK (follow-up hit 0.000 over
+  [5700, 8700) s).
+- Manipulation check passes. Kept counts are 396 / 366 / 390 of 775 / 767 / 788 candidates (z = −0.23 / −2.10 / −1.14 at
+  keep probability 0.85/1.65).
+
+| seed | measured S, [3000, 8700) (/s) | model F (frozen) | naive λ′_plan − D_trap | call | S < 0 | N at end (model F) |
+|---|---|---|---|---|---|---|
+| 0 | **−0.00854** | −0.00953 (error 0.00099) | −0.03294 (error 0.0244) | THEORY-FAVOURED | yes | 139.8 (138.6) |
+| 1 | **−0.01260** | −0.01310 (error 0.00050) | −0.04282 (error 0.0302) | THEORY-FAVOURED | yes | 77.0 (79.0) |
+| 2 | **−0.01237** | −0.01233 (error 0.00004) | −0.03355 (error 0.0212) | THEORY-FAVOURED | yes | 89.0 (93.8) |
+
+- **Arrivals:** λ′_plan over [3000, 8700) was 0.876 / 0.807 / 0.853 λ_ref.
+- **Operator's pre-cut completion rate:** D_pre over [1800, 2400) was 1.68 / 1.65 / 1.23 λ_ref.
+
+**What the registered PASS does and does not show.**
+- **Persistence discriminates here, unlike in CUT-A.** Starting from the measured N over [3000, 3300) (172.5 / 146.4 /
+  158.1):
+  - the registered naive reading would have reached the hit-recovery onset n_b = 32.7 at 7245 / 5656 / 6739 s, inside the
+    run;
+  - the operator's D_pre drain would have reached it at 5437 / 4877 / 7598 s.
+  - Yet all three runs stayed stuck, with N never below 125 / 76 / 82 and a follow-up hit of 0.000.
+  - Model F's fluid empties the trap only at about 27,100 s, the busy period of Theorem 1(a).
+- **The quasi-static reading fits the slopes about as well.** That reading is completions at the all-miss capacity λ_ref; it
+  was not a registered CUT-B comparator. Its errors:
+
+  | window | quasi-static | model F |
+  |---|---|---|
+  | [3000, 8700) | 0.00036 / 0.00121 / 0.00188 | 0.00099 / 0.00050 / 0.00004 |
+  | [5700, 8700) | 0.00067 / 0.00819 / 0.00025 | 0.00126 / 0.00081 / 0.00128 |
+
+  So the slopes do not single model F out against it.
+- **Model F's distinctive prediction for CUT-B is completions below the all-miss capacity**, because the trapped mix ages
+  once arrivals fall below λ_miss.
+  - Measured over [5700, 8700): 0.918 / 0.932 / 0.974 λ_ref, against model F's 0.918 / 0.955 / 0.979 and the quasi-static
+    1.000. The errors are 0.0000 / 0.0017 / 0.0003 /s against 0.0059 / 0.0049 / 0.0019.
+  - This is post hoc. At the frozen tolerance of ±0.006 /s the quasi-static value is also (just) inside.
+- **The theory's frozen secondary predictions for CUT-B all hold** (declared in `PREDICTIONS_icml_cut.md`, not part of the
+  registered rule):
+  - completion over [5700, 8700) within ±0.006 /s (errors above);
+  - served prompt within ±5%: measured 11453 / 11331 / 10945 tokens against 11547 / 11300 / 10954 (−0.8 / +0.3 / −0.1%).
+    That is far longer than the 8.4–8.8k of the uncut 1.65× runs: the cut ages the mix, as frozen;
+  - the 300 s-median gap trend negative in all three: −0.0022 / −0.0096 / −0.0118, against −0.0034 / −0.0099 / −0.0112.
+- **Zero drift, naive and operator readings** all miss the slopes by ≥ 0.0025 /s, and mostly by ≥ 0.01 /s (the JSON has
+  every value).
+
+**Reading for the paper.**
+- Below the all-miss capacity the trap drained, but slowly: −0.009 to −0.013 sessions/s, at model F's frozen per-seed rates.
+  It was still stuck at 8700 s, where the registered naive reading (drain at the uncut trapped throughput) and an operator's
+  pre-cut reading would both have reached the hit-recovery onset by 4900–7600 s.
+- Model F's specific prediction for this arm held: completions fell below the all-miss capacity (0.92–0.97 λ_ref) as the
+  served prompts lengthened to 10.9–11.5k tokens. A quasi-static reading, completions at the all-miss capacity, fits the
+  backlog slopes about as well.
+- Together with CUT-A: on the engine, a cut below the trapped throughput but above the all-miss capacity did not clear the
+  trap, and a cut below the all-miss capacity drained it only slowly. This is the pattern of Theorem 1(a) and Corollary 3.
+  - Each arm's registered rule rejected the naive reading.
+  - The evidence that singles model F out against intermediate readings is post hoc: CUT-A's late window, CUT-B's
+    completions.
+- **Limits.** 3 seeds per arm: CUT-A on one node (nova22-gpu-1), CUT-B on two (gpu-2 and gpu-3). "Drains slowly" is within
+  8700 s; the busy period itself (about 27,100 s) is far beyond the run.
+
+**Suggested text (the PASS draft in v2_validation.tex, CUT-B half)**:
+
+> CUT-B passed its registered rule. After the cut to 0.85~$\lref$ the backlog drained, slowly, at $-0.0085$, $-0.0126$ and
+> $-0.0124$\,/s over $[3000,8700)$\,s, against model~F's frozen $-0.0095$, $-0.0131$ and $-0.0123$ and the naive comparator's
+> $-0.033$, $-0.043$ and $-0.034$, so all three seeds were theory-favoured and all three slopes were negative. All three runs
+> were still stuck at 8700\,s (hit 0.000), where the naive reading would have reached the hit-recovery onset by 5700--7200\,s;
+> model~F's fluid clears only at about 27{,}100\,s, the busy period of Theorem~\ref{thm:trap}(a). A reading in which the trap
+> completes sessions at the all-miss capacity, not a registered comparator, fits these slopes about as well. Model~F's
+> distinctive prediction for this arm, completions below that capacity as the trapped mix ages, held after the fact (0.92,
+> 0.93 and 0.97~$\lref$ against 0.92, 0.96 and 0.98, with served prompts of 10.9--11.5k tokens against 8.4--8.8k uncut), as did
+> its frozen secondary predictions (completion within 0.002\,/s, served prompt within 1\%, a negative gap trend in all seeds).
+
+## 4. TOOLSLOW-D15 (cell T2): 1.65 λ_ref, +15 s on tool calls starting in [1200, 2100) s. Registered outcome **NO-TRAP** (stuck 1, good 2)
+
+**Pulls.**
+- Seed 0: `results/nova/r15_a2_s0_17256873_pulled_20261105-082300/` (job 17256873; sha256 `5210d8ad…` both ends).
+- Seeds 1–2: `results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/` (abbreviated **AP**; jobs 17256874–75; sha256
+  `2b98a658…` both ends).
+- All three ran on nova22-gpu-3 from the frozen clone `repo_r15_tonight` at `e05a262` (tag `r15-reg`). All COMPLETED 0:0.
+
+**Registered verdict.** `AP/analysis/agentload_analysis_r15/20261105-083614/` (`analysis.r15_cells classify` over the six T1
+and T2 runs: T1 TRAPS, T2 NO-TRAP). Every run is counted, bound to its registration, paired byte-identically with its NOBURST
+control, and passes the manipulation check: 1144 / 1039 / 1064 calls slowed, all starting in [1200.2, 2099.5] s.
+
+| seed | state | hit_eval | backlog slope (/s; threshold 0.02325) | outstanding at end | paired NOBURST control |
+|---|---|---|---|---|---|
+| 0 | **STUCK** | 0.000 | 0.02577 | 233.5 | GOOD, hit 0.934 |
+| 1 | **GOOD** (RECOVERED and hit/slope) | 0.934 | 0.00109 | 1.9 | GOOD, hit 0.934 |
+| 2 | **GOOD** (RECOVERED and hit/slope) | 0.924 | 0.00009 | 2.2 | GOOD, hit 0.921 |
+
+**Against the frozen predictions** (`notes/PREDICTIONS_r15.md` section 4; scoring in `AP/analysis/r15_t1_t2_scoring.json`).
+This is the cell that discriminates between the models.
+
+| predictor | frozen call | result |
+|---|---|---|
+| calibrated simulator, exact plans, `mixed` (PRIMARY) | S / G / G → NO-TRAP | **correct**, 3/3 per seed |
+| simulator, `separate_prefill_priority` | S / G / G → NO-TRAP | correct, 3/3 |
+| pred2 fluid verdict (n(2100) = 51.1 > n_u = 31.8) | TRAPS (S / S / S) | **wrong**: 1/3 per seed; seeds 1 and 2 recovered |
+| pred2 per-seed layer | modal S / G / G; P(TRAPS) / P(NO-TRAP) / P(MIXED) = 0.58 / 0.41 / 0.01 | modal 3/3; log score of the outcome ln 0.409 = −0.894; per-seed log-likelihood −0.868 (STUCK) and −0.892 (GOOD); Brier 0.087 and 0.091 |
+
+- Over the six T1 and T2 runs, per-seed agreement was: simulator 6/6 (both modes), pred2's per-seed modal call 6/6, pred2's
+  fluid verdict 4/6.
+- **Exploratory measures** (`results/theory/r15/toolslow_measured_r15_t2.json`), GPU against the simulator (`mixed`):
+
+  | measure | GPU | simulator | pred2 walk |
+  |---|---|---|---|
+  | t_fu150 | 1950 / none / none | 2100 / none / none | — |
+  | alive at 2100 s | 40 / 34 / 28 | 39 / 30 / 29 | 38 / 30 / 28 |
+  | alive at 3000 s | 63 / 11 / 8 | 67 / 11 / 8 | 12 / 11 / 8 |
+  | outstanding, mean [2100, 2400) | 36.9 / 6.2 / 5.6 | 36.7 / 4.0 / 5.7 | — |
+  | outstanding at 3300 s | 82 / 0 / 2 | 75 / 0 / 2 | — |
+
+  - Against the reference accuracy, these misses are reported: alive at 2100 s for seed 1 (+4, reference within 1); seed
+    0's outstanding at 3300 s (+7, reference within 5); and seed 0's t_fu150, one 150 s bin early.
+  - pred2's queue-free plan walk misses seed 0's alive-at-3000 s by 51.
+- **Trap-state law on the stuck seed** (`AP/analysis/icml_score_new_t2/score.json`; `icml-trap-pred` at 1.65×, trigger
+  1200 s; one eligible run, so the refutation rule, which needs a group of ≥ 2, cannot apply):
+  - S1 composition 8612 / 8606 (+0.1%);
+  - S2 gap-median slope 0.0235 / γ 0.0230 (1.02);
+  - S3 completion 0.0967 / D 0.0879 (+10%; limit ±15%; above λ_ref);
+  - S4 backlog slope 0.0258 / α 0.0302 (−15%; limit ±35%);
+  - S5: side correct; close **no** (|slope − plug-in 0.0361| = 0.0104 > 0.01).
+- Across the four runs trapped by a tool slowdown alone (T1 3, T2 1), S1–S4 pass in every cell group, and S5 is close in 3 of
+  4 and on the correct side in 3 of 4.
+
+**Reading for the paper.**
+- At 1.65 λ_ref, a 15 s tool slowdown for 900 s, with no burst, trapped the engine on one arrival plan out of three. The other
+  two recovered fully, to their no-slowdown controls' hit rates.
+- The calibrated simulator had predicted exactly this, seed by seed, from the exact plans. pred2's plan-averaged fluid
+  verdict had predicted a trap on every seed. Its per-seed layer, which starts each plan at its own sessions alive when the
+  slowdown ends, called the right side for every seed, though seed 1 was a near coin flip (P(GOOD) = 0.53).
+- This cell was registered to discriminate between the two frozen predictors, and the exact-plan simulator won. Do not call
+  it the first such cell unless that is checked.
+- The trapped run again obeys the trap-state law's pooled checks; its per-seed slope plug-in misses by 0.0004 /s beyond the
+  tolerance.
+- **Limits.**
+  - The design is not blind: the cells were chosen after r14's d30 result and after reading simulator outputs.
+  - 3 seeds on one node.
+  - The per-seed probabilities were not sharp: P(NO-TRAP) was 0.41.
+
+**Suggested text (a new §3 bullet, or the TOOLSLOW-D15 \pending)**:
+
+> \emph{TOOLSLOW-D15} (pre-registered with TOOLSLOW-W, tag \texttt{r15-reg}): no burst; every tool call that starts in
+> $[1200,2100)$\,s takes 15\,s longer, at 1.65~$\lref$, seeds 0--2, paired with the committed NOBURST runs. It was chosen so that
+> our two frozen predictors disagree: the calibrated simulator, run on the exact client plans, called seed~0 stuck and seeds
+> 1 and 2 good (NO-TRAP), while the plan-averaged fluid model called every seed stuck (TRAPS). Outcome: NO-TRAP, as the
+> simulator said, seed by seed. Seed~0 was stuck (hit 0.000), and seeds 1 and 2 recovered to their controls' hit rates (0.934 and
+> 0.924). The stuck run passed S1--S4 (composition +0.1\%, gap slope $1.02\gamma$, completion +10\% of $D$, backlog slope $-15$\% of
+> $\alpha$); its S5 plug-in missed the 0.01\,/s tolerance by 0.0004\,/s.
 
 ## Verification
 
