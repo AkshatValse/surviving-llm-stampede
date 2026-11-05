@@ -1,6 +1,7 @@
-\section{Data-only results added in this version}\label{app:dataonly}
+\section{Persistence, the trigger, pool occupancy and goodput}\label{app:dataonly}
 
-Five analyses (D1, D2, D4, D5 and the pool occupancy) use only runs committed before 2026-11-02. Each was computed by one agent and then recomputed by a second agent
+Four analyses (D1, D2, D5 and the pool occupancy) use only runs committed before 2026-11-02; a fifth, D4, a post-hoc
+reading of Lu et al.'s model on our cells, is in Appendix~\ref{app:lu}. Each was computed by one agent and then recomputed by a second agent
 with its own code from the raw files; where they differ we report the checked value and say so. They are post hoc. Scripts and
 outputs: \fpath{analysis/r15_dataonly/} and \fpath{results/r15_dataonly/} (\fpath{PROVENANCE.md} there).
 
@@ -41,35 +42,3 @@ window the CAPPED arms were within 0--1.7\% and the rescue runs within $-0.3$ to
 burst the cap cost 4--57\% (CAPPED) and the rescue 45--97\%; these two ranges depend on the reference, and a reference twice as large
 lowers them by a quarter to a third. Lu et al.\ report about 88\% from one run of a different system, which is not comparable in
 detail.
-
-\paragraph{Lu et al.'s model on our cells (D4).} Every reading below is ours, post hoc, of a model built for disaggregated serving
-whose hit curve is empirical and system-specific; the second computation also judged which readings are fair.
-\begin{itemize}[leftmargin=*,nosep]
-\item \emph{Onset} (Table~\ref{tab:lu}). With $h$ fixed by the A100 300k crossing, the reading errs by 4.66 sessions on average over
-the seven other cells and 4.11 over the five predicted before their runs were read, against 1.53 and 1.55 for our frozen crossings.
-The comparison survives every charitable variant tried: the constant fitted to all eight cells (3.74 against 1.42), fitted on the four
-A100 pools only (3.57 against 1.53 over seven cells), left out one cell at a time (4.72), and crossings of the token hit fraction
-instead of the turn hit fraction (4.05 against 1.53 on the five cells). A hit curve that depends only on $W/C$ cannot move the onset
-with the GPU; refitted per GPU it still misses the 600k H200 by 6.7 sessions (ours: 4.4 sessions low). Over the four A100 pools the measured
-crossing is affine in the pool, $2.97+1.003\,M/\bar E$ (intercept standard error 0.71; 95\% interval $-0.1$ to 6.0 with two degrees of
-freedom), consistent with the tool-call term (4.7--5.1 sessions) net of $n_{1/2}$'s lead over $n_b$, but not established by four points.
-\item \emph{Vulnerability condition.} Their Eq.~2 compares a dedicated prefix cache with decode memory. In one pool the two are the
-same memory, and it reduces to $f\lesssim1/2$ (1/1.9 with their measured cliff constant) for the fraction $f$ of active sessions
-in service, which here moves along the curve:
-0.19--0.53 at our model's fluid peak, 0.38--0.90 at the 0.5-hit crossing and 0.67--0.95 at $n_b$, so the verdict depends on where $f$ is
-read. All eight cells are vulnerable, so they cannot test the condition's specificity. Their own classifier, which compares
-throughput bounds, flags all 17 cache-first cases among 36 simulated deployments (28 of 36 correct), and in simulation they find
-that a faster GPU raises the first trapped load in absolute terms. We do not score the condition.
-\item \emph{Drain.} Their Eq.~4, $S/(D(N^*)-\lambda)$, is stated for resident-first ordering near the peak with healthy reuse, and its
-queue holds sessions awaiting their first call; most of a rescue backlog is admitted sessions paused at tool boundaries, whose next
-turn misses. Applied to R1 and R4 with the measured peak rate and backlog (release $=t_{\mathrm{on}}+(n_{\mathrm{on}}-c)/(\mu^*-\lambda)+300$\,s),
-it is 19--39\% early: the engine released 24--64\% later. Our model's own single-phase variant, in the same frozen file but not a
-declared prediction, is 12--34\% early (released 14--51\% later); the frozen two-phase drain, in which every paused session's next
-turn misses, was 2--18\% early (released 2--22\% later). The gain comes from the two-phase structure, not from a different peak.
-\item \emph{Window.} The ratio of peak ratios between pools needs their prefill and decode bounds and a smooth minimum whose form
-they do not give for colocated serving; we omit that comparison.
-\end{itemize}
-Sources: measured crossings from the closed-population runs (\fpath{paper/NUMBERS.md}); frozen predictions in
-\fpath{results/theory/merged/*.json} and \fpath{results/theory/pred2/h200_600k.json}; rescue releases in the committed
-\fpath{rescue_runs.csv}; Lu et al.'s equations from their Section~5. The full record is
-\fpath{results/r15_dataonly/verify_d4/verify_D4.md}.

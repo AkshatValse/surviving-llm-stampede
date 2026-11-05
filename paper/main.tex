@@ -43,6 +43,7 @@
 \newtheorem*{assumption}{Assumption MF}
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
+\newtheorem{nremark}{Remark}
 
 \title{Inside the Trap: A Renewal Law for Prefix-Cache Collapse\\ in LLM Agent Serving}
 \author{Akshat Valse\thanks{Corresponding author.} \qquad Ali Jannesari\\[2pt]
@@ -57,14 +58,13 @@ Department of Computer Science, Iowa State University, Ames, IA, USA\\[2pt]
 Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip a serving engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models, a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealized model of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly, the backlog grows at 0.6 to 0.8 of the excess load here, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3\% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs in two cells trapped by a tool slowdown alone met 4 of 5 pre-set scores, and after arrival cuts the traps persisted, backlogs rising or falling slowly, as predicted. Of two exits, refusing arrivals sheds sessions, while a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
 \end{abstract}
 
-\input{sections/v2_intro}
-\input{sections/v2_theory}
-\input{sections/v2_validation}
-\input{sections/v2_entry}
-\input{sections/v2_control}
-\input{sections/v2_evidence}
-\input{sections/v2_related}
-\input{sections/v2_conclusion}
+\input{sections/v3_intro}
+\input{sections/v3_stampede}
+\input{sections/v3_theory}
+\input{sections/v3_evidence}
+\input{sections/v3_control}
+\input{sections/v3_related}
+\input{sections/v3_conclusion}
 
 \section*{Code and data availability}
 {\raggedright The code (simulator, load generator, analysis, the first-principles model and model~F, the Slurm job scripts), the
@@ -87,20 +87,9 @@ The experiments ran on the Nova cluster at Iowa State University. The research r
 \appendix
 \input{sections/v2_app_trap}
 \input{sections/v2_app_trapdata}
+\input{sections/v3_app_blind}
 \input{sections/v2_app_dataonly}
-\input{sections/background}
-\input{sections/model}
-\input{sections/method}
-\input{sections/results}
-\input{sections/theory}
-\input{sections/frozen}
-\input{sections/diagnostic}
-\input{sections/limitations}
-\input{sections/appendix}
-\input{sections/appendix_fp}
-\input{sections/appendix_supp}
-\input{sections/frozen_app}
-\input{sections/robustness}
-\input{sections/mechanisms}
+\input{sections/v3_app_stampede}
+\input{sections/v3_app_lu}
 
 \end{document}

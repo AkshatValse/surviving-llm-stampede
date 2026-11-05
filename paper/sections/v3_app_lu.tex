@@ -1,0 +1,109 @@
+\section{Lu et al.'s concurrent work and other systems in detail}\label{app:lu}
+
+\paragraph{Concurrent work.} Lu et al.~\citep{lu2026cachetrap} study the same phenomenon on SGLang with prefill--decode
+disaggregation and a host KV tier, serving a hybrid mixture-of-experts model (Qwen3.6-35B-A3B) on Terminal-Bench and SWE-bench Pro
+trajectories. On hardware, in single runs, as their run accounting implies, a ten-minute surge cut goodput by about 88\% over the following hour,
+terminating the burst sessions at the end of the burst restored service, and in a run that let them finish the base population kept
+growing after the last burst session left. Their fluid model, $\dot N=\lambda-X(N)/K$ with an empirical hit curve $h(W/C)$ of the
+working set over the cache, gives the stable and unstable equilibria, the vulnerable window between the low-reuse departure rate
+$D_{\mathrm{low}}$ and the peak, the statement that arrivals below $D_{\mathrm{low}}$ let the population drain, a resource condition
+for cache-first vulnerability, and a drain-time estimate. In simulation they map vulnerability, show that changing post-surge
+arrivals alone reverses recovery, and report cache hysteresis (a lower hit rate after collapse at a comparable working set). Their
+controller, Basin\footnote{Their Basin controller is unrelated to our BASIN-1 and BASIN-2 tests, which probe the basin of
+attraction of the good state.}, combines fixed session priority, admission by predicted peak context, decode-memory lending and
+shedding; on H200 hardware an arrival-time prototype of it achieves 1.20--1.70 times Continuum's goodput, and the predictor-driven
+design is evaluated in simulation. Against this, we add an exactly analysed idealization of the trapped state with its tests
+(\S\ref{sec:trap}--\ref{sec:validation}), an engine test of the reading that the throughput measured in a trap exceeds the drain
+threshold (Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which every turn misses; CUT-A and
+CUT-B are consistent with it; their systems keep some reuse), a first-principles entry model with an
+out-of-sample record (Appendix~\ref{app:entry}), the registered and replicated rescue of an established zero-hit trap at the same offered
+load without shedding, with release and persistence (\S\ref{sec:control}), and registered matched-arm evidence on colocated engines,
+including a second engine (\S\ref{sec:stampede}). They have real traces, disaggregated serving, a larger model, SLO goodput and a full
+mitigation system, which we do not.
+
+\paragraph{The cut and the rescue in their terms.} Lu et al.\ show in
+simulation that lowering post-surge arrivals reverses the outcome, and observe that the throughput measured in the collapsed state
+sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which
+every turn misses, sharpens this: there the cut must go below $\lmiss$, which lies below the trapped throughput $D(\lambda)$. Their
+GPU-only simulations point the same way: the trap persisted at a cut to 0.2 of their reference rate (12 sessions/min) while the
+trapped departures they measured were 0.20--0.31 of it. Their
+systems keep some reuse in the trap, though, and with a host tier one seed in three recovered at cuts above the trapped departures
+they measured, so the corollary does not describe them.
+Lu et
+al.\ restore service on hardware by terminating the burst sessions at the end of the burst, when the trap is incipient, prevent it
+with their controller active before the surge, rescue an established trap in simulation by activating their controller late (and
+leaving it on), and report one hardware run in which CONCUR's hit rate fell
+to 0.33 before its concurrency window contracted and recovered slowly, with the controller left on and no release
+test~\citep{lu2026cachetrap}.
+
+\begin{table}[t]\centering\footnotesize
+\caption{The 0.5-hit crossing (sessions): measured; Lu et al.'s hit curve $h(W/C)$, read post hoc with $C=M$,
+$\bar c=\bar E=10{,}569$ tokens and $h$ fixed by the measured A100 300k crossing ($W/C=1.133$), so that it predicts
+$1.133\,M/\bar E$ on every engine and GPU; our frozen crossing $n_{1/2}$ (fluid; nothing fitted to any curve point; the H200 and
+vLLM cells use one speed factor fitted to their all-miss token rate); and the capacity ratio $M/E_S$. Status of our prediction:
+b, blind in time; a, blind by access only ($^\ast$the crossing lies between $n=36$, blind in time, and 40; the cell's operating agent and the first
+author had seen $n\le32$); i, in sample. Lu et al.'s own constant $N_c\approx1.9\,C/\bar c$, measured on a disaggregated H100 deployment,
+would put every crossing 1.4--1.9 times further out, so we fix $h$ on one of our cells; they place their cliff where the hit rate
+falls to about 0.3, and we compare 0.5-hit crossings. With its constant fitted to all eight
+crossings instead ($W/C=1.098$, in sample), the $h(W/C)$ reading errs by 3.7 sessions on average, against 1.4 for
+$n_{1/2}$.}\label{tab:lu}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccccc@{}}\toprule
+cell & status & meas. & $h(W/C)$ & $n_{1/2}$ & $M/E_S$\\\midrule
+A100, 150k & b & 16.5 & 16.1 & 16.9 & 13.6\\
+A100, 300k & i & 32.2 & (32.2) & 31.5 & 27.8\\
+A100, 600k & b & 60.1 & 64.3 & 60.0 & 56.1\\
+A100, native & i & 93.4 & 102.5 & 93.7 & 89.8\\
+H200, 300k & a$^\ast$ & 38.9 & 32.2 & 37.3 & 27.8\\
+H200, 600k & b & 71.0 & 64.3 & 66.6 & 56.1\\
+vLLM, 300k & i & 29.1 & 32.2 & 31.8 & 28.2\\
+Llama, 300k & a & 29.65 & 32.2 & 30.9 & 27.8\\\midrule
+mean error, b and a (5) & & & 4.1 & 1.5 & 7.0\\
+mean error, all but 300k (7) & & & 4.7 & 1.5 & 5.6\\\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Against Lu et al.'s empirical model.} Lu et al.'s fluid model takes its hit rate $h(W/C)$, a function of the working set
+$W=N\bar c$ over the prefix-cache capacity $C$, from measurements of the deployed disaggregated system, and uses it to classify
+deployments and explain mitigations rather than to predict the hit rate~\citep{lu2026cachetrap}. Read post hoc on our colocated
+cells, with $C=M$, $\bar c=\bar E$ and one $h$ fixed by the A100 300k crossing, it puts the 0.5-hit crossing in proportion to the pool
+and, with that curve carried across GPUs, at the same population on the H200. On the five cells whose crossings we predicted
+before their runs were read (three blind in time, two blind by access only), it errs by 4.1 sessions on average, against 1.5 for our
+frozen crossings (Table~\ref{tab:lu}). The measured crossing moved out on the H200, by 6.7 sessions at 300k and 10.9 at 600k, against
+5.8 and 6.6 from the tool-call term; refitting $h$ on the H200's own 300k cell still puts its 600k crossing 6.7 sessions out. Their
+vulnerability condition and drain estimate are stated for separate prefill and decode instances and for resident-first ordering
+with healthy reuse, so we do not treat them as predictions of theirs; Appendix~\ref{app:dataonly} applies them post hoc.
+
+\paragraph{Lu et al.'s model on our cells (D4).} Every reading below is ours, post hoc, of a model built for disaggregated serving
+whose hit curve is empirical and system-specific; the second computation also judged which readings are fair.
+\begin{itemize}[leftmargin=*,nosep]
+\item \emph{Onset} (Table~\ref{tab:lu}). With $h$ fixed by the A100 300k crossing, the reading errs by 4.66 sessions on average over
+the seven other cells and 4.11 over the five predicted before their runs were read, against 1.53 and 1.55 for our frozen crossings.
+The comparison survives every charitable variant tried: the constant fitted to all eight cells (3.74 against 1.42), fitted on the four
+A100 pools only (3.57 against 1.53 over seven cells), left out one cell at a time (4.72), and crossings of the token hit fraction
+instead of the turn hit fraction (4.05 against 1.53 on the five cells). A hit curve that depends only on $W/C$ cannot move the onset
+with the GPU; refitted per GPU it still misses the 600k H200 by 6.7 sessions (ours: 4.4 sessions low). Over the four A100 pools the measured
+crossing is affine in the pool, $2.97+1.003\,M/\bar E$ (intercept standard error 0.71; 95\% interval $-0.1$ to 6.0 with two degrees of
+freedom), consistent with the tool-call term (4.7--5.1 sessions) net of $n_{1/2}$'s lead over $n_b$, but not established by four points.
+\item \emph{Vulnerability condition.} Their Eq.~2 compares a dedicated prefix cache with decode memory. In one pool the two are the
+same memory, and it reduces to $f\lesssim1/2$ (1/1.9 with their measured cliff constant) for the fraction $f$ of active sessions
+in service, which here moves along the curve:
+0.19--0.53 at our model's fluid peak, 0.38--0.90 at the 0.5-hit crossing and 0.67--0.95 at $n_b$, so the verdict depends on where $f$ is
+read. All eight cells are vulnerable, so they cannot test the condition's specificity. Their own classifier, which compares
+throughput bounds, flags all 17 cache-first cases among 36 simulated deployments (28 of 36 correct), and in simulation they find
+that a faster GPU raises the first trapped load in absolute terms. We do not score the condition.
+\item \emph{Drain.} Their Eq.~4, $S/(D(N^*)-\lambda)$, is stated for resident-first ordering near the peak with healthy reuse, and its
+queue holds sessions awaiting their first call; most of a rescue backlog is admitted sessions paused at tool boundaries, whose next
+turn misses. Applied to R1 and R4 with the measured peak rate and backlog (release $=t_{\mathrm{on}}+(n_{\mathrm{on}}-c)/(\mu^*-\lambda)+300$\,s),
+it is 19--39\% early: the engine released 24--64\% later. Our model's own single-phase variant, in the same frozen file but not a
+declared prediction, is 12--34\% early (released 14--51\% later); the frozen two-phase drain, in which every paused session's next
+turn misses, was 2--18\% early (released 2--22\% later). The gain comes from the two-phase structure, not from a different peak.
+\item \emph{Window.} The ratio of peak ratios between pools needs their prefill and decode bounds and a smooth minimum whose form
+they do not give for colocated serving; we omit that comparison.
+\end{itemize}
+Sources: measured crossings from the closed-population runs (\fpath{paper/NUMBERS.md}); frozen predictions in
+\fpath{results/theory/merged/*.json} and \fpath{results/theory/pred2/h200_600k.json}; rescue releases in the committed
+\fpath{rescue_runs.csv}; Lu et al.'s equations from their Section~5. The full record is
+\fpath{results/r15_dataonly/verify_d4/verify_D4.md}.
+
+\paragraph{Other systems.} CacheWise evaluates coding agents with sessions started together~\citep{tiwari2026cachewise}; XPerf, a benchmark, sees hit rates fall toward saturation in fixed-rate runs at increasing rates~\citep{wang2026xperf}. Other systems manage idle KV across tool calls or workflow steps by offloading, prefetching or retention~\citep{abhyankar2024infercept,pan2025kvflow,xia2026mori,bian2025tokencake,zhang2026cachescout,liu2026askthetool,biswas2026sutradhara}, schedule agent programs~\citep{luo2026agentix,lin2024parrot}, cache conversation state hierarchically~\citep{gao2024cachedattention,yu2025pensieve,qin2025mooncake} (Mooncake's scheduler also rejects requests early under overload), admit, place or reserve capacity for agent sessions by tool readiness, KV residency or likely returns~\citep{li2026tao,jiang2026coda,meng2026talaria}, or make locality-aware scheduling fair~\citep{cao2025dlpm}. Eviction-order work~\citep{pan2026rrevict,wu2026randomization,liu2026fancy,pan2026scalesim} changes which idle state is evicted; RR-Evict assumes that the active trajectories fit in the cache, ScaleSim prefetches and evicts each agent's state by the estimated order of the agents' next requests, and Liu et al.\ replay traces without feedback from queueing to arrivals, as do Arya et al.\ for production Microsoft M365 agent traces, where LRU with a pooled budget of a tenth of the busiest hour's no-eviction demand makes 63\% of Deep Research calls recompute~\citep{arya2026residency}. Other close neighbours: Metronome calls a collapse in real-time speech-model serving metastable, in the sense that identical runs collapse or survive near a threshold, but there each session's KV stays pinned for the whole conversation until the pinned KV exhausts the pool, a different mechanism from eviction and recomputation of reusable prefixes~\citep{meng2026metronome}; AgentServeSim simulates agent serving with KV retained across tool gaps and successor turns released by simulated completions, so call timing depends on the policy, and validates it against vLLM in 20 paired cells, without a metastability analysis~\citep{rajib2026agentservesim}; and ServeTwin simulates multi-turn agent workloads while tracking KV-cache evolution and reports that a pool 1.4 times larger lifts the hit rate from 22\% to 93\% at a fixed number of users~\citep{park2026servetwin}.

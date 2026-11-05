@@ -36,7 +36,7 @@ On the engine, (F1) is the measured zero hit fraction of the trap and (F2) its s
 admission (Proposition~\ref{prop:A}), up to the $M/E_S\approx28$ requests that run concurrently. For (F4), the 5\,s tool
 time is short against cycles of 166--516\,s, and including it changes the window statistics of the fluid by less than
 $10^{-3}$ (\fpath{analysis/theory/icml/support.py}). The costs are $c_k=t^m_k+\delta$: the calibrated miss prefill of
-\S\ref{sec:fp-model} plus the all-miss per-turn decode share $\delta$, chosen so that $\sum_k(G_k/E[T])c_k=1/\nu_b$. Then
+Appendix~\ref{app:entry} plus the all-miss per-turn decode share $\delta$, chosen so that $\sum_k(G_k/E[T])c_k=1/\nu_b$. Then
 $\lmiss$ above equals the model's $\mu_b$ (Proposition~\ref{prop:nb}(a)).
 
 \begin{lemma}[Perron root]\label{lem:perron}
@@ -84,7 +84,7 @@ are linear in $\pi\ge0$. By (iii), which needs only the unit work rate:
 \begin{itemize}[leftmargin=*,nosep]
 \item if $\rho\ge1$, then $V\ge\eta V_{\mathrm{tot}}(0)>0$ throughout, $b_{n+1}-b_n\ge\eta V_{\mathrm{tot}}(0)$, and
 $b_n\to\infty$;
-\item if $\rho<1$, then $b_n$ increases to the time at which $V_{\mathrm{tot}}$ vanishes (Theorem~\ref{thm:trap}(a)).
+\item if $\rho<1$, then $b_n$ increases to the time at which $V_{\mathrm{tot}}$ vanishes (Proposition~\ref{prop:classic}(a)).
 \end{itemize}
 
 \emph{(iii).} With $j_k=J_k'$ and $\dot C_k=C_k'$, we have $\sum_kc_k\dot C_k=1$, $j_1=\lambda$ and $j_{k+1}=r_k\dot C_k$. Hence
@@ -123,22 +123,20 @@ $|s|<\vartheta_0^{-1}$. Cauchy's estimates on $|s|=\vartheta^{-1}$ finish the pr
 discrete renewal theorem~\citep{feller1968introduction}.
 \end{proof}
 
+\begin{proof}[Proof of Lemma~\ref{lem:recursion}]
+The rate of the remaining work is Lemma~\ref{lem:orbit}(iii), and the recursion with its properties is Lemma~\ref{lem:orbit}(iv).
+For the exact identity, which an independent referee pointed out, take $u\ge b_{K-1}$. All class-$k$ descendants of the initial
+requests have then joined, and the arrivals' class-$k$ requests joined by $u$ are those whose first request joined by
+$f^{-(k-1)}(u)$. Hence
+\[
+f(u)=V_{\mathrm{tot}}(0)+\sum_ka_kf^{-(k-1)}(u).
+\]
+An orbit with $u_0\in[0,V_0)$ has $u_n\in[b_n,b_{n+1})$, so $u_n\ge b_{K-1}$ for $n\ge K-1$, and then
+$u_{n+1}=V_{\mathrm{tot}}(0)+\sum_ka_ku_{n+1-k}$.
+\end{proof}
+
 \begin{proof}[Proof of Theorem~\ref{thm:trap}]
-\emph{(a), $\rho<1$.} Take $u_0=0$. Summing the recursion, whose terms are all nonnegative, gives
-$\sum_{n\le M}\Delta_n\le V_{\mathrm{tot}}(0)+\rho\sum_{n\le M}\Delta_n$, and in the limit
-$\sum_n\Delta_n=V_{\mathrm{tot}}(0)/(1-\rho)$. Thus $b_n\uparrow\tau=V_{\mathrm{tot}}(0)/(1-\rho)$. For every orbit start
-$u_0\in[0,V_0)$, each $\Delta_n(u_0)$ is positive, since $\Delta_n\ge a_1\Delta_{n-1}$. Every $t<\tau$ lies on such an
-orbit, so the server is busy on $[0,\tau)$, and $V(b_n)=\Delta_n\to0$.
-
-Without arrivals ($\lambda=0$, used for SHED), the orbit argument does not apply. There, $V_{\mathrm{tot}}'=-1$ and
-$V\ge\eta V_{\mathrm{tot}}$ give $\tau=V_{\mathrm{tot}}(0)$ directly.
-
-\emph{(b), $\rho=1$.} Lemma~\ref{lem:renewal} with $b_k=a_k$ gives $\Delta_n(u_0)\to V_{\mathrm{tot}}(u_0)/\sum_kka_k$,
-uniformly in $u_0\in[0,V_0]$. Here $V_{\mathrm{tot}}(u_0)=V_{\mathrm{tot}}(0)$ and $\sum_kka_k=\bar k_c$. Every
-$t\ge V_0$ equals $f^n(u_0)$ for a unique $u_0\in[0,V_0)$ and $n\ge1$. So
-$V(t)\to V_{\mathrm{tot}}(0)/\bar k_c$, and by (v), $N\to\lambda E[T]V_{\mathrm{tot}}(0)/\bar k_c$.
-
-\emph{(c), $\rho>1$.} Apply Lemma~\ref{lem:renewal} to $y_n=\Delta_nz^{-n}$, $b_k=a_kz^{-k}$ and $g_n=h_nz^{-n}$. It gives
+\emph{(a).} Apply Lemma~\ref{lem:renewal} to $y_n=\Delta_nz^{-n}$, $b_k=a_kz^{-k}$ and $g_n=h_nz^{-n}$. It gives
 $\Delta_n=z^n(L(u_0)+\epsilon_n)$ with $L$ continuous and positive on $[0,V_0]$ (since $h_0=V(u_0)>0$) and
 $|\epsilon_n|\le C\vartheta^n$ uniformly. At $t=u_n(u_0)$,
 \begin{gather*}
@@ -146,38 +144,46 @@ t=u_0+\textstyle\sum_{j<n}\Delta_j=\dfrac{Lz^n}{z-1}\bigl(1+o(1)\bigr),\\
 V(t)=\Delta_n=Lz^n\bigl(1+o(1)\bigr),
 \end{gather*}
 so $V(t)/t\to z-1$ uniformly. The relative error is $O(n\max(\vartheta,1/z)^n)$. As $t\to\infty$, the generation index $n$
-of $t$ tends to infinity because every $b_n$ is finite. By (v), $N(t)=\lambda\sum_kG_k\Delta_{n-k}$, and the identity
-$(z-1)\sum_kG_kz^{-k}=1-E[z^{-T}]$ gives $N(t)/t\to\lambda(1-E[z^{-T}])$. The departure limit follows from
-$\mathrm{Dep}=\sum_km_k^0+\lambda t-N$. By (v), the composition limit holds for the pending requests, and for the requests
-completed over the next cycle, which are the same. Over a cycle $(t,f(t)]$, any per-turn weight $P_k$ is processed at the
-average rate $\sum_kP_k\pi_k/\sum_kc_k\pi_k$.
+of $t$ tends to infinity because every $b_n$ is finite. By Lemma~\ref{lem:orbit}(v), $N(t)=\lambda\sum_kG_k\Delta_{n-k}$, and the
+identity $(z-1)\sum_kG_kz^{-k}=1-E[z^{-T}]$ gives $N(t)/t\to\lambda(1-E[z^{-T}])$. The departure limit follows from
+$\mathrm{Dep}=\sum_km_k^0+\lambda t-N$. By Lemma~\ref{lem:orbit}(v), the composition limit holds for the pending requests, and for
+the requests completed over the next cycle, which are the same. Over a cycle $(t,f(t)]$, any per-turn weight $P_k$ is processed at
+the average rate $\sum_kP_k\pi_k/\sum_kc_k\pi_k$.
 
-\emph{(d), self-similarity.} $f(u)/u=1+V(u)/u\to z$, and $f^m(u)/u\to z^m$ by induction on $m$. A session that arrives at $u$
-joins as turn~1 at $u$ and, with zero think time and FIFO, completes turn $m$ at $f^m(u)$. The centred form follows from the
-virtual-origin argument below: $u_n+u^*=w_n$ with $u^*=V_{\mathrm{tot}}(0)/(\rho-1)$, and $w_{n+m}/w_n\to z^m$.
-
-\emph{(e).} $F(x,\rho)=\rho\sum_k\omega_kx^{-k}-1$, with $\omega_k=c_kG_k/\sum_jc_jG_j$, satisfies $F(1,1)=0$ and
-$\partial_xF(1,1)=-\bar k_c$. So $z'(1)=1/\bar k_c$. Then $E[z^{-T}]=1-(z-1)E[T]+O((z-1)^2)$, so
-$\alpha=\lmiss(E[T]/\bar k_c)(\rho-1)+O((\rho-1)^2)$.
-
-\emph{(d), continued: the virtual origin and the remaining work.} This sharpening was pointed out by an independent referee. For
-$u\ge b_{K-1}$, all class-$k$ descendants of the initial requests have joined, and the arrivals' class-$k$ requests joined
-by $u$ are those whose first request joined by $f^{-(k-1)}(u)$. Hence
-\[
-f(u)=V_{\mathrm{tot}}(0)+\sum_ka_kf^{-(k-1)}(u),
-\]
-and along every orbit $u_{n+1}=V_{\mathrm{tot}}(0)+\sum_ka_ku_{n+1-k}$. The constant $V_{\mathrm{tot}}(0)/(1-\rho)$ is a
-particular solution, so $w_n=u_n-V_{\mathrm{tot}}(0)/(1-\rho)$ solves the homogeneous recursion. For $\rho<1$ this gives
-$u_n\to\tau$ at once. For $\rho>1$, $w_n=Bz^n+O((r+\epsilon)^n)$, with $r$ the largest modulus among the other roots. Since
-$V_{\mathrm{tot}}(u_n)=(\rho-1)w_n$,
+\emph{(b).} $f(u)/u=1+V(u)/u\to z$, and $f^m(u)/u\to z^m$ by induction on $m$. A session that arrives at $u$ joins as turn~1 at
+$u$ and, with zero think time and FIFO, completes turn $m$ at $f^m(u)$. By Lemma~\ref{lem:recursion}, for $n\ge K-1$ the orbit
+solves $u_{n+1}=V_{\mathrm{tot}}(0)+\sum_ka_ku_{n+1-k}$. The constant $V_{\mathrm{tot}}(0)/(1-\rho)=-u^*$ is a particular solution,
+so $w_n=u_n+u^*$ solves the homogeneous recursion, and $w_n=Bz^n+O((r+\epsilon)^n)$, with $r$ the largest modulus among the other
+roots. Since $V_{\mathrm{tot}}(u_n)=(\rho-1)w_n$ (Lemma~\ref{lem:orbit}(iii)) and $V(u_n)=w_{n+1}-w_n$,
 \[
 V(u_n)=\frac{z-1}{\rho-1}V_{\mathrm{tot}}(u_n)+O((r+\epsilon)^n),
 \]
-that is, $V(u_n)=\gamma\,(u_n+u^*)+O((r+\epsilon)^n)$.
-In all eight cells, over $\rho\in[1.01,6.6]$, $r=0.946$--$0.966<1$, so the deviation vanishes absolutely. Correspondingly,
-$f^m(u)+u^*\approx z^m(u+u^*)$. The transient decays by $\vartheta=r/z=0.84$--$0.95$ per
-generation, and the registered window opens 33--37 generations after the burst. So we compare with the exact fluid as well
-as with the limits.
+that is, $V(u_n)=\gamma\,(u_n+u^*)+O((r+\epsilon)^n)$, and $w_{n+m}/w_n\to z^m$ gives the centred form
+$f^m(u)+u^*=z^m(u+u^*)(1+o(1))$. In all eight cells, over $\rho\in[1.01,6.6]$, $r=0.946$--$0.966<1$, so the deviation vanishes
+absolutely. The transient decays by $\vartheta=r/z=0.84$--$0.95$ per generation, and the registered window opens 33--37 generations
+after the burst. So we compare with the exact fluid as well as with the limits.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:classic}]
+\emph{(a).} Let $\rho<1$ and take $u_0=0$. Summing the recursion, whose terms are all nonnegative, gives
+$\sum_{n\le M}\Delta_n\le V_{\mathrm{tot}}(0)+\rho\sum_{n\le M}\Delta_n$, and in the limit
+$\sum_n\Delta_n=V_{\mathrm{tot}}(0)/(1-\rho)$. Thus $b_n\uparrow\tau=V_{\mathrm{tot}}(0)/(1-\rho)$. For every orbit start
+$u_0\in[0,V_0)$, each $\Delta_n(u_0)$ is positive, since $\Delta_n\ge a_1\Delta_{n-1}$. Every $t<\tau$ lies on such an
+orbit, so the server is busy on $[0,\tau)$, and $V(b_n)=\Delta_n\to0$. (Equivalently, in the exact identity of
+Lemma~\ref{lem:recursion} the constant $V_{\mathrm{tot}}(0)/(1-\rho)$ is a particular solution, which gives $u_n\to\tau$ at once.) If
+$\rho\ge1$, the queue never empties: $V\ge\eta V_{\mathrm{tot}}(0)>0$ throughout, by the proof of Lemma~\ref{lem:orbit}(i).
+
+Without arrivals ($\lambda=0$, used for SHED), the orbit argument does not apply. There, $V_{\mathrm{tot}}'=-1$ and
+$V\ge\eta V_{\mathrm{tot}}$ give $\tau=V_{\mathrm{tot}}(0)$ directly.
+
+\emph{(b), $\rho=1$.} Lemma~\ref{lem:renewal} with $b_k=a_k$ gives $\Delta_n(u_0)\to V_{\mathrm{tot}}(u_0)/\sum_kka_k$,
+uniformly in $u_0\in[0,V_0]$. Here $V_{\mathrm{tot}}(u_0)=V_{\mathrm{tot}}(0)$ and $\sum_kka_k=\bar k_c$. Every
+$t\ge V_0$ equals $f^n(u_0)$ for a unique $u_0\in[0,V_0)$ and $n\ge1$. So
+$V(t)\to V_{\mathrm{tot}}(0)/\bar k_c$, and by Lemma~\ref{lem:orbit}(v), $N\to\lambda E[T]V_{\mathrm{tot}}(0)/\bar k_c$.
+
+\emph{(c).} $F(x,\rho)=\rho\sum_k\omega_kx^{-k}-1$, with $\omega_k=c_kG_k/\sum_jc_jG_j$, satisfies $F(1,1)=0$ and
+$\partial_xF(1,1)=-\bar k_c$. So $z'(1)=1/\bar k_c$. Then $E[z^{-T}]=1-(z-1)E[T]+O((z-1)^2)$, so
+$\alpha=\lmiss(E[T]/\bar k_c)(\rho-1)+O((\rho-1)^2)$.
 \end{proof}
 
 \begin{proof}[Proof of Theorem~\ref{thm:premium}]
@@ -202,7 +208,7 @@ H=1-q^K\Bigl(1-E[T]\Big/\sum_kG_kz^{K-k}\Bigr).
 For $z>1$ and $K\ge2$, the sum in the denominator exceeds $E[T]$ and increases with $z$. So $H$ lies in $(1-q^K,1)$ and
 is non-increasing in~$z$.
 
-\emph{Near the threshold.} The expansion follows from Theorem~\ref{thm:trap}(e), with
+\emph{Near the threshold.} The expansion follows from Proposition~\ref{prop:classic}(c), with
 $\alpha=\lmiss(E[T]/\bar k_c)(\rho-1)+O((\rho-1)^2)$, and from $D=\lambda-\alpha$. When $\bar k_c=E[T]$, the sign of the
 premium is decided at second order.
 
@@ -216,20 +222,20 @@ evaluated in floating point).
 
 \begin{proof}[Proof of Corollary~\ref{cor:trapthr}]
 The state at the switching time $t_0$ is an admissible initial condition (F6), and $V(t_0)>0$. The claim then follows
-from Theorem~\ref{thm:trap}(a)--(c) applied with rate $\lambda'$. If $\lambda'\in(\lmiss,D(\lambda))$, then $\rho'>1$, so
+from Proposition~\ref{prop:classic}(a)--(b) and Theorem~\ref{thm:trap}(a) applied with rate $\lambda'$. If $\lambda'\in(\lmiss,D(\lambda))$, then $\rho'>1$, so
 by Lemma~\ref{lem:orbit}(iii) $V_{\mathrm{tot}}(t)\ge V_{\mathrm{tot}}(t_0)$, and $V\ge\eta V_{\mathrm{tot}}(t_0)>0$:
-the queue never empties, and it grows by Theorem~\ref{thm:trap}(c). At $\rho'=1$ the same bound holds, and the backlog tends
+the queue never empties, and it grows by Theorem~\ref{thm:trap}(a). At $\rho'=1$ the same bound holds, and the backlog tends
 to $\lmiss E[T]V_{\mathrm{tot}}(t_0)/\bar k_c$.
 \end{proof}
 
-\noindent\emph{Proof of Corollary~\ref{cor:trapinv}.}
+\noindent\emph{Proof of Remark~\ref{rem:trapinv}.}
 
 Divide Lemma~\ref{lem:perron}'s equation by $\sum_jc_jG_j$. The other quantities are explicit functions of $z$, $G$ and
 $\omega$. Under $c\mapsto c/s$, $\omega$ is unchanged and $\lmiss\mapsto s\lmiss$. \qed
 
 \paragraph{Remarks.}
 \begin{itemize}[leftmargin=*,nosep]
-\item \emph{Processor sharing.} The layer RR of \S\ref{sec:fp-heur} advances every session at $1/V(t)$ turns per second. Use
+\item \emph{Processor sharing.} The layer RR of Appendix~\ref{app:entry} advances every session at $1/V(t)$ turns per second. Use
 the clock $x=\int_0^t ds/V(s)$ and the continuous renewal theorem; the kernel is a step function with compact support, hence
 non-lattice. This yields the Euler--Lotka equation $\lambda\sum_kc_kG_k\int_{k-1}^ke^{-\alpha_{\mathrm{PS}}a}\,da=1$ for the growth exponent
 $\alpha_{\mathrm{PS}}$, the backlog growth $\lambda(1-E[e^{-\alpha_{\mathrm{PS}}T}])$, departures $\lambda E[e^{-\alpha_{\mathrm{PS}}T}]$
@@ -254,15 +260,15 @@ $\lmiss$. The branching description is classical and claimed as such.
 in overload. Khanin et al.~\citep{khanin2001steady} study steady (constant-flow) solutions of fluid FIFO re-entrant lines from the
 empty state, with stage-dependent service times. At an overloaded station the steady flows satisfy
 $x_s=x_{s-1}/\sum_jx_{j-1}v_j$; at a single station with $n$ fixed stages this gives $x_s=a^s$ with $\sum_jv_ja^j=1$, which is
-Lemma~\ref{lem:perron}'s equation with $a=1/z$ and $T\equiv n$, and the steady flows give part~(c)'s gap slope, composition and
-departure rate; a closing remark extends their uniqueness theorem to a fixed fraction of the flow leaving at each node, which in
-a fluid is our random $T$, and their normalization gives Corollary~\ref{cor:trapinv}. They prove existence, uniqueness for
+Lemma~\ref{lem:perron}'s equation with $a=1/z$ and $T\equiv n$, and the steady flows give Theorem~\ref{thm:trap}(a)'s gap slope,
+composition and departure rate; a closing remark extends their uniqueness theorem to a fixed fraction of the flow leaving at each node, which in
+a fluid is our random $T$, and their normalization gives Remark~\ref{rem:trapinv}. They prove existence, uniqueness for
 Kelly-type lines and non-uniqueness examples for two stations, and leave the uniqueness of general (non-steady) trajectories open.
 Relative to theirs, our contribution is the renewal recursion along FIFO orbits from an arbitrary initial state, hence the
 convergence of every trapped trajectory to the steady regime with an exact virtual origin and rate, and the turn-count and
 cost-growth factors of Theorem~\ref{thm:premium}; Corollary~\ref{cor:trapthr} is their operational reading with the classical drain
 condition. The critical case,
-Theorem~\ref{thm:trap}(b), is the fluid counterpart of heavy-traffic state-space collapse in multiclass FIFO feedback
+Proposition~\ref{prop:classic}(b), is the fluid counterpart of heavy-traffic state-space collapse in multiclass FIFO feedback
 queues~\citep{reiman1988multiclass,dai1995multiclass}. Overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
 limits~\citep{jennings2013fluid}; fluid metastability of queues with load-dependent service is posed by
 Dong~\citep{dong2022metastability}; and within-request KV growth under continuous batching is analysed by Ao et
@@ -289,7 +295,7 @@ $1.18\lmiss$ & dips to 250.7 ($-0.3$\%), then grows to 445 by 30{,}000\,s\\
 $1.10\lmiss$ & dips to 246 ($-2$\%), then grows to 352\\
 $1.05\lmiss$ & dips to 241 ($-4$\%), then grows to 295\\
 $1.02\lmiss$ & dips to 237.6 ($-5.5$\%), then grows to 261\\
-$1.00\lmiss$ & undershoots to 234.6 ($-6.7$\%), settles at 238.7 (Theorem~\ref{thm:trap}(b))\\
+$1.00\lmiss$ & undershoots to 234.6 ($-6.7$\%), settles at 238.7 (Prop.~\ref{prop:classic}(b))\\
 $0.90\lmiss$ & drains slowly; empty at 59{,}655\,s, the busy period $V_{\mathrm{tot}}/(1-\rho')$\\
 \bottomrule
 \end{tabular}

@@ -1,0 +1,52 @@
+\section{Related work}\label{sec:related}
+
+\paragraph{Concurrent work.} Lu et al.~\citep{lu2026cachetrap}, who posted first, study the same phenomenon on SGLang with
+prefill--decode disaggregation and a host KV tier, serving a hybrid mixture-of-experts model on real agent trajectories. They show
+it on hardware, model it with a fluid population balance $\dot N=\lambda-X(N)/K$ over an empirical hit curve, with a vulnerable
+window between their low-reuse departure rate and the peak, study recovery in simulation, and build a mitigation system evaluated on
+H200 hardware and in simulation. Against this, we add an exactly analysed idealization of the trapped state with its tests
+(\S\ref{sec:trap}--\ref{sec:validation}); an engine test of the reading that the throughput measured in a trap exceeds the drain
+threshold (\S\ref{sec:control}; proved in model~F, our idealization of an FCFS engine on which every turn misses; their systems keep
+some reuse); the registered and replicated rescue of an established zero-hit trap at the same offered load without shedding, with
+release and persistence; registered matched-arm evidence on colocated engines, including a second engine (\S\ref{sec:stampede}); and a
+first-principles entry model with an out-of-sample record (Appendix~\ref{app:entry}). They have real traces, disaggregated serving, a
+larger model, SLO goodput and a full mitigation system, which we do not. Appendix~\ref{app:lu} compares the two in detail, with their
+model read post hoc on our cells.
+
+\paragraph{Thrashing, metastability and overloaded queues.} The thrashing collapse and the working-set remedy are
+Denning's~\citep{denning1968thrashing,denning1968working}; metastability from a unimodal throughput curve and bistability under
+finite sources were analysed for random-access channels and multiprogrammed
+systems~\citep{kleinrock1975aloha,carleial1975bistable,courtois1975decomposability,nelson1987stochastic}. Metastable failures were
+named by Bronson et al.~\citep{bronson2021metastable}, studied in production incidents and modelled by Huang et
+al.~\citep{huang2022metastable}, whose trigger-and-control design our paired test follows, and analysed with queueing models and
+Markov chains~\citep{isaacs2025analyzing,habibi2024msf,alvaro2025formal}; Dong poses metastability in queues as an open
+problem~\citep{dong2022metastability}. As far as we found, none of these gives the bad regime's growth law or the composition of
+its population; service systems whose service slows in congestion show related bistability~\citep{chan2014speedup,dong2015slowdowns}.
+Overloaded processor sharing has a Crump--Mode--Jagers branching structure, linear growth and a fluid limit whose shape converges to
+an invariant one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}; overloaded multiclass FIFO queues with
+abandonment and no re-entry have fluid limits~\citep{jennings2013fluid}, and overloaded networks have bottleneck fluid
+approximations~\citep{chen1991discrete}. Re-entrant lines~\citep{kumar1993reentrant} and their fluid
+models~\citep{dai1996stability,bramson1996convergence} are studied mostly for stability, and for convergence to equilibria at load
+at most one; closest to model~F, Khanin et al.\ study steady solutions of fluid FIFO re-entrant lines~\citep{khanin2001steady}
+(\S\ref{sec:trap}). FIFO queues with feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic};
+round robin with feedback to the tail of the queue, which model~F is at the level of sessions, was analysed in equilibrium for
+time-shared systems~\citep{kleinrock1967timeshared,coffman1968feedback}; overloaded polling systems have a random fluid limit with a
+branching structure~\citep{remerova2014random}; and in heavy traffic multiclass FIFO feedback queues show state-space
+collapse~\citep{reiman1988multiclass,dai1995multiclass}.
+
+\paragraph{LLM serving and KV management for agents.} Ao et al.\ give fluid-guided scheduling with memory
+constraints~\citep{ao2025wait} and show that, in a decode-only model without prefix reuse, the eviction-free fixed point can be
+unstable~\citep{ao2026service}; Dai et al.\ prove throughput optimality of work-conserving policies without cache
+state~\citep{dai2025throughput}; Nie et al.\ give stability conditions under KV constraints for one-shot
+requests~\citep{nie2026queueing}; Dexter et al.\ analyse FCFS and longest-prefix-match scheduling under prefix
+reuse~\citep{dexter2025prefix}; and Yao et al.\ derive a mean-field LRU hit ratio for multi-turn sessions with exogenous gaps between
+turns~\citep{yao2026multiturn}, which our entry model extends with hit-dependent running reservations (Appendix~\ref{app:entry}).
+Agent-serving systems keep, offload or evict the KV that sessions leave idle in tool calls, order requests to preserve reuse, and bound
+the number of active agents: PEEK~\citep{xie2026peek}, Continuum~\citep{li2025continuum}, Sutradhara~\citep{biswas2026sutradhara},
+CONCUR~\citep{chen2026concur}, ThunderAgent~\citep{kang2026thunderagent} and its Dynamo port~\citep{dhanani2026dynamo},
+EfficientAgent~\citep{shao2026efficientagent}, AgentKV~\citep{anon2026agentkv}, MISA-T~\citep{hong2026misat},
+MARS~\citep{wang2026mars}, VAMP~\citep{kim2026vamp} and KAIROS~\citep{yuan2026kairos}, among others (Appendix~\ref{app:lu}). Several
+report hit-rate collapse as concurrency grows~\citep{chen2026concur,yuan2026agentic,hong2026misat,kim2026vamp}, describe the loop
+between eviction, cold prefill and queueing for closed or bounded populations, or assert that a short overload can leave an instance
+persistently inefficient~\citep{yuan2026kairos}. We claim none of these mechanisms; a session cap is classical load
+control~\citep{denning1976optimal,cherkasova2002session}.

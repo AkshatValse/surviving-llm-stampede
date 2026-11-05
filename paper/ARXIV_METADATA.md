@@ -3,8 +3,22 @@
 ## Reframe draft (2026-11-05, branch `claude/reframe-draft-211a57`): NOT for submission yet
 
 The draft below is under review by the authors (Akshat Valse; Dr. Ali Jannesari reviews before anything is posted). It is not
-submitted and nothing is posted. Only the repository URL is still `\pending`; the TOOLSLOW-W, REPLICATE-EDGE, CUT and
-TOOLSLOW-D15 results were filled from the lead's PAPER_INPUT parts 1, 2a and 2b. Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
+submitted and nothing is posted. The repository URL and the MIRROR slot (Section 4.1, a ledger row, App. C) are still
+`\pending`; the TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's PAPER_INPUT parts 1, 2a
+and 2b.
+
+**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. 63 pages: main text pp. 1-12
+(the references start in the right column of p. 12), references pp. 12-17, appendices A-F pp. 18-63; 7 figures, 20 tables;
+clean build (pdflatex, bibtex, pdflatex x2; no errors, undefined references or overfull boxes). Abstract unchanged. Figures to
+upload: `fig1_e2_timeseries.pdf`, `fig_trap_universality.pdf`, `fig_rescue.pdf` (main text), `fig2_thrashing_curve.pdf`,
+`fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf`, `fig8_theory_curves.pdf` (Appendix E). The sources now carry
+`% MIRROR` comment lines at the places that depend on MIRROR; strip them if the package must be comment-free.
+
+**Comments field (suggested; recount pages if the text changes):**
+
+```text
+63 pages, 7 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
+``` Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
 
 **Working title:** Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving (lead's advisor-eyes review, 2026-11-05; the title is Akshat's choice)
 
