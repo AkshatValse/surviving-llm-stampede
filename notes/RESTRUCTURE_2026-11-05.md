@@ -12,11 +12,15 @@ two papers should cite each other and be clear about reused experiments." Timing
 `cd paper; pdflatex -interaction=nonstopmode main; bibtex main; pdflatex ... main; pdflatex ... main`: every step exits 0; no
 errors, no undefined references or citations, no multiply defined labels, no overfull boxes, no "Float too large".
 
-- 63 pages (94 before). Main text pp. 1-12: Section 8 (Conclusion) and the three unnumbered statements end in the right column
-  of p. 12, where the references start; references pp. 12-17; appendices pp. 18-63.
-- 7 figures (11 before), 20 tables. Abstract unchanged: 1913 form characters, margin 7 (`COORD/release-tools/count.py`), and the
-  form text in `paper/ARXIV_METADATA.md` is unchanged. Title and `\repourl` unchanged.
-- Red `\pending{}` markers: `\repourl`, and the MIRROR slot (see below).
+- 64 pages (94 before). Main text pp. 1-12: Section 8 and the three unnumbered statements end in the right column of p. 12, and
+  the references start low in that column (about seven lines of p. 12 are left for the MIRROR outcome); references pp. 12-17;
+  appendices pp. 18-64 (A 18, B 21, C 22, D 25, E 26-62, F 62).
+- 8 figures (11 before; Fig. 4 is the MIRROR placeholder in App. C), 20 tables. Abstract unchanged: 1913 form characters, margin
+  7 (`COORD/release-tools/count.py`). Title and `\repourl` unchanged.
+- Red `\pending{}` markers: `\repourl` and the MIRROR outcome (Section 1, Section 4.1, Table 2, Fig. 4, App. C, Tables
+  `tab:ledger` and `tab:frozensum15`).
+- First restructure commit 4f62b4c (63 pages); the second commit adds the review fixes, MIRROR, the comment strip and the
+  deletion of the unused section files.
 
 ## New outline
 
@@ -27,7 +31,7 @@ Main text (sources `paper/sections/v3_*.tex`):
 | 1 Introduction | 1 | Fig. 1 (E2 time series); what is not ours (Lu et al. first; the stampede experiments registered and run 21 Oct - 1 Nov, before them; the theory, the r15 blind tests and MIRROR after them); the question; four contributions |
 | 2 The stampede: registered tests | 3 | Table 1 (the nine registered stampede and recovery tests); workload and engines; calibration and the registered rule; what the tests show; persistence and the trigger; what the record does not show |
 | 3 Model F: a renewal law for the trap | 4 | Model F (F1)-(F6); Lemma 1, Theorem 1, Proposition 1, Theorem 2, Corollary 3, Remark 1; proof idea; what is new; idealization; why the trap does not heal |
-| 4 The renewal law on the engine | 6 | Fig. 2 (trap universality); Table 2 (evidence ledger); retrospective check; the slope rule post hoc; blind tests TOOLSLOW-W and TOOLSLOW-D15; 4.1 MIRROR (pending) |
+| 4 The renewal law on the engine | 6 | Fig. 2 (trap universality); Table 2 (evidence ledger); retrospective check; the slope rule post hoc; blind tests TOOLSLOW-W and TOOLSLOW-D15; 4.1 A predicted reversal of the youth premium (MIRROR; outcome pending) |
 | 5 What trapped throughput does not tell | 9 | Fig. 3 (rescue); Corollary 3 read for an operator; CUT-A and CUT-B; SHED; the cap rescue; what the rescue does and does not show |
 | 6 Related work | 11 | Lu et al. in one paragraph (full comparison in App. F); thrashing, metastability and overloaded queues; LLM serving and KV management |
 | 7 Limitations, 8 Conclusion | 11-12 | |
@@ -38,10 +42,10 @@ Appendices:
 |---|---|---|
 | A Model F: proofs and remarks | 18 | `v2_app_trap.tex`, proofs regrouped for the split |
 | B Model F against the engine: full tables | 21 | `v2_app_trapdata.tex`, now with the per-cell table (ex-Table 1) |
-| C The blind tests in detail | 22 | `v3_app_blind.tex`: the TOOLSLOW-W, TOOLSLOW-D15 and CUT text of the old Section 3, verbatim; the MIRROR paragraph (pending) |
+| C The blind tests in detail | 22 | `v3_app_blind.tex`: the TOOLSLOW-W, TOOLSLOW-D15 and CUT text of the old Section 3, verbatim; MIRROR in full (design, predictions, rules, provenance; outcome pending) with the Fig. 4 placeholder |
 | D Persistence, the trigger, pool occupancy and goodput | 25 | `v2_app_dataonly.tex` without D4 |
-| E The stampede experiments | 25-61 | `v3_app_stampede.tex`, assembled from the old manuscript's appendices (D-T) |
-| F Lu et al.'s concurrent work and other systems in detail | 61 | `v3_app_lu.tex` |
+| E The stampede experiments | 26-62 | `v3_app_stampede.tex`, assembled from the old manuscript's appendices (D-T) |
+| F Lu et al.'s concurrent work and other systems in detail | 62 | `v3_app_lu.tex` |
 
 Appendix E: E.1 Dates and reuse (new); E.2 Workload, engines and harness; E.3 Calibration and the from-empty edge; E.4 The
 quasi-static model, the window and the cap; E.5 The registered paired tests; E.6 Dose response, tool slowdown and arrival stop; E.7
@@ -114,20 +118,49 @@ Wording that changed:
   vLLM" (18 of 18, Table `tab:e2`), with the 405-471 s wait at 300k.
 - Prose in the appendices that pointed at dropped material was reworded (list under "Reference fixes" below).
 
-## MIRROR slot
+## MIRROR (drafted from PAPER_INPUT_r16 part 0; outcomes pending)
 
-- Section 4.1 (`sec:mirror`) gives the design and model F's predictions from the lead's message; the registration reference and
-  the outcome are `\pending`. Ledger row: runs, registration and result `\pending`. App. C: one paragraph, `\pending`.
-- Every MIRROR-dependent place carries a `% MIRROR` comment line: `v3_intro.tex` (the "and MIRROR came afterwards" clause and the
-  last sentence of contribution (2)), `v3_theory.tex` (the pointer to Section 4.1 after Theorem 2), `v3_evidence.tex` (Section 4.1
-  and the ledger row), `v3_conclusion.tex` ("and MIRROR's runs" in Limitations), `v3_app_blind.tex` (the paragraph) and
-  `v3_app_stampede.tex` (", and MIRROR later" in E.1). To drop MIRROR, delete those places; to fill it, replace the `\pending`s.
-- The numbers (T = min(Geometric(1/1000), 20), about 98% at exactly 20 turns; model all-miss capacity 1.05 lref; trapped
-  completions about 0.77 lmiss against about +23% for the standard workload; a near-blackout of about 40 min, then a completion
-  wave; a backlog growing about 2.5 times faster) come from the lead's message. When written, `configs/agentload_e2_mirror_k20.yaml`
-  and `analysis/theory/icml/mirror_predict.py` were uncommitted on `r16/mirror` (the config gives the model capacity as 1.046 lref);
-  the PAPER_INPUT_r16 write-in should cite the committed registration.
-- The arXiv source package will now contain these comment lines; strip them when packaging if the package must stay comment-free.
+- Source: `notes/PAPER_INPUT_r16.md` part 0 on `r16/mirror` (daa9dd4), read from the `Nova-Research-wt/mirror` worktree, with
+  `notes/PREDICTIONS_r16_mirror.md` and `results/theory/r16/mirror_predictions.json` of the registration (commit bc81ee7, tag
+  `r16-mirror-reg`, pushed 14:07:37 CST, before any job). The numbers of the lead's first message were replaced by these: in
+  particular the backlog now "grows 1.4 times faster than the excess load" (alpha/(lam - lmiss) = 1.398), not "about 2.5 times
+  faster than the standard trap".
+- Section 4.1 "A predicted reversal of the youth premium (MIRROR)" (retitled after the review): the H-factor argument, the design, the asymptotic D/lmiss, model F's three
+  predictions at 1.65 lref (blackout 0.05-0.09 lref, wave at 5135-5195 s, late completions 0.49-0.60 lref, backlog 1.4 times the
+  excess load), the throughput-curve alternative, the registered rule (M1-M4, RENEWAL/CURVE, the cell verdicts), the not-blind
+  statements; outcome `\pending`.
+- Table 2 row: "Model F's prediction that a near-deterministic turn count reverses the premium"; MIRROR, 6 BURST and 3 NOBURST runs; pre-registered, blind in
+  outcome, workload chosen with the model; result `\pending`.
+- Appendix C, paragraph MIRROR: the full design, why K = 20, the asymptotics at both rates, the frozen per-seed predictions (a
+  six-row table), the rules M1-M4, the seed and cell calls, the run-validity conditions, W5-W10, the tolerance provenance and the
+  not-blind statements; outcome `\pending`. Figure 4 (`fig:mirror`, p. 25) is a framed placeholder there: placed in Section 4.1 it pushed
+  the acknowledgments and the references to p. 13, so it went to the appendix (the lead left the choice to this session). Put
+  `figs/fig_mirror.pdf` (from `figures/r16/fig_mirror.py`) in its place with part 1; moving it to Section 4.1 needs about 0.3 column
+  of cuts elsewhere.
+- Also: a FILLED row for `configs/agentload_prereg_2026-11-05_mirror_k20.yaml` (bc81ee7, 11-05 14:07:08, on GitHub 14:07:37) in
+  `tab:ledger` (caption: five rows of 2026-11-05) and a round-16 row in `tab:frozensum15` (caption: rounds 15 and 16), both with the
+  outcome `\pending`. `tab:timeline-r15` has no MIRROR rows yet: add the registration and job times with part 1.
+- Other places that depend on MIRROR (no source comments mark them any more; see "Comments" below): the last sentence of
+  contribution (2) in Section 1; the pointer to Section 4.1 after Theorem 2 in Section 3; "and MIRROR's runs" in Section 7 (if MIRROR is dropped, put "and" before "the six CUT runs"); "CUT and
+  MIRROR were registered on 5 November 2026" in Appendix E.1. Section 1's priority sentence covers MIRROR without naming it ("the
+  blind tests of Sections 4 and 5 (registered on 2026-11-05)").
+
+## Comments and unused files (the lead's request: arXiv publishes the source)
+
+- Every comment with text in `main.tex` and the files it inputs was removed; the only one left after the assembly was
+  `main.tex:15` ("% Working title (draft): ..."), and the `% MIRROR` markers of the first restructure commit are gone. Bare
+  line-end `%` (space control, e.g. after `\resizebox{...}{!}{`) remain.
+- The section files that `main.tex` no longer inputs were deleted from `paper/sections/` (git history keeps them, e.g.
+  `git show 524fc0e:paper/sections/appendix.tex`): `appendix.tex`, `appendix_fp.tex`, `appendix_icml.tex`, `appendix_supp.tex`,
+  `background.tex`, `conclusion.tex`, `diagnostic.tex`, `frozen.tex`, `frozen_app.tex`, `intro.tex`, `limitations.tex`,
+  `mechanisms.tex`, `method.tex`, `model.tex`, `related.tex`, `results.tex`, `robustness.tex`, `theory.tex`, `theory_icml.tex`,
+  and the reframe draft's `v2_intro.tex`, `v2_theory.tex`, `v2_validation.tex`, `v2_entry.tex`, `v2_control.tex`,
+  `v2_evidence.tex`, `v2_related.tex`, `v2_conclusion.tex`. Where this note says the old files "stay in `paper/sections/`", read
+  "stay in git history".
+- Figure files in `paper/figs/` that the PDF no longer uses were left in place (they are outputs of the figure scripts):
+  `fig4_mechanisms.pdf`, `fig5_robustness.pdf`, `fig6_policy_grid.pdf`, `fig9_theory_scaling.pdf`,
+  `fig10_theory_fixed_points.pdf`, `fig_lpm_crossing.pdf` and any other file not in the upload list of `paper/ARXIV_METADATA.md`;
+  do not upload them.
 
 ## Honesty facts of `COORD/LEAD_HANDOFF.md`: where each is now
 
@@ -342,3 +375,32 @@ Block by block (old file, block index in `blocks.py`, lines, bytes, fate, labels
 
 The main-text files of the reframe draft (`v2_intro`, `v2_theory`, `v2_validation`, `v2_entry`, `v2_control`, `v2_evidence`,
 `v2_related`, `v2_conclusion`) are no longer input either; their content is in the new files as mapped above.
+
+## Read-only review of 4f62b4c (one agent, after the first commit) and what was done with it
+
+28 findings; the theorem split was found consistent with App. A and every part-letter reference correct. Applied:
+- must-fix: "two pre-registered cells slow the tool calls with no burst" (TOOLSLOW-D15 did not trap); the processor-sharing analogy
+  restored to "can exceed 1/E[S]" with alpha_PS defined; Section 2's "the plug-in puts four of the other seven below the threshold
+  and two within 1e-4 /s" (not "explains the others"); the H200 300k qualifier (n <= 32 seen, no blind simulator prediction) in
+  Section 2.
+- should-fix: CAPPED "in all 30 CAPPED runs of the five paired tests" with the 405-471 s "in E2"; App. F's pointers to its own D4
+  paragraph and the recomputation; "blind in outcome" for CUT in Section 5 and Table 2; "on 300 s bins" for the dip bound; the
+  0.82 -> 0.99 effect of the one looser CUT rule change; Khanin et al.'s closing remark on random T; the intro's processor-sharing
+  credit and "the derivation of the recursion"; the MIRROR wording (title "A predicted reversal ...", the ledger claim as model F's
+  prediction, "can put H far enough below 1", "read on this workload"); the intro's "the theory ... and the blind tests" list; two
+  repointed citations in E.4 (decomposition, bounded multiprogramming); the TOOLSLOW-W row of `tab:frozensum15` -> App. C; two
+  pointers to cut paragraphs removed; "(36 registered, on 30 plans)" in Table 2; the S2-against-gamma sentence and 1.089 against
+  gamma/z; the rescue's goodput cost in the intro; appendix pointers after Proposition A, Proposition `prop:cap`, Corollary
+  `cor:rescue` and Eq. (fluid); LPM expanded and the client plan defined in Section 2.
+- nits: App. E references to cut simulator material deleted or reworded; assembly seams fixed (a stray space, self-references in
+  E.6, E.7, E.9, E.12, a dangling pointer to EfficientAgent and CacheRoute); the release-time pointer -> E.7 and `tab:frozensum`;
+  Proposition 1(a)'s "lambda = 0, outside (F5)" (and in App. A); the proof of Lemma 1 now says why u_0 in [0, V_0) suffices ((F6):
+  the state at any time is an admissible initial state); "(post hoc)" on the SHED hit-return times; Lu et al.'s late controller
+  "(and leaving it on)"; "and by turning sessions away" in the conclusion; the pool gauge's locked prefixes.
+Not applied: the S1-S5 table (space); MIRROR drop mechanics beyond the list above (MIRROR stays).
+
+To keep the main text at 12 pages after these additions, about 25 lines were trimmed without dropping a claim or qualifier: the
+definition of pre-registered in Section 2's text (it is in Table 1's caption), a sentence of the composition bullet, the Kendall
+sentence (two of its four probabilities; all four stay in App. A), the Lu et al. sentence of Section 5's opening, the goodput
+sentence of the rescue (detail in App. D), the MIRROR rule sentence (in full in App. C), the concurrent-work paragraph and the
+from-empty summary of Section 4. The MIRROR figure placeholder went to App. C for the same reason.

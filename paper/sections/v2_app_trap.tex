@@ -124,7 +124,8 @@ discrete renewal theorem~\citep{feller1968introduction}.
 \end{proof}
 
 \begin{proof}[Proof of Lemma~\ref{lem:recursion}]
-The rate of the remaining work is Lemma~\ref{lem:orbit}(iii), and the recursion with its properties is Lemma~\ref{lem:orbit}(iv).
+The rate of the remaining work is Lemma~\ref{lem:orbit}(iii), and the recursion with its properties is Lemma~\ref{lem:orbit}(iv):
+by (F6) the state at any time $u_0$ is an admissible initial state, so it suffices to take $u_0\in[0,V_0)$.
 For the exact identity, which an independent referee pointed out, take $u\ge b_{K-1}$. All class-$k$ descendants of the initial
 requests have then joined, and the arrivals' class-$k$ requests joined by $u$ are those whose first request joined by
 $f^{-(k-1)}(u)$. Hence
@@ -173,7 +174,7 @@ orbit, so the server is busy on $[0,\tau)$, and $V(b_n)=\Delta_n\to0$. (Equivale
 Lemma~\ref{lem:recursion} the constant $V_{\mathrm{tot}}(0)/(1-\rho)$ is a particular solution, which gives $u_n\to\tau$ at once.) If
 $\rho\ge1$, the queue never empties: $V\ge\eta V_{\mathrm{tot}}(0)>0$ throughout, by the proof of Lemma~\ref{lem:orbit}(i).
 
-Without arrivals ($\lambda=0$, used for SHED), the orbit argument does not apply. There, $V_{\mathrm{tot}}'=-1$ and
+Without arrivals ($\lambda=0$, used for SHED; outside (F5)), the orbit argument does not apply. There, $V_{\mathrm{tot}}'=-1$ and
 $V\ge\eta V_{\mathrm{tot}}$ give $\tau=V_{\mathrm{tot}}(0)$ directly.
 
 \emph{(b), $\rho=1$.} Lemma~\ref{lem:renewal} with $b_k=a_k$ gives $\Delta_n(u_0)\to V_{\mathrm{tot}}(u_0)/\sum_kka_k$,

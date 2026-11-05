@@ -47,16 +47,16 @@ rate at which runs from an empty engine stayed stable for 3000\,s (E0b). In the 
 state is then metastable in the window $(\lref,\min(\mu^*,\ledge))$ (Appendix~\ref{app:qs}), and a registration placed the test rates
 one and two thirds of the way across it and the cap at the smallest $n$ with $\mu(n)\ge0.95\mu^*$, by formula. The paired test E2
 runs three arms per seed for 8700\,s, judged over $[5700,8700)$\,s, with the arms of a seed sharing arrival times, turn counts and
-tool times (Table~\ref{tab:stampede}). Its rule calls a BURST run trapped by tokens, not sessions, because a trapped engine prefills
-at the all-miss token rate while completing sessions faster than $\lref$ (\S\ref{sec:validation}). We call a test pre-registered when
-its filled registration reached GitHub before its jobs were submitted, and registered when it was committed before submission but
-pushed later; neither label says whether a prediction for it was blind. No registration is in a third-party registry.
+tool times, fixed before any run by the client's per-seed plan (Table~\ref{tab:stampede}). Its rule calls a BURST run trapped by tokens, not sessions, because a trapped engine prefills
+at the all-miss token rate while completing sessions faster than $\lref$ (\S\ref{sec:validation}). Pre-registered and registered are defined in
+Table~\ref{tab:stampede}; neither label says whether a prediction was blind, and no registration is in a third-party registry.
 
 \paragraph{What the tests show.} Over the five paired tests the burst left the engine at zero hits to the end of every one of its
 30 BURST runs, 7500\,s after the burst, at rates that the engine carried in the good state for the full 8700\,s of every NOBURST
-run; the registered slope rule called 23 of them trapped (\S\ref{sec:validation} explains the others post hoc). A cap within 5\% of
-the measured peak of $\mu(n)$ prevented the trap in every CAPPED run of the two pre-registered SGLang tests and of vLLM, at the price
-of admission delay at the client (405--471\,s on average at 300k). The registered dose response places the basin boundary between
+run; the registered slope rule called 23 of them trapped (post hoc, the plug-in of \S\ref{sec:validation} puts four of the other seven
+below the rule's threshold and two within $10^{-4}$\,/s of it). A cap within 5\% of
+the measured peak of $\mu(n)$ prevented the trap in all 30 CAPPED runs of the five paired tests, at the price of admission delay at
+the client (405--471\,s on average in E2). The registered dose response places the basin boundary between
 bursts of 40 and 60 sessions in every seed (50 trapped 1 of 3). A tool slowdown with no burst can also trap the engine: lengthening
 every tool call that starts in $[1200,2100)$\,s by 30\,s trapped 1 of 3 runs, so that registered rule (traps in 2 of 3) was not met,
 and \S\ref{sec:validation} reports a longer slowdown registered later. On an H200 at the 300k pool, the all-miss capacity rose
@@ -68,7 +68,7 @@ arrivals (SHED) and a cap engaged inside an established trap (R1, R4) are the tw
 tool slowdown left the trap on its own. Over 50 such runs, about 100 trapped hours (99--103\,h, depending on where the trap is taken
 to start), no 300\,s window after the trap formed reached a follow-up hit fraction of 0.5; the highest was 0.16. Treating the runs as
 independent, which shared seeds weaken, a one-sided 95\% bound on a run's probability of escaping within its observed span (at least
-6100\,s) is 5.8\%. Stock LPM, which leaves request-level FCFS while its queue is short, escaped in 4 of its 9 trapped runs, and 1 of
+6100\,s) is 5.8\%. Stock LPM (SGLang's longest-prefix-match ordering), which leaves request-level FCFS while at most 128 requests wait, escaped in 4 of its 9 trapped runs, and 1 of
 the 16 from-empty collapses (150k pool, 1.30~$\lref$) recovered within its 3000\,s run. In 16 stuck runs every trigger session had
 left the system 558--6246\,s before the end, and the 727--15{,}453 turns completed after that had no hit in 15 runs (4 hits among
 5{,}937 turns in the trapped TOOLSLOW run): the trap outlives its trigger, as Lu et al.\ also observed on
@@ -77,7 +77,9 @@ present at the end. These counts are post hoc (Appendix~\ref{app:dataonly}).
 
 \paragraph{What the record does not show.} The tests use synthetic sessions and dense 7--8B models on one GPU per engine; all but
 two use Qwen2.5-7B on the A100. The vLLM registration reached GitHub only after two of its jobs had started, so we call that test
-registered, not pre-registered. The 300k H200 cell is a measurement, not a registered test. A fresh-seed replication of the
+registered, not pre-registered. The 300k H200 cell is a measurement, not a registered test; its closed-curve values for $n\le32$ were
+seen by the cell's operating agent and the first author before the model's freeze, and no blind simulator prediction was made for
+it. A fresh-seed replication of the
 from-empty edge at 300k did not meet its rule (2.5~$\lref$ was stable in 3 of 3 fresh seeds; in realized rates the edge lies at
 2.665--2.726~$\lref$). Some predictions for these tests are blind by access only, and the timeline of every registration and
 prediction, with its slips, is in Appendix~\ref{app:stampede}.

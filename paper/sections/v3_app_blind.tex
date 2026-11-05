@@ -131,5 +131,61 @@ arm's registered rule rejected the naive reading, and CUT-A's also the quasi-sta
 intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 \end{itemize}
 
-% MIRROR: fill from PAPER_INPUT_r16 or drop this paragraph (see the main-text subsection).
-\paragraph{MIRROR.} The design and model~F's predictions are in \S\ref{sec:mirror}. \pending{registration (configuration \fpath{configs/agentload_e2_mirror_k20.yaml}, prediction script \fpath{analysis/theory/icml/mirror_predict.py}, rule and frozen predictions in \fpath{notes/PREDICTIONS_r16_mirror.md}), jobs, per-seed outcomes and scores}
+\begin{figure}[htbp]\centering
+\fbox{\parbox[c][0.5\columnwidth][c]{0.93\columnwidth}{\centering\footnotesize\pending{MIRROR figure,
+\fpath{figures/r16/fig_mirror.py}: (a) completions per 300\,s bin after the burst, (b) the backlog}}}
+\caption{MIRROR at 1.65~$\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the
+step-capped workload (blue, dashed) and the MIRROR runs (orange). \pending{MIRROR runs}}\label{fig:mirror}
+\end{figure}
+
+\paragraph{MIRROR.} The test of \S\ref{sec:mirror} runs the E2 BURST protocol on cell \texttt{sglang-fcfs-r1-mirror-k20} (SGLang
+0.5.22, FCFS with the waiting-prefix refresh, 300k pool, Qwen2.5-7B-Instruct, A100 80GB PCIe) with
+\fpath{configs/agentload_e2_mirror_k20.yaml}, which is \fpath{configs/agentload_e2_burst.yaml} with the mean turn count changed from
+15 to 1000 and the maximum from 60 to 20, and nothing else; rates are multiples of the standard workload's registered
+$\lref=0.071534$\sps. The arms run one per job, seeds 0--2, for 8700\,s, with the burst of 200 sessions in $[1200,1260)$\,s: BURST at
+1.65~$\lref$ (the decisive cell), BURST at 1.35~$\lref$ (secondary) and NOBURST at 1.65~$\lref$ (controls), and one E0a run of the
+workload measures its all-miss capacity, which no rule uses. The step cap $K=20$ was chosen by computation only, comparing $K=15$,
+20 and 25 and mean turn counts of 30, 40 and 60 in the model: at $K=20$ the model's all-miss capacity matches the standard
+workload's (1.046 against 1.004~$\lref$) and the good state's basin at 1.65~$\lref$ is wide (stable point 14.3 sessions, unstable
+point 41.8), so the NOBURST controls should stay good; no engine run of the workload existed. Asymptotically, model~F gives
+$\rho=1.577$, $D/\lmiss=0.771$ ($H=0.699$, $\Gamma=1.103$; the standard workload 1.223, with $H=0.989$ and $\Gamma=1.236$) and
+$\alpha/(\lambda-\lmiss)=1.398$ (standard 0.65) at 1.65~$\lref$, and $\rho=1.291$, $D/\lmiss=0.870$ ($H=0.825$, $\Gamma=1.055$;
+standard 1.126) and $\alpha/(\lambda-\lmiss)=1.447$ at 1.35~$\lref$ (\fpath{results/theory/r16/mirror_predictions.json}). Its frozen
+per-seed predictions, from the plan-driven FIFO on each seed's exact client plan (rates in $\lref$; wave: the median completion time
+of the 200 burst sessions; slopes in sessions/s, model~F against the quasi-static $\lambda_{\mathrm{plan}}-\lmiss$):
+\begin{center}\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}c c c c c c@{}}
+\toprule
+rate, seed & $[2400,3600)$ & wave (s) & burst IQR (s) & $[6600,8700)$ & slope F / QS\\
+\midrule
+1.65, 0 & 0.047 & 5195 & 4803--5392 & 0.546 & 0.0789 / 0.0478\\
+1.65, 1 & 0.070 & 5135 & 4876--5299 & 0.599 & 0.0857 / 0.0441\\
+1.65, 2 & 0.093 & 5157 & 4788--5376 & 0.486 & 0.0930 / 0.0518\\
+1.35, 0 & 0.000 & 4883 & 4497--5022 & 0.599 & 0.0565 / 0.0274\\
+1.35, 1 & 0.058 & 4802 & 4500--4973 & 0.686 & 0.0534 / 0.0192\\
+1.35, 2 & 0.070 & 4870 & 4546--5068 & 0.726 & 0.0603 / 0.0278\\
+\bottomrule
+\end{tabular}}
+\end{center}
+In the quasi-static reading both completion windows are at 1.046~$\lref$.
+
+The rules (\fpath{analysis/r16_mirror.py}; registration \fpath{configs/agentload_prereg_2026-11-05_mirror_k20.yaml}, commit
+\texttt{bc81ee7}, tag \texttt{r16-mirror-reg}, pushed at 14:07:37 CST on 2026-11-05, before any job;
+\fpath{notes/PREDICTIONS_r16_mirror.md}) score each BURST run: M1, completions over $[2400,3600)$\,s at most 0.30~$\lref$; M2, the
+wave within $0.15(F-1200\,\mathrm{s})$ of model~F's time $F$; M3, completions over $[6600,8700)$\,s at most 0.85~$\lref$; M4, the
+least-squares slope of the 10\,s backlog over $[6000,8700)$\,s closer to model~F's than to the quasi-static slope. A seed is RENEWAL
+if its run is stuck (the frozen endpoints of the basin tests) and M1--M4 hold, CURVE if both completion windows are at least
+0.85~$\lref$, NOT-TRAPPED if the run is not stuck, and MIXED otherwise; the cell passes with RENEWAL in 2 of 3 seeds, fails with CURVE
+in 2 of 3 and is NO-TRAP, leaving model~F untested, with NOT-TRAPPED in 2 of 3. A run counts only if it is the registered cell's,
+completed, bound to the registration and driven by the frozen plan. Registered secondary checks, reported but not in the verdict:
+W5, the wave within $0.05(F_{\mathrm{cal}}-1200\,\mathrm{s})$ of the calibrated time $F_{\mathrm{cal}}=1200+0.9223(F-1200)$\,s; W6,
+the wave earlier at 1.35 than at 1.65~$\lref$ in each seed (model~F: by 270--330\,s); W7, the mean prompt of the turns completed over
+$[5700,8700)$\,s within 5\% of model~F's; W8, the late completions within 0.25~$\lref$ of model~F's; W9, every NOBURST control good;
+W10, the workload's measured all-miss capacity, and whether the late completions lie below it. The tolerances come from committed
+data only: on the six committed standard-workload BURST runs, model~F's plan-driven FIFO times the burst sessions' completions about
+8\% late (measured over model elapsed time 0.9125--0.9327 per run, mean 0.9223), which M2's 15\% covers and W5's factor removes; M1,
+M3 and the CURVE threshold lie between model~F's values and the quasi-static ones, fixed from those values and from the standard
+workload's measured traps. Not blind: the workload was chosen after model~F's predictions for it and for a few alternatives had been
+computed; the timing factor comes from the standard workload's committed runs; no simulator prediction was made for MIRROR; and the
+test came after Lu et al.'s paper. Outcome: \pending{MIRROR runs, per-seed calls and scores, W5--W10}.

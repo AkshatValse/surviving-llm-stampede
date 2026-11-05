@@ -72,10 +72,11 @@ before their runs were read (three blind in time, two blind by access only), it 
 frozen crossings (Table~\ref{tab:lu}). The measured crossing moved out on the H200, by 6.7 sessions at 300k and 10.9 at 600k, against
 5.8 and 6.6 from the tool-call term; refitting $h$ on the H200's own 300k cell still puts its 600k crossing 6.7 sessions out. Their
 vulnerability condition and drain estimate are stated for separate prefill and decode instances and for resident-first ordering
-with healthy reuse, so we do not treat them as predictions of theirs; Appendix~\ref{app:dataonly} applies them post hoc.
+with healthy reuse, so we do not treat them as predictions of theirs; the D4 paragraph below applies them post hoc.
 
 \paragraph{Lu et al.'s model on our cells (D4).} Every reading below is ours, post hoc, of a model built for disaggregated serving
-whose hit curve is empirical and system-specific; the second computation also judged which readings are fair.
+whose hit curve is empirical and system-specific. It was computed by one agent and recomputed by a second with its own code, as
+the analyses of Appendix~\ref{app:dataonly}; the second computation also judged which readings are fair.
 \begin{itemize}[leftmargin=*,nosep]
 \item \emph{Onset} (Table~\ref{tab:lu}). With $h$ fixed by the A100 300k crossing, the reading errs by 4.66 sessions on average over
 the seven other cells and 4.11 over the five predicted before their runs were read, against 1.53 and 1.55 for our frozen crossings.

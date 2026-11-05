@@ -7,17 +7,20 @@ submitted and nothing is posted. The repository URL and the MIRROR slot (Section
 `\pending`; the TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's PAPER_INPUT parts 1, 2a
 and 2b.
 
-**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. 63 pages: main text pp. 1-12
-(the references start in the right column of p. 12), references pp. 12-17, appendices A-F pp. 18-63; 7 figures, 20 tables;
-clean build (pdflatex, bibtex, pdflatex x2; no errors, undefined references or overfull boxes). Abstract unchanged. Figures to
-upload: `fig1_e2_timeseries.pdf`, `fig_trap_universality.pdf`, `fig_rescue.pdf` (main text), `fig2_thrashing_curve.pdf`,
-`fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf`, `fig8_theory_curves.pdf` (Appendix E). The sources now carry
-`% MIRROR` comment lines at the places that depend on MIRROR; strip them if the package must be comment-free.
+**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. 64 pages: main text pp. 1-12
+(the references start low in the right column of p. 12), references pp. 12-17, appendices A-F pp. 18-64; 8 figures (Fig. 4, in
+Appendix C, is the MIRROR placeholder), 20 tables; clean build (pdflatex, bibtex, pdflatex x2; no errors, undefined references or
+overfull boxes). Abstract unchanged. Figures to upload: `fig1_e2_timeseries.pdf`, `fig_trap_universality.pdf`, `fig_rescue.pdf`
+(main text), `fig2_thrashing_curve.pdf`, `fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf`, `fig8_theory_curves.pdf`
+(Appendix E) and, with MIRROR's part 1, the MIRROR figure in place of the placeholder. The sources carry no comments with text, and
+`paper/sections/` holds only the 13 files `main.tex` inputs. Do not upload the other files in `figs/` (`fig4_mechanisms.pdf`,
+`fig5_robustness.pdf`, `fig6_policy_grid.pdf`, `fig9_theory_scaling.pdf`, `fig10_theory_fixed_points.pdf`, `fig_lpm_crossing.pdf`,
+`fig_trap_universality.png`, `README.md`).
 
 **Comments field (suggested; recount pages if the text changes):**
 
 ```text
-63 pages, 7 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
+64 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
 ``` Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
 
 **Working title:** Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving (lead's advisor-eyes review, 2026-11-05; the title is Akshat's choice)

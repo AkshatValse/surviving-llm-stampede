@@ -59,8 +59,8 @@ arrives at $u$ with $T=m$ turns completes at $f^m(u)$, and $f^m(u)+u^*=z^m(u+u^*
 \begin{proposition}[the classical parts]\label{prop:classic}
 In model~F:
 \begin{enumerate}[(a),leftmargin=*,nosep]
-\item the queue empties if and only if $\rho<1$, at $V_{\mathrm{tot}}(0)/(1-\rho)$; with arrivals stopped it empties at
-$V_{\mathrm{tot}}(0)$;
+\item the queue empties if and only if $\rho<1$, at $V_{\mathrm{tot}}(0)/(1-\rho)$; with arrivals stopped ($\lambda=0$, outside (F5)) it
+empties at $V_{\mathrm{tot}}(0)$;
 \item if $\rho=1$, $V(t)\to V_{\mathrm{tot}}(0)/\bar k_c$ and $N(t)\to\lambda E[T]V_{\mathrm{tot}}(0)/\bar k_c$;
 \item as $\rho\downarrow1$, $\gamma=(\rho-1)/\bar k_c+O((\rho-1)^2)$ and $\alpha/(\lambda-\lmiss)\to E[T]/\bar k_c$.
 \end{enumerate}
@@ -89,8 +89,7 @@ $D/\lmiss-1=(\rho-1)(1-E[T]/\bar k_c)+O((\rho-1)^2)$.
 \noindent In model~F the trapped server thus completes sessions faster than its all-miss capacity while its backlog diverges, because
 it serves a young backlog of short, cheap turns. The premium is not automatic: truncation lowers $H$, and with
 $T=\min(\mathrm{Geometric}(1/15),60)$ and slowly growing costs $c_k=1+10^{-3}(k-1)$ it is negative at every load checked; for a
-% MIRROR: drop the pointer to sec:mirror if MIRROR is not reported
-nearly deterministic $T$, $H$ is far below 1 (\S\ref{sec:mirror}). For our workload ($c_{60}/c_1=17$--23), $E[T]/\bar k_c=0.60$--$0.62$
+nearly deterministic $T$, $H$ can be well below 1 (\S\ref{sec:mirror}). For our workload ($c_{60}/c_1=17$--23), $E[T]/\bar k_c=0.60$--$0.62$
 in all eight cells, and the premium is positive at every load we checked: proved by Theorem~\ref{thm:premium}'s monotonicity for
 $\rho\ge1.04$, shown by a monotone bracket ($H$ falling, $\Gamma$ rising; evaluated in floating point, not interval arithmetic) on
 $z\in[1+10^{-12},z_1]$, and only to first order below that (Appendix~\ref{app:trap}).
@@ -124,11 +123,13 @@ statement numerically; independent AI-agent checks are recorded in \fpath{notes/
 the arrivals $\lambda\Delta_n$ play the role of births, $G_k$ of survival and $\lambda c_kG_k$ of net maternity, and the tilted mix
 $G_kz^{-k}$ is Lotka's stable age distribution. Viewed as a steady solution (constant flows from the empty state), the self-similar
 regime of Theorem~\ref{thm:trap} is the single-station case of the steady solutions of fluid FIFO re-entrant lines of Khanin et
-al.~\citep{khanin2001steady}, which give the Perron equation, the gap slope $z-1$, the $z^{-k}$-tilted mix and the departure flow, and
-whose normalization gives Remark~\ref{rem:trapinv}; they leave open the uniqueness of non-steady trajectories. The processor-sharing
+al.~\citep{khanin2001steady}, which give the Perron equation, the gap slope $z-1$, the $z^{-k}$-tilted mix and the departure flow; they treat
+deterministic stages, a closing remark extends their framework to a fixed fraction of the flow leaving at each node (our random
+$T$), their normalization gives Remark~\ref{rem:trapinv}, and they leave open the uniqueness of non-steady trajectories. The processor-sharing
 version of model~F has the Crump--Mode--Jagers structure of overloaded processor sharing, whose fluid shape converges to an invariant
 one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}, and Theorem~\ref{thm:premium} is the visit-indexed
-analogue of its departures $\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$ exceeding $1/E[S]$~\citep{jeanmarie1994transient}. What we add, as far
+analogue of its departures $\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$, with $\alpha_{\mathrm{PS}}$ its growth exponent, which can exceed
+$1/E[S]$~\citep{jeanmarie1994transient}. What we add, as far
 as a targeted search found (\S\ref{sec:related}), is the derivation of the recursion along FIFO orbits, which carries every solution
 from \emph{any} trapped state to the self-similar regime, geometrically in the generation index and with an exact virtual origin,
 whereas a burst leaves the engine far from a steady solution; and the turn-count and cost-growth factors of the premium.
@@ -139,7 +140,7 @@ the engine (\S\ref{sec:control}).
 
 \paragraph{Model F is an idealization.} On the engine, (F1) is the measured zero hit fraction of the trap and (F2) its saturated
 GPU. (F3) is request-level FCFS admission, up to the $M/E_S$ requests that run concurrently ($M$ the pool in tokens, $E_S$ the
-service-weighted KV of a running turn; about 28 at 300k); Proposition~\ref{prop:A} bounds the closed system at the stationary mix,
+service-weighted KV of a running turn; about 28 at 300k); Proposition~\ref{prop:A} (Appendix~\ref{app:proofs}) bounds the closed system at the stationary mix,
 and the open trap exceeds $\lmiss$ only through its tilted mix. (F4) neglects the 5\,s tool time against cycles of 166--516\,s; adding
 it changes the fluid's backlog slope, completion rate and mean served prompt over the window by less than 0.02\%. Model~F leaves out
 concurrency, preemption (vLLM preempts), and the transitions into and out of the trap, where hits return. We do not prove that the
@@ -150,8 +151,9 @@ trapped engine rewrites its pool at the all-miss token rate, every $R_M=M/\text{
 at which new KV is written: uncached prompt plus completion tokens per second). Once the gap is several times $R_M$, as it is in
 every BURST run of the first three registered tests (gap$/R_M=4.1$--9.7, Table~\ref{tab:gapR}), an idle session's KV is overwritten
 long before it returns, so (F1) is self-consistent, and becomes more so as the trap ages. The pool need not be full: admitted
-requests held 55--83\% of it on average in the trapped SGLang runs with 300k and 600k pools, and 85--94\% with the native pool and on
-vLLM. This is a heuristic consistency argument, not part of the theorem: $R_M$ is a turnover scale, not a pathwise eviction bound. In
-a stochastic version (Poisson arrivals), Kendall's branching argument gives the probability that the all-miss queue ever empties from
-the fluid state 3000\,s after the registered burst: 0.35 at $\rho=1.01$, $4\times10^{-3}$ at 1.05, $4\times10^{-23}$ at 1.35
-(Appendix~\ref{app:trap}). Hits return before the queue empties, so these are orders of magnitude for a spontaneous exit, not bounds.
+requests held 55--83\% of it on average in the trapped SGLang runs with 300k and 600k pools (the engine's gauge, which also counts
+locked prefixes), and 85--94\% with the native pool and on
+vLLM. This is a heuristic consistency argument, not part of the theorem: $R_M$ is a turnover scale, not a pathwise eviction bound. With
+Poisson arrivals, Kendall's branching argument puts the probability that the all-miss queue ever empties from the fluid state 3000\,s
+after the registered burst at 0.35 for $\rho=1.01$ and $4\times10^{-23}$ at 1.35 (Appendix~\ref{app:trap}): orders of magnitude, not
+bounds, since hits return first.

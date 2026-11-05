@@ -26,8 +26,7 @@ leaves the engine persistently degraded at a base load it previously sustained, 
 sustains the failure, and modelled the vulnerable window with a fluid population balance and an empirical hit-rate
 curve~\citep{lu2026cachetrap}. Their paper appeared first. The registered stampede and recovery experiments of \S\ref{sec:stampede}
 were designed, registered and run between 21 October and 1 November 2026, before it appeared (Appendix~\ref{app:reuse}); the theory
-of \S\ref{sec:trap}, the blind tests of \S\ref{sec:validation} and~\S\ref{sec:control} (registered on 2026-11-05) and MIRROR came
-% MIRROR: drop "and MIRROR" if MIRROR is not reported
+of \S\ref{sec:trap} and the blind tests of \S\ref{sec:validation} and~\S\ref{sec:control} (registered on 2026-11-05) came
 afterwards, and the trap-state predictions were made with Lu et al.'s paper in hand. The collapse is Denning's
 thrashing~\citep{denning1968thrashing}, a bad state that a feedback loop sustains after its trigger is a metastable
 failure~\citep{bronson2021metastable,huang2022metastable}, and metastability from a unimodal throughput curve, with bounded admission
@@ -51,9 +50,10 @@ with an exact virtual origin, in which the gap between a session's turns grows a
 completions at $D=\lambda E[z^{-T}]$, with the turn mix tilted to $G_kz^{-k}$ (Theorem~\ref{thm:trap}). We decompose $D/\lmiss$
 into a turn-count factor and a cost-growth factor, a youth premium above 1 for our workload at every load we checked
 (Theorem~\ref{thm:premium} for $\rho\ge1.04$), and conclude that in model~F the throughput measured in a trap overstates the
-recovery threshold (Corollary~\ref{cor:trapthr}). The self-similar regime itself is known~\citep{khanin2001steady} and the
-recursion is a discrete renewal equation of Lotka--Leslie type~\citep{feller1968introduction}; what we add, as far as a targeted
-search found, is the recursion along FIFO orbits, which carries every trapped state into the regime, and the two factors of the
+recovery threshold (Corollary~\ref{cor:trapthr}). The self-similar regime itself is known~\citep{khanin2001steady}, the
+recursion is a discrete renewal equation of Lotka--Leslie type~\citep{feller1968introduction} and the premium has a
+processor-sharing analogue~\citep{jeanmarie1994transient}; what we add, as far as a targeted search found, is the derivation of the
+recursion along FIFO orbits, which carries every trapped state into the regime, and the two factors of the
 premium. Corollary~\ref{cor:trapthr} is not new as mathematics; its engine test is.
 \item \textbf{The law on the engine} (\S\ref{sec:validation}). With no parameter fitted to any trap measurement, model~F matches,
 across 57 stuck runs on SGLang and vLLM, two GPUs and two models (36 of them from registered protocols, on 30 distinct arrival
@@ -61,7 +61,6 @@ plans), the trapped turn mix (within 3\% in 50 of them), the pooled linear growt
 slope 1.01; per run 0.04--1.81) and completions above the all-miss capacity (in every run). These checks are retrospective. Blind
 in outcome, with tolerances set on the earlier runs, the four runs trapped by a tool slowdown alone in two pre-registered cells met
 four of the five pre-set scores; a per-run slope check failed in two of them.
-% MIRROR: fill or drop the next sentence
 A further blind test, MIRROR, uses a step-capped
 workload for which the theory predicts completions \emph{below} the all-miss capacity \pending{MIRROR outcome}.
 \item \textbf{What trapped throughput does not tell} (\S\ref{sec:control}). After a burst, a cut in arrivals to below the trapped
@@ -70,7 +69,8 @@ all-miss capacity shrank the three CUT-B backlogs only slowly, all still trapped
 arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one, but not intermediate readings; what singles
 out model~F against them is post hoc. Refusing arrivals (SHED) drained a trap by shedding 355--378 sessions. Restoring reuse with a
 session cap, which leaves model~F, rescued 9 of 9 established zero-hit traps at the same offered load without shedding a session, at
-a price of 386--569\,s of waiting at the client per paused session, and the engine stayed good after the cap was removed.
+a price of 386--569\,s of waiting at the client per paused session and 45--97\% of the goodput of the hour after the burst, and
+the engine stayed good after the cap was removed.
 \item \textbf{A registered evidence base} (\S\ref{sec:stampede}, Appendix~\ref{app:stampede}): paired tests with matched no-burst
 and capped arms on common random numbers on two engines, two GPUs and two models, a dose response in burst size, registered
 negatives, and a first-principles model of the throughput curve with an out-of-sample record (Appendix~\ref{app:entry}).

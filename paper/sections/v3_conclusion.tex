@@ -10,7 +10,6 @@ proved positive for our workload at $\rho\ge1.04$; below that it rests on a floa
 \paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
 scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind, and only in outcome:
 the four runs trapped by a tool slowdown (three TOOLSLOW-W, one TOOLSLOW-D15), the six CUT runs and MIRROR's runs, all on the A100
-% MIRROR: drop "and MIRROR's runs" if MIRROR is not reported
 with the 300k pool. In the CUT runs each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one;
 what singles out model~F against intermediate readings is post hoc. The from-empty runs are single runs per rate, and at 300k the
 seed-0 bracket did not replicate on fresh seeds (\S\ref{sec:stampede}). In an exploratory replication on two plans chosen because
@@ -36,7 +35,7 @@ retrospectively on 57 stuck runs on two engines, two GPUs and two models, with n
 hold for the runs taken together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown
 alone, in four of the five pre-set scores (a per-run slope check failed in two). The practical reading is
 Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss trap does not clear it, and a cut
-below the all-miss capacity drains the trap only slowly. On the engine, a cut below the trapped throughput but above the all-miss
+below the all-miss capacity drains the trap only slowly and by turning sessions away. On the engine, a cut below the trapped throughput but above the all-miss
 capacity left all three CUT-A traps in place to the end of the run, and a cut below the all-miss capacity shrank the backlog only
 slowly, all three CUT-B runs still trapped at 8700\,s; each arm's registered rule rejected the naive reading, and what singles out
 model~F against intermediate readings is post hoc. The other exit, a session cap that restores reuse, rescued all 9 established traps
