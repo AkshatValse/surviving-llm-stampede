@@ -1,4 +1,4 @@
-# The trap is a supercritical renewal process: exact dynamics of a thrashed prefix-cached engine
+# The trap obeys a supercritical renewal equation: exact dynamics of a thrashed prefix-cached engine
 
 Written 2026-11-05 on branch `claude/theory-icml-2164a9` (cut from `r10/arxiv` at `8aaabdb`) by a theory session started
 from the lead session "Nova preprint scoop assessment". Code: `analysis/theory/icml/`. Frozen predictions:
@@ -15,17 +15,19 @@ theory notes and code, and the text of Lu et al. (arXiv:2611.02543, read as data
 every turn misses, the GPU never idles, and requests are served in the order they join (request-level FCFS). Turn k of a
 session costs c_k all-miss GPU seconds, and a session has T turns, with G_k = P(T >= k).
 
-- **Theorem 1 (the trap is a renewal process).** Along every FIFO orbit u, f(u), f(f(u)), ... (a request that joins at u
+- **Theorem 1 (the trap obeys a renewal equation).** Along every FIFO orbit u, f(u), f(f(u)), ... (a request that joins at u
   completes at f(u) = u + V(u), V being the pending work), the cycle Delta_n = V(u_n) solves the *linear* renewal recursion
   Delta_n = sum_k lambda c_k G_k Delta_{n-k} + h_n, with h_n = 0 for n >= K.
   Let rho = lambda / lambda_miss (lambda_miss = 1 / sum_k c_k G_k), and let z solve lambda sum_k c_k G_k z^{-k} = 1.
   - **Trichotomy.** The trap drains in finite time iff rho < 1 (a busy period V_tot / (1 - rho)), stays bounded at rho = 1,
     and grows for rho > 1.
-  - **Growth (rho > 1).** The cycle grows linearly at slope gamma = z - 1, so the gap between a session's turns is
-    proportional to the trap's age. The backlog grows at alpha = lambda (1 - E z^{-T}). Sessions complete at
-    D = lambda E z^{-T}.
+  - **Growth (rho > 1).** The cycle grows linearly at slope gamma = z - 1. More precisely, it becomes proportional to
+    the total remaining work, V ~ (gamma/(rho - 1)) V_tot, i.e. to the trap's age counted from its virtual origin
+    -V_tot(0)/(rho - 1). In our cells the error vanishes absolutely. The backlog grows at alpha = lambda (1 - E z^{-T}).
+    Sessions complete at D = lambda E z^{-T}.
   - **Composition (rho > 1).** The sessions present, and the turns served, follow the z-tilted turn mix G_k z^{-k}.
-  - **Self-similarity.** A session that arrives at time u in the trap finishes at about u z^T.
+  - **Self-similarity.** With c = V_tot(0)/(rho - 1), a session that arrives at time u finishes at about
+    (u + c) z^T - c.
   - **Near the threshold.** alpha / (lambda - lambda_miss) -> E[T] / kbar_c, with kbar_c the cost-weighted mean turn index.
 - **Theorem 2 (youth premium).** D / lambda_miss = H(z) Gamma(z).
   - H depends only on the turn-count law: H = 1 for a geometric T, and lies in [1 - q^K, 1] for the truncated geometric.
@@ -42,7 +44,7 @@ session costs c_k all-miss GPU seconds, and a session has T turns, with G_k = P(
   300k cell, such a cut makes the backlog dip by 0.3-5.5% and then grow again. A cut to exactly lambda_miss undershoots by
   6.7% and settles 5.1% below the starting backlog.
 - **Corollary 4 (invariance).** z, gamma, alpha / lambda_miss, D / lambda_miss and the trapped composition depend on the
-  cell only through rho, the turn-count law G and the cost-weighted turn mix pi_k = c_k G_k / sum_j c_j G_j. They are
+  cell only through rho, the turn-count law G and the cost-weighted turn mix omega_k = c_k G_k / sum_j c_j G_j. They are
   invariant under a uniform GPU speed-up, and the pool enters only through the all-miss decode share in c_k.
 
 **What is checked (section 6; retrospective, no parameter fitted to any trap measurement).** vLLM, the H200 and Llama
@@ -126,12 +128,15 @@ Assumptions (fluid; time 0 is any instant at which the engine is trapped):
   functions C_k^0 on [0, V_0] with sum_k c_k C_k^0(t) = t and C_k^0(V_0) = m_k^0.
 
 Definition (solution). Non-decreasing absolutely continuous J_k, C_k on [0, tau) (joins and completions after time 0,
-k = 1..K) and f(u) = u + V(u) such that:
+k = 1..K, with C_k^0(0) = 0) and f(u) = u + V(u) such that:
 - J_1(t) = lambda t and J_{k+1} = r_k C_k;
 - C_k = C_k^0 on [0, V_0], and C_k(f(u)) = m_k^0 + J_k(u) for u >= 0 (FIFO);
-- V(u) = sum_k c_k (m_k^0 + J_k(u) - C_k(u)) > 0 on [0, tau) (busy).
+- sum_k c_k C_k(t) = t for t < tau (F2, work conservation);
+- V(u) = sum_k c_k (m_k^0 + J_k(u) - C_k(u)) > 0 on [0, tau) (busy);
+- maximality: either tau = infinity or V(t) -> 0 as t increases to tau.
 
-Here tau <= infinity is the time the queue first empties. Sessions present: with zero think time every session present has
+Here tau <= infinity is thus the time the queue first empties, and the last condition excludes restrictions of a solution
+to a shorter interval. Sessions present: with zero think time every session present has
 exactly one pending request, so N(t) = sum_k pi_k(t) with pi_k = m_k^0 + J_k - C_k. Total remaining work:
 V_tot(t) = sum_k pi_k(t) R_k. Departures: Dep(t) = sum_k m_k^0 + lambda t - N(t).
 
@@ -161,7 +166,7 @@ z = 1 iff rho = 1.
 - (v) The pending class-k mass at u_n (n >= 1) is pi_k(u_n) = lambda G_k Delta_{n-k} if k <= n, and
   (G_k / G_{k-n}) pi_{k-n}(u_0) if k > n. The requests completed in (u_n, u_{n+1}] are exactly those pending at u_n.
 
-**Theorem 1 (the trap as a renewal process).** Under (F1)-(F6):
+**Theorem 1 (the trap obeys a renewal equation).** Under (F1)-(F6):
 - (a) **Subcritical.** If rho < 1, the queue empties at tau = V_tot(0) / (1 - rho) and is busy before. This is the fluid
   busy period.
 - (b) **Critical.** If rho = 1, V(t) -> V_tot(0) / kbar_c and N(t) -> lambda E[T] V_tot(0) / kbar_c as t -> infinity,
@@ -172,12 +177,24 @@ z = 1 iff rho = 1.
   - Dep(t) / t -> D = lambda E[z^{-T}];
   - the class mix of the pending requests, and of the requests completed in (t, f(t)], tends to
     pi^z_k = G_k z^{-k} / sum_j G_j z^{-j};
-  - for any per-turn weights P_k (e.g. prompt tokens), the processing rate of P tends to
-    sum_k P_k G_k z^{-k} / sum_k c_k G_k z^{-k}.
+  - for any per-turn weights P_k (e.g. prompt tokens), the P-weighted work completed over a cycle (t, f(t)], divided by
+    the cycle's length, tends to sum_k P_k G_k z^{-k} / sum_k c_k G_k z^{-k}.
 - (d) **Self-similarity.** f(u)/u -> z, and f^m(u)/u -> z^m for each fixed m. A session that arrives at u with T = m
-  turns completes at u z^m (1 + o(1)).
+  turns completes at f^m(u). More precisely, with c = V_tot(0)/(rho - 1), f^m(u) + c = z^m (u + c)(1 + o(1)).
 - (e) **Near the threshold.** As rho -> 1+: gamma = (rho - 1)/kbar_c + O((rho - 1)^2), and
   alpha = lambda_miss (E[T]/kbar_c)(rho - 1) + O((rho - 1)^2). In particular alpha / (lambda - lambda_miss) -> E[T]/kbar_c.
+- (f) **The cycle is proportional to the remaining work** (pointed out by the Theorem 1 referee). For u >= b_{K-1} (all
+  descendants of the initial requests have joined),
+  f(u) = V_tot(0) + sum_k a_k f^{-(k-1)}(u),
+  so along every orbit u_{n+1} = V_tot(0) + sum_k a_k u_{n+1-k}. For rho != 1, w_n = u_n - V_tot(0)/(1 - rho) solves the
+  homogeneous recursion. Hence:
+  - if rho < 1, u_n -> V_tot(0)/(1 - rho) = tau, which is part (a) again;
+  - if rho > 1, V(u_n) = (gamma/(rho - 1)) V_tot(u_n) + O((r + epsilon)^n) for every epsilon > 0, where r is the largest
+    modulus among the non-Perron roots of x^K = sum_k a_k x^{K-k}.
+
+  In all eight cells, over rho in [1.01, 6.6], numerical root-finding gives r = 0.946-0.966 < 1. So the deviation from
+  proportionality vanishes absolutely. In the exact fluid, the ratio V/((gamma/(rho - 1)) V_tot) over the registered window
+  is 0.99-1.03 at 1.35x and 0.99-1.01 at 1.65x (300k).
 
 **Theorem 2 (youth premium).** In Theorem 1(c), let nu_k = G_k / E[T] (the stationary turn mix) and nu^z_k = pi^z_k (the
 trapped mix).
@@ -207,7 +224,7 @@ trapped mix).
 lambda from time 0, and switch the arrival rate to lambda' at a time t_0 with V(t_0) > 0. Put rho' = lambda' / lambda_miss.
 - If lambda' < lambda_miss, the queue empties at t_0 + V_tot(t_0) / (1 - rho').
 - If lambda' > lambda_miss, N(t)/t -> alpha(lambda') > 0.
-- If lambda' = lambda_miss, N(t) -> lambda_miss E[T] V_tot(t_0)/kbar_c > 0, and V >= kappa V_tot(t_0) > 0 throughout.
+- If lambda' = lambda_miss, N(t) -> lambda_miss E[T] V_tot(t_0)/kbar_c > 0, and V >= eta V_tot(t_0) > 0 throughout.
 
 The threshold is lambda_miss, the closed-system all-miss capacity at the *stationary* turn mix. It is not the trapped
 departure rate D(lambda) that an operator observes. Whenever the premium is positive, a cut to lambda' in
@@ -215,8 +232,8 @@ departure rate D(lambda) that an operator observes. Whenever the premium is posi
 endpoint lambda' = lambda_miss belongs only to the fluid. There the fluid backlog stays positive, but a stochastic queue at
 rho' = 1 empties almost surely, and just above it emptying is not rare (Remark 5).
 
-**Corollary 4 (invariance).** z solves rho sum_k pi_k z^{-k} = 1 with pi_k = c_k G_k / sum_j c_j G_j. Therefore z, gamma,
-the trapped composition, alpha / lambda_miss and D / lambda_miss are functions of (rho, pi, G) alone. They do not change
+**Corollary 4 (invariance).** z solves rho sum_k omega_k z^{-k} = 1 with omega_k = c_k G_k / sum_j c_j G_j. Therefore z, gamma,
+the trapped composition, alpha / lambda_miss and D / lambda_miss are functions of (rho, omega, G) alone. They do not change
 when every c_k is divided by s (a uniform GPU speed-up) and lambda is scaled to keep rho. gamma is dimensionless (seconds
 of wait per second of trap age). So at equal rho, two engines whose cost vectors are proportional have gaps that grow at
 the same slope. Our H200 cell models are a uniform speed-up of the A100 costs, so this holds for them, but it is not a
@@ -263,6 +280,17 @@ the closer description of request-level FCFS.
 registered window agree with zero think time: backlog slope, completion rate and mean served prompt to 4 significant
 digits. The mean cycle is 5 s shorter, the cycle slope the same (`numerics_support` in section 7).
 
+**Remark 8 (how fast the limits are reached).** The limits of Theorem 1(c) are approached geometrically in the generation
+index. The transient shrinks by the factor theta = r/z per generation, where r is the largest modulus among the non-Perron
+roots.
+- For our cells theta = 0.84-0.95 over rho in [1.01, 6.6].
+- At 300k (the FIFO-orbit probe of the exact fluid), the registered window starts about 33 (1.65x) or 37 (1.35x)
+  generations after the burst, so a transient of order theta^35, about 0.1, remains.
+- That is why section 6 reports both the asymptotic values and the exact fluid over the window. The two differ by about 1%
+  for the composition and by 4-12% for the backlog slope (1.65x / 1.35x on 300k).
+- No general rate is claimed. A nearly periodic kernel converges very slowly: the Theorem 1 referee's toy with T = 4
+  always is still 3% off after 1000 generations.
+
 ## 4. Proofs
 
 **Proof of Lemma 1.** Each term a_k x^{-k} is positive, continuous and strictly decreasing on (0, infinity), and
@@ -272,10 +300,10 @@ z = 1 iff rho = 1.
 
 **Proof of Lemma 2.**
 
-*(ii) and the construction.* Suppose the server is busy on [0, u]. The work completed by u is then exactly u. Under FIFO,
-the request joining at u completes once all work that joined before it is done: the initial V_0 plus W(u). Hence
-f(u) = V_0 + W(u). Since J_1(u) = lambda u and the other J_k are non-decreasing, W' >= lambda c_1 > 0 a.e. So f is
-continuous and strictly increasing, and f(0) = V_0.
+*(ii) and the construction.* Suppose the server is busy on [0, f(u)]. By (F2), the work completed by any time s in
+that interval is exactly s. Under FIFO, the request joining at u completes once all work that joined before it is done:
+the initial V_0 plus W(u). Hence f(u) = V_0 + W(u). Since J_1(u) = lambda u and the other J_k are non-decreasing,
+W' >= lambda c_1 > 0 a.e. So f is continuous and strictly increasing, and f(0) = V_0.
 
 Define the generations b_0 = 0, b_1 = V_0, b_{n+1} = f(b_n). We build the solution generation by generation.
 - *Generation 0 ([0, V_0]).* Completions are the initial ones, C_k = C_k^0. Re-entries are J_{k+1} = r_k C_k^0 and
@@ -284,15 +312,22 @@ Define the generations b_0 = 0, b_1 = V_0, b_{n+1} = f(b_n). We build the soluti
   on [b_{n-1}, b_n] is V_0 + W, which is known. FIFO gives the completions on [b_n, b_{n+1}]: C_k(f(u)) = m_k^0 + J_k(u)
   for u in [b_{n-1}, b_n]. Re-entry then extends J_{k+1} = r_k C_k to [b_n, b_{n+1}], and J_1 is explicit.
 
-Every step is forced by the definition, so the solution is unique. Each step involves only finitely many continuous
-monotone functions, so it exists.
+*Uniqueness.* Every step is forced by the definition: FIFO, re-entry, the arrival rate and (F2), which gives f = V_0 + W
+by the argument above. So the solution is unique, generation by generation.
+
+*Existence.* Each step involves only finitely many continuous monotone functions. Two facts make the constructed object a
+solution:
+- sum_k c_k C_k(f(u)) = V_0 + W(u) = f(u), so the constructed completions satisfy sum_k c_k C_k(t) = t. That is, the
+  constructed f equals u + V(u).
+- V(f(v)) = W(f(v)) - W(v) >= lambda c_1 V(v) > 0, so b_{n+1} > b_n, and the server stays busy as long as V_tot > 0 (below).
 
 Absolute continuity holds by induction: C_k(f(u)) = m_k^0 + J_k(u) gives C_k' = J_k'(u) / f'(u) <= J_k'(u) / (lambda c_1).
 
-*Busy throughout, and tau.* While the server is busy, (iii) below holds. Also V(t) >= kappa V_tot(t), where
-kappa = min_k c_k / R_k > 0: V and V_tot are linear in the pending masses, with coefficients c_k and R_k.
-- If rho >= 1, then V_tot(t) >= V_tot(0) > 0, so V >= kappa V_tot(0) > 0 throughout. The generations then grow by at least
-  kappa V_tot(0) each, so b_n -> infinity and the construction covers [0, infinity).
+*Busy throughout, and tau.* While the server is busy, (iii) below holds; it needs only sum_k c_k kappa_k = 1, which the
+construction builds in, so the argument is not circular. Also V(t) >= eta V_tot(t), where eta = min_k c_k / R_k > 0: V and
+V_tot are linear in the pending masses, with coefficients c_k and R_k.
+- If rho >= 1, then V_tot(t) >= V_tot(0) > 0, so V >= eta V_tot(0) > 0 throughout. Each generation then lasts at least
+  eta V_tot(0), so b_n -> infinity and the construction covers [0, infinity).
 - If rho < 1, V_tot reaches 0 at V_tot(0)/(1 - rho). Part (a) of Theorem 1 shows that this is the limit of the b_n.
 
 *(iii) The work identity.* Write j_k = J_k' and kappa_k = C_k' (a.e.); then pi_k' = j_k - kappa_k. While busy,
@@ -319,21 +354,22 @@ V_tot' = sum_k R_k (j_k - kappa_k) = lambda R_1 + sum_k kappa_k (r_k R_{k+1} - R
   sum_n h_n(u_0) = sum_j pi_j(u_0) sum_{n >= 0} c_{j+n} G_{j+n} / G_j = sum_j pi_j(u_0) R_j = V_tot(u_0).
 
 **A renewal lemma (finite memory).** Let A(s) = sum_{k=1}^K b_k s^k with b_k >= 0, b_1 > 0 and A(1) = 1, and put
-mu_b = A'(1) = sum_k k b_k. Let y_n = sum_{k=1}^{min(n, K)} b_k y_{n-k} + g_n (n >= 0), with g_n >= 0, g_0 > 0 and
-g_n = 0 for n >= K. Then y_n = L + epsilon_n with L = (sum_n g_n) / mu_b > 0 and |epsilon_n| <= C theta^n for some
-theta < 1. Here theta depends only on (b_k), and C is linear in (g_0, ..., g_{K-1}).
+m_b = A'(1) = sum_k k b_k. Let y_n = sum_{k=1}^{min(n, K)} b_k y_{n-k} + g_n (n >= 0), with g_n >= 0, g_0 > 0 and
+g_n = 0 for n >= K. Then y_n = L + epsilon_n with L = (sum_n g_n) / m_b > 0 and |epsilon_n| <= C_r theta^n for some
+theta < 1. Here theta depends only on (b_k), and C_r is linear in (g_0, ..., g_{K-1}).
 
 *Proof.* As formal power series, Y(s) = Gp(s) / (1 - A(s)), with Gp(s) = sum_{n<K} g_n s^n. The polynomial 1 - A(s) has
-the root s = 1, and it is simple because A'(1) = mu_b > 0.
+the root s = 1, and it is simple because A'(1) = m_b > 0.
 - For |s| < 1: |A(s)| <= A(|s|) < A(1) = 1, so there is no root.
 - For |s| = 1 and s != 1: A(s) = 1 = sum_k b_k forces s^k = 1 for every k with b_k > 0, including k = 1. So s = 1, a
   contradiction.
 
-Hence every other root has modulus > 1; let theta^{-1} > 1 be the smallest such modulus (if there are none, every
-theta in (0, 1) works). Partial fractions give Gp(s)/(1 - A(s)) = L/(1 - s) + Q(s). Here L = Gp(1)/A'(1) is the residue
-at s = 1, and Q is a rational function with no poles in |s| < theta^{-1}, plus possibly a polynomial, which affects only
-finitely many coefficients. Cauchy estimates give |[s^n] Q| <= C theta'^n for any theta' in (theta, 1), with C linear in
-the coefficients of Gp. Finally L > 0 because g_0 > 0. []
+Hence every other root has modulus > 1; let theta_0^{-1} > 1 be the smallest such modulus (if there are none, every
+theta_0 in (0, 1) works), and fix any theta in (theta_0, 1). Partial fractions give
+Gp(s)/(1 - A(s)) = L/(1 - s) + Q(s). Here L = Gp(1)/A'(1) is the coefficient of 1/(1 - s), which is minus the residue
+at s = 1. Q is a rational function with no poles in |s| < theta_0^{-1}, plus possibly a polynomial, which affects only
+finitely many coefficients. Cauchy estimates on the circle |s| = theta^{-1} give |[s^n] Q| <= C_r theta^n, with C_r linear
+in the coefficients of Gp. Finally L > 0 because g_0 > 0. []
 
 (This is the finite-memory case of the discrete renewal theorem, Feller Vol. I, chapter on recurrent events; it is proved
 here in full because K is finite.)
@@ -345,11 +381,16 @@ M gives S_M := sum_{n<=M} Delta_n <= sum_n h_n + rho S_M. So S_M <= V_tot(0)/(1 
 whole recursion then gives sum_n Delta_n = V_tot(0)/(1 - rho) exactly. Hence b_n increases to
 tau = V_tot(0)/(1 - rho) < infinity.
 
-Each Delta_n > 0: Delta_0 = V_0 > 0, and Delta_n >= a_1 Delta_{n-1}. So the server is busy on [0, tau), and
-V(b_n) = Delta_n -> 0. The work identity confirms the value: V_tot(tau) = V_tot(0) + (rho - 1) tau = 0.
+For every orbit start u_0 in [0, V_0), each Delta_n(u_0) > 0, because Delta_0 = V(u_0) > 0 and Delta_n >= a_1 Delta_{n-1}.
+Every t < tau lies on such an orbit, so the server is busy on [0, tau), and V(b_n) = Delta_n -> 0. The work identity
+confirms the value: V_tot(tau) = V_tot(0) + (rho - 1) tau = 0.
+
+*No arrivals (lambda = 0; used for SHED and Corollary 3).* The orbit argument needs lambda > 0 (a_1 > 0, f strictly
+increasing), so treat this case directly. While busy, V_tot' = -1 by (iii), and V >= eta V_tot > 0 while V_tot > 0. So the
+queue empties exactly at tau = V_tot(0).
 
 *(b) Critical.* Here z = 1. Apply the renewal lemma with b_k = a_k (sum = rho = 1) and g_n = h_n(u_0). Then
-Delta_n(u_0) -> V_tot(u_0)/sum_k k a_k uniformly in u_0 in [0, V_0], because C is linear in the bounded, continuous h.
+Delta_n(u_0) -> V_tot(u_0)/sum_k k a_k uniformly in u_0 in [0, V_0], because C_r is linear in the bounded, continuous h.
 Since rho = 1, V_tot(u_0) = V_tot(0) by Lemma 2(iii), and sum_k k a_k = kbar_c at lambda = lambda_miss.
 
 Every t >= V_0 equals u_n(u_0) for a unique u_0 in [0, V_0) and n >= 1: f^n maps [0, V_0) onto [b_n, b_{n+1}). So
@@ -359,16 +400,16 @@ lambda E[T] V_tot(0)/kbar_c.
 *(c) Supercritical.* Put y_n = Delta_n z^{-n}, b_k = a_k z^{-k} (sum = 1 by Lemma 1) and g_n = h_n(u_0) z^{-n}. The
 renewal lemma gives y_n = L(u_0) + epsilon_n(u_0), with:
 - L(u_0) = sum_n h_n(u_0) z^{-n} / sum_k k a_k z^{-k} > 0, continuous on [0, V_0];
-- L >= L_min > 0, because h_0 = V(u_0) >= kappa V_tot(0) > 0;
-- |epsilon_n| <= C theta^n uniformly in u_0.
+- L >= L_min > 0, because h_0 = V(u_0) >= eta V_tot(0) > 0;
+- |epsilon_n| <= C_r theta^n uniformly in u_0, since C_r is bounded in terms of V_tot(V_0).
 
 For t = u_n(u_0):
 - V(t) = Delta_n = z^n (L + epsilon_n).
-- t = u_0 + sum_{j<n} z^j (L + epsilon_j) = L (z^n - 1)/(z - 1) + O(1 + n max(1, z theta)^n). Since theta < 1, this is
-  L z^n / (z - 1) (1 + O(n theta'^n + n z^{-n})) for any theta' in (theta, 1) with theta' >= theta.
+- t = u_0 + sum_{j<n} z^j (L + epsilon_j) = L (z^n - 1)/(z - 1) + O(1 + n max(1, z theta)^n)
+  = (L z^n / (z - 1)) (1 + O(n max(theta, 1/z)^n)).
 
-So V(t)/t -> z - 1 = gamma uniformly in u_0. As t -> infinity, n -> infinity, because each generation is longer than
-kappa V_tot(0).
+So V(t)/t -> z - 1 = gamma uniformly in u_0. As t -> infinity, the generation index n of t tends to infinity, because
+every b_n is finite. The lower bound on generation lengths only shows that the orbits cover [0, infinity).
 
 *Population.* N(t) = sum_k lambda G_k Delta_{n-k} = lambda z^n sum_k G_k z^{-k} (L + o(1)), so
 N(t)/t -> lambda (z - 1) sum_k G_k z^{-k}. The identity (z - 1) sum_k G_k z^{-k} = 1 - E[z^{-T}] follows from
@@ -384,13 +425,29 @@ f(t) - t = V(t) = sum_k c_k pi_k(t). The ratio tends to sum_k P_k G_k z^{-k} / s
 
 *(d) Self-similarity.* f(u)/u = 1 + V(u)/u -> 1 + gamma = z. Then
 f^m(u)/u = prod_{i<m} f(f^i(u))/f^i(u) -> z^m, since f^i(u) -> infinity. A session that arrives at u joins as class 1 at u
-and completes turn m at f^m(u) (zero think time, FIFO).
+and completes turn m at f^m(u) (zero think time, FIFO). The centred form follows from (f): u_n + c = w_n with
+c = V_tot(0)/(rho - 1), and w_{n+m}/w_n -> z^m.
 
-*(e) Near the threshold.* Write F(x, rho) = rho sum_k pi_k x^{-k} - 1. Then F(1, 1) = 0 and
-d_x F(1, 1) = -sum_k k pi_k = -kbar_c != 0. By the implicit function theorem z(rho) is analytic near rho = 1, with
-z'(1) = (sum_k pi_k)/kbar_c = 1/kbar_c. So gamma = (rho - 1)/kbar_c + O((rho - 1)^2). Next,
-E[z^{-T}] = 1 - gamma E[T] + O(gamma^2), so alpha = lambda gamma E[T] + O(gamma^2). Dividing by
-lambda - lambda_miss = lambda_miss (rho - 1) gives alpha / (lambda - lambda_miss) -> E[T]/kbar_c. []
+*(e) Near the threshold.* Write omega_k = c_k G_k / sum_j c_j G_j (the cost-weighted turn mix) and
+F(x, rho) = rho sum_k omega_k x^{-k} - 1. Then F(1, 1) = 0 and d_x F(1, 1) = -sum_k k omega_k = -kbar_c != 0. By the
+implicit function theorem z(rho) is analytic near rho = 1, with z'(1) = (sum_k omega_k)/kbar_c = 1/kbar_c. So
+gamma = (rho - 1)/kbar_c + O((rho - 1)^2). Next, E[z^{-T}] = 1 - gamma E[T] + O(gamma^2), so
+alpha = lambda gamma E[T] + O(gamma^2) = lambda_miss (E[T]/kbar_c)(rho - 1) + O((rho - 1)^2). Dividing by
+lambda - lambda_miss = lambda_miss (rho - 1) gives alpha / (lambda - lambda_miss) -> E[T]/kbar_c.
+
+*(f) The cycle is proportional to the remaining work.* Take u >= b_{K-1} = f^{K-1}(0). The class-k descendants of the
+initial requests have then all joined: those of initial class j < k need k - j generations. So their contribution to
+J_k(u) is the constant sum_{j<k} (G_k/G_j) m_j^0. The arrivals' class-k requests joined by u are those whose class-1
+request joined by f^{-(k-1)}(u), so they contribute lambda G_k f^{-(k-1)}(u). Hence
+W(u) = sum_k c_k sum_{j<k} (G_k/G_j) m_j^0 + sum_k a_k f^{-(k-1)}(u), and
+f(u) = V_0 + W(u) = V_tot(0) + sum_k a_k f^{-(k-1)}(u), using sum_j m_j^0 R_j = V_tot(0).
+At u = u_n this reads u_{n+1} = V_tot(0) + sum_k a_k u_{n+1-k}.
+
+The constant V_tot(0)/(1 - rho) is a particular solution, so w_n = u_n - V_tot(0)/(1 - rho) solves the homogeneous
+recursion, whose characteristic roots are the roots of x^K = sum_k a_k x^{K-k}.
+- If rho < 1, all roots have modulus < 1 and u_n -> V_tot(0)/(1 - rho).
+- If rho > 1, w_n = B z^n + O((r + epsilon)^n), because the other roots may repeat. Then
+  V(u_n) = u_{n+1} - u_n = (z - 1) w_n + O((r + epsilon)^n), and V_tot(u_n) = V_tot(0) + (rho - 1) u_n = (rho - 1) w_n. []
 
 **Proof of Theorem 2.**
 
@@ -437,11 +494,11 @@ Theorem 1 from t_0 with rate lambda'. The threshold and the busy-period value co
 
 For the second sentence: whenever D(lambda) > lambda_miss (Theorem 2), the interval (lambda_miss, D(lambda)) is
 non-empty. Any lambda' in it has rho' > 1. By Lemma 2(iii) the remaining work then never decreases,
-V_tot(t) >= V_tot(t_0), and the proof of Lemma 2(i) gives V >= kappa V_tot(t_0) > 0, so the queue never empties.
+V_tot(t) >= V_tot(t_0), and the proof of Lemma 2(i) gives V >= eta V_tot(t_0) > 0, so the queue never empties.
 Theorem 1(c) adds that it grows linearly. At rho' = 1 the same bound holds, and Theorem 1(b) gives the limit. []
 
-**Proof of Corollary 4.** Divide Lemma 1's equation by sum_j c_j G_j. The rest are formulas in z, G and pi. Under
-c -> c/s, pi is unchanged and lambda_miss -> s lambda_miss. []
+**Proof of Corollary 4.** Divide Lemma 1's equation by sum_j c_j G_j. The rest are formulas in z, G and omega. Under
+c -> c/s, omega is unchanged and lambda_miss -> s lambda_miss. []
 
 ## 5. What is new, and what is not
 
@@ -612,8 +669,8 @@ Unstable E0b runs, measured vs gamma:
 - The ratio of measured to gamma has mean 0.94 and median 0.98 over the 57 E2-protocol runs, and mean 0.98 (range
   0.62-1.30) over the 13 E0b runs.
 - The near-zero values are seed 1 at 1.35x (see 6.5): when arrivals dip, the trap stops growing for the window.
-- The gap is the quantity the paper's Table tab:gapR reports as a median (166-516 s). Theorem 1 says it is not a constant
-  of the trap but proportional to the trap's age.
+- The gap is the quantity the paper's Table tab:gapR reports as a median (166-516 s). Theorem 1(f) says it is not a
+  constant of the trap. It is proportional to the remaining work, i.e. to the trap's age counted from its virtual origin.
 
 ### 6.4 Youth premium and backlog slope (Theorems 1(c), 2)
 
@@ -830,4 +887,72 @@ experiment is needed; tonight's runs can add blind checks via the tag.
 
 ## 10. Adversarial check (record)
 
-See section 11, filled after the independent skeptic reviews.
+Three independent referees (subagents), 2026-11-05. None imported `analysis/theory/icml`; each wrote its own code (scratch
+under the session scratchpad: `skepticA/`, `skepticB/`, `skepticC/`).
+
+**Outcome: no statement was found wrong, no proof has a remaining gap, and every flagged fix and overclaim was applied**
+(commits `e53c0ce` and the one recording this section).
+
+**Referee A (Lemmas 1-2, the renewal lemma, Theorem 1).**
+- Verdicts:
+  - Lemma 1: CORRECT.
+  - Lemma 2(i): CORRECT WITH MINOR FIX. The definition now includes (F2), C^0(0) = 0 and maximality of tau. The existence
+    facts sum c C(f(u)) = f(u) and V(f(v)) >= lambda c_1 V(v) are stated, and uniqueness is derived from (F2).
+  - (ii): CORRECT; "busy on [0, f(u)]".
+  - (iii)-(v): CORRECT.
+  - Renewal lemma: CORRECT WITH MINOR FIX. L is the coefficient of 1/(1 - s), not the residue; theta and theta' are
+    now consistent.
+  - Theorem 1(a): CORRECT WITH MINOR FIX. The proof now covers all orbits, and the lambda = 0 case is treated directly.
+  - 1(b): CORRECT.
+  - 1(c): CORRECT WITH MINOR FIX. The proof of n -> infinity is corrected, the relative error is O(n max(theta, 1/z)^n),
+    and the processing rate is stated per cycle.
+  - 1(d), 1(e): CORRECT.
+- Numerics: a numba many-packet FIFO simulation of model F on three toys (one with non-monotone costs, one nearly
+  periodic).
+  - Orbit-recursion residual <= 1.3e-4, shrinking with packet size. Lemma 2(v) <= 9e-5. sum h_n = V_tot to 6 digits.
+  - Busy-period relative error about 1e-5. The critical limits hold to 4 digits.
+  - Supercritical V/t, N/t, Dep/t, composition and P ratio all within 2e-4. The near-threshold coefficient converges
+    linearly.
+- Contributed:
+  - Theorem 1(f): the cycle is proportional to the remaining work, with an exact virtual origin.
+  - The convergence-rate caveat, now Remark 8.
+- Overclaims fixed:
+  - "renewal process" became "renewal equation".
+  - "proportional to the trap's age" now reads remaining work / virtual origin.
+  - Notation clashes resolved: omega for the cost mix, eta, C_r, m_b.
+
+**Referee B (Theorem 2, Corollaries 3-4, Remarks 5-6, sections 6.1 and 6.7).**
+- Verdicts:
+  - 2(i)-(iii): CORRECT. Clarified: strictness needs z > 1 and G_K > 0; H lies strictly in (1 - q^K, 1).
+  - 2(iv): CORRECT WITH MINOR FIX. The "iff" became one-sided statements; the sign at kbar_c = E[T] is decided at second
+    order.
+  - 2(v): CORRECT as worded.
+  - 2(vi): GAP, fixed. It now has the existence condition E_nu[c]/c_1 > 1/(1 - q^K) and uniqueness, and the strictness
+    comes from H > 1 - q^K.
+  - Corollary 3: CORRECT WITH MINOR FIX. Open interval, fluid-only endpoint, the rho' = 1 limit, and an explicit
+    V >= eta V_tot.
+  - Corollary 4: CORRECT. The dependence on G is now stated, and proportional costs are needed for cross-hardware claims.
+  - Remark 5: CORRECT. The Kendall/Takacs attribution is right, and a 1e5-replication Monte Carlo agrees with the formula.
+  - Remark 6: CORRECT. An independent event-driven processor-sharing simulation matches exactly; gamma_PS = g, and the
+    half-turn offset explains the 2%.
+- Contributed:
+  - The truncation counterexample, now in Theorem 2(v).
+  - The monotone-bracket certificate, now in `support.py`.
+  - Cuts at 1.02 and 1.00 lambda_miss in 6.7, which this session then verified itself.
+- Independently reproduced: every number in 6.1 and 6.7.
+
+**Referee C (data, novelty, honesty).**
+- Recomputation: it recomputed 22 stuck runs from the raw files with independent code. All six statistics matched
+  `trap_check.json` to 5 or more digits, and it confirmed the registered labels.
+- Corrections applied:
+  - "two runs below D" became seven runs.
+  - Ranges: completions 1.10-1.35 at 300k; E0b minimum 1.24; gamma 0.012-0.13; alpha fraction 0.63-0.79 at the measured
+    points.
+  - Eight cells, not nine.
+  - The plug-in is scored on independent plans: 27/30, against a baseline of 23/30.
+  - "Nothing fitted" became "no parameter fitted to any trap measurement".
+  - "Trapped" runs became "stuck" runs.
+  - SHED is labelled non-discriminating.
+  - Novelty claims were reworded against the paper's RR layer (which already gave about 0.63) and against Lu et al.
+    (whose D_low drain statement is qualitatively our threshold).
+- Blindness confirmed: every run directory used was pulled between 2026-10-24 and 2026-11-01.
