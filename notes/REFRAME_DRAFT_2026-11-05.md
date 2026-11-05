@@ -199,3 +199,30 @@ the adversarial review folded in. No Nova result was read by this session.
 - The first-principles model's heuristic layers F1-F4 are H1-H4 in the paper text (theory.tex and appendix_fp.tex say so; Fig. 8's
   caption notes that its legend still says F1); frozen files, JSON keys and code are unchanged.
 - D1 and D5 are scoped to the runs committed before the blind tests (Sec. 3 and App. C).
+
+## Review fix list (lead's triage of two reviews of df31480), applied 2026-11-05
+
+Source: `notes/review_df31480/TRIAGE.md`, `AUDITOR.md` and `REFEREE.md` (branch `r15/tonight`, commit e0fd53c). Only the "APPLY
+NOW" items were applied; the "DEFER" items (Theorem 1 split into lemma, theorem and proposition; the evidence-ledger table; the new
+analyses R5, R6, R16, R17; R12's slope/alpha column; shortening Sec. 4) were not.
+
+- Must-fix: A1 (priority scoped to the tests up to SHED and TOOLSLOW; Table 4 has a "registered after Lu et al." divider; the
+  trap-state predictions were made with Lu et al.'s paper in hand), A2 (TOOLSLOW-D15 added: Table 4 row, Sec. 3 bullet with its
+  frozen calls, Sec. 1 and Sec. 8 counts, the Sec. 4 record, ledger, frozen table and timeline; outcome pending), A3/R1 (one result
+  singles out model F, the late-window slopes, post hoc; persistence rules out only a drain at the pre-cut completion rate, the
+  operator-facing content of Corollary 3), R2 (lref defined at first use and in Sec. 2; lmiss/lref = 0.962-1.035 checked;
+  method.tex convention; Lu et al.'s 12 sessions/min verified), R3 (Corollary 3 out of the novelty claims everywhere).
+- Should-fix and nits: A4-A24 and R4, R5 (wording), R7-R11, R13, R14, R16 (hedge), R18-R25, all as triaged. One sentence is used
+  for CUT-A in Secs. 1, 3, 5, 8 and 9; the abstract's CUT clause waits for part 2b.
+- R4 restates Theorem 1(d) with the virtual origin u*: u_n + u* = B z^n + O((r+eps)^n), V(u_n) = gamma (u_n + u*) + O(...), the
+  proportionality to V_tot, "errors vanish when r < 1"; (f) is merged into (d); "for n >= K-1" is added to the exact identity.
+  Each of these is in the proof (App. A, (d) continued). Not added: N(u_n) = alpha (u_n + u*) + O(...). It follows from Lemma 2(v)
+  and the identity in the proof of (c), but the proof does not state it, so it is left for the authors (flagged to the lead).
+- R10: Kleinrock 1967, Coffman and Kleinrock 1968 and Remerova, Foss and Zwart 2014 added after confirming each title by DOI on
+  Crossref; the 2014 paper's byline is Remerova (the LIT_CHECK note lists her later name, Frolkova).
+- R13: alpha_PS is now the processor-sharing exponent in Sec. 2 and in App. A's remark (where it was g); the remark's backlog
+  growth is written out. Fig. 3's legend still reads F1, as its caption says.
+- R25: Fig. 2(d)'s title shortened to "(d) gap slope" and the figure re-exported; the overfull App. B table is wrapped.
+- Layout: the round-15 rows of the frozen-prediction summary are a separate table (tab:frozensum15), because the summary no longer
+  fit one page; the round-15 timeline is Table timeline-r15.
+- Build: 93 pages, main text to p. 14, no warnings; abstract 1873 form characters (about 60 left for the CUT clause).

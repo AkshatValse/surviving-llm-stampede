@@ -4,7 +4,7 @@ Quasi-static models describe the collapsed state as the falling branch of a thro
 whose low end is Lu et al.'s low-reuse departure rate $D_{\mathrm{low}}$~\citep{lu2026cachetrap} and, in our earlier model, the
 all-miss capacity $\lmiss$ (which we used only for the window, \S\ref{sec:entry}). Read literally in congestion, such an equation
 makes a trapped engine complete sessions at that low end and accumulate them at the excess over it. With every turn missing, our
-engines do neither: every stuck run completes sessions at 1.10--2.40~$\lref$, and the backlog grows at about 0.63 of
+engines do neither: every stuck run of the retrospective check completes sessions at 1.10--2.40~$\lref$, and the backlog grows at about 0.63 of
 $\lambda-\lref$ (\S\ref{sec:validation}). Here we characterize the trap exactly, within an explicit idealization of the trapped engine.
 
 \paragraph{Model F.} Let a session have $T$ turns, $G_k=P(T\ge k)$ for $k=1,\dots,K$ with $G_K>0$, and let turn $k$ cost $c_k>0$
@@ -13,13 +13,16 @@ timings: the miss prefill of turn $k$ plus the all-miss per-turn decode share. W
 \[
 \lmiss=\Big(\sum_kc_kG_k\Big)^{-1},\qquad \rho=\lambda/\lmiss ,
 \]
-the all-miss capacity at the stationary turn mix and the load. Model~F is a fluid single-server queue in which
+the all-miss capacity at the stationary turn mix and the load. Rates in this paper are multiples of $\lref$, the all-miss
+session rate measured with the radix cache disabled (E0a, 32 sessions; 0.0715\sps{} for SGLang on the A100); $\lmiss$ is model~F's
+value from the cost model, and $\lmiss/\lref=0.96$--$1.035$ across our cells. Model~F is a fluid single-server queue in which
 \begin{enumerate}[(F1),leftmargin=*,nosep]
 \item every turn misses, so turn $k$ costs $c_k$;
 \item the server works at unit rate while anything is pending;
 \item requests complete in the order in which they joined (request-level FCFS);
 \item a completed turn $k<T$ rejoins the tail of the queue at once as turn $k+1$;
-\item new sessions join as turn~1 at rate $\lambda>0$, and the state at time 0 is any finite pending mass with positive work.
+\item new sessions join as turn~1 at rate $\lambda>0$;
+\item the state at time 0 is any finite pending mass with positive work.
 \end{enumerate}
 (F3)--(F4) make model~F a round robin over sessions with visit-dependent quanta $c_k$: a single-station re-entrant
 line~\citep{kumar1993reentrant} in overload. A request that joins at time $u$ completes at $f(u)=u+V(u)$, where $V(u)$ is the
@@ -32,19 +35,23 @@ In model~F, along every FIFO orbit the cycles solve the linear renewal recursion
 \begin{equation}\label{eq:renewal}
 \Delta_n=\sum_{k=1}^{\min(n,K)}\lambda c_kG_k\,\Delta_{n-k}+h_n ,
 \end{equation}
-where $h_n\ge0$, $h_n=0$ for $n\ge K$ and $\sum_nh_n=V_{\mathrm{tot}}(u_0)$. Consequently:
+where $h_n=\sum_{k=n+1}^{K}c_kG_k\pi_{k-n}(u_0)/G_{k-n}$, with $\pi_j(u_0)$ the turn-$j$ mass pending at $u_0$, is the work
+that the requests pending at $u_0$, and their later turns, bring in generation $n$; so $h_n\ge0$, $h_n=0$ for $n\ge K$ and
+$\sum_nh_n=V_{\mathrm{tot}}(u_0)$. Consequently:
 \begin{enumerate}[(a),leftmargin=*,nosep]
 \item if $\rho<1$, the queue empties at $V_{\mathrm{tot}}(0)/(1-\rho)$;
 \item if $\rho=1$, $V(t)\to V_{\mathrm{tot}}(0)/\bar k_c$ and $N(t)\to\lambda E[T]V_{\mathrm{tot}}(0)/\bar k_c$;
 \item if $\rho>1$, let $z>1$ be the Perron root, $\lambda\sum_kc_kG_kz^{-k}=1$. As $t\to\infty$: the gap grows linearly,
 $V(t)/t\to\gamma=z-1$; the backlog grows as $N(t)/t\to\alpha=\lambda(1-E[z^{-T}])$; sessions complete at rate
 $D=\lambda E[z^{-T}]$; and the pending requests, and the requests served in each cycle, have the tilted turn mix
-$\pi^z_k=G_kz^{-k}/\sum_jG_jz^{-j}$;
-\item (self-similarity) a session that arrives at $u$ with $T=m$ turns completes at $f^m(u)$, and
-$f^m(u)+c=z^m(u+c)(1+o(1))$ with $c=V_{\mathrm{tot}}(0)/(\rho-1)$;
-\item as $\rho\downarrow1$, $\gamma=(\rho-1)/\bar k_c+O((\rho-1)^2)$ and $\alpha/(\lambda-\lmiss)\to E[T]/\bar k_c$;
-\item if $\rho>1$, the gap is proportional to the remaining work, $V(u_n)=\frac{\gamma}{\rho-1}V_{\mathrm{tot}}(u_n)+O((r+\epsilon)^n)$
-for every $\epsilon>0$, where $r$ is the largest modulus of the other roots of $x^K=\sum_k\lambda c_kG_kx^{K-k}$.
+$\nu^z_k=G_kz^{-k}/\sum_jG_jz^{-j}$;
+\item (virtual origin and self-similarity) if $\rho>1$, let $u^*=V_{\mathrm{tot}}(0)/(\rho-1)$ and let $r$ be the largest modulus of
+the other roots of $x^K=\sum_k\lambda c_kG_kx^{K-k}$. Every FIFO orbit satisfies $u_n+u^*=Bz^n+O((r+\epsilon)^n)$ for every
+$\epsilon>0$, with a constant $B$; hence the gap is affine in time with virtual origin $-u^*$,
+$V(u_n)=\gamma(u_n+u^*)+O((r+\epsilon)^n)$, and proportional to the remaining work,
+$V(u_n)=\frac{\gamma}{\rho-1}V_{\mathrm{tot}}(u_n)+O((r+\epsilon)^n)$; when $r<1$ these errors vanish absolutely. A session that
+arrives at $u$ with $T=m$ turns completes at $f^m(u)$, and $f^m(u)+u^*=z^m(u+u^*)(1+o(1))$;
+\item as $\rho\downarrow1$, $\gamma=(\rho-1)/\bar k_c+O((\rho-1)^2)$ and $\alpha/(\lambda-\lmiss)\to E[T]/\bar k_c$.
 \end{enumerate}
 \end{theorem}
 
@@ -54,12 +61,14 @@ In Theorem~\ref{thm:trap}(c), $D/\lmiss=H(z)\,\Gamma(z)$, where
 H(z)=\frac{E[T]\,E[z^{-T}]}{\sum_kG_kz^{-k}},\qquad \Gamma(z)=\frac{E_\nu[c]}{E_{\nu^z}[c]},
 \]
 with $\nu_k\propto G_k$ the stationary and $\nu^z_k\propto G_kz^{-k}$ the trapped turn mix. $H$ depends only on the law of $T$:
-$H=1$ for a geometric $T$ on $\{1,2,\dots\}$, and $H\in(1-q^K,1)$, non-increasing in $z$, for $T=\min(\mathrm{Geometric}(1-q),K)$ with $K\ge2$. If $c$ is
-non-decreasing, $\Gamma\ge1$, with equality only for constant $c$, and $\Gamma$ is non-decreasing in $z$. Near the threshold,
+$H=1$ for a geometric $T$ on $\{1,2,\dots\}$ ($K=\infty$; the formulas extend for $z>1$), and $H\in(1-q^K,1)$, non-increasing
+in $z$, for $T=\min(\mathrm{Geometric}(1-q),K)$ with $K\ge2$. If $c$ is non-decreasing, $\Gamma\ge1$, with equality only for
+constant $c$, and $\Gamma$ is non-decreasing in $z$. For that $T$ and a non-decreasing, non-constant $c$ with
+$E_\nu[c]/c_1>1/(1-q^K)$, let $z_1$ solve $\Gamma(z_1)=1/(1-q^K)$; then $D>\lmiss$ for every $z\ge z_1$. Near the threshold,
 $D/\lmiss-1=(\rho-1)(1-E[T]/\bar k_c)+O((\rho-1)^2)$.
 \end{theorem}
 
-\noindent A trapped engine thus completes sessions faster than its all-miss capacity while its backlog diverges, because it
+\noindent In model~F the trapped server thus completes sessions faster than its all-miss capacity while its backlog diverges, because it
 serves a young backlog of short, cheap turns. The premium is not automatic: truncation lowers $H$, and with
 $T=\min(\mathrm{Geometric}(1/15),60)$ and slowly growing costs $c_k=1+10^{-3}(k-1)$ it is negative at every load checked. For
 our workload ($T=\min(\mathrm{Geometric}(1/15),60)$, $c_{60}/c_1=17$--23), $E[T]/\bar k_c=0.60$--$0.62$ in all eight cells, and
@@ -67,12 +76,12 @@ the premium is positive at every load we checked: proved by Theorem~\ref{thm:pre
 by a monotone bracket ($H$ falling, $\Gamma$ rising; evaluated in floating point, not interval arithmetic) on
 $z\in[1+10^{-12},z_1]$, and only to first order below that (Appendix~\ref{app:trap}).
 
-\begin{corollary}[trapped throughput overstates the recovery threshold]\label{cor:trapthr}
+\begin{corollary}[trapped throughput overstates the drain threshold]\label{cor:trapthr}
 In model~F at load $\lambda>\lmiss$, let the arrival rate change to $\lambda'$ at a time $t_0$ when the queue is busy. The
 queue then empties if and only if $\lambda'<\lmiss$, after the busy period $V_{\mathrm{tot}}(t_0)/(1-\lambda'/\lmiss)$. If
 $\lambda'>\lmiss$ the backlog grows as $\alpha(\lambda')t$; at $\lambda'=\lmiss$ the fluid backlog settles at a positive
 level. In particular, whenever $D(\lambda)>\lmiss$ (Theorem~\ref{thm:premium}; for our workload at every load we checked), a
-cut to any rate in $(\lmiss,D(\lambda))$, below the throughput measured in the trap, does not clear it.
+cut to any rate in $[\lmiss,D(\lambda))$, below the asymptotic trapped throughput, does not empty model~F's queue.
 \end{corollary}
 
 \begin{corollary}[invariance]\label{cor:trapinv}
@@ -89,14 +98,16 @@ whose first turn joined in $(u_{n-k},u_{n-k+1}]$ rejoins as turn $k$ in $(u_{n-1
 is $\lambda G_k\Delta_{n-k}$. Summing its work, $\Delta_n=W(u_n)-W(u_{n-1})$, turns the nonlinear fluid into
 Eq.~\eqref{eq:renewal}, whose coefficients are nonnegative and sum to $\rho$. Tilting by
 $z^{-n}$ and a finite-memory renewal lemma give (b)--(c); (a) is a busy-period argument; and the fixed lag structure gives the
-exact identity $u_{n+1}=V_{\mathrm{tot}}(0)+\sum_k\lambda c_kG_ku_{n+1-k}$ behind (d) and (f). Appendix~\ref{app:trap} gives
+exact identity $u_{n+1}=V_{\mathrm{tot}}(0)+\sum_k\lambda c_kG_ku_{n+1-k}$, for $n\ge K-1$, behind (d). Appendix~\ref{app:trap} gives
 complete proofs, the stochastic counterpart and a sketch of the processor-sharing variant; \fpath{tests/test_theory_icml.py}
 checks each statement numerically; independent AI-agent checks are recorded in \fpath{notes/THEORY_ICML_2026-11.md}, \S10.
 
 \paragraph{What is classical and what is new.} Part~(a) is classical in substance: at a single work-conserving station the
 remaining work obeys $\dot V_{\mathrm{tot}}=\rho-1$ whatever the service order, which gives the fluid busy period, and its
 stochastic counterpart is Kendall's branching description of the busy period~\citep{kendall1951some}; part~(e) is an
-elementary expansion of the Perron equation. Viewed as a steady solution (constant flows from the empty state), the
+elementary expansion of the Perron equation. Eq.~\eqref{eq:renewal} is a discrete renewal equation~\citep{feller1968introduction}
+of Lotka--Leslie type: the arrivals $\lambda\Delta_n$ play the role of births, $G_k$ of survival and $\lambda c_kG_k$ of net
+maternity, and the tilted mix $G_kz^{-k}$ is Lotka's stable age distribution. Viewed as a steady solution (constant flows from the empty state), the
 self-similar regime of parts~(c)--(d) is not new either: it is the single-station case of the steady solutions of fluid FIFO
 re-entrant lines of Khanin et al.~\citep{khanin2001steady}, in which an overloaded station's queue grows linearly. Their
 overloaded-station flows give the Perron equation, the gap slope $z-1$, the $z^{-k}$-tilted mix and the departure flow; they treat
@@ -106,26 +117,30 @@ regime~\citep{takacs1963feedback,vandenberg1989deterministic}, overloaded multic
 re-entry~\citep{jennings2013fluid}, and the processor-sharing version of model~F, which our earlier round-robin layer
 integrated numerically, has the Crump--Mode--Jagers structure of overloaded processor sharing, whose fluid shape converges to
 an invariant one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}. What we add, as far as a targeted
-search found (\S\ref{sec:related}), is the renewal recursion along FIFO orbits, which carries every solution from \emph{any}
-trapped state to the self-similar regime, geometrically in the generation index and with an exact virtual origin (parts~(c), (d)
-and~(f) as limits), whereas a burst leaves the engine far from a steady solution. Part~(b) is the fluid counterpart of the
+search found (\S\ref{sec:related}), is the derivation of that recursion along FIFO orbits, which carries every solution from
+\emph{any} trapped state to the self-similar regime, geometrically in the generation index and with an exact virtual origin
+(parts~(c) and~(d)), whereas a burst leaves the engine far from a steady solution. Part~(b) is the fluid counterpart of the
 state-space collapse of a critically loaded multiclass FIFO feedback queue~\citep{reiman1988multiclass,dai1995multiclass}.
 Theorem~\ref{thm:premium} is the visit-indexed analogue of a property of overloaded processor sharing, whose departures
-$\lambda E[e^{-\alpha S}]$ can exceed $1/E[S]$~\citep{jeanmarie1994transient}; new are its turn-count and cost-growth factors and
-Corollary~\ref{cor:trapthr}'s consequence that the throughput measured in a trap exceeds the drain threshold. The threshold
-itself is not new: it is the classical busy-period condition, and Lu et al.\ state that arrivals below their low-reuse departure
-rate drain the population~\citep{lu2026cachetrap}.
+$\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$, with $\alpha_{\mathrm{PS}}$ its growth exponent, can exceed
+$1/E[S]$~\citep{jeanmarie1994transient}; new are its turn-count and cost-growth factors. Corollary~\ref{cor:trapthr} is not new as
+mathematics: it is the operational reading of Theorem~\ref{thm:premium} with the classical busy-period condition, its
+processor-sharing counterpart follows from~\citep{jeanmarie1994transient} in the same way, and Lu et al.\ state that arrivals below
+their low-reuse departure rate drain the population~\citep{lu2026cachetrap}. What is new about it is its test on the engine
+(\S\ref{sec:validation}).
 
 \paragraph{Model F is an idealization.} On the engine, (F1) is the measured zero hit fraction of the trap and (F2) its saturated
-GPU. (F3) is request-level FCFS admission (Proposition~\ref{prop:A}), up to the $M/E_S$ requests that run concurrently (about
-28 at 300k). (F4) neglects the 5\,s tool time against cycles of 166--516\,s; adding it leaves the fluid's backlog slope,
-completion rate and mean served prompt over the window unchanged to four significant digits and shortens the mean cycle by
+GPU. (F3) is request-level FCFS admission, up to the $M/E_S$ requests that run concurrently ($M$ the pool in tokens, $E_S$ the
+service-weighted KV of a running turn; about 28 at 300k); Proposition~\ref{prop:A} bounds the closed system at the stationary mix,
+and the open trap exceeds $\lmiss$ only through its tilted mix. (F4) neglects the 5\,s tool time against cycles of 166--516\,s; adding it changes the fluid's backlog slope,
+completion rate and mean served prompt over the window by less than 0.02\% and shortens the mean cycle by
 5\,s (Appendix~\ref{app:trap}). Model~F leaves out concurrency, preemption (vLLM preempts), and
 the transitions into and out of the trap, where hits return. We do not prove that the engine converges to model~F; its test
 is empirical (\S\ref{sec:validation}).
 
 \paragraph{Why the trap does not heal.} Theorem~\ref{thm:trap}(c) makes the gap between a session's turns grow linearly, while
-the trapped engine rewrites its pool at the all-miss token rate, every $R_M=M/\text{churn}\approx26$--78\,s in our cells.
+the trapped engine rewrites its pool at the all-miss token rate, every $R_M=M/\text{churn}\approx26$--78\,s in our cells (churn, the rate at which new KV is written: uncached prompt plus
+completion tokens per second).
 Once the gap is several times $R_M$, as it is in every BURST run of the first three registered tests (gap$/R_M=4.1$--9.7,
 Table~\ref{tab:gapR}), an idle
 session's KV is overwritten long before it returns, so (F1) is self-consistent, and becomes more so as the trap ages. The pool

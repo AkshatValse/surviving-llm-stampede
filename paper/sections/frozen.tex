@@ -16,7 +16,7 @@ Pool sweep, A100, 150k and 600k & Theory: peak ratio 1.87 and 5.47, crossing 16.
 \addlinespace[0.3pt]
 Llama-3.1-8B, 300k (registered) & Theory, a priori: peak ratio 3.37, crossing $30.9\pm3$, edge 2.55 $\lref$ (2.46 times its a priori $\lmiss$). pred2, declared after the curve was read: tool-call term if the crossing exceeds 29.89; the nearest of $M/\Elb$, $M/E_S$ and the frozen crossing wins. Simulator: peak at $n=20$; primary mode: edge 2.5, rates 1.5, 2.0 $\lref$; a pass at both registered rates. Closed runs by access only, from-empty runs blind in time & Peak ratio 3.28 at $n=20$, crossing 29.65: within tolerance, but 0.24 below 29.89 (a fail); the nearest-predictor rule picks $M/\Elb$ (28.44), by 0.06 on the listed crossing. Edge in $[2.0,2.5)\,\lref$, so the theory's edge is one grid step high (a near miss). Simulator: peak and cap right; edge and rates one step high. Paired test passes at 1.65 $\lref$ (trapped 2 of 3) and fails at 1.35 (1 of 3; all six BURST runs at zero hits), so the simulator's pass at 1.35 missed\\
 \addlinespace[0.3pt]
-Fresh-seed E0b, 300k (exploratory) & Simulator: stable in 6 of 6 (blind in time). Theory (H2, not declared for this test; pred2's table pushed after the runs were read): unstable with probability 0.69 per run at 2.5 $\lref$ & Stable in 6 of 6: the seed-0 bracket is not replicated (the rule needed 2.5 $\lref$ unstable in 2 seeds). H2 pessimistic (all three stable at 2.5: 0.03). Later same-plan replicates (exploratory) reproduced seed 0's collapse and seed 4's stability, 3 of 3 each: H2 does not describe same-plan replicates\\
+Fresh-seed E0b, 300k (exploratory) & Simulator: stable in 6 of 6 (blind in time). Theory (H2, not declared for this test; pred2's table pushed after the runs were read): unstable with probability 0.69 per run at 2.5 $\lref$ & Stable in 6 of 6: the seed-0 bracket is not replicated (the rule needed 2.5 $\lref$ unstable in 2 seeds). H2 pessimistic (all three stable at 2.5: 0.03). Later same-plan replicates (exploratory) reproduced seed 0's collapse and seed 4's stability, 3 of 3 each: H2 does not describe same-plan replicates (not a refutation of its cell-level escape probability)\\
 \addlinespace[0.3pt]
 BASIN-1, 1.65 $\lref$ (registered) & Simulator: pass (blind in time). Theory: this outcome with probability 0.879 (blind by access only) & PASS: 100 sessions trapped and 25 absorbed, 3 of 3 seeds each; simulator right in 6 of 6 runs\\
 \addlinespace[0.3pt]
@@ -31,6 +31,25 @@ LPM-INF, 1.65 $\lref$ (exploratory) & Simulator: no collapse on the seeds on whi
 SHED, 1.35 $\lref$ (registered) & pred2: arrivals stopped from 1800\,s for 600\,s do not drain the trap (1.00 per seed), for 3600\,s drain it (0.998); rule 0.997. Blind in time & PASS: 600\,s stuck, 3600\,s good, 2 of 2 each; 56--59 and 355--378 sessions refused (the cap: none)\\
 \addlinespace[0.3pt]
 TOOLSLOW, 1.35 $\lref$, no burst (registered) & pred2: tool calls 10\,s longer for 900\,s leave the engine good (0.71 per seed), 30\,s longer trap it (1.00); rule 0.80. Blind in time & Rule not met: 10\,s good in 3 of 3, but 30\,s stuck in 1 of 3; pred2 missed\\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[!tp]
+\centering\footnotesize
+\caption{Frozen predictions of round 15 (2026-11-05, after Lu et al.'s paper appeared) and their outcomes, with the conventions of Table~\ref{tab:frozensum}; times in Table~\ref{tab:timeline-r15}.}\label{tab:frozensum15}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{7.4cm} >{\raggedright\arraybackslash}p{6.5cm}@{}}
+\toprule
+Test & Frozen prediction & Outcome\\
+\midrule
+TOOLSLOW-W, 1.35 $\lref$, no burst, 30\,s longer for 1800\,s (registered, round 15) & Simulator, both modes: stuck in 3 of 3 (TRAPS); pred2: TRAPS, stuck with probability 1.00 per seed; trap-state law: S1--S5 of \texttt{icml-trap-pred}. Blind in time; designed after TOOLSLOW and after reading simulator outputs & TRAPS, 3 of 3; every model right; pooled S1--S4 pass; outstanding requests at 3300\,s off the reference accuracy by 8 and 6 in seeds 0 and 2 (\S\ref{sec:validation})\\
+\addlinespace[0.3pt]
+TOOLSLOW-D15, 1.65 $\lref$, no burst, 15\,s longer for 900\,s (registered, round 15) & Simulator, both modes: stuck, good, good (NO-TRAP); pred2 fluid verdict: TRAPS; pred2 per seed: modal stuck, good, good, $P(\text{TRAPS})=0.58$. Blind in time & \pending{outcome}\\
+\addlinespace[0.3pt]
+CUT, BURST at 1.65 $\lref$, arrivals cut at 2400\,s to 1.15 (CUT-A) or 0.85 $\lref$ (CUT-B) (registered, round 15) & Model~F (\texttt{icml-cut-pred}), from each seed's exact plan: all six stuck; backlog slopes over $[3000,8700)$\,s of $+0.0039$, $-0.0026$, $+0.0028$ (CUT-A) and $-0.0095$ to $-0.0131$\,/s (CUT-B). Blind in time; the rule was registered after the predictions were read & CUT-A: PASS, theory-favoured 3 of 3, late sign 2 of 3 as predicted; the rule rejects only constant-throughput readings. CUT-B: \pending{outcome} (\S\ref{sec:validation})\\
+\addlinespace[0.3pt]
+REPLICATE-EDGE, 2.5 $\lref$ from empty, 300k, the plans of seeds 0 and 4 (exploratory, round 15) & Every deterministic predictor (the simulator in both modes, pred2's level crossing, the arrival, turn and token counts): each plan reproduces its original; H2 read as independent draws: reproducible with probability 0.0097. Blind in time; the plans were chosen knowing the originals & Reproducible: seed 0 collapsed in 3 of 3 (at 1600, 1600 and 1800\,s), seed 4 stable in 3 of 3; H2 does not describe same-plan replicates (\S\ref{sec:limits})\\
 \bottomrule
 \end{tabular}
 \end{table*}

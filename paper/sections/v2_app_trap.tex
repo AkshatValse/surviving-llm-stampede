@@ -152,15 +152,15 @@ $\mathrm{Dep}=\sum_km_k^0+\lambda t-N$. By (v), the composition limit holds for 
 completed over the next cycle, which are the same. Over a cycle $(t,f(t)]$, any per-turn weight $P_k$ is processed at the
 average rate $\sum_kP_k\pi_k/\sum_kc_k\pi_k$.
 
-\emph{(d).} $f(u)/u=1+V(u)/u\to z$, and $f^m(u)/u\to z^m$ by induction on $m$. A session that arrives at $u$ joins as
-turn~1 at $u$ and, with zero think time and FIFO, completes turn $m$ at $f^m(u)$. The centred form follows from (f) below:
-$u_n+c=w_n$ with $c=V_{\mathrm{tot}}(0)/(\rho-1)$, and $w_{n+m}/w_n\to z^m$.
+\emph{(d), self-similarity.} $f(u)/u=1+V(u)/u\to z$, and $f^m(u)/u\to z^m$ by induction on $m$. A session that arrives at $u$
+joins as turn~1 at $u$ and, with zero think time and FIFO, completes turn $m$ at $f^m(u)$. The centred form follows from the
+virtual-origin argument below: $u_n+u^*=w_n$ with $u^*=V_{\mathrm{tot}}(0)/(\rho-1)$, and $w_{n+m}/w_n\to z^m$.
 
 \emph{(e).} $F(x,\rho)=\rho\sum_k\omega_kx^{-k}-1$, with $\omega_k=c_kG_k/\sum_jc_jG_j$, satisfies $F(1,1)=0$ and
 $\partial_xF(1,1)=-\bar k_c$. So $z'(1)=1/\bar k_c$. Then $E[z^{-T}]=1-(z-1)E[T]+O((z-1)^2)$, so
 $\alpha=\lmiss(E[T]/\bar k_c)(\rho-1)+O((\rho-1)^2)$.
 
-\emph{(f), the cycle and the remaining work.} This sharpening was pointed out by an independent referee. For
+\emph{(d), continued: the virtual origin and the remaining work.} This sharpening was pointed out by an independent referee. For
 $u\ge b_{K-1}$, all class-$k$ descendants of the initial requests have joined, and the arrivals' class-$k$ requests joined
 by $u$ are those whose first request joined by $f^{-(k-1)}(u)$. Hence
 \[
@@ -171,10 +171,11 @@ particular solution, so $w_n=u_n-V_{\mathrm{tot}}(0)/(1-\rho)$ solves the homoge
 $u_n\to\tau$ at once. For $\rho>1$, $w_n=Bz^n+O((r+\epsilon)^n)$, with $r$ the largest modulus among the other roots. Since
 $V_{\mathrm{tot}}(u_n)=(\rho-1)w_n$,
 \[
-V(u_n)=\frac{z-1}{\rho-1}V_{\mathrm{tot}}(u_n)+O((r+\epsilon)^n).
+V(u_n)=\frac{z-1}{\rho-1}V_{\mathrm{tot}}(u_n)+O((r+\epsilon)^n),
 \]
+that is, $V(u_n)=\gamma\,(u_n+u^*)+O((r+\epsilon)^n)$.
 In all eight cells, over $\rho\in[1.01,6.6]$, $r=0.946$--$0.966<1$, so the deviation vanishes absolutely. Correspondingly,
-$f^m(u)+c\approx z^m(u+c)$ with $c=V_{\mathrm{tot}}(0)/(\rho-1)$. The transient decays by $\vartheta=r/z=0.84$--$0.95$ per
+$f^m(u)+u^*\approx z^m(u+u^*)$. The transient decays by $\vartheta=r/z=0.84$--$0.95$ per
 generation, and the registered window opens 33--37 generations after the burst. So we compare with the exact fluid as well
 as with the limits.
 \end{proof}
@@ -230,13 +231,14 @@ $\omega$. Under $c\mapsto c/s$, $\omega$ is unchanged and $\lmiss\mapsto s\lmiss
 \begin{itemize}[leftmargin=*,nosep]
 \item \emph{Processor sharing.} The layer RR of \S\ref{sec:fp-heur} advances every session at $1/V(t)$ turns per second. Use
 the clock $x=\int_0^t ds/V(s)$ and the continuous renewal theorem; the kernel is a step function with compact support, hence
-non-lattice. This yields the Euler--Lotka equation $\lambda\sum_kc_kG_k\int_{k-1}^ke^{-ga}\,da=1$, the growth
-$\alpha_{\mathrm{PS}}=\lambda(1-E[e^{-gT}])$, departures $\lambda E[e^{-gT}]$ and the cycle slope $\gamma_{\mathrm{PS}}=g$. In
-overloaded processor sharing with service times $S$ the departures are $\lambda E[e^{-\alpha S}]$, which can exceed $1/E[S]$: the
+non-lattice. This yields the Euler--Lotka equation $\lambda\sum_kc_kG_k\int_{k-1}^ke^{-\alpha_{\mathrm{PS}}a}\,da=1$ for the growth exponent
+$\alpha_{\mathrm{PS}}$, the backlog growth $\lambda(1-E[e^{-\alpha_{\mathrm{PS}}T}])$, departures $\lambda E[e^{-\alpha_{\mathrm{PS}}T}]$
+and the cycle slope $\alpha_{\mathrm{PS}}$. In overloaded processor sharing with service times $S$ the departures are
+$\lambda E[e^{-\alpha_{\mathrm{PS}}S}]$, with $\alpha_{\mathrm{PS}}$ its own growth exponent, which can exceed $1/E[S]$: the
 youth premium of Theorem~\ref{thm:premium} is the visit-indexed analogue of that property. This is the Crump--Mode--Jagers
 structure of overloaded processor sharing~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}, with
-reproduction rate $\lambda c_{\lfloor a\rfloor+1}$ at age~$a$; we do not write out the details. Near the threshold,
-$\alpha_{\mathrm{PS}}/(\lambda-\lmiss)\to E[T]/(\bar k_c-\tfrac12)$, a half-turn offset from model~F. On the 300k cell,
+reproduction rate $\lambda c_{\lfloor a\rfloor+1}$ at age~$a$; we do not write out the details. Near the threshold, the
+backlog growth over $\lambda-\lmiss$ tends to $E[T]/(\bar k_c-\tfrac12)$, a half-turn offset from model~F. On the 300k cell,
 $\alpha/(\lambda-\lmiss)$ is 0.647 and 0.666 under processor sharing at 1.35 and 1.65~$\lref$, against 0.634 and 0.653 for
 model~F.
 \item \emph{Stochastic version.} Take Poisson arrivals and any work-conserving order. The all-miss busy period started from
@@ -258,14 +260,15 @@ a fluid is our random $T$, and their normalization gives Corollary~\ref{cor:trap
 Kelly-type lines and non-uniqueness examples for two stations, and leave the uniqueness of general (non-steady) trajectories open.
 Relative to theirs, our contribution is the renewal recursion along FIFO orbits from an arbitrary initial state, hence the
 convergence of every trapped trajectory to the steady regime with an exact virtual origin and rate, and the turn-count and
-cost-growth factors of Theorem~\ref{thm:premium} with the consequence in Corollary~\ref{cor:trapthr}. The critical case,
+cost-growth factors of Theorem~\ref{thm:premium}; Corollary~\ref{cor:trapthr} is their operational reading with the classical drain
+condition. The critical case,
 Theorem~\ref{thm:trap}(b), is the fluid counterpart of heavy-traffic state-space collapse in multiclass FIFO feedback
 queues~\citep{reiman1988multiclass,dai1995multiclass}. Overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
 limits~\citep{jennings2013fluid}; fluid metastability of queues with load-dependent service is posed by
 Dong~\citep{dong2022metastability}; and within-request KV growth under continuous batching is analysed by Ao et
 al.~\citep{ao2026service}, a different instability.
 \item \emph{Think time.} With a 5\,s think time (the workload's mean tool time) the exact fluid's statistics over the registered
-window agree with zero think time to four significant digits (backlog slope, completion rate, mean served prompt); the mean cycle
+window agree with zero think time to within 0.02\% (backlog slope, completion rate, mean served prompt); the mean cycle
 is 5\,s shorter and its slope the same.
 \item \emph{How fast the limits are reached.} The transient shrinks by $\vartheta=r/z=0.84$--$0.95$ per generation over
 $\rho\in[1.01,6.6]$. At 300k the registered window starts about 33 (1.65~$\lref$) or 37 (1.35~$\lref$) generations after the
@@ -291,7 +294,8 @@ $0.90\lmiss$ & drains slowly; empty at 59{,}655\,s, the busy period $V_{\mathrm{
 \bottomrule
 \end{tabular}
 \end{center}
-An operator who sets arrivals between $\lmiss$ and the trapped throughput sees at most a brief dip, then renewed growth.
+In the fluid, an operator who sets arrivals between $\lmiss$ and the trapped throughput sees at most a brief dip, then renewed
+growth; on one arrival path the backlog can keep falling slowly for the whole run (CUT-A seed~1).
 
 \paragraph{Numerical checks and data.} The tests in \fpath{tests/test_theory_icml.py} (20) cover:
 \begin{itemize}[leftmargin=*,nosep]

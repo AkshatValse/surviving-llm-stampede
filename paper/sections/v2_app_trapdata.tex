@@ -17,6 +17,7 @@ compare it with $\gamma$, which is 1--12\% larger at these loads.
 $[1500,3000)$\,s:
 \begin{center}\footnotesize
 \setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l c c c c c@{}}
 \toprule
 cell, rate & $\rho$ & $\bar L$ meas.\ / pred. & gap slope / $1-1/z$ & $D/\lref$ / pred. & backlog / pred.\\
@@ -35,11 +36,11 @@ native 6.5 & 6.33 & 5{,}332 / 5{,}064 & 0.109 / 0.116 & 2.40 / 2.19 & 0.83 / 0.7
 600k pool 5.0 & 4.89 & 5{,}591 / 5{,}581 & 0.089 / 0.093 & 2.27 / 1.97 & 0.75 / 0.76\\
 vLLM 300k 3.0 & 2.94 & 6{,}598 / 6{,}826 & 0.063 / 0.055 & 1.60 / 1.60 & 0.90 / 0.71\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{center}
 The composition is within $-5.7$\% and $+6.6$\% and the gap-slope ratio between 0.63 and 1.37 (mean 1.03). Completions and
 backlog slopes both run above the asymptotic values in 9 of the 13 runs. In model~F the two add up to the arrival rate, so this
-points to window arrival rates above nominal (each is a single seed-0 run) more than to the transient of a young trap.
+may reflect window arrival rates above nominal (each is a single seed-0 run; not checked) rather than the transient of a young trap.
 
 \paragraph{E2-protocol runs beyond Table~\ref{tab:trap}.} The other stuck runs of the E2 protocol behave like the registered ones:
 the SGLang 300k grid with the waiting-prefix refresh disabled (r0: composition 8{,}406--9{,}532 against 8{,}606 and 9{,}324), the

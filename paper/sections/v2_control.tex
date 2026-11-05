@@ -23,17 +23,19 @@ again, and a cut to $0.9\lmiss$ drains it only after about 15 hours (Appendix~\r
 1.35~$\lref$ on the 300k pool stopped arrivals entirely from 1800\,s, 600\,s after a burst. A 600\,s stop refused 56--59 sessions
 and left both runs stuck; a 3600\,s stop refused 355--378 and left both good (\S\ref{sec:validation}). Lu et al.\ show in
 simulation that lowering post-surge arrivals reverses the outcome, and observe that the throughput measured in the collapsed state
-sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr} sharpens this for an FCFS engine on which every turn
-misses: the cut must go below $\lmiss$, which lies below the throughput measured in the trap. Their GPU-only simulations point
-the same way: the trap persisted at a cut to 0.2~$\lref$ while the trapped departures they measured were 0.20--0.31~$\lref$. Their
+sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which
+every turn misses, sharpens this: there the cut must go below $\lmiss$, which lies below the trapped throughput $D(\lambda)$. Their
+GPU-only simulations point the same way: the trap persisted at a cut to 0.2 of their reference rate (12 sessions/min) while the
+trapped departures they measured were 0.20--0.31 of it. Their
 systems keep some reuse in the trap, though, and with a host tier one seed in three recovered at cuts above the trapped departures
 they measured, so the corollary does not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}): a cut to below the trapped throughput of
-the same seeds' uncut runs, but above $\lmiss$, left all three CUT-A traps in place to the end of the run (\pending{CUT-B
-outcome}).
+the same seeds' uncut runs, and below the completion rate seen just before it, but above $\lmiss$, left all three CUT-A traps in
+place to the end of the run. The registered rule rejects only the constant-throughput readings; the late-window slopes, scored post
+hoc against frozen values, single out model~F (\pending{CUT-B outcome}).
 
-\paragraph{Restoring reuse with a session cap.} A FIFO gate that admits at most $c$ sessions, each holding its slot until its last
-turn ends, makes the admitted sessions a closed system of $\min(n,c)$ sessions (Proposition~\ref{prop:cap}). In the quasi-static
-model the gate then empties if and only if $n_1<c<n_2$, the stable and unstable fixed points of $\dot n=\lambda-\mu(n)$, and once it
+\paragraph{Restoring reuse with a session cap.} A FIFO gate that admits at most $\ncap$ sessions, each holding its slot until its
+last turn ends, makes the admitted sessions a closed system of $\min(n,\ncap)$ sessions (Proposition~\ref{prop:cap}). In the
+quasi-static model the gate then empties if and only if $n_1<\ncap<n_2$, the stable and unstable fixed points of $\dot n=\lambda-\mu(n)$, and once it
 is empty and removed the population stays in the good state's basin (Corollary~\ref{cor:rescue}). In model-F terms the cap keeps
 the admitted sessions below the onset, so their turns hit again, and the excess waits at the client instead of in the engine's
 queue, where every turn would miss. The registered rescue tests R1 (300k pool, cap 20, engaged at 1800\,s, 600\,s after the burst,

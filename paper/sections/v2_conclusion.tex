@@ -8,34 +8,37 @@ after the burst, a transient of order 10\% remains, so we compare with the exact
 proved positive for our workload at $\rho\ge1.04$; below that it rests on a floating-point bracket and a first-order expansion.
 
 \paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
-scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind
-(\S\ref{sec:validation}): three TOOLSLOW-W runs in one cell, and the six CUT runs. In CUT-A the registered rule separates
-model~F only from constant-throughput readings, and the late-window comparison that singles it out was scored after the fact,
-against slopes frozen with the predictions. The from-empty runs are single runs per rate; in
-an exploratory replication at the 2.5~$\lref$ edge of the 300k pool, three runs on each of two arrival plans reproduced both
-originals, one collapse and one stable run, which suggests that there the spread across seeds comes from the plans rather than from
-service noise (six runs, on two GPUs of one node). The trapped windows are at most 7500\,s long, and ``does not escape'' means
+scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind, and only in
+outcome (\S\ref{sec:validation}): three TOOLSLOW-W runs, three TOOLSLOW-D15 runs (\pending{TOOLSLOW-D15 outcome}) and the six CUT
+runs, all on the A100 with the 300k pool. In CUT-A the registered rule rejects only the constant-throughput readings; the
+late-window slopes, scored post hoc against frozen values, single out model~F. The from-empty runs are single runs per rate, and at
+300k the seed-0 bracket did not replicate on fresh seeds (2.5~$\lref$ was stable in 3 of 3; in realized rates the edge lies between
+2.665 and 2.726~$\lref$). In an exploratory replication on two plans chosen because their outcomes were known, three runs each
+reproduced both originals, one collapse and one stable run, which suggests that the spread across seeds at the edge comes from the
+plans rather than from service noise (six runs, on two GPUs of one node). The trapped windows are at most 7500\,s long, and ``does not escape'' means
 within that horizon.
 
 \paragraph{The experiments.} Sessions are synthetic (random tokens, exponential 5\,s tool times, geometric turn counts, fixed tool
 outputs and output lengths, no shared prefixes), clients never retry or abandon, and real agent traces have tool times far shorter
 and more dispersed. Engines are colocated, with one GPU each, dense 7--8B models and pools of 150k to 956k tokens; disaggregated
 serving, offloading, larger models and parallelism are untested. Seeds are shared across tests. The rescue engages a fixed cap at
-a fixed time, and the arrival stop and the tool slowdown ran at one rate. Appendix~\ref{sec:limits-old} gives the full list.
+a fixed time, the arrival stop ran at one rate, and the tool slowdowns at two. Appendix~\ref{sec:limits-old} gives the full list.
 
 \section{Conclusion}\label{sec:conclusion}
 
 A burst can tip a prefix-cached agent server into a trap in which its cache stops paying; Lu et al., who posted first, and we
 observed this independently (in their disaggregated system the hit rate falls to about 0.3, in ours every turn misses). Idealized, the
 trap has an exact law: as a fluid FIFO server on which every turn misses, the trapped engine obeys a linear renewal recursion along
-FIFO orbits, so from any trapped state it converges to a self-similar regime fixed by a Perron root: the gap
+FIFO orbits, so from any trapped state it converges to the known self-similar regime~\citep{khanin2001steady}, fixed by a Perron
+root: the gap
 between turns grows linearly, the backlog grows at a fraction of the excess load (0.6 to 0.8 at our loads), and the turns it serves
 are young and short; for our workload it completes sessions faster than its all-miss capacity. Checked retrospectively on 57 stuck
 runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws hold for the runs taken
-together, and blind on three runs trapped by a tool slowdown alone. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
+together, and, with predictions frozen before the runs, on three runs in one cell trapped by a tool slowdown alone. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
 trap does not clear it, and a cut below the all-miss capacity drains the trap only slowly and by turning sessions away.
-On the engine, a cut to below the trapped throughput of the same seeds' uncut runs, but above the all-miss capacity, left all three
-traps in place to the end of the run; the registered test rules out only constant-throughput readings, and the support for the
-corollary comes from the persistence and from the late backlog, which followed model~F's frozen slopes (\pending{CUT-B outcome}).
+On the engine, a cut to below the completion rate seen just before it, and below the trapped throughput of the same seeds' uncut
+runs, but above the all-miss capacity, left all three traps in place to the end of the run; the registered rule rejects only the
+constant-throughput readings, and the late-window slopes, scored post hoc against frozen values, single out model~F
+(\pending{CUT-B outcome}).
 The other exit, a session cap that restores reuse, rescued all 9 established traps of our registered tests at the same load without
 shedding, and the engine stayed good after the cap was removed.

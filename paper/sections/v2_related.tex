@@ -13,8 +13,9 @@ controller, Basin\footnote{Their Basin controller is unrelated to our BASIN-1 an
 attraction of the good state.}, combines fixed session priority, admission by predicted peak context, decode-memory lending and
 shedding; on H200 hardware an arrival-time prototype of it achieves 1.20--1.70 times Continuum's goodput, and the predictor-driven
 design is evaluated in simulation. Against this, we add an exactly analysed idealization of the trapped state with its tests
-(\S\ref{sec:trap}--\ref{sec:validation}), the sharpening that the throughput measured in a trap exceeds the drain threshold
-(Corollary~\ref{cor:trapthr}, for an FCFS engine on which every turn misses; their systems keep some reuse), a first-principles entry model with an
+(\S\ref{sec:trap}--\ref{sec:validation}), the reading that the throughput measured in a trap exceeds the drain threshold
+(Corollary~\ref{cor:trapthr}, proved in model~F, our idealization of an FCFS engine on which every turn misses; CUT-A is consistent
+with it; their systems keep some reuse), a first-principles entry model with an
 out-of-sample record (\S\ref{sec:entry}), the registered and replicated rescue of an established zero-hit trap at the same offered
 load without shedding, with release and persistence (\S\ref{sec:control}), and registered matched-arm evidence on colocated engines,
 including a second engine (\S\ref{sec:evidence}). They have real traces, disaggregated serving, a larger model, SLO goodput and a full
@@ -38,12 +39,16 @@ lines~\citep{kumar1993reentrant} and their fluid models~\citep{dai1996stability,
 stability, and for convergence to equilibria at load at most one. Closest to model~F, Khanin et al.\ study steady, constant-flow solutions of fluid FIFO re-entrant lines,
 in which an overloaded station's queue grows linearly~\citep{khanin2001steady}; at a single station their fixed point is our Perron
 root, and a closing remark covers fractional exits, which is our random turn count. FIFO queues with Bernoulli or deterministic
-feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic}. In heavy traffic, multiclass FIFO feedback queues show state-space collapse~\citep{reiman1988multiclass,dai1995multiclass}, of
-which Theorem~\ref{thm:trap}(b) is the fluid counterpart. Theorem~\ref{thm:trap} adds the renewal recursion along FIFO orbits and,
-with it, convergence from an arbitrary initial state. Theorem~\ref{thm:premium} is the visit-indexed analogue of the overloaded
-processor-sharing growth law, whose departures can exceed the capacity~\citep{jeanmarie1994transient}; its turn-count and
-cost-growth factors, and Corollary~\ref{cor:trapthr}'s statement that the trapped throughput exceeds the drain threshold, have no
-counterpart we found.
+feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic}. Round robin with feedback
+to the tail of the queue, which model~F is at the level of sessions, was analysed in equilibrium for time-shared
+systems~\citep{kleinrock1967timeshared,coffman1968feedback}, and overloaded polling systems have a random fluid limit with a branching
+structure~\citep{remerova2014random}. In heavy traffic, multiclass FIFO feedback queues show state-space collapse~\citep{reiman1988multiclass,dai1995multiclass}, of
+which Theorem~\ref{thm:trap}(b) is the fluid counterpart. Theorem~\ref{thm:trap} adds the renewal recursion along FIFO orbits, a
+discrete renewal equation of Lotka--Leslie type~\citep{feller1968introduction}, and, with it, convergence from an arbitrary initial
+state with an exact virtual origin. Theorem~\ref{thm:premium} is the visit-indexed analogue of the overloaded processor-sharing growth
+law, whose departures can exceed the capacity~\citep{jeanmarie1994transient}; its turn-count and cost-growth factors have no
+counterpart we found. Corollary~\ref{cor:trapthr} is the operational reading of Theorem~\ref{thm:premium} with the classical drain
+condition, and its processor-sharing counterpart follows from~\citep{jeanmarie1994transient} in the same way.
 
 \paragraph{Queueing models of LLM serving.} Ao et al.\ give fluid-guided scheduling with memory constraints~\citep{ao2025wait} and show
 that, in a decode-only model without prefix reuse, the eviction-free fixed point can be unstable~\citep{ao2026service}; Dai et al.\ prove

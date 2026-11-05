@@ -67,7 +67,7 @@ def main() -> int:
     titles = [("(a) served prompt / stationary", "trapped turn mix"),
               ("(b) completions / $\\lambda_{\\mathrm{miss}}$", "youth premium"),
               ("(c) backlog slope / $\\lambda_{\\mathrm{miss}}$", "growth"),
-              ("(d) gap slope vs completion time", "cycle $\\propto$ trap age")]
+              ("(d) gap slope", "cycle $\\propto$ trap age")]
     for ax, (t, sub) in zip(axs, titles):
         ax.set_title(t, fontsize=7.5, color=INK, loc="left", pad=3)
         ax.set_xlabel("$\\rho=\\lambda/\\lambda_{\\mathrm{miss}}$")
