@@ -130,9 +130,40 @@ def fluid_checks() -> dict:
     return out
 
 
+def self_similarity(path: str) -> list:
+    """Theorem 1(d): a session joining at u finishes near u z^T, so among stuck runs the sojourn of base sessions with
+    similar T grows linearly in the arrival time with slope about E[z^T - 1]. Completed base sessions arriving in
+    [2500, 7000) s; right-censoring at 8700 s biases long-T, high-z bins down (late long sessions have not finished)."""
+    import csv
+    J = json.load(open(path))
+    out = []
+    for g in J["groups"]:
+        if g["kind"] != "e2" or g["label"] not in REGISTERED:
+            continue
+        z = g["asym"]["z"]
+        for rd, seed in zip(g["runs"], g["seeds"]):
+            S = []
+            with open(os.path.join(ROOT, rd, "sessions.csv"), newline="") as f:
+                for r in csv.DictReader(f):
+                    if r["status"] != "completed" or r["origin"] != "base":
+                        continue
+                    a = float(r["arrival_s"])
+                    if 2500.0 <= a < 7000.0:
+                        S.append((a, float(r["t_end"]) - a, int(r["n_turns"])))
+            S = np.array(S)
+            for lo, hi in ((3, 6), (8, 12), (13, 18)):
+                sel = (S[:, 2] >= lo) & (S[:, 2] <= hi)
+                if sel.sum() < 15:
+                    continue
+                out.append(dict(label=g["label"], mult=g["rate_mult"], seed=seed, run=rd, T_lo=lo, T_hi=hi, n=int(sel.sum()),
+                                slope=float(np.polyfit(S[sel, 0], S[sel, 1], 1)[0]),
+                                predicted=float(np.mean(z ** S[sel, 2] - 1.0))))
+    return out
+
+
 def main() -> int:
     out = dict(premium=premium_scan(), data=data_summaries(os.path.join(ROOT, "results", "theory", "icml", "trap_check.json")),
-               fluid=fluid_checks())
+               fluid=fluid_checks(), self_similarity=self_similarity(os.path.join(ROOT, "results", "theory", "icml", "trap_check.json")))
     path = os.path.join(ROOT, "results", "theory", "icml", "support.json")
     with open(path, "w") as f:
         json.dump(out, f, indent=1, default=float)

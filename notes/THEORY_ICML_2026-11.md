@@ -698,6 +698,23 @@ D(1.65x) = 1.223 lambda_miss.
 So an operator who sets arrivals just below the trapped throughput sees at most a brief few-percent dip. A cut below
 lambda_miss drains, but near the threshold only over a busy period that 1/(1 - rho') makes long.
 
+### 6.8 Self-similarity (Theorem 1(d)): sojourn grows with the arrival time
+
+A session that joins the trap at u finishes near u z^T. So, among completed base sessions with similar T that arrive in
+[2500, 7000) s, the sojourn should grow linearly in the arrival time with slope about E[z^T - 1]. The ratios below are
+measured over predicted slopes, per seed; source: `support.json`, key `self_similarity`.
+
+| cells | sessions per bin | ratio | reading |
+|---|---|---|---|
+| H200 600k, both rates | 160-400 | 0.86-1.19 in every T bin (3-6, 8-12, 13-18) | consistent |
+| native 2.5x, T 3-6 | | 0.85-0.96 | consistent |
+| SGLang 300k, vLLM, Llama | 40-120 | 0.2-1.6 | noisy |
+| long T at high z (e.g. native 4.0x) | | 0.1-0.8 | biased low |
+
+The last row is biased by right-censoring at 8,700 s: a late long session there needs more than the remaining run time,
+so the completed ones are the faster ones. This check is descriptive and supports Theorem 1(d) where samples are large
+and censoring is small. It is not a test.
+
 ## 7. Reproduce
 
 All commands use Windows Git Bash with the shared venv.
