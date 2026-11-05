@@ -149,3 +149,25 @@ keys matched their sources. Applied:
 - AI-referee sentences shortened; the approved AI-use statement is unchanged.
 - Housekeeping: SHED cites the lambda = 0 busy period directly; the from-empty backlog excess is stated; "single runs, as their
   run accounting implies"; the head-to-head is "against a post-hoc reading" of Lu et al.'s model.
+
+## PAPER_INPUT part 1 (TOOLSLOW-W, REPLICATE-EDGE), filled 2026-11-05
+
+Source: the lead's `notes/PAPER_INPUT_r15.md` sections 1, 2 and Verification (branch `r15/tonight`, commit 24dcc91); every
+number there was independently recomputed from the raw CSVs. No Nova result was read by this session.
+
+- Abstract: "Blind, it matched 3 runs trapped by a tool slowdown alone; \pending{CUT}." 1903 form characters (margin 17), so
+  the CUT clause has about 30 characters unless something else is trimmed.
+- Sec. 1, contribution 2: the pre-registered tool slowdown trapped 3 of 3 runs with paired no-burst runs good, and the frozen
+  predictions met all four pooled scores; CUT still pending.
+- Sec. 3, TOOLSLOW-W item: outcome TRAPS with per-run slopes, controls, the 900 s arm's 1 of 3, the pooled S1-S4 scores, per-run
+  composition and S5, "not refuted", and that every frozen model called it (so it tests the law on a trap with no burst, not the
+  models against each other). Caveats kept: tolerances set on committed runs; designed after d30 and after reading simulator
+  outputs, so blind in outcome only.
+- Gap slope written as 1.075 gamma (the note's 3-decimal value): the per-run slopes 0.0195513 / 0.0102881 / 0.0121922 over gamma
+  0.013034 give 1.0749, so the suggested "1.08" would be a double rounding (1.07 at two decimals).
+- Sec. 6, Table 4: TOOLSLOW-W outcome cell filled. Sec. 4: the out-of-sample record now adds that the 1800 s slowdown trapped 3
+  of 3 as predicted, next to the 900 s miss. Sec. 8: the blind runs are named (three TOOLSLOW-W runs in one cell, six CUT runs);
+  the REPLICATE-EDGE sentence follows "single runs per rate". The frozen-predictions appendix (frozen.tex), fresh-seed row: one clause on the same-plan
+  replicates.
+- Still pending: CUT (abstract, Sec. 1, Sec. 3, Table 4, Sec. 9, App. appendix_supp lines on CUT, limitations.tex), and
+  `\repourl`.

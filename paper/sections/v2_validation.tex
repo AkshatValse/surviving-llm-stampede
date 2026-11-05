@@ -115,10 +115,19 @@ they score did not exist at the push. S2 compares with $\gamma$, not with the co
 two differ by 1.3\%, well inside the tolerance.
 \begin{itemize}[leftmargin=*,nosep]
 \item \emph{TOOLSLOW-W} (pre-registered: tag \texttt{r15-reg}, commit \texttt{e05a262}, pushed at 03:18:36 CST, before the first job
-was submitted at 03:21:38; designed after the 30\,s TOOLSLOW arm trapped 1 of 3): no burst; every tool call that starts in
+was submitted at 03:21:38; designed after the 30\,s TOOLSLOW arm, whose slowdown ended at 2100\,s, trapped 1 of 3, and after
+reading simulator outputs, so it is blind in outcome only): no burst; every tool call that starts in
 $[1200,3000)$\,s takes 30\,s longer, at 1.35~$\lref$, seeds 0--2, paired with the committed NOBURST runs. The registered rule calls the
 cell TRAPS if at least 2 of the 3 runs are stuck, NO-TRAP if at least 2 are good, and MIXED otherwise; its trapped runs, if any, are
-scored by S1--S5. \pending{TOOLSLOW-W outcome per seed and the S1--S5 scores of its trapped runs (lead's PAPER\_INPUT).}
+scored by S1--S5. Outcome: TRAPS. All three runs were stuck (hit 0.000 over $[5700,8700)$\,s; backlog slopes 0.0192, 0.0184
+and 0.0232\,/s against a threshold of 0.0125\,/s), while their paired NOBURST runs stayed good (hit 0.930--0.934); on the same
+plans, the slowdown that ended at 2100\,s had trapped 1 of 3. All three runs are eligible for S1--S5, and the pooled scores pass:
+composition $+1.9$\% (limit $\pm5$\%), gap slope $1.075\gamma$ (1.089 against the unregistered $\gamma/z$), completions $+1.9$\% of
+$D$ with every run above $\lref$, and backlog slope $+29$\% of $\alpha$ (limit $\pm35$\%); Theorem~1's application to this cell is
+not refuted. Per run, composition is within $\pm8$\% in all three (seed~1 at $+7.9$\%), and S5's plug-in lies on the measured side
+of the threshold in 2 of 3 runs and within 0.01\,/s in 3 of 3. Every model we froze (the calibrated simulator in both modes and the
+first-principles model) predicted this outcome, so the cell tests the trap-state law on a trap entered with no burst, not the models
+against each other.
 \item \emph{CUT} (a blind test of model~F's trajectory under an arrival cut, the setting of Corollary~\ref{cor:trapthr}): the
 1.65~$\lref$ BURST protocol, then from 2400\,s arrivals cut to 1.15~$\lref$ (CUT-A, $\rho'=1.145$, inside $(\lmiss,D(\lambda))$) or
 to 0.85~$\lref$ (CUT-B, $\rho'=0.846$), seeds 0--2. Model~F's predictions, driven by each seed's exact client plan, were frozen under

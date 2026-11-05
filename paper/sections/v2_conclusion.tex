@@ -9,8 +9,11 @@ proved positive for our workload at $\rho\ge1.04$; below that it rests on a floa
 
 \paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
 scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind
-(\S\ref{sec:validation}). The from-empty runs are single runs per rate, the trapped windows are at most 7500\,s long, and ``does not
-escape'' means within that horizon.
+(\S\ref{sec:validation}): three TOOLSLOW-W runs in one cell, and the six CUT runs. The from-empty runs are single runs per rate; in
+an exploratory replication at the 2.5~$\lref$ edge of the 300k pool, three runs on each of two arrival plans reproduced both
+originals, one collapse and one stable run, which suggests that there the spread across seeds comes from the plans rather than from
+service noise (six runs, on two GPUs of one node). The trapped windows are at most 7500\,s long, and ``does not escape'' means
+within that horizon.
 
 \paragraph{The experiments.} Sessions are synthetic (random tokens, exponential 5\,s tool times, geometric turn counts, fixed tool
 outputs and output lengths, no shared prefixes), clients never retry or abandon, and real agent traces have tool times far shorter
