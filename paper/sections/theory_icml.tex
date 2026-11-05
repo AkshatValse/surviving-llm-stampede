@@ -32,7 +32,8 @@ where $h_n\ge0$, $h_n=0$ for $n\ge K$, and $\sum_nh_n$ is the remaining all-miss
 \item If $\rho=1$, the backlog stays bounded.
 \item If $\rho>1$, let $z>1$ solve $\lambda\sum_kc_kG_kz^{-k}=1$. Then, as $t\to\infty$:
   \begin{itemize}[leftmargin=*,nosep]
-  \item the gap between a session's turns grows as $V(t)/t\to z-1$;
+  \item the gap between a session's turns, indexed by the time the turn is requested, grows as $V(t)/t\to z-1$ (against the
+  turn's completion time, at slope $1-1/z$);
   \item the backlog grows as $N(t)/t\to\alpha=\lambda(1-E[z^{-T}])$, and sessions complete at $D=\lambda E[z^{-T}]$;
   \item the sessions present, and the turns served, have the tilted turn mix $G_kz^{-k}/\sum_jG_jz^{-j}$.
   \end{itemize}
@@ -82,9 +83,9 @@ an overloaded processor-sharing queue, whose branching (Crump--Mode--Jagers) str
 \citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}. The paper's layer RR is the processor-sharing
 version; its growth differs from model~F's by about 2\%. Lu et al.\ state that arrivals below their low-reuse departure
 rate drain the population, and that the throughput measured in a trap sets the scale of the cut
-needed~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr} sharpens this for FIFO traps: the measured throughput exceeds
-the drain threshold, consistent with their simulations, which recovered only below the trapped departure rate. We do not
-prove that the engine converges to model~F.
+needed~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr} sharpens this for FIFO traps: there, the measured throughput
+exceeds the drain threshold. Their engine keeps some reuse after collapse and lies outside model~F, so their simulations do
+not test the corollary. We do not prove that the engine converges to model~F.
 
 \begin{figure*}[t]\centering
 \includegraphics[width=\textwidth]{figs/fig_trap_universality.pdf}
@@ -93,7 +94,8 @@ measured in the 57 stuck runs of the E2 protocol (orange) and the 13 runs that l
 hollow). Lines are model~F for each of the eight cells; they nearly coincide, as Corollary~\ref{cor:trapinv}
 (Appendix~\ref{app:trap}) predicts. No parameter is fitted to any trap measurement. (a)~Mean prompt of the turns served, over the stationary mean:
 the tilted turn mix. (b)~Session completion rate over $\lmiss$: the youth premium, above 1. (c)~Backlog growth over
-$\lmiss$. (d)~Growth rate of the gap between a session's turns, $\gamma=z-1$. The dashed lines show the quasi-static
+$\lmiss$. (d)~Slope of the gap between a session's turns against the turn's completion time. Model~F gives
+$1-1/z=\gamma/z$, since a turn that completes at $t$ was requested at about $t/z$. The dashed lines show the quasi-static
 fluid read literally in congestion: stationary composition, completion at $\lmiss$, growth at $\rho-1$. The paper's layer RR
 already corrects (c) numerically.}\label{fig:trapuniv}
 \end{figure*}
@@ -104,7 +106,8 @@ already corrects (c) numerically.}\label{fig:trapuniv}
 window $[5700,8700)$\,s), per seed (vLLM: the registered and exploratory runs, which share plans). No parameter is fitted to
 any trap measurement; vLLM, the H200 and Llama take one speed factor fitted to their E0a token rate. $\rho=\lambda/\lmiss$ uses
 the model's $\lmiss$. $\bar L$: mean prompt of the turns served, measured, against the tilted-mix prediction (the stationary
-mean is about 10{,}500). Gap slope: the trend of the median gap between a session's turns, against $\gamma=z-1$. $D$: the
+mean is about 10{,}500). Gap slope: the trend of the median gap between a session's turns against the turn's completion
+time, compared with $1-1/z$. $D$: the
 session completion rate, as a multiple of $\lref$. Backlog: the slope as a fraction of $\lambda-\lref$, against
 $\alpha/(\lambda-\lmiss)$. The heuristic layer RR gave 0.64 and 0.63 at 300k. Full table, E0b runs and pool sweep:
 Appendix~\ref{app:trap}, \fpath{results/theory/icml/trap_check.md}.}\label{tab:trap}
@@ -112,18 +115,18 @@ Appendix~\ref{app:trap}, \fpath{results/theory/icml/trap_check.md}.}\label{tab:t
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}l c c c c c@{}}
 \toprule
-cell, rate & $\rho$ & $\bar L$ meas.\ / pred. & gap slope / $\gamma$ & $D/\lref$ / pred. & backlog / pred.\\
+cell, rate & $\rho$ & $\bar L$ meas.\ / pred. & gap slope / $1-1/z$ & $D/\lref$ / pred. & backlog / pred.\\
 \midrule
 300k 1.35 & 1.34 & 9125--9556 / 9324 & .004--.020 / .013 & 1.13--1.28 / 1.13 & .14--.89 / .63\\
-300k 1.65 & 1.64 & 8417--8830 / 8606 & .015--.027 / .023 & 1.25--1.35 / 1.23 & .59--.78 / .65\\
-native 2.5 & 2.44 & 7264--7484 / 7374 & .044--.051 / .045 & 1.44--1.56 / 1.49 & .74--.79 / .69\\
-native 4.0 & 3.90 & 6127--6213 / 6115 & .066--.076 / .081 & 1.87--2.03 / 1.81 & .68--.76 / .74\\
+300k 1.65 & 1.64 & 8417--8830 / 8606 & .015--.027 / .022 & 1.25--1.35 / 1.23 & .59--.78 / .65\\
+native 2.5 & 2.44 & 7264--7484 / 7374 & .044--.051 / .043 & 1.44--1.56 / 1.49 & .74--.79 / .69\\
+native 4.0 & 3.90 & 6127--6213 / 6115 & .066--.076 / .075 & 1.87--2.03 / 1.81 & .68--.76 / .74\\
 vLLM 1.35 & 1.32 & 9097--9547 / 9393 & .000--.016 / .012 & 1.18--1.28 / 1.14 & .00--.74 / .63\\
-vLLM 1.65 & 1.62 & 8104--8778 / 8676 & .013--.028 / .022 & 1.30--1.42 / 1.24 & .41--.80 / .65\\
-H200 1.5 & 1.45 & 9015--9177 / 9062 & .015--.022 / .017 & 1.20--1.27 / 1.20 & .49--.78 / .64\\
-H200 2.0 & 1.93 & 8058--8230 / 8082 & .023--.031 / .032 & 1.40--1.45 / 1.36 & .51--.66 / .66\\
-Llama 1.35 & 1.33 & 9075--9512 / 9356 & .003--.016 / .013 & 1.22--1.33 / 1.14 & .00--.75 / .64\\
-Llama 1.65 & 1.63 & 8459--8757 / 8631 & .013--.021 / .023 & 1.34--1.49 / 1.23 & .29--.63 / .66\\
+vLLM 1.65 & 1.62 & 8104--8778 / 8676 & .013--.028 / .021 & 1.30--1.42 / 1.24 & .41--.80 / .65\\
+H200 1.5 & 1.45 & 9015--9177 / 9062 & .015--.022 / .016 & 1.20--1.27 / 1.20 & .49--.78 / .64\\
+H200 2.0 & 1.93 & 8058--8230 / 8082 & .023--.031 / .031 & 1.40--1.45 / 1.36 & .51--.66 / .66\\
+Llama 1.35 & 1.33 & 9075--9512 / 9356 & .003--.016 / .012 & 1.22--1.33 / 1.14 & .00--.75 / .64\\
+Llama 1.65 & 1.63 & 8459--8757 / 8631 & .013--.021 / .022 & 1.34--1.49 / 1.23 & .29--.63 / .66\\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -135,7 +138,8 @@ registered protocol, with no parameter fitted to any trap measurement:
 57 stuck runs of the E2 protocol, and to within 3\% in 50 of them. In these runs the prediction ranges from 6{,}115 to
 9{,}393 tokens. The trapped engine serves a young backlog of short turns, which the paper noted; the theorem says how young.
 \item \emph{Cycle growth.} The gap between a session's turns, the quantity whose median Table~\ref{tab:gapR} reports,
-grows in time at slope $\gamma$. Measured over predicted, the ratio has median 0.98.
+grows linearly in time. Its slope is $\gamma$ against the time a turn is requested, and so $1-1/z$ against its completion
+time, which is what we measure. Measured over predicted, the ratio has median 1.01 (mean 0.96).
 \item \emph{Youth premium.} Every stuck run completes sessions above $\lref$, at 1.10--2.40~$\lref$, and on average 5\%
 above~$D$; the congested engines run a few percent above E0a's reference rate (Appendix~\ref{app:proofs}).
 \item \emph{Backlog.} The backlog grows at 0.63 of $\lambda-\lref$ on average, the value the heuristic layer RR gave

@@ -63,9 +63,14 @@ past its 128-request fallback), the native pool, vLLM, the H200 at 300k and 600k
 - The mean prompt of the turns served in the trap matches the tilted-mix prediction within -6.6% to +7.7%: within +-3%
   in 50 of the 57 runs and within +-5% in 54. The prediction spans 6,115 to 9,393 tokens in the E2-protocol runs, and
   5,064 to 9,233 in the E0b runs: young, short turns, with no free parameter.
-- The gap between a session's consecutive turns grows linearly in time at the predicted slope gamma, from 0.012 to 0.13
-  per second across cells. Measured over predicted, the ratio has mean 0.94 and median 0.98 in the E2 runs, and spans
-  0.62-1.30 in the E0b runs.
+- The gap between a session's consecutive turns grows linearly in time.
+  - Against the time a turn is requested, the slope is gamma = z - 1 (Theorem 1(c)). Against the turn's completion time,
+    which is how it is measured, the slope is gamma/z = 1 - 1/z, because a turn completing at t was requested at about
+    t/z. Across cells gamma ranges from 0.012 to 0.13 per second.
+  - Measured over predicted (gamma/z), the ratio has mean 0.96 and median 1.01 in the E2 runs, and spans 0.63-1.37 in the
+    E0b runs (section 6.3).
+  - An earlier version compared with gamma (median 0.98). An independent review of the reframe draft caught the time
+    index on 2026-11-05.
 - Every stuck run completes sessions above lambda_ref, at 1.10-2.40 lambda_ref. The paper noted this excess
   qualitatively; Theorem 2 quantifies it (the youth premium).
 - Across the 57 runs the backlog slope averages 0.63 of lambda - lambda_ref, as alpha predicts. The paper's heuristic RR
@@ -266,7 +271,7 @@ In the fluid, that is V_tot(0) + (rho - 1)t by Lemma 2(iii). The probability tha
 
 | rho | 1.01 | 1.02 | 1.05 | 1.10 | 1.35 | 1.65 |
 |---|---|---|---|---|---|---|
-| P(empties) | 0.35 | 0.12 | 4e-3 | 1e-5 | 4e-23 | 3e-54 |
+| P(empties) | 0.35 | 0.12 | 4e-3 | 1e-5 | 4e-23 | 2e-54 |
 
 These are orders of magnitude: a realized w fluctuates around the fluid value. A spontaneous exit therefore matters only
 within a few percent of lambda_miss. We state this for orientation and claim nothing new.
@@ -545,9 +550,14 @@ c -> c/s, omega is unchanged and lambda_miss -> s lambda_miss. []
 - Theorem 2 and Corollary 3 sharpen that remark for FIFO traps. The throughput measured in a trap,
   D(lambda) = lambda E z^{-T}, depends on the load and exceeds the drain threshold lambda_miss by the youth premium. So a
   cut to just below the measured throughput does not drain.
-- Their own simulations are consistent with this. GPU-only 1P3D recovered at 0.1 lambda_ref and stayed trapped at 0.2, while
-  trapped departures were 0.20-0.31. With the host tier it recovered at 0.2 and stayed trapped at 0.3-0.5, with departures of
-  0.20-0.24. Their engine is PD-disaggregated, with HiCache, and not plain FCFS, so this is consistency only.
+- Their simulations neither confirm nor refute Corollary 3 (corrected 2026-11-05; the earlier text called them
+  consistent).
+  - GPU-only 1P3D fits it: every seed recovered at 0.1 lambda_ref and stayed trapped at 0.2, while trapped departures were
+    0.20-0.31.
+  - With the host tier, every seed recovered at 0.2 lambda_ref, which is the bottom of its trapped departures (0.20-0.24).
+    One seed in three recovered at 0.3 and at 0.4, above them; every seed stayed trapped at 0.5.
+  - Their engine keeps some reuse after collapse (simulated hit rate 0.26-0.37), and it is PD-disaggregated with HiCache.
+    So it is outside model F, and the corollary does not describe it. We claim nothing about their system.
 - They have no theorem; their model uses an empirical h(W/C) and has no trap dynamics.
 
 **Against classical work and other LLM-serving theory:**
@@ -716,8 +726,19 @@ Unstable E0b runs, measured vs gamma:
 | native 6.5x | 0.109 | 0.131 |
 | H200 300k 1.75x | 0.031 | 0.026 |
 
-- The ratio of measured to gamma has mean 0.94 and median 0.98 over the 57 E2-protocol runs, and mean 0.98 (range
-  0.62-1.30) over the 13 E0b runs.
+- **Comparator.** The right comparator is gamma/z = 1 - 1/z, not gamma.
+  - The statistic regresses each gap on the turn's *completion* time. A turn that completes at t was requested at
+    u = f^{-1}(t), about t/z, and its gap is V(u), about gamma u. So the gap grows at gamma/z per second of completion time.
+  - Theorem 1(c)'s V(t)/t -> gamma indexes the *join* time, and so does the fluid's V slope in the last column.
+  - The factor 1/z is 0.93-0.99 over the E2 points, and as low as 0.88 for the E0b runs (native 6.5x).
+  - An independent review of the reframe draft found this on 2026-11-05.
+  - `analysis/theory/icml/gap_slope_completion_time.py` recomputes the ratios into
+    `results/theory/icml/gap_slope_completion_time.json`. The universality figure's panel (d) now plots 1 - 1/z.
+- **Ratios.** Measured over gamma/z, the ratio has mean 0.96 and median 1.01 over the 57 E2-protocol runs, and mean 1.03
+  (range 0.63-1.37) over the 13 E0b runs. Against gamma, the earlier figures were 0.94 and 0.98, and 0.98 (0.62-1.30).
+  - The table's gamma column is gamma itself. gamma/z is, per row: 0.0129, 0.0225, 0.0434, 0.0746 (native 4.0x, whose
+    ratios move from 0.82-0.94 to 0.89-1.02), 0.0162, 0.0306, 0.0125, 0.0221, 0.0120 and 0.0215.
+  - The E0b gamma/z values are in the JSON.
 - The near-zero values are seed 1 at 1.35x (see 6.5): when arrivals dip, the trap stops growing for the window.
 - The gap is the quantity the paper's Table tab:gapR reports as a median (166-516 s). Theorem 1(f) says it is not a
   constant of the trap. It is proportional to the remaining work, i.e. to the trap's age counted from its virtual origin.
@@ -1039,3 +1060,19 @@ the citation.
   - Corollary 3.
 - **Citations checked against Crossref.** Kendall (1951) is JRSS-B 13(2):151-173, doi 10.1111/j.2517-6161.1951.tb00080.x.
   Jean-Marie & Robert (1994) is Queueing Systems 17(1-2):129-136.
+
+**Second review (2026-11-05, an independent AI review of the reframe draft, relayed by the reframe session).** All three
+findings were checked and confirmed:
+- **(1) Wrong comparator in the gap check.** The gap trend was regressed on completion time but compared with gamma; the
+  model value is gamma/z.
+  - Fixed in section 0, section 6.3, the LaTeX table and figure caption, and `score_new.py`, which now also reports a
+    non-registered S2 against gamma/z.
+  - The frozen S2 rule compares with gamma and stands as registered. A post-registration note in
+    `notes/PREDICTIONS_icml_trap.md` gives the factor 1/z.
+- **(2) Overclaim about Lu et al.** Section 5 called their simulations consistent with Corollary 3. With the host tier, one
+  seed in three recovered at 0.3 and 0.4 lambda_ref, above the trapped departures (0.20-0.24). Reworded in section 5 and
+  the LaTeX draft.
+- **(3) Rounding error in Remark 5.** At rho = 1.65 the probability is 2.3e-54 (`support.json`), not 3e-54. The appendix's
+  "about 1e-22" at rho = 1.35 is now 4e-23.
+
+Theorem statements and proofs are unchanged.

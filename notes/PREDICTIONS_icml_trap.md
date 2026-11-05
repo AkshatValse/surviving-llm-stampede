@@ -65,3 +65,18 @@ registered slope test came out indeterminate or draining in SGLang 300k, vLLM an
 PYTHONPATH="src;." python -m analysis.theory.icml.freeze_predictions --reps 200     # ~4 min
 PYTHONPATH="src;." python -m analysis.theory.icml.run_check --reps 400              # ~5 min, the retrospective table
 ```
+
+## Post-registration note (2026-11-05; not part of the frozen tag `icml-trap-pred`)
+
+**S2's comparator.** S2 compares the 300 s-median gap trend with gamma. That trend is computed against the turn's
+*completion* time (`measured.py`, `gap_med_slope`).
+- In model F a turn that completes at t was requested at about t/z. So the model value of that trend is gamma/z = 1 - 1/z,
+  not gamma. Theorem 1(c)'s gamma indexes the time the turn is requested.
+- The factor 1/z is 0.987 at 1.35x and 0.978 at 1.65x on the 300k cell, and 0.93-0.99 over all registered E2 points.
+
+**Scoring.** S2 stays as registered (against gamma). `analysis/theory/icml/score_new.py` now also reports, labelled
+non-registered:
+- the ratio to gamma/z;
+- the pooled verdict S2' = 0.6 <= mean / (gamma/z) <= 1.4.
+
+The retrospective ratios against gamma/z are in `results/theory/icml/gap_slope_completion_time.json` (E2 median 1.01).
