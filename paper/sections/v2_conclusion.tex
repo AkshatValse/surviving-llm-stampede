@@ -9,9 +9,9 @@ proved positive for our workload at $\rho\ge1.04$; below that it rests on a floa
 
 \paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
 scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind, and only in
-outcome (\S\ref{sec:validation}): three TOOLSLOW-W runs, three TOOLSLOW-D15 runs (\pending{TOOLSLOW-D15 outcome}) and the six CUT
-runs, all on the A100 with the 300k pool. In CUT-A the registered rule rejects only the constant-throughput readings; the
-late-window slopes, scored post hoc against frozen values, single out model~F. The from-empty runs are single runs per rate, and at
+outcome (\S\ref{sec:validation}): the four runs trapped by a tool slowdown (three TOOLSLOW-W, one TOOLSLOW-D15) and the six
+CUT runs, all on the A100 with the 300k pool. In the CUT runs each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one; what singles out model~F
+against intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity. The from-empty runs are single runs per rate, and at
 300k the seed-0 bracket did not replicate on fresh seeds (2.5~$\lref$ was stable in 3 of 3; in realized rates the edge lies between
 2.665 and 2.726~$\lref$). In an exploratory replication on two plans chosen because their outcomes were known, three runs each
 reproduced both originals, one collapse and one stable run, which suggests that the spread across seeds at the edge comes from the
@@ -34,11 +34,11 @@ root: the gap
 between turns grows linearly, the backlog grows at a fraction of the excess load (0.6 to 0.8 at our loads), and the turns it serves
 are young and short; for our workload it completes sessions faster than its all-miss capacity. Checked retrospectively on 57 stuck
 runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws hold for the runs taken
-together, and, with predictions frozen before the runs, on three runs in one cell trapped by a tool slowdown alone. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
+together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown alone. The practical reading is Corollary~\ref{cor:trapthr}: in model~F, a cut to just below the throughput measured in an all-miss
 trap does not clear it, and a cut below the all-miss capacity drains the trap only slowly and by turning sessions away.
 On the engine, a cut to below the completion rate seen just before it, and below the trapped throughput of the same seeds' uncut
-runs, but above the all-miss capacity, left all three traps in place to the end of the run; the registered rule rejects only the
-constant-throughput readings, and the late-window slopes, scored post hoc against frozen values, single out model~F
-(\pending{CUT-B outcome}).
+runs, but above the all-miss capacity, left all three traps in place to the end of the run, and a cut below the all-miss capacity
+drained the trap only slowly, as Theorem~\ref{thm:trap}(a) and Corollary~\ref{cor:trapthr} say; each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one; what singles out model~F
+against intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 The other exit, a session cap that restores reuse, rescued all 9 established traps of our registered tests at the same load without
 shedding, and the engine stayed good after the cap was removed.

@@ -30,8 +30,10 @@ trapped departures they measured were 0.20--0.31 of it. Their
 systems keep some reuse in the trap, though, and with a host tier one seed in three recovered at cuts above the trapped departures
 they measured, so the corollary does not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}): a cut to below the trapped throughput of
 the same seeds' uncut runs, and below the completion rate seen just before it, but above $\lmiss$, left all three CUT-A traps in
-place to the end of the run. The registered rule rejects only the constant-throughput readings; the late-window slopes, scored post
-hoc against frozen values, single out model~F (\pending{CUT-B outcome}).
+place to the end of the run, and a cut to 0.85~$\lref$, below $\lmiss$, drained the CUT-B traps only slowly: all three were still
+stuck at 8700\,s, where a drain at the uncut trapped throughput or at the completion rate seen before the cut would have reached the
+onset by 4900--7600\,s. Each arm's registered rule rejected the naive reading; what singles out model~F against intermediate
+readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 
 \paragraph{Restoring reuse with a session cap.} A FIFO gate that admits at most $\ncap$ sessions, each holding its slot until its
 last turn ends, makes the admitted sessions a closed system of $\min(n,\ncap)$ sessions (Proposition~\ref{prop:cap}). In the

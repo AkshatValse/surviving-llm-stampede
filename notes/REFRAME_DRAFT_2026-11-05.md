@@ -226,3 +226,28 @@ analyses R5, R6, R16, R17; R12's slope/alpha column; shortening Sec. 4) were not
 - Layout: the round-15 rows of the frozen-prediction summary are a separate table (tab:frozensum15), because the summary no longer
   fit one page; the round-15 timeline is Table timeline-r15.
 - Build: 93 pages, main text to p. 14, no warnings; abstract 1873 form characters (about 60 left for the CUT clause).
+
+## PAPER_INPUT part 2b (CUT-B, TOOLSLOW-D15) and R12, filled 2026-11-05
+
+Source: `notes/PAPER_INPUT_r15.md` sections 3b and 4 (branch `r15/tonight`, commit 4a37e25); numbers kept exactly as there. No
+Nova result was read by this session.
+
+- CUT-B (PASS) in Sec. 3 with its narrowed reading: persistence discriminates here (the naive and pre-cut readings reach n_b by
+  4877-7598 s; the runs stayed stuck to 8700 s); a quasi-static reading, not a registered CUT-B comparator, fits the slopes about
+  as well; model F's distinctive prediction, completions below the all-miss capacity, held post hoc (the quasi-static value is
+  just inside the frozen tolerance); the frozen secondary predictions held. A joint paragraph closes the CUT item, and the same
+  joint sentence is in Secs. 1, 5, 8 and 9: each arm's rule rejected the naive reading (CUT-A's also the quasi-static one); what
+  singles out model F against intermediate readings is post hoc (CUT-A's late window, CUT-B's completions).
+- TOOLSLOW-D15 (NO-TRAP) in Sec. 3 ("chosen so that our two frozen predictors disagree"; not called the first such cell): the
+  simulator right seed by seed, the fluid verdict wrong, the per-seed layer modal-right with P(NO-TRAP) 0.41; the stuck run passes
+  S1-S4 and misses S5's closeness by 0.0004 /s; the exploratory misses reported. Also in Sec. 1, Sec. 4's out-of-sample record
+  (a miss of the model's fluid verdict), Sec. 8, Table 4, the ledger and the frozen table.
+- Abstract: "Blind in outcome, 4 runs in two cells trapped by a tool slowdown alone met pre-set tolerances, and after arrival
+  cuts the traps persisted or drained slowly, as predicted." "(median ratio 1.01)" dropped for room, and the clause order changed
+  so that "in every run" attaches to the completions only. 1916 form characters. TOOLSLOW-D15 does not fit.
+- R12 (authorized by the lead): Table 1 and the App. B table report backlog slope over model F's alpha, with the quasi-static
+  (lam - lam_miss)/alpha in parentheses; Sec. 2 and Sec. 3 sentences follow (mean 0.99, median 1.06, per run 0.00 to 1.62, against
+  1.36-1.59; from-empty runs above alpha in 11 of 13, by 6-35%). Script `analysis/theory/icml/backlog_over_alpha.py`, output
+  `results/theory/icml/backlog_over_alpha.json` (force-added), from `trap_check.json` only.
+- Timeline: CUT-B and TOOLSLOW-D15 pulls and verdicts (06:51, 08:23, 08:25, 08:35, 08:36 CST) from the pull directory names.
+- Only `\repourl` is still pending.

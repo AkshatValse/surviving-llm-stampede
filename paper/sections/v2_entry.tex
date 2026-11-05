@@ -59,8 +59,9 @@ multiples. They missed the H200's softer tail past the peak (at 600k also the 0.
 pool's peak height and edge, 4 of the 9 rescue release times, one seed's basin probabilities, the trapped token rates of two
 paired tests, Llama-3.1-8B's from-empty edge (one grid step high, a near miss) and a 30\,s tool slowdown that it said would
 trap every seed (it trapped 1 of 3; lengthened from 900 to 1800\,s in a pre-registered test designed after that miss, it trapped 3
-of 3, as predicted); on TOOLSLOW-D15 its fluid verdict was TRAPS and its per-seed layer gave $P(\text{TRAPS})=0.58$
-(\pending{TOOLSLOW-D15 outcome}). The 0.5-hit crossings of the five cells
+of 3, as predicted). On TOOLSLOW-D15, a 15\,s slowdown at 1.65~$\lref$ chosen so that the model and the simulator disagree, its
+fluid verdict (TRAPS on every seed) missed: one run of three trapped, as the simulator predicted seed by seed, and the model's
+per-seed layer, with the right modal calls, gave that outcome a probability of only 0.41. The 0.5-hit crossings of the five cells
 predicted before their runs were read lie within 0.1--4.4 sessions of the measured ones (Table~\ref{tab:lu}).
 
 \begin{table}[t]\centering\footnotesize
