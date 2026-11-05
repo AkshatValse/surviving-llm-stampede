@@ -84,9 +84,12 @@ def perron_root(lam: float, tc: TrapCosts) -> float:
     """The unique z > 0 with lam * sum_k c_k G_k z^{-k} = 1."""
     a = lam * tc.c * tc.G
     k = tc.k
+    la = np.log(a)
 
-    def f(logz: float) -> float:
-        return float(np.log(np.sum(a * np.exp(-k * logz))))
+    def f(logz: float) -> float:          # log phi(e^logz), computed stably (log-sum-exp)
+        e = la - k * logz
+        mx = float(np.max(e))
+        return mx + float(np.log(np.sum(np.exp(e - mx))))
 
     lo, hi = -1.0, 1.0
     while f(lo) < 0:
@@ -102,12 +105,13 @@ def ps_root(lam: float, tc: TrapCosts) -> float:
     a = lam * tc.c * tc.G
     k = tc.k
 
-    def f(g: float) -> float:
-        if abs(g) < 1e-12:
-            w = np.ones_like(k)
-        else:
-            w = np.exp(-g * (k - 1.0)) * (1.0 - math.exp(-g)) / g
-        return float(np.log(np.sum(a * w)))
+    la = np.log(a)
+
+    def f(g: float) -> float:             # log of the left side, computed stably
+        e = la - g * (k - 1.0)
+        mx = float(np.max(e))
+        fac = 1.0 if abs(g) < 1e-12 else (-math.expm1(-g)) / g
+        return mx + float(np.log(np.sum(np.exp(e - mx)))) + math.log(fac)
 
     lo, hi = -0.5, 0.5
     while f(lo) < 0:
@@ -191,7 +195,7 @@ def orbit_recursion(lam: float, tc: TrapCosts, h: Sequence[float], n_steps: int)
 
 def fifo_fluid(lam: float, tc: TrapCosts, n_bg: float, t_b: float = 1200.0, burst_n: float = 200.0, burst_w: float = 60.0,
                t_end: float = 8700.0, dt_arr: float = 1.0, think: float = 0.0, grid: float = 10.0,
-               lam_after: Optional[Sequence[tuple]] = None) -> Dict[str, np.ndarray]:
+               lam_after: Optional[Sequence[tuple]] = None, orbit_from: Optional[float] = None) -> Dict[str, np.ndarray]:
     """Exact (up to the packet discretisation dt_arr) fluid of the trap: a FIFO queue of request packets (mass, class);
     the server does GPU work at unit rate; a completed class-k packet loses the fraction p_k / G_k (departures) and
     re-joins the tail as class k+1 after `think` seconds.  Starts at t_b with n_bg present sessions in the stationary mix
@@ -235,18 +239,25 @@ def fifo_fluid(lam: float, tc: TrapCosts, n_bg: float, t_b: float = 1200.0, burs
             v = v - q[0][0] * tc.c[q[0][1]] + head_left
         return v
 
+    t_probe = orbit_from if orbit_from is not None else math.inf    # optional FIFO-orbit probe (Theorem 1's recursion)
+    orbit: List[tuple] = []
     while gi < len(times):
-        # next event: arrival packet, rejoin, head completion, or grid point
+        # next event: arrival packet, rejoin, head completion, orbit probe, or grid point
         t_head = t + head_left if (q and head_left is not None) else math.inf
         if q and head_left is None:
             head_left = q[0][0] * tc.c[q[0][1]]
             t_head = t + head_left
         t_rej = thinking[0][0] if thinking else math.inf
         t_grid = times[gi]
-        t_next = min(next_arr, t_head, t_rej, t_grid)
+        t_next = min(next_arr, t_head, t_rej, t_grid, t_probe)
         if q and head_left is not None:
             head_left -= (t_next - t)
         t = t_next
+        if t == t_probe:
+            v = V_now()
+            orbit.append((t, v))
+            t_probe = t + v if v > 0 else math.inf
+            continue
         if t == t_grid:
             out["N"][gi] = N_now()
             out["V"][gi] = V_now()
@@ -281,6 +292,7 @@ def fifo_fluid(lam: float, tc: TrapCosts, n_bg: float, t_b: float = 1200.0, burs
                 q.append([mc, i + 1])
     out["t"] = times
     out["served_k"] = served_k
+    out["orbit"] = np.array(orbit) if orbit else np.zeros((0, 2))
     return out
 
 

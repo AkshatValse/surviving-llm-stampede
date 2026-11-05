@@ -1,0 +1,257 @@
+% DRAFT (theory session, 2026-11-05; notes/THEORY_ICML_2026-11.md). Not wired into main.tex.
+% Needs \newtheorem{theorem}{Theorem} in main.tex and the bib entries listed at the end of this file.
+\section{The trapped engine: model F and proofs}\label{app:trap}
+
+\paragraph{Model F.} Fix $K\in\mathbb N$, costs $c_1,\dots,c_K>0$ (all-miss GPU seconds of turn $k$), and
+$1=G_1\ge G_2\ge\dots\ge G_K>0$ with $G_{K+1}=0$ ($G_k=P(T\ge k)$). Write
+\begin{gather*}
+p_k=G_k-G_{k+1},\qquad r_k=G_{k+1}/G_k,\\
+a_k=\lambda c_kG_k,\qquad \rho=\textstyle\sum_ka_k=\lambda/\lmiss,
+\end{gather*}
+with $\lmiss=1/\sum_kc_kG_k$. A session whose next turn is $k$ has remaining work $R_k=\sum_{j\ge k}c_jG_j/G_k$, so that
+$R_1=1/\lmiss$ and $R_k=c_k+r_kR_{k+1}$. The model assumes:
+\begin{enumerate}[(F1),leftmargin=*,nosep]
+\item every turn misses, so turn $k$ costs $c_k$;
+\item the server does one GPU second of work per second while work is pending;
+\item requests complete in the order in which they joined;
+\item a completed turn $k<T$ rejoins at once as turn $k+1$, so a fraction $r_k$ of the class-$k$ mass completing at any time
+rejoins as class $k+1$;
+\item new sessions join as class-1 mass at rate $\lambda$;
+\item at time 0 a pending mass $m^0_k\ge0$ of each class is served first, with $V_0=\sum_kc_km^0_k>0$, through absolutely
+continuous class-completion functions $C^0_k$ on $[0,V_0]$ with $\sum_kc_kC^0_k(t)=t$.
+\end{enumerate}
+A \emph{solution} consists of non-decreasing absolutely continuous $J_k$, $C_k$ (joins and completions after time 0) on
+$[0,\tau)$ such that
+\begin{itemize}[leftmargin=*,nosep]
+\item $J_1(t)=\lambda t$ and $J_{k+1}=r_kC_k$;
+\item $C_k=C^0_k$ on $[0,V_0]$, and $C_k(f(u))=m^0_k+J_k(u)$ for $u\ge0$ (FIFO);
+\item the pending work $V(u)=\sum_kc_k\pi_k(u)$ is positive on $[0,\tau)$.
+\end{itemize}
+Here $f(u)=u+V(u)$, $\pi_k=m^0_k+J_k-C_k$, and $\tau\le\infty$ is when the queue first empties. With zero think time every
+session present has one pending request, so the number in the system is $N=\sum_k\pi_k$. The remaining work is
+$V_{\mathrm{tot}}=\sum_k\pi_kR_k$, and the departures are $\mathrm{Dep}(t)=\sum_km^0_k+\lambda t-N(t)$.
+
+On the engine, (F1) is the measured zero hit fraction of the trap and (F2) its saturated GPU. (F3) is request-level FCFS
+admission (Proposition~\ref{prop:A}), up to the $M/E_S\approx28$ requests that run concurrently. For (F4), the 5\,s tool
+time is short against cycles of 166--516\,s, and including it changes the window statistics of the fluid by less than
+$10^{-3}$ (\fpath{analysis/theory/icml/support.py}). The costs are $c_k=t^m_k+\delta$: the calibrated miss prefill of
+\S\ref{sec:fp-model} plus the all-miss per-turn decode share $\delta$, chosen so that $\sum_k(G_k/E[T])c_k=1/\nu_b$. Then
+$\lmiss$ above equals the model's $\mu_b$ (Proposition~\ref{prop:nb}(a)).
+
+\begin{lemma}[Perron root]\label{lem:perron}
+$\varphi(x)=\sum_ka_kx^{-k}$ decreases strictly from $\infty$ to $0$ on $(0,\infty)$, and $\varphi(1)=\rho$. Hence
+$\varphi(z)=1$ has a unique root $z>0$, with $z>1$ if and only if $\rho>1$.
+\end{lemma}
+
+\begin{lemma}[well-posedness, work, orbit recursion]\label{lem:orbit}
+Under (F1)--(F6):
+\begin{enumerate}[(i),leftmargin=*,nosep]
+\item model F has exactly one solution;
+\item while the server is busy, $f(u)=V_0+W(u)$ with $W=\sum_kc_kJ_k$, and $f$ is continuous and strictly increasing;
+\item while busy, $V_{\mathrm{tot}}(t)=V_{\mathrm{tot}}(0)+(\rho-1)t$.
+\end{enumerate}
+\begin{enumerate}[(i),leftmargin=*,nosep,resume]
+\item For $u_0\in[0,V_0)$, let $u_{n+1}=f(u_n)$ and $\Delta_n=u_{n+1}-u_n$. Then
+\begin{gather*}
+\Delta_n=\sum_{k=1}^{\min(n,K)}a_k\Delta_{n-k}+h_n(u_0),\\
+h_n(u_0)=\sum_{k=n+1}^{K}c_k\frac{G_k}{G_{k-n}}\pi_{k-n}(u_0),
+\end{gather*}
+so that $h_0=V(u_0)$ and $h_n=0$ for $n\ge K$. Each $h_n$ is continuous in $u_0$, and $\sum_nh_n(u_0)=V_{\mathrm{tot}}(u_0)$.
+\item For $n\ge1$, $\pi_k(u_n)=\lambda G_k\Delta_{n-k}$ if $k\le n$, and $\pi_k(u_n)=(G_k/G_{k-n})\pi_{k-n}(u_0)$ otherwise.
+The requests completed in $(u_n,u_{n+1}]$ are those pending at $u_n$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+\emph{(ii).} If the server is busy on $[0,s]$, it has completed $s$ units of work by time $s$. By (F3), the request joining at
+$u$ completes once the work joined before it, $V_0+W(u)$, is done. So $f(u)=V_0+W(u)$, which is continuous. Since
+$W'\ge\lambda c_1>0$ almost everywhere, $f$ is strictly increasing, and $f(0)=V_0$.
+
+\emph{(i).} Put $b_0=0$, $b_1=V_0$ and $b_{n+1}=f(b_n)$. On $[0,b_1]$ the completions are $C^0$, which give $J$ on
+$[0,b_1]$. Suppose $J$ is known on $[0,b_n]$. Then:
+\begin{itemize}[leftmargin=*,nosep]
+\item $f=V_0+W$ is known on $[b_{n-1},b_n]$ and maps it onto $[b_n,b_{n+1}]$;
+\item FIFO gives $C_k(f(u))=m^0_k+J_k(u)$ on $[b_n,b_{n+1}]$;
+\item re-entry extends $J_{k+1}=r_kC_k$ to $[b_n,b_{n+1}]$.
+\end{itemize}
+Each step is forced by the definition, which proves uniqueness, and each step exists. Absolute continuity follows from
+$C_k'=J_k'(u)/f'(u)\le J_k'(u)/(\lambda c_1)$. The completed work is $\sum_kc_kC_k(t)=V_0+W(f^{-1}(t))=t$, so the server works
+at unit rate. Moreover $V\ge\kappa V_{\mathrm{tot}}$ with $\kappa=\min_kc_k/R_k>0$, because both are linear in $\pi\ge0$. By
+(iii):
+\begin{itemize}[leftmargin=*,nosep]
+\item if $\rho\ge1$, then $V\ge\kappa V_{\mathrm{tot}}(0)>0$ throughout, $b_{n+1}-b_n\ge\kappa V_{\mathrm{tot}}(0)$, and
+$b_n\to\infty$;
+\item if $\rho<1$, then $b_n$ increases to the time at which $V_{\mathrm{tot}}$ vanishes (Theorem~\ref{thm:trap}(a)).
+\end{itemize}
+
+\emph{(iii).} With $j_k=J_k'$ and $\kappa_k=C_k'$, we have $\sum_kc_k\kappa_k=1$, $j_1=\lambda$ and $j_{k+1}=r_k\kappa_k$. Hence
+\begin{align*}
+V_{\mathrm{tot}}'&=\textstyle\sum_kR_k(j_k-\kappa_k)=\lambda R_1+\sum_k\kappa_k(r_kR_{k+1}-R_k)\\
+&=\textstyle\lambda R_1-\sum_kc_k\kappa_k=\rho-1.
+\end{align*}
+
+\emph{(iv), (v).} Let $\Delta J_k(n)=J_k(u_n)-J_k(u_{n-1})$. By (ii), $\Delta_n=W(u_n)-W(u_{n-1})=\sum_kc_k\Delta J_k(n)$ for
+$n\ge1$, and $\Delta_0=V(u_0)=\sum_kc_k\pi_k(u_0)$. For class 1, $\Delta J_1(n)=\lambda\Delta_{n-1}$. For $k\ge2$ and
+$n\ge2$, FIFO gives $C_{k-1}(u_n)=m^0_{k-1}+J_{k-1}(u_{n-1})$ and the same at $u_{n-1}$, so
+$\Delta J_k(n)=r_{k-1}\Delta J_{k-1}(n-1)$. For $n=1$, $C_{k-1}(u_1)-C_{k-1}(u_0)=\pi_{k-1}(u_0)$. Unrolling with
+$\prod_{j=k-n}^{k-1}r_j=G_k/G_{k-n}$ gives (v) and then (iv).
+
+The pending mass at $u_n$ is the joins in $(u_{n-1},u_n]$, because the completions by $u_n=f(u_{n-1})$ are the initial mass
+plus the joins by $u_{n-1}$. For the sum, substitute $j=k-n$:
+\[
+\sum_nh_n=\sum_j\pi_j\sum_{n\ge0}c_{j+n}G_{j+n}/G_j=\sum_j\pi_jR_j=V_{\mathrm{tot}}.
+\]
+\end{proof}
+
+\begin{lemma}[finite-memory renewal]\label{lem:renewal}
+Let $A(s)=\sum_{k=1}^Kb_ks^k$ with $b_k\ge0$, $b_1>0$ and $A(1)=1$. Let
+$y_n=\sum_{k=1}^{\min(n,K)}b_ky_{n-k}+g_n$, with $g_n\ge0$, $g_0>0$ and $g_n=0$ for $n\ge K$. Then $y_n=L+\epsilon_n$, where
+$L=\sum_ng_n/\sum_kkb_k>0$ and $|\epsilon_n|\le C\vartheta^n$ for some $\vartheta<1$ that depends only on $(b_k)$, with $C$
+linear in $(g_n)$.
+\end{lemma}
+
+\begin{proof}
+As formal power series, $\sum_ny_ns^n=g(s)/(1-A(s))$, where $g(s)=\sum_{n<K}g_ns^n$. The root $s=1$ of $1-A$ is simple, since
+$A'(1)>0$. If $|s|<1$, then $|A(s)|\le A(|s|)<1$. If $|s|=1$ and $A(s)=1=\sum_kb_k$, then $s^k=1$ whenever $b_k>0$, in
+particular $s=1$. So every other root lies outside the closed unit disk. Partial fractions give
+$g(s)/(1-A(s))=L/(1-s)+Q(s)$ with $L=g(1)/A'(1)$, where $Q$ is a rational function plus a polynomial and is analytic in a
+disk of radius $\vartheta^{-1}>1$. Cauchy's estimates finish the proof. This is the finite-memory case of the discrete
+renewal theorem~\citep{feller1968introduction}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:trap}]
+\emph{(a), $\rho<1$.} Take $u_0=0$. Summing the recursion, whose terms are all nonnegative, gives
+$\sum_{n\le M}\Delta_n\le V_{\mathrm{tot}}(0)+\rho\sum_{n\le M}\Delta_n$, and in the limit
+$\sum_n\Delta_n=V_{\mathrm{tot}}(0)/(1-\rho)$. Thus $b_n\uparrow\tau=V_{\mathrm{tot}}(0)/(1-\rho)$. Every $\Delta_n$ is
+positive, since $\Delta_n\ge a_1\Delta_{n-1}$, and $V(b_n)=\Delta_n\to0$.
+
+\emph{(b), $\rho=1$.} Lemma~\ref{lem:renewal} with $b_k=a_k$ gives $\Delta_n(u_0)\to V_{\mathrm{tot}}(u_0)/\sum_kka_k$,
+uniformly in $u_0\in[0,V_0]$. Here $V_{\mathrm{tot}}(u_0)=V_{\mathrm{tot}}(0)$ and $\sum_kka_k=\bar k_c$. Every
+$t\ge V_0$ equals $f^n(u_0)$ for a unique $u_0\in[0,V_0)$ and $n\ge1$. So
+$V(t)\to V_{\mathrm{tot}}(0)/\bar k_c$, and by (v), $N\to\lambda E[T]V_{\mathrm{tot}}(0)/\bar k_c$.
+
+\emph{(c), $\rho>1$.} Apply Lemma~\ref{lem:renewal} to $y_n=\Delta_nz^{-n}$, $b_k=a_kz^{-k}$ and $g_n=h_nz^{-n}$. It gives
+$\Delta_n=z^n(L(u_0)+\epsilon_n)$ with $L$ continuous and positive on $[0,V_0]$ (since $h_0=V(u_0)>0$) and
+$|\epsilon_n|\le C\vartheta^n$ uniformly. At $t=u_n(u_0)$,
+\begin{gather*}
+t=u_0+\textstyle\sum_{j<n}\Delta_j=\dfrac{Lz^n}{z-1}\bigl(1+o(1)\bigr),\\
+V(t)=\Delta_n=Lz^n\bigl(1+o(1)\bigr),
+\end{gather*}
+so $V(t)/t\to z-1$ uniformly. By (v), $N(t)=\lambda\sum_kG_k\Delta_{n-k}$, and the identity
+$(z-1)\sum_kG_kz^{-k}=1-E[z^{-T}]$ gives $N(t)/t\to\lambda(1-E[z^{-T}])$. The departure limit follows from
+$\mathrm{Dep}=\sum_km_k^0+\lambda t-N$. By (v), the composition limit holds for the pending requests, and for the requests
+completed over the next cycle, which are the same. Any per-turn weight $P_k$ is processed at the rate
+$\sum_kP_k\pi_k/\sum_kc_k\pi_k$.
+
+\emph{(d).} $f(u)/u=1+V(u)/u\to z$, and $f^m(u)/u\to z^m$ by induction on $m$.
+
+\emph{(e).} $F(x,\rho)=\rho\sum_k\pi_kx^{-k}-1$, with $\pi_k=c_kG_k/\sum_jc_jG_j$, satisfies $F(1,1)=0$ and
+$\partial_xF(1,1)=-\bar k_c$. So $z'(1)=1/\bar k_c$. Then $E[z^{-T}]=1-(z-1)E[T]+O((z-1)^2)$, which gives the limit.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:premium}]
+\emph{The product.} Since $\lambda=1/\sum_kc_kG_kz^{-k}$, we have
+$D/\lmiss=E[z^{-T}]\sum_kc_kG_k/\sum_kc_kG_kz^{-k}$. Multiplying and dividing by $\sum_kG_kz^{-k}$ and by
+$E[T]=\sum_kG_k$ gives $H\Gamma$.
+
+\emph{The factor $\Gamma$.} The ratio $\nu^z_k/\nu_k$ is proportional to $z^{-k}$, which is strictly decreasing, so $\nu^z$ is
+below $\nu$ in the likelihood-ratio order. For non-decreasing $c$ this gives $E_{\nu^z}[c]\le E_\nu[c]$. By Abel summation,
+\[
+E_\nu[c]-E_{\nu^z}[c]=\sum_{k<K}\bigl(F_{\nu^z}(k)-F_\nu(k)\bigr)(c_{k+1}-c_k),
+\]
+in which every difference of distribution functions is positive. So equality holds only for constant $c$. The same argument
+applied to $z'>z$ shows that $\Gamma$ is non-decreasing in $z$.
+
+\emph{The factor $H$.} Since $\sum_kG_kz^{-k}=(1-E[z^{-T}])/(z-1)$, $H\ge1$ if and only if $E[z^{-T}](1+E[T](z-1))\ge1$.
+For a geometric $T$ with mean $m$, $E[z^{-T}]=1/(1+m(z-1))$. For $T=\min(\mathrm{Geometric}(1-q),K)$ we have
+$E[z^{-T}]=(1-q)\sum_kG_kz^{-k}+qG_Kz^{-K}$ and $(1-q)E[T]=1-q^K$. Hence
+\[
+H=1-q^K\Bigl(1-E[T]z^{-K}\Big/\sum_kG_kz^{-k}\Bigr)\in[1-q^K,1].
+\]
+
+\emph{Near the threshold.} The expansion follows from Theorem~\ref{thm:trap}(e) and $D=\lambda-\alpha$.
+
+\emph{Monotonicity.} Let $\Gamma(z_1)=1/(1-q^K)$. Then $H\Gamma>1$ for every $z>z_1$, as claimed in the main text.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:trapthr}]
+The state at the switching time is an admissible initial condition (F6). The claim then follows from
+Theorem~\ref{thm:trap}(a)--(c), applied with rate $\lambda'$. Whenever $D(\lambda)>\lmiss$, any
+$\lambda'\in[\lmiss,D(\lambda))$ has $\rho'\ge1$, so the queue stays bounded or grows, and never empties.
+\end{proof}
+
+\begin{corollary}[invariance]\label{cor:trapinv}
+Write $\pi_k=c_kG_k/\sum_jc_jG_j$. Then $z$ solves $\rho\sum_k\pi_kz^{-k}=1$. Hence $z$, $\gamma=z-1$, the trapped
+composition, $\alpha/\lmiss$ and $D/\lmiss$ depend on a cell only through $\rho$, $\pi$ and the law of $T$. In particular they
+are unchanged by a uniform speed-up $c\mapsto c/s$ at equal $\rho$. The cycle slope $\gamma$ is dimensionless (seconds of wait
+per second of trap age), so at equal $\rho$ the gap grows equally fast on an A100 and an H200.
+\end{corollary}
+
+\begin{proof}
+Divide Lemma~\ref{lem:perron}'s equation by $\sum_jc_jG_j$. The other quantities are explicit functions of $z$, $G$ and
+$\pi$. Under $c\mapsto c/s$, $\pi$ is unchanged and $\lmiss\mapsto s\lmiss$.
+\end{proof}
+
+\paragraph{Remarks.}
+\begin{itemize}[leftmargin=*,nosep]
+\item \emph{Processor sharing.} The layer RR of \S\ref{sec:fp-heur} advances every session at $1/V(t)$ turns per second. With
+the clock $x=\int_0^t ds/V(s)$, the same argument yields the continuous Euler--Lotka equation
+$\lambda\sum_kc_kG_k\int_{k-1}^ke^{-ga}\,da=1$ and the growth $\alpha_{\mathrm{PS}}=\lambda(1-E[e^{-gT}])$. This is the
+Crump--Mode--Jagers structure of overloaded processor sharing~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded},
+with reproduction rate $\lambda c_{\lfloor a\rfloor+1}$ at age~$a$. On the 300k cell, $\alpha/(\lambda-\lmiss)$ is
+0.647 and 0.666 under processor sharing at 1.35 and 1.65~$\lref$, against 0.634 and 0.653 for model~F.
+\item \emph{Stochastic version.} With Poisson arrivals and any work-conserving order, the all-miss busy period started
+from remaining works $w_i$ ends with probability $\exp(-\lambda(1-q)\sum_iw_i)$, where $q$ is the least root of
+$q=E[e^{-\lambda W(T)(1-q)}]$~\citep{kendall1951some}. This classical fact makes a spontaneous exit from a trap of hundreds of
+sessions negligible unless $\rho$ is close to~1.
+\item \emph{Overloaded multiclass FIFO.} The closest overloaded multiclass FIFO analysis we found has abandonment and no
+re-entry~\citep{jennings2013fluid}. Model F is a single-station re-entrant line~\citep{kumar1993reentrant} in overload.
+Fluid metastability of queues with load-dependent service is discussed by Dong~\citep{dong2022metastability}, and
+within-request KV growth under continuous batching by Ao et al.~\citep{ao2026service}. Neither characterizes the growth or
+the composition of a bad regime.
+\end{itemize}
+
+\paragraph{Numerical checks and data.} The tests in \fpath{tests/test_theory_icml.py} (20) cover:
+\begin{itemize}[leftmargin=*,nosep]
+\item the root and its sign;
+\item the decomposition, $H$ and $\Gamma$;
+\item the absence of a premium for a geometric $T$ with constant costs;
+\item the near-threshold coefficients;
+\item $\sum_nh_n=V_{\mathrm{tot}}$;
+\item the critical limit;
+\item the orbit recursion on the simulated fluid (residual below $2\times10^{-3}$, from discretization);
+\item convergence of the fluid to the asymptotics;
+\item the busy period.
+\end{itemize}
+\fpath{analysis/theory/icml/run_check.py} produces \fpath{results/theory/icml/trap_check.md}. That file covers all 57 trapped
+runs of the E2 protocol: SGLang 300k with and without the waiting-prefix refresh, BASIN, SHED, TOOLSLOW, LPM beyond its
+fallback, the native pool, vLLM, the H200 with 600k, and Llama-3.1-8B. It also covers the 13 unstable E0b runs, including the
+pool sweep and the 300k H200. \fpath{analysis/theory/icml/support.py} computes every summary number quoted in the main text
+into \fpath{results/theory/icml/support.json}. With arrivals stopped at 1800\,s, the fluid reaches $n_b$ after 2{,}020\,s and
+empties after 3{,}180\,s, consistent with the registered SHED outcomes (600\,s stuck, 3600\,s good). This is a retrodiction,
+and it does not discriminate: any drain time between 600 and 3{,}600\,s would fit.
+
+\paragraph{Frozen predictions.} Tag \texttt{icml-trap-pred} (\texttt{6b47a6c}) froze
+\fpath{configs/icml_trap_predict.yaml} before any later run existed. For eight cells it lists the asymptotic quantities at
+loads from 1.1 to 6.5~$\lref$, the E2-protocol fluid and stochastic slope-test power, and per-seed plug-ins. The scoring
+rules S1--S5 are stated in \fpath{notes/PREDICTIONS_icml_trap.md}.
+
+% Bib entries to add (verified by the theory session's literature check, 2026-11-05):
+% @article{grishechkin1992processor, author={Grishechkin, S.}, title={On a relationship between processor-sharing queues and
+%   {Crump--Mode--Jagers} branching processes}, journal={Adv. Appl. Probab.}, volume={24}, number={3}, pages={653--698}, year={1992}}
+% @article{jeanmarie1994transient, author={Jean-Marie, A. and Robert, P.}, title={On the transient behavior of the processor
+%   sharing queue}, journal={Queueing Systems}, volume={17}, pages={129--136}, year={1994}, doi={10.1007/BF01158692}}  % year: 1994 vs 1995 in sources; check
+% @article{puha2006overloaded, author={Puha, A. L. and Stolyar, A. L. and Williams, R. J.}, title={The fluid limit of an
+%   overloaded processor sharing queue}, journal={Math. Oper. Res.}, volume={31}, number={2}, pages={316--350}, year={2006}}
+% @article{jennings2013fluid, author={Jennings, O. B. and Puha, A. L.}, title={Fluid limits for overloaded multiclass {FIFO}
+%   single-server queues with general abandonment}, journal={Stochastic Systems}, volume={3}, number={1}, pages={262--321}, year={2013}}
+% @article{kumar1993reentrant, author={Kumar, P. R.}, title={Re-entrant lines}, journal={Queueing Systems}, volume={13},
+%   pages={87--110}, year={1993}}
+% @article{kendall1951some, author={Kendall, D. G.}, title={Some problems in the theory of queues}, journal={J. R. Stat. Soc. B},
+%   volume={13}, number={2}, pages={151--185}, year={1951}}  % pages: sources differ (151--158 / 151--185); check
+% @book{feller1968introduction, author={Feller, W.}, title={An Introduction to Probability Theory and Its Applications, Vol. I},
+%   edition={3}, publisher={Wiley}, year={1968}}
+% @article{dong2022metastability, author={Dong, Jing}, title={Metastability in queues}, journal={Queueing Systems},
+%   volume={100}, number={3}, pages={413--415}, year={2022}, doi={10.1007/s11134-022-09795-2}}
+% ao2026service: already in refs.bib (arXiv:2606.15555).
+% lu2026cachetrap: Lu, Zhou, Lin, Ustiugov, When Cache Pressure Becomes a Trap: Metastability in Agent Serving, arXiv:2611.02543 (2026)
