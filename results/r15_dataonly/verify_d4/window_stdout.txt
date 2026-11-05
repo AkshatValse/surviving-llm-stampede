@@ -1,0 +1,15 @@
+lambda_ref 300k = 0.0715340 (from R1 lam/1.35), native = 0.0717974 (from R4 lam/4.0)
+A100 150k    peak ratio measured 1.6784 (sessions 1.6542); frozen F1 1.8720, fluid 1.9694
+A100 300k    peak ratio measured 3.1526 (sessions 3.2618); frozen F1 3.2670, fluid 3.4643
+A100 600k    peak ratio measured 5.7091 (sessions 5.9800); frozen F1 5.4714, fluid 5.7182
+A100 native  peak ratio measured 6.4839 (sessions 6.6700); frozen F1 6.8926, fluid 7.0700
+H200 300k    peak ratio measured 1.8940 (sessions 1.9915); frozen F1 1.9160, fluid 1.9491
+H200 600k    peak ratio measured 2.9769 (sessions 3.0517); frozen F1 3.1956, fluid 3.2677
+A100 native  / A100 300k  measured 2.057 (sessions 2.045); ours F1 2.110, fluid 2.041; proportional (pool ratio) 3.186
+A100 600k    / A100 300k  measured 1.811 (sessions 1.833); ours F1 1.675, fluid 1.651; proportional (pool ratio) 2.000
+A100 150k    / A100 300k  measured 0.532 (sessions 0.507); ours F1 0.573, fluid 0.568; proportional (pool ratio) 0.500
+H200 600k    / H200 300k  measured 1.572 (sessions 1.532); ours F1 1.668, fluid 1.677; proportional (pool ratio) 2.000
+affine, 4 A100 pools: intercept 2.973 +- 0.709 (SE), 95% CI [-0.08, 6.02]; slope 1.0030 +- 0.0127
+through-origin kappa 1.0485, residuals [ 1.64  2.4   0.62 -1.4 ]; affine residuals [-0.68  0.72  0.22 -0.26]
+token-hit crossing, 7       : Lu-fit (kappa 1.1027) MAE 4.26; ours MAE 1.66
+token-hit crossing, 5 blind : Lu-fit (kappa 1.1027) MAE 4.05; ours MAE 1.53

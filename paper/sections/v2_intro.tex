@@ -43,9 +43,9 @@ convergence of every trapped state to a self-similar regime in which the gap bet
 at $\lambda(1-E[z^{-T}])$ and completions at $D=\lambda E[z^{-T}]$, with the turn mix tilted to $G_kz^{-k}$. We decompose
 $D/\lmiss$ into a turn-count factor and a cost-growth factor, a youth premium above 1 for our workload (Theorem~\ref{thm:premium}),
 and conclude that the throughput measured in a trap overstates the recovery threshold: only $\lambda'<\lmiss$ drains it, after a
-busy period that diverges at the threshold (Corollary~\ref{cor:trapthr}). The self-similar regime is known for deterministic
-stages~\citep{khanin2001steady}; the renewal recursion and its convergence from any trapped state, random turn counts, the premium
-and the threshold are new as far as we found.
+busy period that diverges at the threshold (Corollary~\ref{cor:trapthr}). The self-similar regime itself is
+known~\citep{khanin2001steady}; the renewal recursion that carries every trapped state into it, the premium and the threshold are
+new as far as we found.
 \item \textbf{A test of the theory across engines} (\S\ref{sec:validation}). With no parameter fitted to any trap measurement, model~F
 matches, in all 57 stuck runs on SGLang and vLLM, two GPUs and two models, the trapped turn mix (within 3\% in 50), the linear growth
 of the gap (median ratio 0.98) and completions above the all-miss capacity (every run). It also explains, post hoc, why our
@@ -53,8 +53,10 @@ registered trap rule was fragile at the lower rate. These checks are retrospecti
 runs are \pending{TOOLSLOW-W and CUT outcomes}.
 \item \textbf{A first-principles account of entry} (\S\ref{sec:entry}). We derive the closed-population throughput curve $\mu(n)$ from
 the pool, the workload and a cost model fitted to server-log timing only. Its all-miss onset is the sessions in tool calls plus one
-pool of running sessions, which a faster GPU moves out, and we report its out-of-sample record, misses included.
-\pending{D4: one sentence on the head-to-head with Lu et al.'s empirical model, if the independent check confirms it.}
+pool of running sessions, which a faster GPU moves out, and we report its out-of-sample record, misses included. Read on our cells
+with one fitted hit curve, Lu et al.'s concurrent model puts the cliff in proportion to the pool and at the same population on a
+faster GPU; the measured cliff moved out on the H200, as the tool-call term predicts, and on the five cells frozen before their runs
+were read our crossings err by 1.5 sessions on average, against 4.1.
 \item \textbf{Control as the two exits the theory allows} (\S\ref{sec:control}). Starving the trap needs $\lambda'<\lmiss$ and sheds
 sessions: in a registered test a 3600\,s stop drained it and refused 355--378 sessions. Restoring reuse with a session cap does not:
 in registered tests the cap rescued 9 of 9 established zero-hit traps at the same offered load without shedding a session, and the

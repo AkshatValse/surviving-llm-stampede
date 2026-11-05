@@ -96,16 +96,18 @@ remaining work obeys $\dot V_{\mathrm{tot}}=\rho-1$ whatever the service order, 
 stochastic counterpart is Kendall's branching description of the busy period~\citep{kendall1951some}. The self-similar regime
 of part~(c) is not new either. Khanin et al.~\citep{khanin2001steady} study \emph{steady} solutions of fluid FIFO reentrant
 lines, with constant flows from the empty state, in which an overloaded station's queue grows linearly; at a single station
-with a fixed number of stages their fixed-point equation is our Perron-root equation, and their steady flows give the gap slope,
-the composition and the departure rate of part~(c). FIFO queues with feedback are classical in the stable
+with a fixed number of stages their fixed-point equation is our Perron-root equation, their steady flows give the gap slope,
+the composition and the departure rate of part~(c), a closing remark extends their framework to a fixed fraction of the flow
+leaving at each stage (a random $T$), and their normalization gives Corollary~\ref{cor:trapinv}. FIFO queues with feedback are classical in the stable
 regime~\citep{takacs1963feedback,vandenberg1989deterministic}, overloaded multiclass FIFO queues have been analysed without
 re-entry~\citep{jennings2013fluid}, and the processor-sharing version of model~F, which our earlier round-robin layer
 integrated numerically, has the Crump--Mode--Jagers structure of overloaded processor sharing, whose fluid shape converges to
 an invariant one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}. What we add, as far as a targeted
-search found (\S\ref{sec:related}): random turn counts; the linear renewal recursion along FIFO orbits, which shows that every
-solution, from \emph{any} trapped state, converges to the self-similar regime, geometrically in the generation index and with
-an exact virtual origin (parts~(d) and~(f)), whereas a burst leaves the engine far from a steady solution; the comparison of the
-trapped departure rate with the capacity at the stationary mix (Theorem~\ref{thm:premium}); and Corollary~\ref{cor:trapthr}.
+search found (\S\ref{sec:related}): the linear renewal recursion along FIFO orbits, which shows that every solution, from
+\emph{any} trapped state, converges to the self-similar regime, geometrically in the generation index and with an exact virtual
+origin (parts~(c), (d) and~(f) as limits), whereas a burst leaves the engine far from a steady solution; the critical case,
+part~(b); the comparison of the trapped departure rate with the capacity at the stationary mix (Theorem~\ref{thm:premium}); and
+Corollary~\ref{cor:trapthr}.
 
 \paragraph{Model F is an idealization.} On the engine, (F1) is the measured zero hit fraction of the trap and (F2) its saturated
 GPU. (F3) is request-level FCFS admission (Proposition~\ref{prop:A}), up to the $M/E_S\approx28$ requests that run

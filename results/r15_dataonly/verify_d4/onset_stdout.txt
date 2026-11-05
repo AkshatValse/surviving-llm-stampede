@@ -1,0 +1,51 @@
+Ebar = 10568.687; kappa (W/C at A100 300k crossing) = 1.13313
+cell             meas    Lu1.9    Lufit     ours   oursF1    M/E_S      n_b W/C@meas meas_tok
+A100 150k      16.525    26.97   16.082   16.905   16.345   13.589   18.323   1.1643   16.108  bracket=(16.0, 0.5555, 20.0, 0.1326)
+A100 300k      32.165    53.93   32.165   31.492   30.468   27.755   32.698   1.1331   31.301  bracket=(32.0, 0.5052, 48.0, 0.0)
+A100 600k      60.141   107.87   64.329   60.026   58.929   56.129   61.165   1.0593   59.796  bracket=(56.0, 0.7754, 64.0, 0.2433)
+A100 native    93.421   171.82  102.472   93.737   92.042   89.786   94.857   1.0330   92.698  bracket=(80.0, 0.9222, 96.0, 0.4189)
+H200 300k      38.876    53.93   32.165   37.322   36.518   27.755   41.309   1.3696   38.434  bracket=(36.0, 0.6132, 40.0, 0.4558)
+H200 600k      71.007   107.87   64.329   66.579   64.784   56.129   69.939   1.2508   70.548  bracket=(64.0, 0.6544, 72.0, 0.4781)
+vLLM 300k      29.101    53.93   32.165   31.751   30.693   28.219   32.832   1.0252   28.802  bracket=(28.0, 0.6584, 32.0, 0.083)
+Llama 300k     29.653    53.93   32.165   30.921   30.060   27.763   32.019   1.0447   29.377  bracket=(28.0, 0.7006, 32.0, 0.2153)
+MAE 7 cells (all but A100 300k)  lufit    4.664   0.44 4.19 9.05 6.71 6.68 3.06 2.51
+MAE 7 cells (all but A100 300k)  ours     1.530   0.38 0.11 0.32 1.55 4.43 2.65 1.27
+MAE 7 cells (all but A100 300k)  ours_f1  1.907   0.18 1.21 1.38 2.36 6.22 1.59 0.41
+MAE 7 cells (all but A100 300k)  pool     5.622   2.94 4.01 3.64 11.12 14.88 0.88 1.89
+MAE 7 cells (all but A100 300k)  lu19     33.942   10.44 47.72 78.40 15.06 36.86 24.83 24.28
+MAE 5 blind cells                lufit    4.106   0.44 4.19 6.71 6.68 2.51
+MAE 5 blind cells                ours     1.549   0.38 0.11 1.55 4.43 1.27
+MAE 5 blind cells                ours_f1  2.076   0.18 1.21 2.36 6.22 0.41
+MAE 5 blind cells                pool     6.967   2.94 4.01 11.12 14.88 1.89
+MAE 5 blind cells                lu19     26.872   10.44 47.72 15.06 36.86 24.28
+MAE all 8                        lufit    4.081   0.44 0.00 4.19 9.05 6.71 6.68 3.06 2.51
+MAE all 8                        ours     1.423   0.38 0.67 0.11 0.32 1.55 4.43 2.65 1.27
+MAE all 8                        ours_f1  1.881   0.18 1.70 1.21 1.38 2.36 6.22 1.59 0.41
+MAE all 8                        pool     5.470   2.94 4.41 4.01 3.64 11.12 14.88 0.88 1.89
+MAE all 8                        lu19     32.420   10.44 21.77 47.72 78.40 15.06 36.86 24.83 24.28
+signed errors (pred - meas):
+  A100 150k    Lufit  -0.44  ours  +0.38  oursF1  -0.18  M/E_S  -2.94  Lu1.9 +10.44
+  A100 300k    Lufit  +0.00  ours  -0.67  oursF1  -1.70  M/E_S  -4.41  Lu1.9 +21.77
+  A100 600k    Lufit  +4.19  ours  -0.11  oursF1  -1.21  M/E_S  -4.01  Lu1.9 +47.72
+  A100 native  Lufit  +9.05  ours  +0.32  oursF1  -1.38  M/E_S  -3.64  Lu1.9 +78.40
+  H200 300k    Lufit  -6.71  ours  -1.55  oursF1  -2.36  M/E_S -11.12  Lu1.9 +15.06
+  H200 600k    Lufit  -6.68  ours  -4.43  oursF1  -6.22  M/E_S -14.88  Lu1.9 +36.86
+  vLLM 300k    Lufit  +3.06  ours  +2.65  oursF1  +1.59  M/E_S  -0.88  Lu1.9 +24.83
+  Llama 300k   Lufit  +2.51  ours  +1.27  oursF1  +0.41  M/E_S  -1.89  Lu1.9 +24.28
+LS kappa on all 8                kappa=1.0977  MAE7=4.13 MAE5=4.21 MAE8=3.74
+LS kappa on 7 (excl 300k)        kappa=1.0961  MAE7=4.11 MAE5=4.21 MAE8=3.73
+LS kappa on A100 Qwen SGLang 4   kappa=1.0485  MAE7=3.57 MAE5=4.59 MAE8=3.43
+LOO proportional model MAE over 8 = 4.72 0.96 1.05 2.65 10.70 8.08 10.57 2.16 1.58
+ours MAE over 8 = 1.42
+H200 shifts: meas 300k +6.711 600k +10.866 ; ours +5.830 +6.553 ; n_b +8.610 +8.773
+affine A100 4 pools               measured: crossing = 2.973 + 1.0030 * M/Ebar ; ours (frozen n_half): 2.774 + 1.0067 * M/Ebar ; resid [-0.68  0.72  0.22 -0.26]
+affine A100 3 pools (no native)   measured: crossing = 2.537 + 1.0188 * M/Ebar ; ours (frozen n_half): 2.638 + 1.0117 * M/Ebar ; resid [-0.47  0.71 -0.24]
+affine H200 2 pools               measured: crossing = 6.745 + 1.1320 * M/Ebar ; ours (frozen n_half): 8.065 + 1.0307 * M/Ebar ; resid [-0.  0.]
+  A100 150k    tool-call part 4.735  pool part 13.589  n_b 18.323  n_b - n_half 1.418  E_S 11038.4
+  A100 300k    tool-call part 4.943  pool part 27.755  n_b 32.698  n_b - n_half 1.206  E_S 10808.8
+  A100 600k    tool-call part 5.036  pool part 56.129  n_b 61.165  n_b - n_half 1.139  E_S 10689.7
+  A100 native  tool-call part 5.071  pool part 89.786  n_b 94.857  n_b - n_half 1.120  E_S 10644.8
+  H200 300k    tool-call part 13.553  pool part 27.755  n_b 41.309  n_b - n_half 3.986  E_S 10808.8
+  H200 600k    tool-call part 13.810  pool part 56.129  n_b 69.939  n_b - n_half 3.359  E_S 10689.7
+  vLLM 300k    tool-call part 4.613  pool part 28.219  n_b 32.832  n_b - n_half 1.081  E_S 10631.1
+  Llama 300k   tool-call part 4.256  pool part 27.763  n_b 32.019  n_b - n_half 1.098  E_S 10805.9

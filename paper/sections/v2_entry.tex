@@ -57,10 +57,42 @@ the results (Appendix~\ref{app:frozen}, Table~\ref{tab:frozensum}, misses includ
 arrival stop, both basin tests' rules, a doubled A100 pool, the 600k H200 registration and the H200's from-empty edge in nominal
 multiples. They missed the H200's softer tail past the peak (at 600k also the 0.5-hit crossing, 4.4 sessions late), a halved
 pool's peak height and edge, 4 of the 9 rescue release times, one seed's basin probabilities, the trapped token rates of two
-paired tests and a 30\,s tool slowdown that it said would trap every seed (it trapped 1 of 3). The 0.5-hit crossings, predicted
-for eight cells, lie within 0.1--4.4 sessions of the measured ones.
+paired tests and a 30\,s tool slowdown that it said would trap every seed (it trapped 1 of 3). The 0.5-hit crossings of the five cells
+predicted before their runs were read lie within 0.1--4.4 sessions of the measured ones (Table~\ref{tab:lu}).
 
-\paragraph{Against Lu et al.'s empirical model.} \pending{D4, after independent verification: their onset scales with $C/\bar c$
-and does not depend on the GPU, while the measured crossing moves out on the H200 as the tool-call term predicts; onset errors of
-their model with one fitted hit curve against ours; what their vulnerability condition reduces to in colocated serving; drain
-times of their Eq.~4 against our frozen ones. State each as our reading of their model, applied post hoc to our cells.}
+\begin{table}[t]\centering\footnotesize
+\caption{The 0.5-hit crossing (sessions): measured; Lu et al.'s hit curve $h(W/C)$, read post hoc with $C=M$,
+$\bar c=\bar E=10{,}569$ tokens and $h$ fixed by the measured A100 300k crossing ($W/C=1.133$), so that it predicts
+$1.133\,M/\bar E$ on every engine and GPU; our frozen crossing $n_{1/2}$ (fluid; nothing fitted to any curve point; the H200 and
+vLLM cells use one speed factor fitted to their all-miss token rate); and the capacity ratio $M/E_S$. Status of our prediction:
+b, blind in time; a, blind by access only ($^\ast$the crossing lies between $n=36$, blind in time, and 40; the first author had
+seen $n\le32$); i, in sample. Lu et al.'s own constant $N_c\approx1.9\,C/\bar c$, measured on a disaggregated H100 deployment,
+would put every crossing 1.4--1.9 times further out, so we fix $h$ on one of our cells. With its constant fitted to all eight
+crossings instead ($W/C=1.098$, in sample), the $h(W/C)$ reading errs by 3.7 sessions on average, against 1.4 for
+$n_{1/2}$.}\label{tab:lu}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccccc@{}}\toprule
+cell & status & meas. & $h(W/C)$ & $n_{1/2}$ & $M/E_S$\\\midrule
+A100, 150k & b & 16.5 & 16.1 & 16.9 & 13.6\\
+A100, 300k & i & 32.2 & (32.2) & 31.5 & 27.8\\
+A100, 600k & b & 60.1 & 64.3 & 60.0 & 56.1\\
+A100, native & i & 93.4 & 102.5 & 93.7 & 89.8\\
+H200, 300k & a$^\ast$ & 38.9 & 32.2 & 37.3 & 27.8\\
+H200, 600k & b & 71.0 & 64.3 & 66.6 & 56.1\\
+vLLM, 300k & i & 29.1 & 32.2 & 31.8 & 28.2\\
+Llama, 300k & a & 29.65 & 32.2 & 30.9 & 27.8\\\midrule
+mean error, b and a (5) & & & 4.1 & 1.5 & 7.0\\
+mean error, all but 300k (7) & & & 4.7 & 1.5 & 5.6\\\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Against Lu et al.'s empirical model.} Lu et al.'s fluid model takes its hit rate $h(W/C)$, a function of the working set
+$W=N\bar c$ over the prefix-cache capacity $C$, from measurements of the deployed disaggregated system, and uses it to classify
+deployments and explain mitigations rather than to predict the hit rate~\citep{lu2026cachetrap}. Read post hoc on our colocated
+cells, with $C=M$, $\bar c=\bar E$ and one $h$ fixed by the A100 300k crossing, it puts the 0.5-hit crossing in proportion to the pool
+and, with that curve carried across GPUs, at the same population on the H200. On the five cells whose crossings we predicted
+before their runs were read (three blind in time, two blind by access only), it errs by 4.1 sessions on average, against 1.5 for our
+frozen crossings (Table~\ref{tab:lu}). The measured crossing moved out on the H200, by 6.7 sessions at 300k and 10.9 at 600k, against
+5.8 and 6.6 from the tool-call term; refitting $h$ on the H200's own 300k cell still puts its 600k crossing 6.7 sessions out. Their
+vulnerability condition and drain estimate are stated for separate prefill and decode instances and for resident-first ordering
+with healthy reuse, so we do not score them as predictions (Appendix~\ref{app:dataonly}).

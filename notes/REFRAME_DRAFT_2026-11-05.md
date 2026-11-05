@@ -1,0 +1,97 @@
+# Reframed draft around the trap theorem (2026-11-05)
+
+Branch `claude/reframe-draft-211a57` (worktree `.claude/worktrees/reframe-draft-211a57`), cut from the theory branch at
+`e38735f` and merged with its later commits (`2f90267` CUT predictions, `0426a52` Khanin credit). Build:
+`cd paper; pdflatex -interaction=nonstopmode main; bibtex main; pdflatex main; pdflatex main`. Nothing was posted or pushed
+to any public place; no Nova job was touched; no Nova result of 2026-11-05 was read.
+
+## Titles
+
+Working title in the draft: **Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving**.
+Options:
+1. Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving
+2. Trapped Servers Look Faster Than They Are: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving
+3. The Renewal Law of the Trap: Exact Dynamics and Exits of Prefix-Cache Collapse in Agentic LLM Serving
+
+## Abstract
+
+The form text and its count are in `paper/ARXIV_METADATA.md` (1878 form characters with the `[pending: blind tests]` marker;
+limit 1920).
+
+## Structure (main text pp. 1-11, references, Appendices A-Z)
+
+| new | content | from |
+|---|---|---|
+| 1 Introduction | the trap (Fig. 1), what is not ours (Lu et al.; Denning; metastability), the question, 5 contributions | new; Fig. 1 = old fig1 |
+| 2 The trapped state | model F, Theorem 1 (a)-(f), Theorem 2, Corollary 3, Corollary 4, proof idea, classical vs new, idealization, why the trap does not heal | theory session's `theory_icml.tex`, rewritten; Khanin credit |
+| 3 The renewal law on the engine | Fig. 2 (universality), Table 1, retrospective check, slope-rule account, persistence (D5, D1), blind tests (TOOLSLOW-W, CUT: predictions in, outcomes pending), SHED retrodiction | theory session's checks; data-only D1/D5 (verified) |
+| 4 Entry | first-principles mu(n), onset n_b, speed law, out-of-sample record, Table 2 against Lu et al.'s model | old Sec. 6 (summary); D4 (verified) |
+| 5 Two exits | starving (Corollary 3, SHED), restoring reuse (cap, R1/R4, Fig. 4, Table 3), D2 goodput, positioning against Lu et al. | old Sec. 5.3 and 7 |
+| 6 Registered evidence | Table 4 of every registered test, honesty notes | old Secs. 4-5, 7 |
+| 7 Related work | concurrent work (Lu et al., in full), thrashing/metastability, overloaded and re-entrant queues (new), LLM-serving queueing, agent KV | new; old Sec. 9 condensed |
+| 8-9 Limitations, Conclusion | | new |
+| App. A | model F proofs, remarks (PS variant, Kendall, Khanin, think time, convergence), the Corollary 3 cut illustration | theory session's `appendix_icml.tex`, edited |
+| App. B | full trap tables (E0b, other E2 runs, plug-in, self-similarity) | `trap_check.md`, note sec. 6 |
+| App. C | data-only results D5, D1, pool share, D2, D4 | `results/r15_dataonly/` |
+| App. D-Z | the earlier paper: background, fluid model, method, results, first-principles model, frozen predictions, diagnostic, limitations in detail, proofs, protocol, prereg, timeline, provenance, ... | old sections, unchanged except the post-Lu fixes below |
+
+## Contributions as stated (intro)
+
+1. Exact theory of the trapped state (Theorems 1-2, Corollaries 3-4). The self-similar regime itself is credited to Khanin
+   et al. (2001); claimed new as far as we found: the renewal recursion that carries every trapped state into it (with exact
+   virtual origin and rate), the critical case, the youth premium decomposition, the recovery-threshold corollary.
+2. Test across engines: retrospective on 57 stuck runs (8 cells); blind tests pending.
+3. First-principles entry model with out-of-sample record and the head-to-head with Lu et al.'s model.
+4. Control as two exits: starve (SHED) or restore reuse (cap; R1/R4 9/9, no shedding, release and persistence).
+5. Registered evidence base.
+
+## Every novelty claim and its evidence
+
+| claim (where) | evidence | strength |
+|---|---|---|
+| Renewal recursion along FIFO orbits; convergence from any trapped state; exact virtual origin (Thm 1, Sec. 2) | complete proofs (App. A; note sec. 4), three referees; lit check: not found (Khanin et al. cover steady solutions only and leave general trajectories open) | proved in model F; "as far as we found" |
+| Youth premium D/lambda_miss = H Gamma, sign conditions, truncation counterexample (Thm 2) | proof; support.py certificate for the workload | proved; workload positivity partly numerical (floating-point bracket below rho 1.04) |
+| Trapped throughput overstates the recovery threshold (Cor 3) | proof; consistent with Lu et al.'s simulated recoveries (below their measured trapped departures); CUT blind test frozen (`icml-cut-pred`) | proved in model F; engine test pending |
+| Model F matches the engine (Sec. 3) | 57 + 13 runs, nothing fitted to trap data | retrospective only |
+| Onset with a tool-call term; faster GPU moves it out (Sec. 4) | Prop. nb; H200 measured +6.7/+10.9 sessions | earlier paper's result; held out of sample in 5 cells |
+| Our onset beats Lu et al.'s fitted hit-curve reading (Table 2) | D4 verified: 4.1 vs 1.5 sessions (5 cells), 3.7 vs 1.4 with their constant fitted in sample | post hoc reading of their model; stated as ours |
+| Registered, replicated rescue of an established zero-hit trap at the same load, without shedding, with release and persistence (Sec. 5) | R1/R4 9/9 | registered; Lu et al. have prevention by shedding on hardware, late rescue in simulation, CONCUR slow recovery in one hardware run |
+
+## Claims changed or dropped
+
+Against the withdrawn r10/arxiv text:
+- No priority claim for the phenomenon, the loop, the fluid model, the window or the drain threshold (Lu et al. state that
+  arrivals below D_low drain the population; Corollary 3 is stated as a sharpening).
+- "KAIROS ... asserts, untested" no longer stands as the state of the field; Lu et al. are cited wherever the old text
+  described the field (intro, related, model hysteresis, diagnostic, frozen_app rescue, results hit-collapse and GPU scaling,
+  prior-model paragraphs, appendix_supp, scoop-check line).
+- "Measured basin boundary on an LLM engine" is no longer a headline contribution (Lu et al. bracket a surge on hardware and
+  map trap frequency in simulation); the BASIN bracket is part of the registered evidence.
+- "Recovery without a cap needs a rate below lambda_miss is untested" became: proved within model F, tested on the engine by
+  SHED's full stop and the CUT runs (pending).
+- The rescue claim is narrowed to "registered, replicated rescue of an established zero-hit trap at the same offered load,
+  without shedding, with release and persistence" (Lu et al. L586).
+
+Against tonight's single-agent data-only claims (after independent checks):
+- D1: 15 of 16 runs have zero hits after the last trigger session (TOOLSLOW: 4 of 5,937); "5.8% of the population" was not
+  reproducible (at most 4.1% of sessions present).
+- D5: 99-103 trapped hours (not 104.5); stock LPM 4 of 9 escaped (not 5 of 10).
+- Pool share: 63-79% holds only for the SGLang 300k runs; 55-94% across cells.
+- D2: first-hour loss 99.2-100% (not 99.4); first-hour costs of the cap are reference-dependent.
+- D4: "nearly vacuous" dropped (unfair: f moves along the curve); the window comparison dropped (needs bounds Lu et al. do not
+  specify for colocated serving); the drain comparison reworded (Eq. 4 is for resident-first ordering; our own single-phase
+  variant is also 12-34% early, so the gain is the two-phase structure); the 1.9 C/cbar column is not presented as their
+  prediction; the onset comparison kept with corrections.
+- Theory novelty: narrowed after the literature check found Khanin et al. (2001); random turn counts are not claimed (their
+  closing remark covers fractional exits); Corollary 4 is their normalization.
+- SHED: model F's 2,020 s (to n_b) and the hardware's 2300-2600 s (hits back) are reported; pred2's 1,795 s is called early by
+  about a quarter.
+
+## Open items
+
+- TOOLSLOW-W and CUT outcomes, and REPLICATE-EDGE and the 15 s slowdown at 1.65x if the lead wants them in: `\pending{}`
+  slots in the abstract, Sec. 1 (contribution 2), Sec. 3 (Blind tests), Table 4, App. J/R (`appendix_supp`, `limitations`).
+- The repository URL (`\repourl`) and the code-availability paragraph.
+- Dr. Jannesari's review; the authors' choice of title.
+- Length: main text pp. 1-11 in this format; ICML's 8 pages would need Table 4 or Sec. 7 shortened.
+- The old sections now in the appendices repeat material; a later pass could cut them.

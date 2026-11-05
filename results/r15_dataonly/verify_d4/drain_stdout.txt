@@ -1,0 +1,56 @@
+measured peaks {'300k': {'turns_max': 0.225517314805372, 'sess_max': 0.2333322545719467, 'turns_cap': 0.2150157600895343, 'sess_cap': 0.2238868137457633, 'n_argmax': 24}, 'native': {'turns_max': 0.4655240897843918, 'sess_max': 0.4788861047397107, 'turns_cap': 0.4655240897843918, 'sess_cap': 0.4788861047397107, 'n_argmax': 64}}
+
+Lu Eq.4, n_on = sessions in system at t_on, D = measured turns-based mu* (main reading):
+   cell  mult  seed      S       D     lam   lu_t_rel       meas  err_pred_vs_meas  late_vs_pred
+0    R1  1.35     0  138.0  0.2255  0.0966  3170.2123  4550.0020           -0.3033        0.4352
+8    R1  1.35     1  142.0  0.2255  0.0966  3201.2348  3980.0014           -0.1957        0.2433
+16   R1  1.35     2  135.0  0.2255  0.0966  3146.9474  4400.0009           -0.2848        0.3982
+24   R1  1.65     0  156.0  0.2255  0.1180  3551.3493  4920.0004           -0.2782        0.3854
+32   R1  1.65     1  159.0  0.2255  0.1180  3579.2616  4430.0002           -0.1920        0.2377
+40   R1  1.65     2  146.0  0.2255  0.1180  3458.3148  4570.0009           -0.2433        0.3215
+48   R4  4.00     0  275.0  0.4655  0.2872  3942.0476  6000.0004           -0.3430        0.5221
+56   R4  4.00     1  260.0  0.4655  0.2872  3857.9369  5980.0007           -0.3549        0.5501
+64   R4  4.00     2  239.0  0.4655  0.2872  3740.1794  6140.0007           -0.3909        0.6416
+
+Range over variants of n_on and D, per cell (Lu t_rel, error vs measured):
+  R1 1.35: Lu t_rel 2970-3299 s; error pred-vs-meas -17.1% to -33.6%; measured late vs Lu +20.6% to +50.6%
+      outstanding_at_t_on          sess_cap   mean Lu t_rel 3077
+      outstanding_at_t_on          sess_max   mean Lu t_rel 3009
+      outstanding_at_t_on          turns_cap  mean Lu t_rel 3150
+      outstanding_at_t_on          turns_max  mean Lu t_rel 3064
+      sessions_in_system_at_t_on   sess_cap   mean Lu t_rel 3187
+      sessions_in_system_at_t_on   sess_max   mean Lu t_rel 3111
+      sessions_in_system_at_t_on   turns_cap  mean Lu t_rel 3268
+      sessions_in_system_at_t_on   turns_max  mean Lu t_rel 3173
+  R1 1.65: Lu t_rel 3167-3739 s; error pred-vs-meas -15.6% to -30.7%; measured late vs Lu +18.5% to +44.3%
+      outstanding_at_t_on          sess_cap   mean Lu t_rel 3441
+      outstanding_at_t_on          sess_max   mean Lu t_rel 3332
+      outstanding_at_t_on          turns_cap  mean Lu t_rel 3564
+      outstanding_at_t_on          turns_max  mean Lu t_rel 3421
+      sessions_in_system_at_t_on   sess_cap   mean Lu t_rel 3552
+      sessions_in_system_at_t_on   sess_max   mean Lu t_rel 3433
+      sessions_in_system_at_t_on   turns_cap  mean Lu t_rel 3684
+      sessions_in_system_at_t_on   turns_max  mean Lu t_rel 3530
+  R4 4.00: Lu t_rel 3621-3942 s; error pred-vs-meas -34.3% to -41.0%; measured late vs Lu +52.2% to +69.6%
+      outstanding_at_t_on          sess_cap   mean Lu t_rel 3708
+      outstanding_at_t_on          sess_max   mean Lu t_rel 3708
+      outstanding_at_t_on          turns_cap  mean Lu t_rel 3806
+      outstanding_at_t_on          turns_max  mean Lu t_rel 3806
+      sessions_in_system_at_t_on   sess_cap   mean Lu t_rel 3746
+      sessions_in_system_at_t_on   sess_max   mean Lu t_rel 3746
+      sessions_in_system_at_t_on   turns_cap  mean Lu t_rel 3847
+      sessions_in_system_at_t_on   turns_max  mean Lu t_rel 3847
+
+Our frozen predictions vs measured:
+  1.35 two-phase (frozen primary)                     3830 s: pred-vs-meas -3.8% to -15.8%; measured late +3.9% to +18.8%
+  1.35 two-phase F1                                   3920 s: pred-vs-meas -1.5% to -13.8%; measured late +1.5% to +16.1%
+  1.35 single-phase stationary (frozen, not primary)  3441 s: pred-vs-meas -13.5% to -24.4%; measured late +15.7% to +32.2%
+      model n_on 161.3 (measured sessions in system [158.0, 162.0, 155.0]), model cycle_on 88.0 s, backlog_after_pause 149.8, mu_cap 0.2161, phase1 0.1633 for T1 865 s
+  1.65 two-phase (frozen primary)                     4360 s: pred-vs-meas -1.6% to -11.4%; measured late +1.6% to +12.8%
+  1.65 two-phase F1                                   4480 s: pred-vs-meas +1.1% to -8.9%; measured late -1.1% to +9.8%
+  1.65 single-phase stationary (frozen, not primary)  3890 s: pred-vs-meas -12.2% to -20.9%; measured late +13.9% to +26.5%
+      model n_on 175.5 (measured sessions in system [176.0, 179.0, 166.0]), model cycle_on 92.8 s, backlog_after_pause 166.5, mu_cap 0.2161, phase1 0.1674 for T1 929 s
+  4.00 two-phase (frozen primary)                     5040 s: pred-vs-meas -15.7% to -17.9%; measured late +18.7% to +21.8%
+  4.00 two-phase F1                                   5250 s: pred-vs-meas -12.2% to -14.5%; measured late +13.9% to +17.0%
+  4.00 single-phase stationary (frozen, not primary)  4072 s: pred-vs-meas -31.9% to -33.7%; measured late +46.9% to +50.8%
+      model n_on 326.6 (measured sessions in system [339.0, 324.0, 303.0]), model cycle_on 150.4 s, backlog_after_pause 305.8, mu_cap 0.4882, phase1 0.2815 for T1 933 s

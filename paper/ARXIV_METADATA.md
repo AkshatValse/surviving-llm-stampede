@@ -1,5 +1,30 @@
 # arXiv submission metadata
 
+## Reframe draft (2026-11-05, branch `claude/reframe-draft-211a57`): NOT for submission yet
+
+The draft below is under review by the authors (Akshat Valse; Dr. Ali Jannesari reviews before anything is posted). It is not
+submitted and nothing is posted. Pending slots (`\pending{}`) remain for tonight's blind tests (TOOLSLOW-W, CUT) and the
+repository URL. Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
+
+**Working title:** Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving
+
+**Title options (authors to choose):**
+1. Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving
+2. Trapped Servers Look Faster Than They Are: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving
+3. The Renewal Law of the Trap: Exact Dynamics and Exits of Prefix-Cache Collapse in Agentic LLM Serving
+
+**Abstract (form text; the LaTeX abstract in `main.tex` expands to it with `count.py`):**
+
+```text
+Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst of sessions can tip a serving engine into a trap in which every turn misses and the backlog never drains, at a load it served before; Lu et al. reported this metastable collapse concurrently. We give an exact theory of the trapped state. Idealizing the trapped engine as a fluid FIFO server on which every turn misses and rejoins the queue, we prove that along FIFO orbits its cycles obey a linear renewal recursion. Its Perron root fixes the dynamics: the trap drains if and only if arrivals are below the all-miss capacity; above it, every trapped state converges to a self-similar regime in which the gap between a session's turns grows linearly, the backlog grows at a fixed fraction of the excess load, the turns served are young and short, and sessions complete faster than the all-miss capacity, a youth premium that we decompose into turn-count and cost-growth factors. So the throughput measured in a trap overstates the recovery threshold: cutting arrivals to just below it does not drain the trap. With no parameter fitted to trap data, the theory matches 57 stuck runs on SGLang and vLLM, two GPUs and two models: the trapped turn mix within 3% in 50 runs, the gap growth (median ratio 0.98) and completions above the all-miss capacity in every run; \pending{blind tests}. A first-principles throughput curve puts the all-miss onset at the sessions in tool calls plus one pool of running sessions, which a faster GPU moves out. Of the two exits the theory allows, starving the trap below the all-miss capacity sheds sessions, while a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load with no session shed, and the engine stayed good after release. The model is an idealization; we do not prove that the engine converges to it.
+```
+
+Count (`COORD/release-tools/count.py paper/main.tex`): 1878 form characters, limit 1920. The `[pending: blind tests]`
+marker stands for one clause with the TOOLSLOW-W and CUT outcomes; keep the total under 1920 when it is filled.
+
+---
+
+
 Prepared 2026-10-31 for the build of `paper/main.tex` with the r10/arxiv revision, the registered vLLM verdict, the first-principles model and the frozen-prediction section applied; updated for fill 2 (the registered rescue result, the reordered main text), its fix-up rounds, and the review fix round of 2026-10-31 (Saturday review: the cliff attributed to hit-dependent running reservations, Proposition 4 retitled, blindness and KAIROS positioning corrected); updated again for fill 3 (2026-10-31: the pool sweep, BASIN-2, and the 600k H200 and Llama-3.1-8B curves, edges and registrations), and reconciled with `paper/NUMBERS.md` against the final build of fill 3 on 2026-10-31 ("Fill 3 changes" below); updated for fill 4 (2026-11-01: the H200 600k and Llama-3.1-8B paired tests, SHED, TOOLSLOW and the provenance refresh; "Fill 4 changes" below). The PDF abstract in `main.tex` is the LaTeX form of the form abstract below: the two texts are identical once the macros are expanded (`$\lref$` to `$\lambda_{ref}$`, `\sps` to ` sessions/s`, `3000\,s` to `3000 s`, `\%` to `%`). If one is edited, edit the other and recount.
 
 ## Title

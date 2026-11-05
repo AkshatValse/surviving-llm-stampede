@@ -251,10 +251,12 @@ in overload. Khanin et al.~\citep{khanin2001steady} study steady (constant-flow)
 empty state, with stage-dependent service times. At an overloaded station the steady flows satisfy
 $x_s=x_{s-1}/\sum_jx_{j-1}v_j$; at a single station with $n$ fixed stages this gives $x_s=a^s$ with $\sum_jv_ja^j=1$, which is
 Lemma~\ref{lem:perron}'s equation with $a=1/z$ and $T\equiv n$, and the steady flows give part~(c)'s gap slope, composition and
-departure rate. They prove existence, uniqueness for Kelly-type lines and non-uniqueness examples for two stations, and leave the
-uniqueness of general trajectories open. Our contribution relative to theirs is the convergence of every solution from an
-arbitrary initial state, with random $T$, through the renewal recursion, and the consequences in Theorem~\ref{thm:premium} and
-Corollary~\ref{cor:trapthr}. Overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
+departure rate; a closing remark extends their uniqueness theorem to a fixed fraction of the flow leaving at each node, which in
+a fluid is our random $T$, and their normalization gives Corollary~\ref{cor:trapinv}. They prove existence, uniqueness for
+Kelly-type lines and non-uniqueness examples for two stations, and leave the uniqueness of general (non-steady) trajectories open.
+Relative to theirs, our contribution is the renewal recursion along FIFO orbits from an arbitrary initial state, hence the
+convergence of every trapped trajectory to the steady regime with an exact virtual origin and rate, the critical case, and the
+consequences in Theorem~\ref{thm:premium} and Corollary~\ref{cor:trapthr}. Overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
 limits~\citep{jennings2013fluid}; fluid metastability of queues with load-dependent service is posed by
 Dong~\citep{dong2022metastability}; and within-request KV growth under continuous batching is analysed by Ao et
 al.~\citep{ao2026service}, a different instability.

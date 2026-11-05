@@ -42,7 +42,11 @@ the raw CSVs, not importing the first scripts (which they read only afterwards, 
 | D2 SLO goodput, first hour | 99.4-100% loss | CORRECTED: 99.2-100% (26 of 30 runs with no good session); mean-latency reference | 99.2-100% |
 | D2 judged window | 100% loss; CAPPED/rescue within 0-2% of NOBURST | CONFIRMED (CAPPED 0.00-1.74%; rescue -0.3% to +0.9%), robust to a 2x reference | as checked |
 | D2 first-hour cost of the cap | CAPPED 5-57%, rescue 46-97% | reference-dependent: CAPPED 4.2-55.7% (p10 ref 4.5-57.0%), rescue 45.4-94.8% (45.7-96.8%) | CAPPED 4-57%, rescue 45-97%, stated as reference-dependent |
-| D4 Lu et al.'s model | see TONIGHT_PLAN | pending at the time of this note | pending |
+| D4 onset | Lu-fit MAE 4.7 (7 cells) vs ours 1.5; 4.1 vs 1.55 on 5 blind cells | CONFIRMED (4.66/1.53; 4.11/1.55); native Lu-fit 102.5 not 102.4; of the 5 cells 3 blind in time, 2 by access only; robust (kappa fitted to all 8: 3.74 vs 1.42; LOO 4.72; token hit 4.05 vs 1.53); the 1.9 C/cbar column is not their prediction; affine intercept 2.97 +- 0.71 (95% CI -0.1 to 6.0), not 'about +2' | Table tab:lu and its caption |
+| D4 H200 shift | +6.7/+10.9 measured vs +5.8/+6.6 ours, 0 for Lu | CONFIRMED, with the qualifier 'one hit curve carried across GPUs'; per-GPU refit still +6.7 at H200 600k | as checked |
+| D4 Eq. 2 | f <~ 0.5, flags 7 of 8, 'nearly vacuous' | numbers CONFIRMED (300k f = 0.315); 'nearly vacuous' UNFAIR: f moves along the curve (0.19-0.53 at the peak, 0.67-0.95 at n_b) | described, not scored |
+| D4 window | native/300k 2.06 measured, Lu 3.19, ours 2.11 | numbers CONFIRMED; comparison UNFAIR (drops their prefill/decode bounds); ours in sample | omitted |
+| D4 drain | Eq. 4 20-37% early, ours 2-18% | CONFIRMED with R4 -34 to -39%; reword: Eq. 4 is for resident-first ordering with healthy reuse; our own single-phase variant is 12-34% early, so the gain is the two-phase structure | the like-for-like statement |
 
 Lu et al.'s goodput also requires 95% of decode steps to meet an ITL target; we have no per-token latencies, so both
 computations omit it, which makes the losses lower bounds.
