@@ -43,22 +43,26 @@ where $h_n\ge0$, $h_n=0$ for $n\ge K$, and $\sum_nh_n$ is the remaining all-miss
 
 \begin{theorem}[youth premium]\label{thm:premium}
 In Theorem~\ref{thm:trap}(c), $D/\lmiss=H(z)\,\Gamma(z)$. Here $H(z)=E[T]\,E[z^{-T}]/\sum_kG_kz^{-k}$ depends only on the law of
-$T$: it equals 1 for a geometric $T$, and lies in $[1-q^K,1]$ for $T=\min(\mathrm{Geometric}(1-q),K)$. The factor
+$T$: it equals 1 for a geometric $T$, and lies in $(1-q^K,1)$ for $T=\min(\mathrm{Geometric}(1-q),K)$. The factor
 $\Gamma(z)=E_\nu[c]/E_{\nu^z}[c]$ compares the mean cost of a turn under the stationary mix $\nu_k\propto G_k$ and under the
 trapped mix $\nu^z_k\propto G_kz^{-k}$. It is at least 1 and non-decreasing in $z$ whenever costs grow with the turn index.
-Near the threshold, $D/\lmiss-1=(\rho-1)(1-E[T]/\bar k_c)+O((\rho-1)^2)$.
+Near the threshold, $D/\lmiss-1=(\rho-1)(1-E[T]/\bar k_c)+O((\rho-1)^2)$, so the premium is positive close to the threshold
+if $\bar k_c>E[T]$ and negative if $\bar k_c<E[T]$.
 \end{theorem}
 
-For our workload $E[T]/\bar k_c=0.60$--$0.62$ in every cell. So, from the threshold up, a trapped engine completes sessions
-faster than its all-miss capacity. Meanwhile its backlog grows at only about 0.6 of $\lambda-\lmiss$ near the threshold,
-rising to 0.79 at $\rho\approx6$. In all eight cells the premium is proved positive for $\rho\ge1.04$; below that it holds to
-first order and on fine grids.
+The premium is not automatic, because truncation lowers $H$. With $T=\min(\mathrm{Geometric}(1/15),60)$ and slowly growing
+costs, $c_k=1+10^{-3}(k-1)$, it is negative. For our workload, $E[T]/\bar k_c=0.60$--$0.62$ in every cell, so from the
+threshold up a trapped engine completes sessions faster than its all-miss capacity. Meanwhile its backlog grows at only about
+0.6 of $\lambda-\lmiss$ near the threshold, rising to 0.79 at $\rho\approx6$. In all eight cells the premium is proved positive
+for $\rho\ge1.04$. A monotone bracket ($H$ non-increasing, $\Gamma$ non-decreasing, evaluated in floating point) covers
+$z\in[1+10^{-12},z_1]$, and the first-order term covers the rest.
 
 \begin{corollary}[what trapped throughput does not tell]\label{cor:trapthr}
-After the arrival rate changes to $\lambda'$ in model~F, the trap empties if and only if $\lambda'<\lmiss$, after the busy
-period $V_{\mathrm{tot}}/(1-\lambda'/\lmiss)$. The threshold is therefore the all-miss capacity at the \emph{stationary} turn
-mix, not the throughput $D(\lambda)>\lmiss$ measured in the trap. A cut to any rate in $[\lmiss, D(\lambda))$ leaves the trap
-in place. In model~F the backlog then dips by a few percent and grows again.
+In model~F, let the arrival rate change to $\lambda'$ while the trap is busy. The trap then empties if and only if
+$\lambda'<\lmiss$, after the busy period $V_{\mathrm{tot}}/(1-\lambda'/\lmiss)$. The threshold is therefore the all-miss
+capacity at the \emph{stationary} turn mix, not the throughput $D(\lambda)>\lmiss$ measured in the trap. A cut to any rate in
+$(\lmiss, D(\lambda))$ leaves the trap in place: the backlog dips by a few percent and grows again. At exactly $\lmiss$ the
+fluid backlog settles at a positive level. A stochastic queue at $\rho'=1$ would eventually empty.
 \end{corollary}
 
 \noindent The proofs (Appendix~\ref{app:trap}) are elementary. FIFO and work conservation give

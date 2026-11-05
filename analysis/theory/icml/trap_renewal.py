@@ -223,7 +223,8 @@ def fifo_fluid(lam: float, tc: TrapCosts, n_bg: float, t_b: float = 1200.0, burs
     next_arr = t_b
     thinking: List[tuple] = []                            # (rejoin time, mass, class) kept sorted by time
     times = np.arange(t_b, t_end + 1e-9, grid)
-    out = {key: np.zeros_like(times) for key in ("N", "V", "dep", "turns", "tok")}
+    out = {key: np.zeros_like(times) for key in ("N", "V", "dep", "turns", "tok", "Vtot")}
+    Rk = np.array([float((tc.c[i:] * tc.G[i:]).sum() / tc.G[i]) for i in range(K)])   # remaining all-miss work by class
     served_k = np.zeros((len(times), K))
     cum_dep = cum_turns = cum_tok = 0.0
     cum_k = np.zeros(K)
@@ -261,6 +262,10 @@ def fifo_fluid(lam: float, tc: TrapCosts, n_bg: float, t_b: float = 1200.0, burs
         if t == t_grid:
             out["N"][gi] = N_now()
             out["V"][gi] = V_now()
+            vt = sum(m * Rk[i] for m, i in q) + sum(m * Rk[i] for _, m, i in thinking)
+            if head_left is not None and q:
+                vt -= q[0][0] * tc.c[q[0][1]] - head_left
+            out["Vtot"][gi] = vt
             out["dep"][gi], out["turns"][gi], out["tok"][gi] = cum_dep, cum_turns, cum_tok
             served_k[gi] = cum_k
             gi += 1

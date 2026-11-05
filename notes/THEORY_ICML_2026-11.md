@@ -31,16 +31,19 @@ session costs c_k all-miss GPU seconds, and a session has T turns, with G_k = P(
   - H depends only on the turn-count law: H = 1 for a geometric T, and lies in [1 - q^K, 1] for the truncated geometric.
   - Gamma depends on the cost growth: Gamma >= 1 for non-decreasing costs, with equality only for constant costs.
   - Near the threshold, D / lambda_miss - 1 = (rho - 1)(1 - E[T] / kbar_c) + O((rho - 1)^2).
-  - So a trapped engine completes sessions *faster* than its all-miss capacity while its backlog diverges. For the paper's
-    workload, in all eight cells, this is proved for rho >= 1.04 (Gamma is monotone, H >= 1 - q^K). Below that it is
-    positive to first order, and verified numerically on fine grids (section 6.1).
-- **Corollary 3 (what trapped throughput does not tell).** Only an arrival rate below lambda_miss clears the trap, and it
-  does so after a busy period V_tot / (1 - lambda'/lambda_miss). Cutting arrivals to anything in [lambda_miss, D(lambda))
-  does not clear it, even though that rate is below the throughput an operator measures in the trap. In the all-miss fluid
-  the backlog then dips by at most a few percent and grows again: 0.3-4% for cuts to 1.18-1.05 lambda_miss at 1.65x.
+  - So a trapped engine completes sessions *faster* than its all-miss capacity while its backlog diverges. This is not
+    automatic: under truncation, slowly growing costs can reverse it (Theorem 2(v)).
+  - For the paper's workload, in all eight cells, the premium is positive at every z >= z_1 (rho >= 1.04), by
+    Theorem 2(vi). On [1 + 10^{-12}, z_1] a monotone bracket gives it too (H falls and Gamma rises in z; evaluated in
+    floating point, not interval arithmetic). Below that it holds to first order (section 6.1).
+- **Corollary 3 (what trapped throughput does not tell; fluid).** Only an arrival rate below lambda_miss clears the trap,
+  after a busy period V_tot / (1 - lambda'/lambda_miss). A cut to anything in (lambda_miss, D(lambda)) does not clear it,
+  even though that rate is below the throughput an operator measures in the trap. In the all-miss fluid at 1.65x on the
+  300k cell, such a cut makes the backlog dip by 0.3-5.5% and then grow again. A cut to exactly lambda_miss undershoots by
+  6.7% and settles 5.1% below the starting backlog.
 - **Corollary 4 (invariance).** z, gamma, alpha / lambda_miss, D / lambda_miss and the trapped composition depend on the
-  cell only through rho and the cost-weighted turn mix pi_k = c_k G_k / sum_j c_j G_j. They are invariant under a uniform GPU
-  speed-up, and the pool enters only through the all-miss decode share in c_k.
+  cell only through rho, the turn-count law G and the cost-weighted turn mix pi_k = c_k G_k / sum_j c_j G_j. They are
+  invariant under a uniform GPU speed-up, and the pool enters only through the all-miss decode share in c_k.
 
 **What is checked (section 6; retrospective, no parameter fitted to any trap measurement).** vLLM, the H200 and Llama
 each take one speed factor fitted to their own E0a token rate, as in the paper. The check covers 57 *stuck* E2-protocol
@@ -174,66 +177,87 @@ z = 1 iff rho = 1.
 - (d) **Self-similarity.** f(u)/u -> z, and f^m(u)/u -> z^m for each fixed m. A session that arrives at u with T = m
   turns completes at u z^m (1 + o(1)).
 - (e) **Near the threshold.** As rho -> 1+: gamma = (rho - 1)/kbar_c + O((rho - 1)^2), and
-  alpha / (lambda - lambda_miss) -> E[T] / kbar_c.
+  alpha = lambda_miss (E[T]/kbar_c)(rho - 1) + O((rho - 1)^2). In particular alpha / (lambda - lambda_miss) -> E[T]/kbar_c.
 
 **Theorem 2 (youth premium).** In Theorem 1(c), let nu_k = G_k / E[T] (the stationary turn mix) and nu^z_k = pi^z_k (the
 trapped mix).
 - (i) **Decomposition.** D / lambda_miss = H(z) Gamma(z), where
   H(z) = E[T] E[z^{-T}] / sum_k G_k z^{-k} = E[T](z - 1) E[z^{-T}] / (1 - E[z^{-T}]) and
   Gamma(z) = E_nu[c] / E_{nu^z}[c].
-- (ii) **Cost growth.** If c is non-decreasing in k, then Gamma(z) >= 1, with equality iff c is constant.
+- (ii) **Cost growth.** If c is non-decreasing in k and z > 1, then Gamma(z) >= 1, with equality iff c is constant. The
+  strictness uses the strict likelihood ratio (z > 1) and the full support of nu, which holds because G_K > 0.
 - (iii) **Turn-count law.** H(z) >= 1 iff E[z^{-T}] >= 1 / (1 + E[T](z - 1)), which is the value for a geometric turn
   count on {1, 2, ...} with the same mean. For T = min(Geometric(1 - q), K):
-  H(z) = 1 - q^K (1 - E[T] z^{-K} / sum_k G_k z^{-k}), which lies in [1 - q^K, 1].
+  H(z) = 1 - q^K (1 - E[T] z^{-K} / sum_k G_k z^{-k}). For z > 1 and K >= 2 this lies strictly in (1 - q^K, 1), and it is
+  non-increasing in z.
 - (iv) **Near the threshold.** D / lambda_miss - 1 = (rho - 1)(1 - E[T]/kbar_c) + O((rho - 1)^2). So, close to the
-  threshold, the trapped completion rate exceeds lambda_miss iff kbar_c > E[T]: the cost-weighted mean turn index exceeds
-  the mean number of turns.
+  threshold, the trapped completion rate exceeds lambda_miss if kbar_c > E[T] and falls below it if kbar_c < E[T]. If
+  kbar_c = E[T], the sign is set by higher-order terms and can go either way.
 - (v) For geometric T on {1, 2, ...} (taking K = infinity when the sums converge) and costs that are non-decreasing and
   not constant, the formulas give D > lambda_miss and alpha < lambda - lambda_miss for every lambda > lambda_miss.
-  Theorem 1 itself is proved for finite K.
-- (vi) **Monotonicity.** If c is non-decreasing, Gamma(z) is non-decreasing in z. So, for
-  T = min(Geometric(1 - q), K), the premium D/lambda_miss - 1 is positive at every z >= z_1, where
-  Gamma(z_1) = 1/(1 - q^K).
+  Theorem 1 itself is proved for finite K. **This does not survive truncation in general.** With
+  T = min(Geometric(1/15), 60) and the slowly growing costs c_k = 1 + 10^{-3}(k - 1), the premium is negative at every rho
+  the Theorem 2 referee checked: -4e-4 at 1.01, -9.4e-3 at 1.65, -3.3e-3 at 100. For the workload, see (vi).
+- (vi) **Monotonicity.** If c is non-decreasing, Gamma(z) is non-decreasing in z, and strictly increasing if c is not
+  constant. Its supremum, approached as z -> infinity, is E_nu[c]/c_1. Take T = min(Geometric(1 - q), K) and suppose
+  E_nu[c]/c_1 > 1/(1 - q^K). Then there is a unique z_1 with Gamma(z_1) = 1/(1 - q^K), and the premium
+  D/lambda_miss - 1 is positive for every z >= z_1. Strictness comes from H > 1 - q^K.
 
-**Corollary 3 (recovery threshold; what trapped throughput does not tell).** Let the engine be in model F at load lambda
-from time 0, and switch the arrival rate to lambda' at a time t_0. Put rho' = lambda' / lambda_miss.
+**Corollary 3 (recovery threshold; what trapped throughput does not tell; fluid).** Let the engine be in model F at load
+lambda from time 0, and switch the arrival rate to lambda' at a time t_0 with V(t_0) > 0. Put rho' = lambda' / lambda_miss.
 - If lambda' < lambda_miss, the queue empties at t_0 + V_tot(t_0) / (1 - rho').
 - If lambda' > lambda_miss, N(t)/t -> alpha(lambda') > 0.
-- If lambda' = lambda_miss, N stays bounded.
+- If lambda' = lambda_miss, N(t) -> lambda_miss E[T] V_tot(t_0)/kbar_c > 0, and V >= kappa V_tot(t_0) > 0 throughout.
 
 The threshold is lambda_miss, the closed-system all-miss capacity at the *stationary* turn mix. It is not the trapped
 departure rate D(lambda) that an operator observes. Whenever the premium is positive, a cut to lambda' in
-[lambda_miss, D(lambda)) does not clear the trap, although lambda' is below the throughput measured in it.
+(lambda_miss, D(lambda)) does not clear the trap, although lambda' is below the throughput measured in it. The closed
+endpoint lambda' = lambda_miss belongs only to the fluid. There the fluid backlog stays positive, but a stochastic queue at
+rho' = 1 empties almost surely, and just above it emptying is not rare (Remark 5).
 
 **Corollary 4 (invariance).** z solves rho sum_k pi_k z^{-k} = 1 with pi_k = c_k G_k / sum_j c_j G_j. Therefore z, gamma,
 the trapped composition, alpha / lambda_miss and D / lambda_miss are functions of (rho, pi, G) alone. They do not change
 when every c_k is divided by s (a uniform GPU speed-up) and lambda is scaled to keep rho. gamma is dimensionless (seconds
-of wait per second of trap age), so at equal rho the gap grows at the same slope on an A100 and an H200.
+of wait per second of trap age). So at equal rho, two engines whose cost vectors are proportional have gaps that grow at
+the same slope. Our H200 cell models are a uniform speed-up of the A100 costs, so this holds for them, but it is not a
+general hardware claim.
 
 **Remark 5 (stochastic version; classical).** Take Poisson arrivals, i.i.d. T, deterministic costs c_k, any
-work-conserving order and zero think time. The all-miss server's busy period from sessions with remaining works
-w_1, ..., w_n is the total progeny of a Galton-Watson process in which a session begets Poisson(lambda W) sessions, where W
-is its total work. It ends with probability exp(-lambda (1 - q) sum_i w_i), where q is the least root in [0, 1] of
-q = E[exp(-lambda W(T) (1 - q))] (Kendall 1951; Takacs 1962). With rho > 1, q < 1. This is a lower bound on a
-spontaneous exit from the trap, because hits return before the queue empties.
+work-conserving order and zero think time.
+- The all-miss server's busy period, started from realized remaining works w_1, ..., w_n, is the total work of a
+  Galton-Watson tree. Each ancestor begets Poisson(lambda w_i) sessions, and each later session Poisson(lambda W(T)) more,
+  W(T) being its total work. The busy period is finite iff the tree's progeny is.
+- So the queue ever empties with probability exp(-lambda (1 - q) sum_i w_i), where q is the least root in [0, 1] of
+  q = E[exp(-lambda W(T) (1 - q))] (Kendall 1951; Takacs 1962). With rho > 1, q < 1.
+- The workload ever falls to a level w_b with probability exp(-lambda (1 - q)(sum_i w_i - w_b)). This is the better proxy
+  for a spontaneous exit from the trap, since hits return once the backlog is small, before the queue empties.
+- If only the sessions' current turns are known, not their realized remaining works, the probability is a product of
+  transforms over the remaining turn counts.
 
-For the 300k cell we take the fluid backlog 3000 s after the burst, with V_tot taken as N times a mean remaining work:
-an order-of-magnitude estimate. With that, the bound is:
+For the 300k cell, take w = V_tot of the exact fluid 3000 s after the registered burst (`support.py`, `kendall_numbers`).
+In the fluid, that is V_tot(0) + (rho - 1)t by Lemma 2(iii). The probability that the queue ever empties is then:
 
-| rho | 1.02 | 1.05 | 1.10 | 1.35 | 1.65 |
-|---|---|---|---|---|---|
-| bound | 0.15 | 7e-3 | 3e-5 | 6e-22 | 2e-53 |
+| rho | 1.01 | 1.02 | 1.05 | 1.10 | 1.35 | 1.65 |
+|---|---|---|---|---|---|---|
+| P(empties) | 0.35 | 0.12 | 4e-3 | 1e-5 | 4e-23 | 3e-54 |
 
-So a spontaneous exit matters only within a few percent of lambda_miss. We state this for orientation and claim nothing
-new.
+These are orders of magnitude: a realized w fluctuates around the fluid value. A spontaneous exit therefore matters only
+within a few percent of lambda_miss. We state this for orientation and claim nothing new.
 
 **Remark 6 (processor-sharing variant = the paper's RR layer).** The paper's RR layer advances every session continuously,
-1/theta(t) turns per second; this is processor sharing in the turn clock. The same proof with the time change
-x = Phi(t) = int_0^t ds / V(s) gives the continuous renewal (Euler-Lotka) equation
-lambda sum_k c_k G_k int_{k-1}^{k} e^{-g a} da = 1 and alpha_PS = lambda (1 - E e^{-g T}). This is the
-Grishechkin/Crump-Mode-Jagers structure of overloaded processor sharing, with an age-dependent reproduction rate
-lambda c_{floor(a)+1}. Its numbers differ from model F by about 2% (alpha / (lambda - lambda_miss): 0.647 vs 0.634 at 1.35x;
-0.666 vs 0.653 at 1.65x on the 300k cell). Model F, with atomic turns in FIFO order, is the closer description of request-level FCFS.
+1/theta(t) turns per second; this is processor sharing in the turn clock.
+- With the time change x = Phi(t) = int_0^t ds / V(s), the analogous argument gives the continuous renewal (Euler-Lotka)
+  equation lambda sum_k c_k G_k int_{k-1}^{k} e^{-g a} da = 1 and alpha_PS = lambda (1 - E e^{-g T}).
+- This argument needs the continuous renewal theorem, not the finite-memory lemma: the kernel is a step function with
+  compact support, hence non-lattice. We do not write it out.
+- This is the Grishechkin/Crump-Mode-Jagers structure of overloaded processor sharing, with an age-dependent reproduction
+  rate lambda c_{floor(a)+1}.
+- Its cycle slope is gamma_PS = g. Near the threshold, alpha_PS / (lambda - lambda_miss) -> E[T]/(kbar_c - 1/2).
+
+The roughly 2% difference from model F is this half-turn offset, kbar_c/(kbar_c - 1/2) = 1.02. On the 300k cell,
+alpha / (lambda - lambda_miss) is 0.647 vs 0.634 at 1.35x and 0.666 vs 0.653 at 1.65x. The Theorem 2 referee confirmed
+both numbers with an independent event-driven processor-sharing simulation. Model F, with atomic turns in FIFO order, is
+the closer description of request-level FCFS.
 
 **Remark 7 (think time).** With a 5 s think time (the workload's mean tool time) the exact fluid's statistics over the
 registered window agree with zero think time: backlog slope, completion rate and mean served prompt to 4 significant
@@ -387,16 +411,21 @@ geometric T on {1, 2, ...} with mean m, E[z^{-T}] = (1/m)/(z - 1 + 1/m) = 1/(1 +
 
 For T = min(Geometric(1 - q), K) we have G_k = q^{k-1}, P(T = k) = (1 - q) G_k for k < K, and P(T = K) = G_K. So
 E[z^{-T}] = (1 - q) S(z) + q G_K z^{-K}, and E[T] = (1 - q^K)/(1 - q). Substituting,
-H = 1 - q^K + q^K E[T] z^{-K} / S(z) = 1 - q^K (1 - E[T] z^{-K}/S(z)). Since S(z) >= z^{-K} sum_k G_k = E[T] z^{-K},
-H lies in [1 - q^K, 1].
+H = 1 - q^K + q^K E[T] z^{-K} / S(z) = 1 - q^K (1 - E[T] z^{-K}/S(z)). The ratio E[T] z^{-K}/S(z) equals
+E[T] / sum_k G_k z^{K-k}. For z > 1 and K >= 2 its denominator exceeds E[T], and the denominator increases with z. So the
+ratio lies in (0, 1) and decreases in z. Hence H lies strictly in (1 - q^K, 1) and is non-increasing in z.
 
 *(iv) Near the threshold.* By Theorem 1(e), D / lambda_miss = rho - alpha/lambda_miss
-= rho - (E[T]/kbar_c)(rho - 1) + O((rho - 1)^2).
+= rho - (E[T]/kbar_c)(rho - 1) + O((rho - 1)^2). This uses the expansion of alpha stated in 1(e), which follows from
+gamma = (rho - 1)/kbar_c + O((rho - 1)^2) and E[z^{-T}] = 1 - (z - 1)E[T] + O((z - 1)^2) (finite K). When
+kbar_c = E[T] the first-order term vanishes, and the premium's sign is decided at second order; the Theorem 2 referee
+found positive examples, e.g. constant costs with T in {1, 10}.
 
 *(vi) Monotonicity.* For z' > z > 1, nu^{z'}_k / nu^z_k is proportional to (z/z')^k, which is strictly decreasing. So
-nu^{z'} lies below nu^z in the likelihood-ratio order, and E_{nu^{z'}}[c] <= E_{nu^z}[c] for non-decreasing c; hence
-Gamma(z') >= Gamma(z). With H >= 1 - q^K from (iii), H Gamma >= (1 - q^K) Gamma(z_1) = 1 for z >= z_1, and the
-inequality is strict when c is not constant.
+nu^{z'} lies below nu^z in the likelihood-ratio order, and E_{nu^{z'}}[c] <= E_{nu^z}[c] for non-decreasing c. The Abel
+argument of (ii) makes this strict for non-constant c, so Gamma is strictly increasing. As z -> infinity, nu^z
+concentrates on k = 1, so Gamma -> E_nu[c]/c_1. If this exceeds 1/(1 - q^K), the root z_1 exists and is unique. For
+z >= z_1, H Gamma > (1 - q^K) Gamma(z_1) = 1, where the strict inequality comes from H > 1 - q^K in (iii).
 
 *(v) Geometric T with growing costs.* Use (i)-(iii) with H = 1 and Gamma > 1; this needs z > 1, i.e. rho > 1. For K =
 infinity, Lemma 1 and the formulas hold whenever sum_k c_k G_k z^{-k} converges near z = 1. With geometric G and costs of
@@ -406,9 +435,10 @@ formulas. []
 **Proof of Corollary 3.** At t_0 the state is a finite pending mass, which is an admissible initial condition (F6). Apply
 Theorem 1 from t_0 with rate lambda'. The threshold and the busy-period value come from 1(a)-(c).
 
-For the second sentence: whenever D(lambda) > lambda_miss (Theorem 2), the interval [lambda_miss, D(lambda)) is
-non-empty. Any lambda' in it has rho' >= 1. Then Theorem 1(b)-(c) applied after t_0 gives a bounded backlog (rho' = 1) or
-a linearly growing one (rho' > 1); in neither case does the queue empty. []
+For the second sentence: whenever D(lambda) > lambda_miss (Theorem 2), the interval (lambda_miss, D(lambda)) is
+non-empty. Any lambda' in it has rho' > 1. By Lemma 2(iii) the remaining work then never decreases,
+V_tot(t) >= V_tot(t_0), and the proof of Lemma 2(i) gives V >= kappa V_tot(t_0) > 0, so the queue never empties.
+Theorem 1(c) adds that it grows linearly. At rho' = 1 the same bound holds, and Theorem 1(b) gives the limit. []
 
 **Proof of Corollary 4.** Divide Lemma 1's equation by sum_j c_j G_j. The rest are formulas in z, G and pi. Under
 c -> c/s, pi is unchanged and lambda_miss -> s lambda_miss. []
@@ -427,7 +457,9 @@ c -> c/s, pi is unchanged and lambda_miss -> s lambda_miss. []
   balance "which we do not make rigorous for the open system". Theorem 1(a)-(c) and Corollary 3 make it rigorous for the
   open trapped system within model F, from any trapped state.
 - The paper explains, in words, why a trapped engine completes sessions above lambda_miss, adding "for as long as the
-  backlog grows". Theorem 2 quantifies this youth premium and shows it is permanent for every rho > 1, not transient.
+  backlog grows". Theorem 2 quantifies this youth premium. It shows the premium does not fade while the trap lasts: it
+  holds for every rho > 1 for geometric T with growing costs, and for the workload at every z >= 1 + 10^{-12} (section
+  6.1). It is not universal under truncation (Theorem 2(v)).
 - Proposition 5 (the cycle identity, gap/R_M = V_I/M) is an accounting relation. Theorem 1(c)-(d) gives the cycle's growth
   law and composition, so gap/R_M = sum_i (P_{k_i} + d)/M grows like alpha t (P_z + d)/M.
 - The paper states these phenomena qualitatively (the young backlog, the above-capacity completions) and computes RR
@@ -491,14 +523,21 @@ Inputs:
 From `support.py` (section 7). Every per-turn cost is increasing (c_60/c_1 = 17-23).
 
 Where the premium H Gamma - 1 is proved positive and where it is only checked:
-- *Proof, rho >= 1.04.* Theorem 2(vi) applies: z_1 = 1.00154-1.00165, which corresponds to rho_1 = 1.038-1.040. So the
-  premium is positive at every rho >= rho_1.
-- *Expansion, rho -> 1.* The first-order coefficient of Theorem 2(iv), 1 - E[T]/kbar_c = 0.38-0.40, is positive.
-- *Numerical, (1, rho_1).* On a grid of 4,000 points, premium/(rho - 1) >= 0.378 in every cell.
-- *Numerical, (1, 10].* On 120 values, the premium is positive throughout, with minimum 4e-5 at rho = 1.0001. The
-  near-threshold slope measured on the grid matches the predicted 1 - E[T]/kbar_c to 4 decimals.
+- *Proof, z >= z_1.* Theorem 2(vi) applies: sup Gamma = E_nu[c]/c_1 = 3.8-4.6 exceeds 1/(1 - q^K) = 1.0162, and
+  z_1 = 1.00154-1.00165 (rho_1 = 1.038-1.040). So the premium is positive at every rho >= rho_1.
+- *Monotone bracket, z in [1 + 10^{-12}, z_1].* H is non-increasing and Gamma non-decreasing in z, so on
+  [z_i, z_{i+1}] the premium is at least H(z_{i+1}) Gamma(z_i) - 1 (`support.py`, `premium_certificate`, after the Theorem 2
+  referee's suggestion). On a geometric grid of z - 1 with ratio 1.5 (53 brackets per cell), every lower bound is positive
+  in all eight cells; normalized by z_{i+1} - 1 the smallest is 5.8. This is a floating-point evaluation, not interval
+  arithmetic.
+- *Expansion, z in (1, 1 + 10^{-12}).* The first-order coefficient of Theorem 2(iv), 1 - E[T]/kbar_c = 0.38-0.40, is
+  positive. No remainder bound is given.
+- *Numerical cross-checks.* A 4,000-point grid on (1, rho_1) gives premium/(rho - 1) >= 0.378. On 120 values in (1, 10]
+  the premium is positive, with minimum 4e-5 at rho = 1.0001. The near-threshold slope matches 1 - E[T]/kbar_c to 4
+  decimals; the Theorem 2 referee's Richardson extrapolation matches to 8 digits.
 
-Also: min H = 0.98407 = 1 - (14/15)^60, as (iii) gives, and D(lambda) increases over (1, 10] in all cells (on the grid).
+Also: inf H = 1 - (14/15)^60 = 0.98407. This is the infimum over z > 1, not attained, and the grid minimum is 8e-7 above
+it. D(lambda) increases over (1, 10] in all cells (on the grid).
 
 | cell | lambda_miss model | kbar_c | E[T]/kbar_c (alpha/(lambda - lambda_miss) at rho -> 1) | premium slope at rho = 1 |
 |---|---|---|---|---|
@@ -699,13 +738,16 @@ D(1.65x) = 1.223 lambda_miss.
 
 | cut to | backlog (from 251 at the cut) |
 |---|---|
-| 1.18 lambda_miss | dips to 250.7 at 5,250 s, then grows to 445 by 30,000 s |
-| 1.10 lambda_miss | dips to 246 at 6,200 s, then grows to 352 |
-| 1.05 lambda_miss | dips to 241 at 6,850 s, then grows to 295 |
-| 0.90 lambda_miss | drains, slowly: 128 by 30,000 s, because 1/(1 - rho') = 10 stretches the busy period |
+| 1.18 lambda_miss | dips to 250.7 at 5,250 s (-0.3%), then grows to 445 by 30,000 s |
+| 1.10 lambda_miss | dips to 246 at 6,200 s (-2%), then grows to 352 |
+| 1.05 lambda_miss | dips to 241 at 6,850 s (-4%), then grows to 295 |
+| 1.02 lambda_miss | dips to 237.6 at 7,450 s (-5.5%), then grows to 261 |
+| 1.00 lambda_miss | undershoots to 234.6 at 7,700 s (-6.7%), then settles at 238.7 by 80,000 s, which equals Theorem 1(b)'s limit lambda_miss E[T] V_tot(5000)/kbar_c (-5.1%) |
+| 0.90 lambda_miss | drains, slowly: 128 by 30,000 s. The queue empties at 59,655 s, exactly the busy period V_tot/(1 - rho'); 1/(1 - rho') = 10 stretches it |
 
-So an operator who sets arrivals just below the trapped throughput sees at most a brief few-percent dip. A cut below
-lambda_miss drains, but near the threshold only over a busy period that 1/(1 - rho') makes long.
+So an operator who sets arrivals between lambda_miss and the trapped throughput sees at most a brief dip of a few percent,
+then renewed growth. A cut below lambda_miss drains, but near the threshold only over a busy period that 1/(1 - rho') makes
+long. The Theorem 2 referee reproduced every row with independent code.
 
 ### 6.8 Self-similarity (Theorem 1(d)): sojourn grows with the arrival time
 
@@ -757,9 +799,13 @@ Tag `icml-trap-pred` (`6b47a6c`) was pushed to the private origin on 2026-11-05 
   slope-test power, and per-seed plug-ins.
 - Scoring rules S1-S5 are in `notes/PREDICTIONS_icml_trap.md`.
 - Additional, not frozen under the tag, for the lead to register if useful:
-  - a server-side running-request cap leaves the FCFS trap at rate alpha(lambda') with the cap's own c_k, so it cannot clear it;
+  - a server-side running-request cap. If the engine stays all-miss under the cap, the FCFS trap persists iff
+    lambda > lambda_miss(cap), the all-miss capacity under the cap's own costs c_k'. A cap that only lowers batching
+    efficiency has c_k' >= c_k, hence lambda_miss(cap) <= lambda_miss < lambda, and it cannot clear the trap. A cap that
+    restores hits leaves model F, and the corollary is then silent;
   - an arrival cut to lambda' in (lambda_miss, D(lambda)) does not clear the trap (6.7);
-  - at equal rho, the A100 and H200 trapped gaps grow at the same slope gamma.
+  - at equal rho, A100 and H200 trapped gaps grow at the same slope gamma, to the extent that their cost vectors are
+    proportional.
 
 ## 9. How this changes the paper
 

@@ -37,6 +37,67 @@ def premium_scan() -> dict:
     return out
 
 
+def premium_certificate(n_ratio: float = 1.5, eps: float = 1e-12) -> dict:
+    """Theorem 2(vi) plus a monotone bracket (suggested by the Theorem 2 referee). For T = min(Geometric(1 - q), K),
+    H(z) is non-increasing and Gamma(z) non-decreasing in z (c non-decreasing), so on [z_i, z_{i+1}] the premium is at least
+    H(z_{i+1}) Gamma(z_i) - 1. Check that lower bound on a geometric grid of z - 1 from eps to z_1 (where Gamma(z_1) =
+    1/(1 - q^K)); above z_1 Theorem 2(vi) applies. Floating point, not interval arithmetic."""
+    from scipy.optimize import brentq
+    q, K = 1 - 1 / 15.0, 60
+    out = {}
+    for c in CELLS:
+        m, _ = cell_model(c)
+        tc = trap_costs(m)
+
+        def H(z):
+            zk = z ** (-tc.k)
+            S = float((tc.G * zk).sum())
+            return 1 - q ** K * (1 - tc.ET * z ** (-K) / S)
+
+        def Gam(z):
+            zk = z ** (-tc.k)
+            S = float((tc.G * zk).sum())
+            return (float((tc.c * tc.G).sum()) / tc.ET) / (float((tc.c * tc.G * zk).sum()) / S)
+
+        sup_gamma = (float((tc.c * tc.G).sum()) / tc.ET) / float(tc.c[0])
+        thr = 1 / (1 - q ** K)
+        z1 = brentq(lambda z: Gam(z) - thr, 1 + 1e-15, 50.0, xtol=1e-15) if sup_gamma > thr else None
+        grid = [1 + eps]
+        while grid[-1] < z1:
+            grid.append(1 + (grid[-1] - 1) * n_ratio)
+        grid[-1] = z1
+        lows = [H(grid[i + 1]) * Gam(grid[i]) - 1 for i in range(len(grid) - 1)]
+        # normalised margin: bracket lower bound over (z_{i+1} - 1)
+        norm = [lows[i] / (grid[i + 1] - 1) for i in range(len(lows))]
+        out[c] = dict(sup_Gamma=sup_gamma, needed=thr, z1=z1, n_brackets=len(lows), min_bracket_lower_bound=float(min(lows)),
+                      min_normalised_margin=float(min(norm)), all_positive=bool(min(lows) > 0), eps=eps)
+    return out
+
+
+def kendall_numbers() -> list:
+    """Remark 5 (classical; Kendall 1951): with realized remaining work w, the all-miss queue ever empties with probability
+    exp(-lambda (1 - q) w), q the least root of q = E[exp(-lambda W(T) (1 - q))]. w is taken from the exact FIFO fluid
+    (sum over pending mass of the class's remaining work) 3000 s after the registered burst on the 300k cell; a fluid
+    stand-in for a realized value, so the numbers are orders of magnitude."""
+    m, _ = cell_model("a100_300k")
+    tc = trap_costs(m)
+    W = np.cumsum(tc.c)
+    rows = []
+    for rho in (1.01, 1.02, 1.05, 1.10, 1.35, 1.65):
+        lam = rho * tc.lam_miss
+        qq = 0.0
+        for _ in range(200000):
+            qn = float((tc.p * np.exp(-lam * W * (1 - qq))).sum())
+            if abs(qn - qq) < 1e-16:
+                break
+            qq = qn
+        tr = fifo_fluid(lam, tc, 0.0, t_end=4200.0, grid=600.0)
+        w = float(tr["Vtot"][-1])
+        rows.append(dict(rho=rho, q=qq, one_minus_q=1 - qq, N_4200=float(tr["N"][-1]), Vtot_4200=w,
+                         p_empty=float(np.exp(-lam * (1 - qq) * w))))
+    return rows
+
+
 def data_summaries(path: str) -> dict:
     J = json.load(open(path))
     rows = []
@@ -162,7 +223,8 @@ def self_similarity(path: str) -> list:
 
 
 def main() -> int:
-    out = dict(premium=premium_scan(), data=data_summaries(os.path.join(ROOT, "results", "theory", "icml", "trap_check.json")),
+    out = dict(premium=premium_scan(), premium_certificate=premium_certificate(), kendall=kendall_numbers(),
+               data=data_summaries(os.path.join(ROOT, "results", "theory", "icml", "trap_check.json")),
                fluid=fluid_checks(), self_similarity=self_similarity(os.path.join(ROOT, "results", "theory", "icml", "trap_check.json")))
     path = os.path.join(ROOT, "results", "theory", "icml", "support.json")
     with open(path, "w") as f:
