@@ -1,4 +1,4 @@
-\section{The trapped state: an exact renewal law}\label{sec:trap}
+\section{The trapped state: a renewal law}\label{sec:trap}
 
 Quasi-static models describe the collapsed state as the falling branch of a throughput curve, $\dot N=\lambda-\mu(N)$,
 whose low end is Lu et al.'s low-reuse departure rate $D_{\mathrm{low}}$~\citep{lu2026cachetrap} and, in our earlier model, the
@@ -90,9 +90,8 @@ is $\lambda G_k\Delta_{n-k}$. Summing its work, $\Delta_n=W(u_n)-W(u_{n-1})$, tu
 Eq.~\eqref{eq:renewal}, whose coefficients are nonnegative and sum to $\rho$. Tilting by
 $z^{-n}$ and a finite-memory renewal lemma give (b)--(c); (a) is a busy-period argument; and the fixed lag structure gives the
 exact identity $u_{n+1}=V_{\mathrm{tot}}(0)+\sum_k\lambda c_kG_ku_{n+1-k}$ behind (d) and (f). Appendix~\ref{app:trap} gives
-complete proofs, the stochastic counterpart and a sketch of the processor-sharing variant. Three independent checks by AI
-agents, each with its own code, found no wrong statement, and their fixes are applied (\fpath{notes/THEORY_ICML_2026-11.md},
-\S10); none of them found Khanin et al.'s paper below, which a later literature check did.
+complete proofs, the stochastic counterpart and a sketch of the processor-sharing variant; \fpath{tests/test_theory_icml.py}
+checks each statement numerically; independent AI-agent checks are recorded in \fpath{notes/THEORY_ICML_2026-11.md}, \S10.
 
 \paragraph{What is classical and what is new.} Part~(a) is classical in substance: at a single work-conserving station the
 remaining work obeys $\dot V_{\mathrm{tot}}=\rho-1$ whatever the service order, which gives the fluid busy period, and its
@@ -102,19 +101,20 @@ self-similar regime of parts~(c)--(d) is not new either: it is the single-statio
 re-entrant lines of Khanin et al.~\citep{khanin2001steady}, in which an overloaded station's queue grows linearly. Their
 overloaded-station flows give the Perron equation, the gap slope $z-1$, the $z^{-k}$-tilted mix and the departure flow; they treat
 deterministic stages, a closing remark extends their framework to a fixed fraction of the flow leaving at each node (our random
-$T$), their normalization gives Corollary~\ref{cor:trapinv}, and they leave non-steady trajectories open. FIFO queues with feedback are classical in the stable
+$T$), their normalization gives Corollary~\ref{cor:trapinv}, and they leave open the uniqueness of non-steady trajectories. FIFO queues with feedback are classical in the stable
 regime~\citep{takacs1963feedback,vandenberg1989deterministic}, overloaded multiclass FIFO queues have been analysed without
 re-entry~\citep{jennings2013fluid}, and the processor-sharing version of model~F, which our earlier round-robin layer
 integrated numerically, has the Crump--Mode--Jagers structure of overloaded processor sharing, whose fluid shape converges to
 an invariant one~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}. What we add, as far as a targeted
-search found (\S\ref{sec:related}): the linear renewal recursion along FIFO orbits, which shows that every solution, from
-\emph{any} trapped state, converges to the self-similar regime, geometrically in the generation index and with an exact virtual
-origin (parts~(c), (d) and~(f) as limits), whereas a burst leaves the engine far from a steady solution; the critical case with
-visit-dependent costs, part~(b) (for Kelly-type FIFO networks, in which every visit costs the same, convergence to equilibria at
-load at most one is Bramson's~\citep{bramson1996convergence}); the comparison of the trapped departure rate with the capacity at
-the stationary mix (Theorem~\ref{thm:premium}); and its consequence in Corollary~\ref{cor:trapthr}, that the throughput measured in
-a trap exceeds the drain threshold. The threshold itself is not new: it is the classical busy-period condition, and Lu et al.\
-state that arrivals below their low-reuse departure rate drain the population~\citep{lu2026cachetrap}.
+search found (\S\ref{sec:related}), is the renewal recursion along FIFO orbits, which carries every solution from \emph{any}
+trapped state to the self-similar regime, geometrically in the generation index and with an exact virtual origin (parts~(c), (d)
+and~(f) as limits), whereas a burst leaves the engine far from a steady solution. Part~(b) is the fluid counterpart of the
+state-space collapse of a critically loaded multiclass FIFO feedback queue~\citep{reiman1988multiclass,dai1995multiclass}.
+Theorem~\ref{thm:premium} is the visit-indexed analogue of a property of overloaded processor sharing, whose departures
+$\lambda E[e^{-\alpha S}]$ can exceed $1/E[S]$~\citep{jeanmarie1994transient}; new are its turn-count and cost-growth factors and
+Corollary~\ref{cor:trapthr}'s consequence that the throughput measured in a trap exceeds the drain threshold. The threshold
+itself is not new: it is the classical busy-period condition, and Lu et al.\ state that arrivals below their low-reuse departure
+rate drain the population~\citep{lu2026cachetrap}.
 
 \paragraph{Model F is an idealization.} On the engine, (F1) is the measured zero hit fraction of the trap and (F2) its saturated
 GPU. (F3) is request-level FCFS admission (Proposition~\ref{prop:A}), up to the $M/E_S$ requests that run concurrently (about

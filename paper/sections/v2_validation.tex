@@ -41,6 +41,12 @@ Llama 1.65 & 1.63 & 8459--8757 / 8631 & .013--.021 / .022 & 1.34--1.49 / 1.23 & 
 \end{tabular}}
 \end{table}
 
+\paragraph{Terms.} E2 is our registered paired test (\S\ref{sec:evidence}): a BURST arm (200 sessions within 60\,s at
+1200\,s on top of Poisson arrivals), a NOBURST arm (the same arrivals without the burst) and a CAPPED arm (BURST behind a client
+session cap), each 8700\,s long and judged over $[5700,8700)$\,s. BASIN, SHED and TOOLSLOW are registered variants of the BURST arm
+with other burst sizes, an arrival stop, and a tool slowdown instead of a burst; E0b runs start from an empty engine at a constant
+rate for 3000\,s; LPM is SGLang's longest-prefix-match ordering, which reverts to FCFS when more than 128 requests wait.
+
 We test model~F on every trapped run we have, in eight cells: SGLang with the 300k pool (FCFS with and without its
 waiting-prefix refresh, the BASIN, SHED and TOOLSLOW runs, and stock LPM past its 128-request fallback), SGLang's native pool,
 vLLM, the H200 at 300k and 600k, Llama-3.1-8B, and the 150k and 600k pools. Each cell's costs $c_k$ come from the cost model
@@ -65,8 +71,10 @@ and Llama the completion excess is not explained.
 0.63--0.74 at these loads, not the 1.0 of the quasi-static equation.
 \end{itemize}
 These are statements about the runs taken together; per run the gap and backlog statistics scatter widely, mostly with the plan's
-arrivals over the window. The same laws hold for the 13 from-empty runs that were stuck over $[1500,3000)$\,s, at $\rho=1.4$ to
-6.3 (composition within $-5.7$\% and $+6.6$\%; gap-slope ratio 0.63--1.37, mean 1.03), on the pool sweep and on the H200
+arrivals over the window. The same composition and gap laws hold for the 13 from-empty runs that were stuck over $[1500,3000)$\,s, at $\rho=1.4$
+to 6.3 (composition within $-5.7$\% and $+6.6$\%; gap-slope ratio 0.63--1.37, mean 1.03), on the pool sweep and on the H200, but
+their backlog slopes run above the prediction, by about 20--35\% in most of them, and their completions by up to 15\%; in
+model~F the two add up to the arrival rate, which points to window arrival rates above nominal in these single seed-0 runs
 (Appendix~\ref{app:trapdata}). Self-similarity (Theorem~\ref{thm:trap}(d)) is visible where samples are large and censoring is
 small: on the H200 at 600k the sojourn of sessions of similar length grows with their arrival time at 0.86--1.19 of the predicted
 slope (descriptive; Appendix~\ref{app:trapdata}). The earlier heuristic round-robin layer of our model already reproduced the
@@ -97,38 +105,69 @@ In the 24 registered 200-session runs on the A100 we cannot say so: 3--30 burst 
 included here (Appendix~\ref{app:dataonly}).
 
 \paragraph{Blind tests.} The predictions of Theorem~\ref{thm:trap} for runs that did not yet exist were frozen under tag
-\texttt{icml-trap-pred} (commit \texttt{6b47a6c}, pushed to the private origin at about 00:25 CST on 2026-11-05 by the theory
-session's record; the push time is to be checked against GitHub's activity log), with scoring rules S1--S5 declared beforehand:
-per-run composition within $\pm8$\% (pooled $\pm5$\%); pooled gap slope within $[0.6,1.4]\gamma$; completion above $\lref$ in every
-trapped run at realized load $\ge1.1\lref$ (pooled within $\pm15$\% of $D$); pooled backlog slope within $\pm35$\% of $\alpha$ or of the
-E2 fluid slope; and, per seed, the plug-in's side of the registered threshold and $|$slope$-$plug-in$|\le0.01$\,/s. Theorem~1's
-application to a cell and load is refuted if the pooled S1 or S2 fails in a group of at least two trapped runs
-(\fpath{notes/PREDICTIONS_icml_trap.md}). The tolerances were set after seeing the committed runs; the runs they score did not exist
-at the push. S2 compares with $\gamma$, not with the completion-time slope $\gamma/z$; at 1.35~$\lref$ the two differ by 1.3\%,
-well inside the tolerance.
+\texttt{icml-trap-pred} (commit \texttt{6b47a6c}, pushed at 00:24:47 CST on 2026-11-05 by GitHub's activity log), with scoring rules
+S1--S5 declared beforehand: per-run composition within $\pm8$\% (pooled $\pm5$\%); pooled gap slope within $[0.6,1.4]\gamma$; completion
+above $\lref$ in every trapped run at realized load $\ge1.1\lref$ (pooled within $\pm15$\% of $D$); pooled backlog slope within $\pm35$\%
+of $\alpha$ or of the E2 fluid slope; and, per seed, the plug-in's side of the registered threshold and
+$|$slope$-$plug-in$|\le0.01$\,/s. Theorem~1's application to a cell and load is refuted if the pooled S1 or S2 fails in a group of at
+least two trapped runs (\fpath{notes/PREDICTIONS_icml_trap.md}). The tolerances were set after seeing the committed runs; the runs
+they score did not exist at the push. S2 compares with $\gamma$, not with the completion-time slope $\gamma/z$; at 1.35~$\lref$ the
+two differ by 1.3\%, well inside the tolerance.
 \begin{itemize}[leftmargin=*,nosep]
-\item \emph{TOOLSLOW-W} (\pending{registration status}; designed after the 30\,s TOOLSLOW arm trapped 1 of 3): no burst; every tool
-call that starts in $[1200,3000)$\,s takes 30\,s longer, at 1.35~$\lref$, seeds 0--2, paired with the committed NOBURST runs. Its
-trapped runs, if any, are scored by S1--S5. \pending{TOOLSLOW-W outcome per seed and the S1--S5 scores of its trapped runs (lead's
-PAPER\_INPUT).}
+\item \emph{TOOLSLOW-W} (pre-registered: tag \texttt{r15-reg}, commit \texttt{e05a262}, pushed at 03:18:36 CST, before the first job
+was submitted at 03:21:38; designed after the 30\,s TOOLSLOW arm trapped 1 of 3): no burst; every tool call that starts in
+$[1200,3000)$\,s takes 30\,s longer, at 1.35~$\lref$, seeds 0--2, paired with the committed NOBURST runs. The registered rule calls the
+cell TRAPS if at least 2 of the 3 runs are stuck, NO-TRAP if at least 2 are good, and MIXED otherwise; its trapped runs, if any, are
+scored by S1--S5. \pending{TOOLSLOW-W outcome per seed and the S1--S5 scores of its trapped runs (lead's PAPER\_INPUT).}
 \item \emph{CUT} (a blind test of model~F's trajectory under an arrival cut, the setting of Corollary~\ref{cor:trapthr}): the
 1.65~$\lref$ BURST protocol, then from 2400\,s arrivals cut to 1.15~$\lref$ (CUT-A, $\rho'=1.145$, inside $(\lmiss,D(\lambda))$) or
 to 0.85~$\lref$ (CUT-B, $\rho'=0.846$), seeds 0--2. Model~F's predictions, driven by each seed's exact client plan, were frozen under
-tag \texttt{icml-cut-pred} (commit \texttt{2f90267}, tagged at 02:25 CST on 2026-11-05; \fpath{notes/PREDICTIONS_icml_cut.md}). Model~F
-predicts that all six runs stay stuck over $[5700,8700)$\,s; that CUT-A, although its rate is below the throughput measured in the
-trap, does not drain, its backlog dipping by less than 15\% and growing again in seeds 0 and 2 (predicted slopes over
-$[3000,8700)$\,s of $+0.0039$ and $+0.0028$\,/s; seed~1's plan has few post-cut arrivals, and its predicted slope is $-0.0026$\,/s);
-and that CUT-B drains slowly (predicted slopes $-0.0095$ to $-0.0131$\,/s) and would empty only at about 27{,}100\,s, the busy period
-of Theorem~\ref{thm:trap}(a), far beyond the run. A naive projection from the throughput measured early in the trap would put five
-of the six runs back below the onset before 8700\,s. The test has limits: the cut comes 1200\,s after the burst, so it probes the
-young trap's transient, not the asymptotic regrowth; CUT-B cannot show recovery within the run; and the naive comparator, taken
-600--1200\,s after the burst, is weak by construction. \pending{CUT outcomes and the registered rule's verdict (lead's
-PAPER\_INPUT).}
+tag \texttt{icml-cut-pred} (commit \texttt{2f90267}, pushed at 02:25:43 CST on 2026-11-05; \fpath{notes/PREDICTIONS_icml_cut.md}).
+Model~F predicts that all six runs stay stuck over $[5700,8700)$\,s; that CUT-A, although its rate is below the throughput measured
+in the trap, does not drain, its backlog dipping by less than 15\% and growing again in seeds 0 and 2 (predicted slopes $S$ of the
+backlog over $[3000,8700)$\,s of $+0.0039$ and $+0.0028$\,/s; seed~1's plan has few post-cut arrivals, and its predicted slope is
+$-0.0026$\,/s); and that CUT-B drains slowly (predicted slopes $-0.0095$ to $-0.0131$\,/s) and would empty only at about 27{,}100\,s,
+the busy period of Theorem~\ref{thm:trap}(a), far beyond the run.
+
+The decision rule was registered after the predictions were pushed and before any CUT job (commit \texttt{11b0e4e}, tag
+\texttt{r15-cut-reg}, pushed at 03:54:49 CST; jobs 17256867--72 submitted at 03:57). Per seed, the measured slope $S$ over
+$[3000,8700)$\,s is compared with model~F's frozen slope and with two comparators: a naive one,
+$\lambda'_{\mathrm{plan}}-D_{\mathrm{trap}}$, where $D_{\mathrm{trap}}$ is the trapped throughput of the same seed's uncut 1.65~$\lref$
+control over $[3000,8700)$\,s, fixed beforehand at 0.0956, 0.1005 and 0.0946\,sessions/s (1.34, 1.41 and 1.32~$\lref$), the reading
+in which a cut below the measured throughput drains the trap; and, for CUT-A, the quasi-static $\lambda'_{\mathrm{plan}}-\lref$, in
+which the trap completes sessions at the all-miss capacity. From the frozen plans the naive comparator is about $-0.009$ to
+$-0.020$\,/s for CUT-A and $-0.033$ to $-0.043$\,/s for CUT-B, and the quasi-static one $+0.009$ to $+0.015$\,/s for CUT-A, so model~F's
+values lie well between them. A seed is theory-favoured if model~F's slope is strictly the closest to $S$, and a run that leaves the
+trap counts against the theory. CUT-A passes if at least 2 of 3 seeds are theory-favoured and the slope over $[5700,8700)$\,s is
+positive in at least 2 of 3 (model~F predicts that clause from seeds 0 and 2); CUT-B passes if at least 2 of 3 seeds are
+theory-favoured and $S<0$ in at least 2 of 3. Either arm fails if a comparator is favoured, or the run leaves the trap, in at least
+2 of 3 seeds; otherwise it is mixed. The test has limits: the cut comes 1200\,s after the burst, so it probes the young trap's
+transient, not the asymptotic regrowth, and CUT-B cannot show recovery within the run. \pending{CUT outcomes and the registered
+verdict (lead's PAPER\_INPUT); draft texts for both outcomes are in the source comments below.}
+% ---- CUT outcome drafts (fill the numbers; keep the one that matches the registered verdict) ----
+% PASS (both arms):
+%   Both arms passed their registered rule. CUT-A stayed stuck in all three seeds although its arrival rate, 1.15 lref, was below
+%   the throughput measured in the trap: its backlog dipped by [x]% and grew again, with slopes over [3000, 8700) s of [s0], [s1] and
+%   [s2] /s against model F's +0.0039, -0.0026 and +0.0028, the naive [n0], [n1], [n2] and the quasi-static [q0], [q1], [q2]; [k] of 3
+%   seeds were theory-favoured and the slope over [5700, 8700) s was positive in [m] of 3. CUT-B drained slowly, at [b0], [b1], [b2] /s
+%   against model F's -0.0095, -0.0131, -0.0123 and the naive [nb0]-[nb2], and stayed stuck to the end of the run, as the busy period
+%   of Theorem 1(a) predicts. On the engine, then, a cut to below the throughput measured in an all-miss trap but above the all-miss
+%   capacity did not clear it, and a cut below the all-miss capacity drained it only slowly.
+% FAIL or MIXED (state which arm, which clause and which comparator was closer):
+%   CUT-[A/B] did not pass its registered rule: [the naive / quasi-static comparator was closer in k of 3 seeds | the run left the trap
+%   in seed(s) ... | the sign clause held in only m of 3]. The measured slopes were [ ... ] against model F's [ ... ], the naive
+%   [ ... ] and the quasi-static [ ... ]. [If runs left the trap: the cut drained the trap within the run, faster than the busy period
+%   of Theorem 1(a) allows, so the all-miss idealization overstates the trap's persistence after a cut; if the naive comparator won:
+%   the engine completed sessions near its measured trapped throughput after the cut, against the premium of Theorem 2; if the
+%   quasi-static comparator won: the engine's completions fell to the all-miss capacity after the cut.] Corollary 3 then stands as a
+%   statement about model F that this engine test does not support [for the failing arm].
+% ---- end of CUT outcome drafts ----
 \end{itemize}
 
 \paragraph{The arrival stop, retrodicted.} In the registered SHED test (\S\ref{sec:control}) arrivals stopped at 1800\,s,
 600\,s after a burst at 1.35~$\lref$. In model~F the fluid backlog then falls to the onset $n_b=32.7$ after 2{,}020\,s and the
-queue empties after 3{,}180\,s, the busy period $V_{\mathrm{tot}}(1800)$ of Theorem~\ref{thm:trap}(a) with $\lambda=0$. On the
+queue empties after 3{,}180\,s, the remaining work $V_{\mathrm{tot}}(1800)$: with no arrivals the queue empties after exactly
+$V_{\mathrm{tot}}$ (Appendix~\ref{app:trap}, proof of Theorem~\ref{thm:trap}(a)). On the
 engine, a 600\,s stop left both runs stuck, and in both 3600\,s runs hits returned 2300--2600\,s into the stop (the first
 300\,s window with follow-up hit fraction of at least 0.5 began at 4100\,s; post hoc). The quasi-static model's frozen minimum
 stop was 1{,}795\,s, early by about a quarter, and model~F's time to the onset is early too, by about 15\%. Model~F's numbers are

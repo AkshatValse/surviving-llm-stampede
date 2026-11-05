@@ -231,7 +231,9 @@ $\omega$. Under $c\mapsto c/s$, $\omega$ is unchanged and $\lmiss\mapsto s\lmiss
 \item \emph{Processor sharing.} The layer RR of \S\ref{sec:fp-heur} advances every session at $1/V(t)$ turns per second. Use
 the clock $x=\int_0^t ds/V(s)$ and the continuous renewal theorem; the kernel is a step function with compact support, hence
 non-lattice. This yields the Euler--Lotka equation $\lambda\sum_kc_kG_k\int_{k-1}^ke^{-ga}\,da=1$, the growth
-$\alpha_{\mathrm{PS}}=\lambda(1-E[e^{-gT}])$ and the cycle slope $\gamma_{\mathrm{PS}}=g$. This is the Crump--Mode--Jagers
+$\alpha_{\mathrm{PS}}=\lambda(1-E[e^{-gT}])$, departures $\lambda E[e^{-gT}]$ and the cycle slope $\gamma_{\mathrm{PS}}=g$. In
+overloaded processor sharing with service times $S$ the departures are $\lambda E[e^{-\alpha S}]$, which can exceed $1/E[S]$: the
+youth premium of Theorem~\ref{thm:premium} is the visit-indexed analogue of that property. This is the Crump--Mode--Jagers
 structure of overloaded processor sharing~\citep{grishechkin1992processor,jeanmarie1994transient,puha2006overloaded}, with
 reproduction rate $\lambda c_{\lfloor a\rfloor+1}$ at age~$a$; we do not write out the details. Near the threshold,
 $\alpha_{\mathrm{PS}}/(\lambda-\lmiss)\to E[T]/(\bar k_c-\tfrac12)$, a half-turn offset from model~F. On the 300k cell,
@@ -255,8 +257,10 @@ departure rate; a closing remark extends their uniqueness theorem to a fixed fra
 a fluid is our random $T$, and their normalization gives Corollary~\ref{cor:trapinv}. They prove existence, uniqueness for
 Kelly-type lines and non-uniqueness examples for two stations, and leave the uniqueness of general (non-steady) trajectories open.
 Relative to theirs, our contribution is the renewal recursion along FIFO orbits from an arbitrary initial state, hence the
-convergence of every trapped trajectory to the steady regime with an exact virtual origin and rate, the critical case, and the
-consequences in Theorem~\ref{thm:premium} and Corollary~\ref{cor:trapthr}. Overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
+convergence of every trapped trajectory to the steady regime with an exact virtual origin and rate, and the turn-count and
+cost-growth factors of Theorem~\ref{thm:premium} with the consequence in Corollary~\ref{cor:trapthr}. The critical case,
+Theorem~\ref{thm:trap}(b), is the fluid counterpart of heavy-traffic state-space collapse in multiclass FIFO feedback
+queues~\citep{reiman1988multiclass,dai1995multiclass}. Overloaded multiclass FIFO queues with abandonment and no re-entry have fluid
 limits~\citep{jennings2013fluid}; fluid metastability of queues with load-dependent service is posed by
 Dong~\citep{dong2022metastability}; and within-request KV growth under continuous batching is analysed by Ao et
 al.~\citep{ao2026service}, a different instability.

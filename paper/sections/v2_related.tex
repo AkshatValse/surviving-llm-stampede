@@ -2,7 +2,7 @@
 
 \paragraph{Concurrent work.} Lu et al.~\citep{lu2026cachetrap} study the same phenomenon on SGLang with prefill--decode
 disaggregation and a host KV tier, serving a hybrid mixture-of-experts model (Qwen3.6-35B-A3B) on Terminal-Bench and SWE-bench Pro
-trajectories. On hardware, with one run per configuration, a ten-minute surge cut goodput by about 88\% over the following hour,
+trajectories. On hardware, in single runs, as their run accounting implies, a ten-minute surge cut goodput by about 88\% over the following hour,
 terminating the burst sessions at the end of the burst restored service, and in a run that let them finish the base population kept
 growing after the last burst session left. Their fluid model, $\dot N=\lambda-X(N)/K$ with an empirical hit curve $h(W/C)$ of the
 working set over the cache, gives the stable and unstable equilibria, the vulnerable window between the low-reuse departure rate
@@ -12,7 +12,7 @@ arrivals alone reverses recovery, and report cache hysteresis (a lower hit rate 
 controller, Basin\footnote{Their Basin controller is unrelated to our BASIN-1 and BASIN-2 tests, which probe the basin of
 attraction of the good state.}, combines fixed session priority, admission by predicted peak context, decode-memory lending and
 shedding; on H200 hardware an arrival-time prototype of it achieves 1.20--1.70 times Continuum's goodput, and the predictor-driven
-design is evaluated in simulation. Against this, we add the exact dynamics of the trapped state with its tests
+design is evaluated in simulation. Against this, we add an exactly analysed idealization of the trapped state with its tests
 (\S\ref{sec:trap}--\ref{sec:validation}), the sharpening that the throughput measured in a trap exceeds the drain threshold
 (Corollary~\ref{cor:trapthr}, for an FCFS engine on which every turn misses; their systems keep some reuse), a first-principles entry model with an
 out-of-sample record (\S\ref{sec:entry}), the registered and replicated rescue of an established zero-hit trap at the same offered
@@ -38,11 +38,12 @@ lines~\citep{kumar1993reentrant} and their fluid models~\citep{dai1996stability,
 stability, and for convergence to equilibria at load at most one. Closest to model~F, Khanin et al.\ study steady, constant-flow solutions of fluid FIFO re-entrant lines,
 in which an overloaded station's queue grows linearly~\citep{khanin2001steady}; at a single station their fixed point is our Perron
 root, and a closing remark covers fractional exits, which is our random turn count. FIFO queues with Bernoulli or deterministic
-feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic}. Theorem~\ref{thm:trap} adds the
-renewal recursion along FIFO orbits and, with it, convergence from an arbitrary initial state and the critical case with
-visit-dependent costs (Bramson's convergence results cover Kelly-type networks, in which every visit costs the same);
-Theorem~\ref{thm:premium}, and Corollary~\ref{cor:trapthr}'s statement that the trapped throughput exceeds the drain threshold, have
-no counterpart we found.
+feedback are classical in the stable regime~\citep{takacs1963feedback,vandenberg1989deterministic}. In heavy traffic, multiclass FIFO feedback queues show state-space collapse~\citep{reiman1988multiclass,dai1995multiclass}, of
+which Theorem~\ref{thm:trap}(b) is the fluid counterpart. Theorem~\ref{thm:trap} adds the renewal recursion along FIFO orbits and,
+with it, convergence from an arbitrary initial state. Theorem~\ref{thm:premium} is the visit-indexed analogue of the overloaded
+processor-sharing growth law, whose departures can exceed the capacity~\citep{jeanmarie1994transient}; its turn-count and
+cost-growth factors, and Corollary~\ref{cor:trapthr}'s statement that the trapped throughput exceeds the drain threshold, have no
+counterpart we found.
 
 \paragraph{Queueing models of LLM serving.} Ao et al.\ give fluid-guided scheduling with memory constraints~\citep{ao2025wait} and show
 that, in a decode-only model without prefix reuse, the eviction-free fixed point can be unstable~\citep{ao2026service}; Dai et al.\ prove

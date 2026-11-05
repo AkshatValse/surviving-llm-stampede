@@ -128,3 +128,24 @@ keys matched their sources. Applied:
 - To the theory session: the gamma/z issue in `measured.py` and S2, the note's sec. 5 sentence on Lu et al.'s simulated
   recoveries, and the Kendall value 3e-54 (support.json: 2.3e-54).
 - To the lead session: the draft is ready, with this note's summary.
+
+## Lead's advisor-eyes edits (2026-11-05, applied on Akshat's instruction to follow the lead)
+
+- Novelty: Reiman (1988) and Dai & Kurtz (1995) verified on Crossref and cited; Theorem 1(b) is now the fluid counterpart of
+  heavy-traffic state-space collapse, not new; Theorem 2 is the visit-indexed analogue of the overloaded processor-sharing
+  property (departures lambda E[e^{-alpha S}] can exceed 1/E[S]); new are the renewal recursion, the premium's turn-count and
+  cost-growth factors, and Corollary 3's consequence. Khanin et al.'s open question is the uniqueness of non-steady trajectories.
+- "Exact" calibrated: abstract ("We analyse an idealized model of the trapped state exactly"), intro contribution title,
+  related work, conclusion ("Idealized, the trap has an exact law"), section 2 title; working title now "Inside the Trap: A
+  Renewal Law for Prefix-Cache Collapse in LLM Agent Serving" (options kept in ARXIV_METADATA.md).
+- Corollary 3 scoped to model F in the intro and conclusion until CUT reports; Lu et al.'s GPU-only point added in Sec. 5.
+- CUT: the registered rule (11b0e4e, tag r15-cut-reg) replaces "weak by construction"; comparator values computed from the frozen
+  plans; pass and fail outcome drafts are LaTeX comments in v2_validation.tex.
+- Abstract: the registered-evidence sentence (30 of 30 BURST runs at zero hits, every NOBURST run good) replaces the
+  first-principles sentence; "refusing arrivals sheds sessions"; 1852 form characters.
+- Terms (E2, BURST/NOBURST/CAPPED, BASIN, SHED, TOOLSLOW, E0b, LPM) defined at the start of Sec. 3.
+- Timeline: the registered experiments of Sec. 6 predate Lu et al.; the theory and the blind tests came afterwards (the lead's
+  wording said "our experiments", which would include tonight's runs, so it was narrowed). Push times recorded.
+- AI-referee sentences shortened; the approved AI-use statement is unchanged.
+- Housekeeping: SHED cites the lambda = 0 busy period directly; the from-empty backlog excess is stated; "single runs, as their
+  run accounting implies"; the head-to-head is "against a post-hoc reading" of Lu et al.'s model.

@@ -16,7 +16,7 @@ Corollary~\ref{cor:trapthr} leaves two ways out of a trap. One is to \emph{starv
 until the busy period ends. The other is to leave model~F: make turns hit again, which requires the sessions that compete for
 the pool to fall below the onset $n_b$, without lowering the offered load. A client-side session cap does this.
 
-\paragraph{Starving the trap sheds sessions, and is slow.} The corollary says how far and how long: below $\lmiss$, not below the
+\paragraph{Starving the trap: refusing arrivals sheds sessions, and is slow.} The corollary says how far and how long: below $\lmiss$, not below the
 trapped throughput $D(\lambda)$, and for $V_{\mathrm{tot}}/(1-\lambda'/\lmiss)$, which diverges as $\lambda'\uparrow\lmiss$. In
 the all-miss fluid at 1.65~$\lref$ (300k), a cut to $1.18\lmiss$, below $D=1.22\lmiss$, makes the backlog dip by 0.3\% and grow
 again, and a cut to $0.9\lmiss$ drains it only after about 15 hours (Appendix~\ref{app:trap}). The registered SHED test at
@@ -24,9 +24,10 @@ again, and a cut to $0.9\lmiss$ drains it only after about 15 hours (Appendix~\r
 and left both runs stuck; a 3600\,s stop refused 355--378 and left both good (\S\ref{sec:validation}). Lu et al.\ show in
 simulation that lowering post-surge arrivals reverses the outcome, and observe that the throughput measured in the collapsed state
 sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr} sharpens this for an FCFS engine on which every turn
-misses: the cut must go below $\lmiss$, which lies below the throughput measured in the trap. Their systems keep some reuse in the
-trap, and with a host tier one seed in three recovered at cuts above the trapped departures they measured, so the corollary does
-not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}).
+misses: the cut must go below $\lmiss$, which lies below the throughput measured in the trap. Their GPU-only simulations point
+the same way: the trap persisted at a cut to 0.2~$\lref$ while the trapped departures they measured were 0.20--0.31~$\lref$. Their
+systems keep some reuse in the trap, though, and with a host tier one seed in three recovered at cuts above the trapped departures
+they measured, so the corollary does not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}).
 
 \paragraph{Restoring reuse with a session cap.} A FIFO gate that admits at most $c$ sessions, each holding its slot until its last
 turn ends, makes the admitted sessions a closed system of $\min(n,c)$ sessions (Proposition~\ref{prop:cap}). In the quasi-static

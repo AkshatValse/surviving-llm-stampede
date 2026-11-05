@@ -6,20 +6,21 @@ The draft below is under review by the authors (Akshat Valse; Dr. Ali Jannesari 
 submitted and nothing is posted. Pending slots (`\pending{}`) remain for tonight's blind tests (TOOLSLOW-W, CUT) and the
 repository URL. Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
 
-**Working title:** Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving
+**Working title:** Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving (lead's advisor-eyes review, 2026-11-05; the title is Akshat's choice)
 
 **Title options (authors to choose):**
-1. Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving
-2. Trapped Servers Look Faster Than They Are: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving
-3. The Renewal Law of the Trap: Exact Dynamics and Exits of Prefix-Cache Collapse in Agentic LLM Serving
+1. Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving (current working title)
+2. Inside the Trap: An Exact Theory of Throughput Collapse in Prefix-Cached Agent Serving
+3. Trapped Servers Look Faster Than They Are: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving
+4. The Renewal Law of the Trap: Exact Dynamics and Exits of Prefix-Cache Collapse in Agentic LLM Serving
 
 **Abstract (form text; the LaTeX abstract in `main.tex` expands to it with `count.py`):**
 
 ```text
-Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst of sessions can tip a serving engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. We give an exact theory of the trapped state. Idealizing the trapped engine as a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. Its Perron root fixes the dynamics: the trap drains if and only if arrivals are below the all-miss capacity; above it, every trapped state converges to a known self-similar regime in which the gap between a session's turns grows linearly, the backlog grows at 0.6 to 0.8 of the excess load at our loads, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so the throughput measured in a trap overstates the recovery threshold. Retrospectively, with no parameter fitted to trap data, the theory matches 57 stuck runs on SGLang and vLLM, two GPUs and two models: the trapped turn mix within 3% in 50 runs, the gap growth (median ratio 1.01) and completions above the all-miss capacity in every run; \pending{blind tests}. A first-principles throughput curve puts the all-miss onset at the sessions in tool calls plus one pool of running sessions, which a faster GPU moves out. Of two exits, starving the trap below the all-miss capacity sheds sessions, while a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load with no session shed, and the engine stayed good after release. The model is an idealization; we do not prove that the engine converges to it.
+Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst of sessions can tip a serving engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models, a 200-session burst left the engine at zero hits in all 30 BURST runs, while every matched no-burst run stayed good. We analyse an idealized model of the trapped state exactly: treating the trapped engine as a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. Its Perron root fixes the dynamics: the trap drains if and only if arrivals are below the all-miss capacity; above it, every trapped state converges to a known self-similar regime in which the gap between a session's turns grows linearly, the backlog grows at 0.6 to 0.8 of the excess load at our loads, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model the throughput measured in a trap overstates the recovery threshold. Retrospectively, with no parameter fitted to trap data, the theory matches 57 stuck runs: the trapped turn mix within 3% in 50 runs, the gap growth (median ratio 1.01) and completions above the all-miss capacity in every run; \pending{blind tests}. Of two exits, refusing arrivals sheds sessions, while a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load with no session shed, and the engine stayed good after release. The model is an idealization; we do not prove that the engine converges to it.
 ```
 
-Count (`COORD/release-tools/count.py paper/main.tex`): 1869 form characters, limit 1920. The `[pending: blind tests]`
+Count (`COORD/release-tools/count.py paper/main.tex`): 1852 form characters, limit 1920. The `[pending: blind tests]`
 marker stands for one clause with the TOOLSLOW-W and CUT outcomes; keep the total under 1920 when it is filled.
 
 ---

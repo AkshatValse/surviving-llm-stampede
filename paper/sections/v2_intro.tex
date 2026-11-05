@@ -23,47 +23,50 @@ is evicted before its owner returns. Fig.~\ref{fig:e2} shows this on SGLang: at 
 and independently of this work, Lu et al.\ showed on prefill--decode disaggregated SGLang with real agent traces that a finite surge
 leaves the engine persistently degraded at a base load it previously sustained, identified the population--cache feedback that
 sustains the failure, and modelled the vulnerable window with a fluid population balance and an empirical hit-rate
-curve~\citep{lu2026cachetrap}. Their paper appeared first. The collapse is Denning's thrashing~\citep{denning1968thrashing}, a bad
-state that a feedback loop sustains after its trigger is a metastable failure~\citep{bronson2021metastable,huang2022metastable},
-and metastability from a unimodal throughput curve, with bounded admission as the cure, is
+curve~\citep{lu2026cachetrap}. Their paper appeared first. The registered experiments of \S\ref{sec:evidence} were designed,
+registered and run before it appeared (Appendix~\ref{app:timeline}); the theory of \S\ref{sec:trap} and the blind tests of
+\S\ref{sec:validation} came afterwards. The collapse is Denning's thrashing~\citep{denning1968thrashing}, a bad state that a feedback
+loop sustains after its trigger is a metastable failure~\citep{bronson2021metastable,huang2022metastable}, and metastability from a
+unimodal throughput curve, with bounded admission as the cure, is
 classical~\citep{kleinrock1975aloha,carleial1975bistable,nelson1987stochastic}.
 
 \paragraph{The question.} This paper asks what the trapped state \emph{is}. Quasi-static models treat it as the falling branch
 of a throughput curve, $\dot n=\lambda-\mu(n)$; read literally in congestion, sessions then complete at the curve's low end and
 accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs
 complete sessions faster than the all-miss capacity measured with caching disabled, by up to 2.4 times, while their backlog grows
-at about two thirds of the quasi-static rate. The gap
-matters to an operator: arrivals cut to just below the throughput measured in a trap do not clear it.
+at about two thirds of the quasi-static rate. The gap matters to an operator: in model~F below, a cut to just below the throughput
+measured in an all-miss trap does not clear it.
 
 \paragraph{Contributions.}
 \begin{enumerate}[label=(\arabic*),leftmargin=*]
-\item \textbf{An exact theory of the trapped state} (\S\ref{sec:trap}). We idealize the trapped engine as a fluid FIFO server on
-which every turn misses and every turn rejoins the tail of the queue (model~F) and prove that along FIFO orbits its cycles obey a
-linear renewal recursion (Theorem~\ref{thm:trap}). Its Perron root $z$ gives the drain condition, $\lambda<\lmiss$, and above it the
-convergence of every trapped state to a self-similar regime in which the gap between a session's turns grows at $z-1$, the backlog
-at $\lambda(1-E[z^{-T}])$ and completions at $D=\lambda E[z^{-T}]$, with the turn mix tilted to $G_kz^{-k}$. We decompose
-$D/\lmiss$ into a turn-count factor and a cost-growth factor, a youth premium above 1 for our workload (Theorem~\ref{thm:premium}),
-and conclude that the throughput measured in a trap overstates the recovery threshold: only $\lambda'<\lmiss$ drains it, after a
-busy period that diverges at the threshold (Corollary~\ref{cor:trapthr}). The self-similar regime itself is
-known~\citep{khanin2001steady}, and so is the drain condition; the renewal recursion that carries every trapped state into the
-regime, the premium and the gap between trapped throughput and the drain threshold are new as far as we found.
+\item \textbf{A renewal law for an idealized trap} (\S\ref{sec:trap}). We idealize the trapped engine as a fluid FIFO server on
+which every turn misses and every turn rejoins the tail of the queue (model~F), analyse it exactly, and prove that along FIFO orbits
+its cycles obey a linear renewal recursion (Theorem~\ref{thm:trap}). Its Perron root $z$ gives the drain condition,
+$\lambda<\lmiss$, and above it the convergence of every trapped state to a self-similar regime in which the gap between a session's
+turns grows at $z-1$, the backlog at $\lambda(1-E[z^{-T}])$ and completions at $D=\lambda E[z^{-T}]$, with the turn mix tilted to
+$G_kz^{-k}$. We decompose $D/\lmiss$ into a turn-count factor and a cost-growth factor, a youth premium above 1 for our workload
+(Theorem~\ref{thm:premium}), and conclude that in model~F the throughput measured in a trap overstates the recovery threshold: only
+$\lambda'<\lmiss$ drains it, after a busy period that diverges at the threshold (Corollary~\ref{cor:trapthr}). The self-similar
+regime itself is known~\citep{khanin2001steady}, the drain condition is classical, the critical case is the fluid counterpart of
+heavy-traffic state-space collapse~\citep{reiman1988multiclass,dai1995multiclass}, and the premium has a processor-sharing
+analogue~\citep{jeanmarie1994transient}. What we add, as far as a targeted search found, is the renewal recursion that carries every
+trapped state into the regime, the turn-count and cost-growth factors of the premium, and the consequence that the throughput
+measured in a trap exceeds the drain threshold.
 \item \textbf{A test of the theory across engines} (\S\ref{sec:validation}). With no parameter fitted to any trap measurement, model~F
 matches, across 57 stuck runs on SGLang and vLLM, two GPUs and two models, the trapped turn mix (within 3\% in 50 of them), the
 linear growth of the gap (median ratio of measured to predicted slope 1.01, with a wide per-run spread) and completions above the
-all-miss capacity (in every run). It also explains, post hoc, why our
-registered trap rule was fragile at the lower rate. These checks are retrospective; blind tests of predictions frozen before the
-runs are \pending{TOOLSLOW-W and CUT outcomes}.
+all-miss capacity (in every run). It also explains, post hoc, why our registered trap rule was fragile at the lower rate. These
+checks are retrospective; blind tests of predictions frozen before the runs are \pending{TOOLSLOW-W and CUT outcomes}.
 \item \textbf{A first-principles account of entry} (\S\ref{sec:entry}). We derive the closed-population throughput curve $\mu(n)$ from
 the pool, the workload and a cost model fitted to server-log timing only. Its all-miss onset is the sessions in tool calls plus one
-pool of running sessions, which a faster GPU moves out, and we report its out-of-sample record, misses included. Read post hoc on
-our colocated cells with one fitted hit curve, Lu et al.'s concurrent model, built for disaggregated serving, puts the cliff in
-proportion to the pool and at the same population on a faster GPU; the measured cliff moved out on the H200, as the tool-call term predicts, and on the five cells frozen before their runs
-were read our crossings err by 1.5 sessions on average, against 4.1.
-\item \textbf{Control as two exits} (\S\ref{sec:control}). Starving the trap, which the theory quantifies, needs $\lambda'<\lmiss$
-and sheds sessions: in a registered test a 3600\,s stop drained it and refused 355--378 sessions. Restoring reuse with a session
-cap, which leaves model~F, does not:
-in registered tests the cap rescued 9 of 9 established zero-hit traps at the same offered load without shedding a session, and the
-engine stayed good after the cap was removed.
+pool of running sessions, which a faster GPU moves out, and we report its out-of-sample record, misses included. Against a post-hoc
+reading of Lu et al.'s concurrent model on our colocated cells, with one hit curve fitted on one cell (they built the model for
+disaggregated serving and do not use the curve to predict hits), the measured cliff moved out on the H200 as the tool-call term
+predicts, and on the five cells frozen before their runs were read our crossings err by 1.5 sessions on average, against 4.1.
+\item \textbf{Control as two exits} (\S\ref{sec:control}). In model~F, starving the trap needs $\lambda'<\lmiss$; refusing arrivals
+(SHED) sheds sessions: in a registered test a 3600\,s stop drained the trap and refused 355--378 sessions. Restoring reuse with a
+session cap, which leaves model~F, does not: in registered tests the cap rescued 9 of 9 established zero-hit traps at the same
+offered load without shedding a session, and the engine stayed good after the cap was removed.
 \item \textbf{A registered evidence base} (\S\ref{sec:evidence}): paired tests with matched no-burst and capped arms on common random
 numbers on two engines, two GPUs and two models, a seed-replicated bracket of the basin in burst size, and registered negatives.
 \end{enumerate}

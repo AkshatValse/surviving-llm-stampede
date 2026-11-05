@@ -48,7 +48,11 @@ sections (abstract, Sections 1-9, Appendices A-C) introduce or restate, with the
 | CUT predictions: rho' 1.145 and 0.846; slopes +0.0039/-0.0026/+0.0028 (CUT-A, W1), -0.0095 to -0.0131 (CUT-B); CUT-B empties at about 27,100 s; naive projection back below n_b in 5 of 6 | 3 | CPRED `notes/PREDICTIONS_icml_cut.md` sections 1, 3 |
 | TOOLSLOW-W, CUT outcomes | 3, 6, Abs | pending (lead's PAPER_INPUT) |
 | Lu et al.: 88% from one run; 0.80 x calls; CONCUR hit 0.33, slow recovery; trapped departures 0.20-0.31 lref | 1, 5, 7, C | Lu et al. text (COORD/scoop-2611.02543/other_paper.txt lines 61, 131, 251, 586) |
-| abstract: 1869 form characters (with the `[pending: blind tests]` marker) | Abs | `COORD/release-tools/count.py` on `paper/main.tex` |
+| abstract: 1852 form characters (with the `[pending: blind tests]` marker) | Abs | `COORD/release-tools/count.py` on `paper/main.tex` |
+| 30 BURST runs at zero hits, every matched NOBURST run good (5 registered paired tests) | Abs, 6, Tab. 4 | old Tab. e2 and frozen tables (E2, native, vLLM: 18 + 18; H200 600k and Llama: 6 + 6 each) |
+| icml-trap-pred pushed 00:24:47 CST, icml-cut-pred 02:25:43 CST (GitHub activity log 06:24:47Z, 08:25:43Z); r15-reg (e05a262) pushed 03:18:36 CST, first TOOLSLOW-W job 03:21:38; r15-cut-reg (11b0e4e) pushed 03:54:49 CST, CUT jobs 17256867-72 submitted 03:57 | 3, Tab. 4 | lead session (GitHub activity log and Slurm), 2026-11-05 |
+| CUT D_trap 0.095572 / 0.100539 / 0.094603 sessions/s (1.336 / 1.406 / 1.323 lref); naive comparator about -0.009 to -0.020 (CUT-A), -0.033 to -0.043 (CUT-B); quasi-static +0.009 to +0.015 (CUT-A) /s | 3 | registration `configs/agentload_prereg_2026-11-05_cut_a115.yaml` at tag r15-cut-reg; comparators = lambda'_plan over [3000, 8700) s from CPRED minus D_trap or lref |
+| Lu et al. GPU-only: trapped at a cut to 0.2 lref; trapped departures 0.20-0.31 lref | 5 | Lu et al. text, other_paper.txt lines 245, 251 |
 
 Numbers in the new sections that restate earlier results (E2, rescue, SHED, TOOLSLOW, BASIN, H200, out-of-sample record) keep
 their earlier rows below.
