@@ -23,8 +23,10 @@ again, and a cut to $0.9\lmiss$ drains it only after about 15 hours (Appendix~\r
 1.35~$\lref$ on the 300k pool stopped arrivals entirely from 1800\,s, 600\,s after a burst. A 600\,s stop refused 56--59 sessions
 and left both runs stuck; a 3600\,s stop refused 355--378 and left both good (\S\ref{sec:validation}). Lu et al.\ show in
 simulation that lowering post-surge arrivals reverses the outcome, and observe that the throughput measured in the collapsed state
-sets the scale of the cut~\citep{lu2026cachetrap}; their simulated recoveries came only at rates below the trapped departures they
-measured, as Corollary~\ref{cor:trapthr} requires. The CUT test checks the corollary on the engine (\S\ref{sec:validation}).
+sets the scale of the cut~\citep{lu2026cachetrap}. Corollary~\ref{cor:trapthr} sharpens this for an FCFS engine on which every turn
+misses: the cut must go below $\lmiss$, which lies below the throughput measured in the trap. Their systems keep some reuse in the
+trap, and with a host tier one seed in three recovered at cuts above the trapped departures they measured, so the corollary does
+not describe them. The CUT test probes the corollary's setting on our engine (\S\ref{sec:validation}).
 
 \paragraph{Restoring reuse with a session cap.} A FIFO gate that admits at most $c$ sessions, each holding its slot until its last
 turn ends, makes the admitted sessions a closed system of $\min(n,c)$ sessions (Proposition~\ref{prop:cap}). In the quasi-static
@@ -39,9 +41,10 @@ minutes, the backlog drained, and the cap was released at 3980--6140\,s, once th
 the cap removed, every run stayed good at the same arrival process for the remaining 2560--4720\,s, matching its NOBURST control in
 follow-up hit fraction, outstanding work and turn latency, while the same-seed uncapped BURST run stayed at zero hits. The price is
 waiting at the client: 386--569\,s per paused session on average, 38--78 (300k) and 222--230 (native) session-hours per run. In Lu
-et al.'s SLO goodput (slowdown at most 4; their per-token latency condition omitted, so losses are lower bounds), the burst cost the
-uncapped runs 99.2--100\% of the goodput of base sessions arriving in the following hour, against the same-seed NOBURST run, in all
-30 registered BURST runs; the rescue cost 45--97\% in that hour but restored the evaluation window's goodput to within 1\% of
+et al.'s SLO goodput (slowdown at most 4; we cannot apply their per-token latency condition), the burst cost the uncapped runs
+99.2--100\% of the goodput of base sessions arriving in the following hour, against the same-seed NOBURST run, in all 30 registered
+BURST runs (in 26 of them no such session met the slowdown target, so there the loss is 100\% under either definition); the rescue
+cost 45--97\% in that hour, depending on the reference latency, but restored the evaluation window's goodput to within 1\% of
 NOBURST (Appendix~\ref{app:dataonly}).
 
 \begin{table}[t]
@@ -79,8 +82,9 @@ delay (session-h) & 38--65 & 50--78 & 222--230\\
 longer binds: the release rule waits until the gate is empty, so the tests do not cover a release while the cap still binds, and
 the cap is engaged at a fixed time, not on an online signal. The frozen first-principles model predicted the rescue in every cell,
 but 4 of its 9 release times fell outside its $\pm15$\% tolerance (R4 released 19--22\% late; Appendix~\ref{app:frozen}). Lu et
-al.\ prevent the trap on hardware by terminating the burst sessions at the end of the burst, rescue an established trap in
-simulation by activating their controller late (and leaving it on), and report one hardware run in which CONCUR's hit rate fell
+al.\ restore service on hardware by terminating the burst sessions at the end of the burst, when the trap is incipient, prevent it
+with their controller active before the surge, rescue an established trap in simulation by activating their controller late (and
+leaving it on), and report one hardware run in which CONCUR's hit rate fell
 to 0.33 before its concurrency window contracted and recovered slowly, with the controller left on and no release
 test~\citep{lu2026cachetrap}. What our tests add is a registered, replicated rescue of an \emph{established} zero-hit trap at the same
 offered load, without shedding, with release of the control and persistence of the good state after it.

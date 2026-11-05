@@ -15,7 +15,7 @@ Options:
 
 ## Abstract
 
-The form text and its count are in `paper/ARXIV_METADATA.md` (1878 form characters with the `[pending: blind tests]` marker;
+The form text and its count are in `paper/ARXIV_METADATA.md` (1869 form characters with the `[pending: blind tests]` marker;
 limit 1920).
 
 ## Structure (main text pp. 1-11, references, Appendices A-Z)
@@ -95,3 +95,36 @@ Against tonight's single-agent data-only claims (after independent checks):
 - Dr. Jannesari's review; the authors' choice of title.
 - Length: main text pp. 1-11 in this format; ICML's 8 pages would need Table 4 or Sec. 7 shortened.
 - The old sections now in the appendices repeat material; a later pass could cut them.
+
+## Adversarial review (2026-11-05, an independent AI referee; report in `results/r15_dataonly/review/`)
+
+7 MUST-FIX, 21 SHOULD-FIX, 22 MINOR; the proofs held up (Lemma 2(iv), Theorem 1(b), (c), (f), Theorem 2(i), (iii), Corollary 3
+re-derived), all 90 entries of Table 1, the from-empty table, the summary statistics, the data-only numbers and all 50 citation
+keys matched their sources. Applied:
+- **Gap-slope constant.** `analysis/theory/icml/measured.py` regresses each gap on the turn's completion time, so model F's
+  constant is gamma/z = 1 - 1/z, not gamma. Recomputed (`analysis/theory/icml/gap_slope_completion_time.py`,
+  `results/theory/icml/gap_slope_completion_time.json`): E2 median ratio 1.01 (was 0.98), mean 0.96; E0b mean 1.03, range
+  0.63-1.37. Table 1, Fig. 2(d) (`figures/theory_icml/fig_trap_universality.py` now plots 1 - 1/z), App. B, abstract and intro
+  updated. The frozen rule S2 compares with gamma (1.3% off at 1.35x; noted in Sec. 3).
+- **CUT** written as model F's predictions, not outcomes, with the theory session's caveats (young-trap transient; CUT-B cannot
+  show recovery within the run; weak naive comparator); seed 1 of CUT-A is predicted to have a slightly negative slope.
+- **Corollary 3** now conditional on D > lambda_miss (true for our workload at every load checked).
+- **Threshold novelty** withdrawn: the drain threshold is the classical busy-period condition and Lu et al. state it for
+  D_low; claimed new is only that the trapped throughput exceeds it.
+- **Lu et al.'s simulated recoveries**: the draft no longer calls them "consistent with" Corollary 3 (with a host tier one seed
+  in three recovered above the trapped departures; their systems keep some reuse).
+- **Workload scope**: the premium and "0.6 to 0.8 of the excess load" are stated for our workload and loads; "matches 57 runs" is
+  stated for the runs taken together, retrospectively.
+- "No trapped FCFS run escaped" narrowed to runs trapped by a burst or the tool slowdown (one FCFS from-empty collapse recovered).
+- Also: Lu et al. posted first (abstract), their hit rate falls to about 0.3 (conclusion), the Basin hardware result is an
+  arrival-time prototype, critical-case novelty qualified against Bramson (1996, Kelly type), the AI referees named as such,
+  completion ranges split E2/E0b, the "13" from-empty runs defined, TOOLSLOW-W status pending and its design history stated,
+  the Llama edge near miss added to the record, goodput-loss bounds corrected, Lu et al.'s classifier result added, minor fixes.
+- Not applied (left for the authors): the main text now runs to p. 12 (cut candidates: Table 4 to the appendix, the two last
+  related-work paragraphs, a shorter Limitations).
+
+## Messages sent
+
+- To the theory session: the gamma/z issue in `measured.py` and S2, the note's sec. 5 sentence on Lu et al.'s simulated
+  recoveries, and the Kendall value 3e-54 (support.json: 2.3e-54).
+- To the lead session: the draft is ready, with this note's summary.

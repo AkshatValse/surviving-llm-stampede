@@ -24,8 +24,8 @@ sections (abstract, Sections 1-9, Appendices A-C) introduce or restate, with the
 | composition within -6.6% / +7.7%; within 3% in 50 of 57; within 5% in 54 | Abs, 1, 3 | SUP `data.summary.P_err_e2`, `P_err_e2_within3`, `P_err_e2_within5` |
 | E0b composition -5.7% / +6.6% | 3, B | SUP `data.summary.P_err_e0b` |
 | trapped turns 10-42% shorter than the stationary mix | 3 | TN 6.2 (stationary means 10,469-10,600; predictions 6,115-9,393) |
-| gap-slope ratio median 0.98, mean 0.94 (E2); E0b mean 0.98, range 0.62-1.30 | Abs, 1, 3, B | SUP `gap_ratio_median_e2` 0.9764, `gap_ratio_mean_e2` 0.9378, `gap_ratio_mean_e0b`; TN 6.3 |
-| completions 1.10-2.40 lref in every stuck run | 1, 2, 3 | SUP `compl_over_lref_all` [1.104, 2.405], `all_above_lref` |
+| gap-slope ratio against the completion-time constant gamma/z = 1 - 1/z: median 1.01, mean 0.96, per run 0.04-1.81 (E2); E0b mean 1.03, range 0.63-1.37; Table 1 and App. B predicted column gamma/z | Abs, 1, 3, B, Fig. 2(d) | `results/theory/icml/gap_slope_completion_time.json` from `analysis/theory/icml/gap_slope_completion_time.py` (the gap is regressed on completion time in `measured.py`, so the constant is gamma/z; against gamma, SUP gives 0.976/0.938 and E0b 0.978, 0.62-1.30) |
+| completions 1.10-2.40 lref in every stuck run (E2 protocol 1.10-2.03; 2.40 is the from-empty native 6.5x run) | 1, 2, 3 | SUP `compl_over_lref_all` [1.104, 2.405], `all_above_lref`; TC per-run completions |
 | completions 0.90-1.21 x D, mean 1.055; seven runs below D | 3, B | SUP `compl_over_D_e2`, `compl_over_D_e2_mean`; TN 6.4 |
 | backlog slope 0.63 of lambda - lref on average; model 0.63-0.74 at these loads; RR 0.63-0.64 at 300k | 2, 3 | SUP `slope_frac_e2_mean` 0.632; Tab. 1 predictions (TC `alpha_over_excess`); TN 5 |
 | E[T]/kbar_c = 0.60-0.62 in all eight cells; c_60/c_1 = 17-23 | 2 | SUP `premium.*.near_coef`, `c60_over_c1`; TN 6.1 |
@@ -48,7 +48,7 @@ sections (abstract, Sections 1-9, Appendices A-C) introduce or restate, with the
 | CUT predictions: rho' 1.145 and 0.846; slopes +0.0039/-0.0026/+0.0028 (CUT-A, W1), -0.0095 to -0.0131 (CUT-B); CUT-B empties at about 27,100 s; naive projection back below n_b in 5 of 6 | 3 | CPRED `notes/PREDICTIONS_icml_cut.md` sections 1, 3 |
 | TOOLSLOW-W, CUT outcomes | 3, 6, Abs | pending (lead's PAPER_INPUT) |
 | Lu et al.: 88% from one run; 0.80 x calls; CONCUR hit 0.33, slow recovery; trapped departures 0.20-0.31 lref | 1, 5, 7, C | Lu et al. text (COORD/scoop-2611.02543/other_paper.txt lines 61, 131, 251, 586) |
-| abstract: 1878 form characters | Abs | `COORD/release-tools/count.py` on `paper/main.tex` |
+| abstract: 1869 form characters (with the `[pending: blind tests]` marker) | Abs | `COORD/release-tools/count.py` on `paper/main.tex` |
 
 Numbers in the new sections that restate earlier results (E2, rescue, SHED, TOOLSLOW, BASIN, H200, out-of-sample record) keep
 their earlier rows below.

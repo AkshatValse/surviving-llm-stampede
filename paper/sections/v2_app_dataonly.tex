@@ -1,6 +1,6 @@
 \section{Data-only results added in this version}\label{app:dataonly}
 
-Four analyses use only runs committed before 2026-11-02. Each was computed by one agent and then recomputed by a second agent
+Five analyses (D1, D2, D4, D5 and the pool occupancy) use only runs committed before 2026-11-02. Each was computed by one agent and then recomputed by a second agent
 with its own code from the raw files; where they differ we report the checked value and say so. They are post hoc. Scripts and
 outputs: \fpath{analysis/r15_dataonly/} and \fpath{results/r15_dataonly/} (\fpath{PROVENANCE.md} there).
 
@@ -30,7 +30,9 @@ SGLang 300k runs.)
 
 \paragraph{SLO goodput (D2).} Lu et al.\ define goodput as sessions completed per hour with slowdown at most 4 and at least 95\% of
 decode steps meeting an inter-token latency target~\citep{lu2026cachetrap}. We have no per-token latencies, so we omit the second
-condition, which makes our goodput an upper bound and our losses lower bounds. Slowdown is the session's elapsed time from its planned
+condition from both arms. That makes each goodput an upper bound but does not bound the loss in either direction, except where no
+BURST session meets the slowdown condition; there (26 of the 30 runs in the first hour, all 30 in the evaluation window) the loss is
+100\% under either definition, provided the NOBURST goodput stays positive. Slowdown is the session's elapsed time from its planned
 arrival, over an unloaded reference built from the NOBURST runs (first computation: per-turn minimum latencies; recomputation: a
 least-squares fit of latency on new-suffix and decode tokens; both reported). Against the same-seed NOBURST run, base sessions that
 arrived in the hour after the burst lost 99.2--100\% of goodput in all 30 registered BURST runs (no session met the target in 26), and
@@ -48,14 +50,16 @@ the seven other cells and 4.11 over the five predicted before their runs were re
 The comparison survives every charitable variant tried: the constant fitted to all eight cells (3.74 against 1.42), fitted on the four
 A100 pools only (3.57 against 1.53 over seven cells), left out one cell at a time (4.72), and crossings of the token hit fraction
 instead of the turn hit fraction (4.05 against 1.53 on the five cells). A hit curve that depends only on $W/C$ cannot move the onset
-with the GPU; refitted per GPU it still misses the 600k H200 by 6.7 sessions (ours: 4.4 early). Over the four A100 pools the measured
+with the GPU; refitted per GPU it still misses the 600k H200 by 6.7 sessions (ours: 4.4 sessions low). Over the four A100 pools the measured
 crossing is affine in the pool, $2.97+1.003\,M/\bar E$ (intercept standard error 0.71; 95\% interval $-0.1$ to 6.0 with two degrees of
 freedom), consistent with the tool-call term (4.7--5.1 sessions) net of $n_{1/2}$'s lead over $n_b$, but not established by four points.
 \item \emph{Vulnerability condition.} Their Eq.~2 compares a dedicated prefix cache with decode memory. In one pool the two are the
-same memory, and it reduces to $f\lesssim1/1.9$ for the fraction $f$ of active sessions in service, which here moves along the curve:
+same memory, and it reduces to $f\lesssim1/2$ (1/1.9 with their measured cliff constant) for the fraction $f$ of active sessions
+in service, which here moves along the curve:
 0.19--0.53 at our model's fluid peak, 0.38--0.90 at the 0.5-hit crossing and 0.67--0.95 at $n_b$, so the verdict depends on where $f$ is
-read. All eight cells are vulnerable, so they cannot test the condition's specificity; their own classifier uses throughput bounds.
-We do not score it.
+read. All eight cells are vulnerable, so they cannot test the condition's specificity. Their own classifier, which compares
+throughput bounds, flags all 17 cache-first cases among 36 simulated deployments (28 of 36 correct), and in simulation they find
+that a faster GPU raises the first trapped load in absolute terms. We do not score the condition.
 \item \emph{Drain.} Their Eq.~4, $S/(D(N^*)-\lambda)$, is stated for resident-first ordering near the peak with healthy reuse, and its
 queue holds sessions awaiting their first call; most of a rescue backlog is admitted sessions paused at tool boundaries, whose next
 turn misses. Applied to R1 and R4 with the measured peak rate and backlog (release $=t_{\mathrm{on}}+(n_{\mathrm{on}}-c)/(\mu^*-\lambda)+300$\,s),

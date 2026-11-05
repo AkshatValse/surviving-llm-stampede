@@ -49,7 +49,7 @@ tool-call term, which grows with GPU speed, is the difference. In colocated serv
 one pool, so the onset of the all-miss branch is exactly where running reservations fill it; the cache-first versus decode-first
 distinction of PD-disaggregated serving collapses into one condition. A second result, Proposition~\ref{prop:scaling}, shows that
 GPU speed and tool time enter the peak ratio $\mu^*/\lmiss$ only through their product, which it lowers: memory and tools do not
-speed up with the GPU, so a faster GPU narrows the window. On an H200 the all-miss capacity rose 2.71-fold and the peak only
+speed up with the GPU, so a faster GPU lowers the peak ratio, the window's upper end when the from-empty edge does not bind. On an H200 the all-miss capacity rose 2.71-fold and the peak only
 1.63-fold, and the window shrank from $(1,2.0)$ to $(1,1.3)\,\lref$ (\S\ref{sec:h200}).
 
 \paragraph{Out-of-sample record.} The model's predictions were frozen under pushed tags before the agents that derived it read
@@ -57,7 +57,8 @@ the results (Appendix~\ref{app:frozen}, Table~\ref{tab:frozensum}, misses includ
 arrival stop, both basin tests' rules, a doubled A100 pool, the 600k H200 registration and the H200's from-empty edge in nominal
 multiples. They missed the H200's softer tail past the peak (at 600k also the 0.5-hit crossing, 4.4 sessions late), a halved
 pool's peak height and edge, 4 of the 9 rescue release times, one seed's basin probabilities, the trapped token rates of two
-paired tests and a 30\,s tool slowdown that it said would trap every seed (it trapped 1 of 3). The 0.5-hit crossings of the five cells
+paired tests, Llama-3.1-8B's from-empty edge (one grid step high, a near miss) and a 30\,s tool slowdown that it said would
+trap every seed (it trapped 1 of 3). The 0.5-hit crossings of the five cells
 predicted before their runs were read lie within 0.1--4.4 sessions of the measured ones (Table~\ref{tab:lu}).
 
 \begin{table}[t]\centering\footnotesize
@@ -67,7 +68,8 @@ $1.133\,M/\bar E$ on every engine and GPU; our frozen crossing $n_{1/2}$ (fluid;
 vLLM cells use one speed factor fitted to their all-miss token rate); and the capacity ratio $M/E_S$. Status of our prediction:
 b, blind in time; a, blind by access only ($^\ast$the crossing lies between $n=36$, blind in time, and 40; the first author had
 seen $n\le32$); i, in sample. Lu et al.'s own constant $N_c\approx1.9\,C/\bar c$, measured on a disaggregated H100 deployment,
-would put every crossing 1.4--1.9 times further out, so we fix $h$ on one of our cells. With its constant fitted to all eight
+would put every crossing 1.4--1.9 times further out, so we fix $h$ on one of our cells; they place their cliff where the hit rate
+falls to about 0.3, and we compare 0.5-hit crossings. With its constant fitted to all eight
 crossings instead ($W/C=1.098$, in sample), the $h(W/C)$ reading errs by 3.7 sessions on average, against 1.4 for
 $n_{1/2}$.}\label{tab:lu}
 \setlength{\tabcolsep}{3pt}
@@ -95,4 +97,4 @@ before their runs were read (three blind in time, two blind by access only), it 
 frozen crossings (Table~\ref{tab:lu}). The measured crossing moved out on the H200, by 6.7 sessions at 300k and 10.9 at 600k, against
 5.8 and 6.6 from the tool-call term; refitting $h$ on the H200's own 300k cell still puts its 600k crossing 6.7 sessions out. Their
 vulnerability condition and drain estimate are stated for separate prefill and decode instances and for resident-first ordering
-with healthy reuse, so we do not score them as predictions (Appendix~\ref{app:dataonly}).
+with healthy reuse, so we do not treat them as predictions of theirs; Appendix~\ref{app:dataonly} applies them post hoc.

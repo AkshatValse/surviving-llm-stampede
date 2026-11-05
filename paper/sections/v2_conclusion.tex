@@ -20,12 +20,14 @@ a fixed time, and the arrival stop and the tool slowdown ran at one rate. Append
 
 \section{Conclusion}\label{sec:conclusion}
 
-A burst can tip a prefix-cached agent server into a trap in which every turn misses; Lu et al.\ and we observed this
-independently. We have shown that the trap has an exact law. Idealized as a fluid FIFO server on which every turn misses, the
-trapped engine obeys a linear renewal recursion along FIFO orbits, so from any trapped state it converges to a self-similar regime
-fixed by a Perron root: the gap between turns grows linearly, the backlog grows at a fixed fraction of the excess load, the turns it
-serves are young and short, and it completes sessions faster than its all-miss capacity. Measured in 57 stuck runs on two engines,
-two GPUs and two models, with nothing fitted to trap data, these laws hold. The practical reading is Corollary~\ref{cor:trapthr}:
-the throughput an operator sees in a trap overstates the rate to which arrivals must be cut, and cutting below the all-miss
-capacity drains the trap only slowly and by turning sessions away. The other exit, a session cap that restores reuse, rescued every
-established trap we tried at the same load without shedding, and the engine stayed good after the cap was removed.
+A burst can tip a prefix-cached agent server into a trap in which its cache stops paying; Lu et al., who posted first, and we
+observed this independently (in their disaggregated system the hit rate falls to about 0.3, in ours every turn misses). We have
+shown that the trap has an exact law. Idealized as a fluid FIFO server on which every turn misses, the trapped engine obeys a linear
+renewal recursion along FIFO orbits, so from any trapped state it converges to a self-similar regime fixed by a Perron root: the gap
+between turns grows linearly, the backlog grows at a fraction of the excess load (0.6 to 0.8 at our loads), and the turns it serves
+are young and short; for our workload it completes sessions faster than its all-miss capacity. Checked retrospectively on 57 stuck
+runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws hold for the runs taken
+together. The practical reading is Corollary~\ref{cor:trapthr}: the throughput an operator sees in a trap overstates the rate to
+which arrivals must be cut, and cutting below the all-miss capacity drains the trap only slowly and by turning sessions away. The
+other exit, a session cap that restores reuse, rescued all 9 established traps of our registered tests at the same load without
+shedding, and the engine stayed good after the cap was removed.

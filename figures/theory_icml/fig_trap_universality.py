@@ -41,7 +41,9 @@ def main() -> int:
         axs[0].plot(rho_grid, [a["P_served_ratio"] for a in A], **kw)
         axs[1].plot(rho_grid, [a["D_over_lam_miss"] for a in A], **kw)
         axs[2].plot(rho_grid, [a["alpha"] / tc.lam_miss for a in A], **kw)
-        axs[3].plot(rho_grid, [a["gamma"] for a in A], **kw)
+        # Panel (d): measured.py regresses each gap on the turn's completion time, so the model-F constant is
+        # gamma/z = 1 - 1/z, not gamma (Theorem 1(c)'s gamma indexes the join time). Fixed 2026-11-05 after review.
+        axs[3].plot(rho_grid, [a["gamma"] / a["z"] for a in A], **kw)
     qs = dict(color=NEUTRAL, lw=1.0, ls=(0, (4, 2)), zorder=1, label="quasi-static fluid")
     axs[0].plot([1, 6.6], [1, 1], **qs)
     axs[1].plot([1, 6.6], [1, 1], **qs)
@@ -65,7 +67,7 @@ def main() -> int:
     titles = [("(a) served prompt / stationary", "trapped turn mix"),
               ("(b) completions / $\\lambda_{\\mathrm{miss}}$", "youth premium"),
               ("(c) backlog slope / $\\lambda_{\\mathrm{miss}}$", "growth"),
-              ("(d) gap slope (s/s)", "cycle $\\propto$ trap age")]
+              ("(d) gap slope vs completion time", "cycle $\\propto$ trap age")]
     for ax, (t, sub) in zip(axs, titles):
         ax.set_title(t, fontsize=7.5, color=INK, loc="left", pad=3)
         ax.set_xlabel("$\\rho=\\lambda/\\lambda_{\\mathrm{miss}}$")
