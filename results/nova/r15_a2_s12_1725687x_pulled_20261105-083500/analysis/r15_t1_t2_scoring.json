@@ -1,0 +1,48 @@
+{
+ "T1": {
+  "observed_per_seed": {
+   "0": "STUCK",
+   "1": "STUCK",
+   "2": "STUCK"
+  },
+  "cell_outcome_from_counted": "TRAPS",
+  "simulator_cell_call_correct": true,
+  "pred2_fluid_cell_call_correct": true,
+  "per_seed_agreement": {
+   "simulator_mixed": 3,
+   "simulator_separate": 3,
+   "modal": 3,
+   "pred2_fluid": 3
+  },
+  "n_seeds": 3,
+  "pred2_per_seed_loglik_stuck": 0.0,
+  "pred2_per_seed_loglik_good": 0.0,
+  "pred2_per_seed_brier_stuck": 0.0,
+  "pred2_per_seed_brier_good": 0.0,
+  "pred2_p_cell_outcome": 1.0,
+  "pred2_log_score_cell": 0.0
+ },
+ "T2": {
+  "observed_per_seed": {
+   "0": "STUCK",
+   "1": "GOOD",
+   "2": "GOOD"
+  },
+  "cell_outcome_from_counted": "NO-TRAP",
+  "simulator_cell_call_correct": true,
+  "pred2_fluid_cell_call_correct": false,
+  "per_seed_agreement": {
+   "simulator_mixed": 3,
+   "simulator_separate": 3,
+   "modal": 3,
+   "pred2_fluid": 1
+  },
+  "n_seeds": 3,
+  "pred2_per_seed_loglik_stuck": -0.8683580781188522,
+  "pred2_per_seed_loglik_good": -0.8924765537749002,
+  "pred2_per_seed_brier_stuck": 0.08728133333333334,
+  "pred2_per_seed_brier_good": 0.09064133333333331,
+  "pred2_p_cell_outcome": 0.409,
+  "pred2_log_score_cell": -0.8940401229393353
+ }
+}

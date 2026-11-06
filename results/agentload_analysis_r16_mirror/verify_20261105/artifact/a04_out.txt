@@ -1,0 +1,270 @@
+
+##### 1.65x-burst-s0 (20261105-145227)  sessions: 1294  completed 513; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0006 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+burst cohort: n 200, arrival [1200.4, 1259.9] s, n_turns==20: 198 (0.990); n_turns<20 values [2, 10]
+   completed by end 200; t_end quantiles min/p10/q1/med/q3/p90/max: 1263 / 4026 / 4451 / 4996 / 5186 / 5297 / 5437
+   T=20 burst sessions t_end: min 3344 med 4999; T<20 burst sessions t_end: [1263.0, 1963.0]
+   burst turns completed by t=3000 s (value: n sessions): 2:1, 10:1, 12:17, 13:88, 14:41, 15:20, 16:22, 17:8, 18:2
+   burst turns completed by 2400 s: median 11 [2, 15]; by 3600 s: median 15 [2, 20]
+   lock-step (T=20 burst sessions): turn, n, p05, median, p95 of t_complete, 90% width, step of median, median latency
+           n   p05   med   p95  width90  step_med  lat_med
+   turn                                                   
+   1     198  1207  1260  1299       93        -1       24
+   2     198  1214  1308  1366      152        48       45
+   3     198  1223  1372  1439      216        63       57
+   4     198  1254  1442  1530      275        71       68
+   5     198  1306  1531  1631      325        89       83
+   6     198  1366  1627  1746      380        96       95
+   7     198  1438  1741  1871      433       114      109
+   8     198  1528  1869  2012      484       128      122
+   9     198  1623  2012  2174      551       143      139
+   10    198  1735  2177  2354      619       165      158
+   11    198  1859  2359  2564      705       182      176
+   12    198  2007  2559  2781      775       200      195
+   13    198  2172  2781  3028      856       222      216
+   14    198  2356  3025  3296      940       245      241
+   15    198  2550  3301  3592     1043       275      267
+   16    198  2771  3601  3923     1152       301      295
+   17    198  3019  3933  4268     1250       332      325
+   18    198  3291  4279  4629     1338       346      342
+   19    198  3589  4631  4994     1405       352      348
+   20    198  3922  4999  5335     1413       368      351
+   blackout completions: 6 = origin {'base': 3, 'burst': 3}, n_turns {20: 5, 6: 1}, arrival_s range [1199, 1959]
+   late completions: 89 = origin {'base': 89}, n_turns<20: 3, arrival_s range [1579, 4753]
+   at t=3000 s: 398 requests in flight, 191 from burst sessions
+
+##### 1.65x-burst-s1 (20261105-145244-2)  sessions: 1246  completed 479; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0004 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+burst cohort: n 200, arrival [1200.9, 1259.9] s, n_turns==20: 196 (0.980); n_turns<20 values [1, 7, 12, 18]
+   completed by end 200; t_end quantiles min/p10/q1/med/q3/p90/max: 1261 / 4285 / 4661 / 4945 / 5117 / 5225 / 5346
+   T=20 burst sessions t_end: min 3899 med 4963; T<20 burst sessions t_end: [1261.0, 1668.0, 2491.0, 4073.0]
+   burst turns completed by t=3000 s (value: n sessions): 1:1, 7:1, 12:3, 13:84, 14:69, 15:27, 16:15
+   burst turns completed by 2400 s: median 11 [1, 14]; by 3600 s: median 16 [1, 19]
+   lock-step (T=20 burst sessions): turn, n, p05, median, p95 of t_complete, 90% width, step of median, median latency
+           n   p05   med   p95  width90  step_med  lat_med
+   turn                                                   
+   1     196  1209  1256  1300       92        -1       27
+   2     196  1223  1306  1361      138        49       45
+   3     196  1257  1368  1439      182        62       57
+   4     196  1306  1441  1519      214        73       68
+   5     196  1370  1531  1616      246        90       79
+   6     196  1440  1627  1732      291        96       92
+   7     196  1523  1737  1849      326       110      104
+   8     196  1621  1860  1983      362       123      119
+   9     196  1731  1996  2137      406       136      133
+   10    196  1851  2150  2309      457       154      150
+   11    196  1987  2325  2499      512       175      170
+   12    196  2143  2519  2712      569       193      187
+   13    196  2319  2733  2949      630       214      209
+   14    196  2512  2972  3208      697       239      231
+   15    196  2723  3232  3496      773       260      257
+   16    196  2959  3520  3811      853       288      287
+   17    196  3223  3851  4158      935       331      317
+   18    196  3512  4204  4531     1018       353      351
+   19    196  3835  4578  4919     1084       374      367
+   20    196  4186  4963  5264     1078       385      364
+   blackout completions: 5 = origin {'base': 4, 'burst': 1}, n_turns {20: 2, 3: 2, 12: 1}, arrival_s range [1164, 2595]
+   late completions: 91 = origin {'base': 91}, n_turns<20: 6, arrival_s range [1599, 5586]
+   at t=3000 s: 404 requests in flight, 190 from burst sessions
+
+##### 1.65x-burst-s2 (20261105-145240)  sessions: 1289  completed 466; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0003 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+burst cohort: n 200, arrival [1200.8, 1259.1] s, n_turns==20: 194 (0.970); n_turns<20 values [1, 7, 11, 14, 16, 19]
+   completed by end 200; t_end quantiles min/p10/q1/med/q3/p90/max: 1203 / 4188 / 4550 / 5089 / 5352 / 5492 / 5620
+   T=20 burst sessions t_end: min 3749 med 5105; T<20 burst sessions t_end: [1203.0, 1539.0, 2401.0, 2687.0, 2792.0, 4636.0]
+   burst turns completed by t=3000 s (value: n sessions): 1:1, 7:1, 11:1, 12:39, 13:71, 14:31, 15:31, 16:18, 17:7
+   burst turns completed by 2400 s: median 11 [1, 14]; by 3600 s: median 15 [1, 19]
+   lock-step (T=20 burst sessions): turn, n, p05, median, p95 of t_complete, 90% width, step of median, median latency
+           n   p05   med   p95  width90  step_med  lat_med
+   turn                                                   
+   1     194  1211  1248  1308       97        -1       17
+   2     194  1216  1294  1363      147        46       42
+   3     194  1228  1363  1445      218        70       57
+   4     194  1248  1433  1526      279        70       68
+   5     194  1305  1525  1636      331        92       84
+   6     194  1362  1620  1751      389        96       93
+   7     194  1445  1738  1878      434       117      110
+   8     194  1535  1869  2036      501       132      122
+   9     194  1641  2016  2204      563       147      141
+   10    194  1758  2179  2385      626       163      160
+   11    194  1878  2363  2598      719       184      179
+   12    194  2022  2572  2836      815       209      202
+   13    194  2188  2799  3084      896       228      227
+   14    194  2376  3057  3378     1002       258      252
+   15    194  2585  3341  3698     1113       283      282
+   16    194  2813  3643  4047     1233       303      309
+   17    194  3078  3982  4420     1341       339      343
+   18    194  3353  4353  4800     1447       371      366
+   19    194  3671  4730  5173     1502       376      370
+   20    194  4018  5105  5537     1519       375      369
+   blackout completions: 8 = origin {'base': 5, 'burst': 3}, n_turns {20: 3, 16: 1, 14: 1, 11: 1, 5: 1, 1: 1}, arrival_s range [1173, 2823]
+   late completions: 75 = origin {'base': 75}, n_turns<20: 5, arrival_s range [1473, 6902]
+   at t=3000 s: 430 requests in flight, 193 from burst sessions
+
+##### 1.35x-burst-s0 (20261105-145244-1)  sessions: 1101  completed 496; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0007 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+burst cohort: n 200, arrival [1200.4, 1259.9] s, n_turns==20: 198 (0.990); n_turns<20 values [2, 10]
+   completed by end 200; t_end quantiles min/p10/q1/med/q3/p90/max: 1259 / 3870 / 4229 / 4759 / 4902 / 5010 / 5131
+   T=20 burst sessions t_end: min 3237 med 4767; T<20 burst sessions t_end: [1259.0, 1918.0]
+   burst turns completed by t=3000 s (value: n sessions): 2:1, 10:1, 12:1, 13:83, 14:48, 15:26, 16:23, 17:13, 18:2, 19:2
+   burst turns completed by 2400 s: median 11 [2, 16]; by 3600 s: median 16 [2, 20]
+   lock-step (T=20 burst sessions): turn, n, p05, median, p95 of t_complete, 90% width, step of median, median latency
+           n   p05   med   p95  width90  step_med  lat_med
+   turn                                                   
+   1     198  1207  1258  1300       94        -1       23
+   2     198  1213  1307  1360      147        48       43
+   3     198  1223  1362  1430      208        55       54
+   4     198  1249  1439  1515      266        77       67
+   5     198  1287  1522  1612      325        83       78
+   6     198  1347  1613  1719      372        92       91
+   7     198  1414  1723  1838      424       109      104
+   8     198  1491  1843  1977      485       121      117
+   9     198  1583  1983  2133      549       140      133
+   10    198  1687  2140  2302      614       157      151
+   11    198  1811  2314  2494      683       174      168
+   12    198  1941  2507  2704      763       193      187
+   13    198  2089  2722  2931      842       215      207
+   14    198  2253  2955  3189      936       233      230
+   15    198  2437  3219  3468     1031       264      253
+   16    198  2637  3502  3769     1132       283      277
+   17    198  2862  3807  4084     1222       305      300
+   18    198  3107  4127  4412     1305       320      313
+   19    198  3380  4450  4731     1350       324      314
+   20    198  3681  4767  5037     1355       317      311
+   blackout completions: 9 = origin {'burst': 7, 'base': 2}, n_turns {20: 9}, arrival_s range [1198, 1209]
+   late completions: 93 = origin {'base': 93}, n_turns<20: 3, arrival_s range [1783, 5375]
+   at t=3000 s: 366 requests in flight, 195 from burst sessions
+
+##### 1.35x-burst-s1 (20261105-145246)  sessions: 1057  completed 496; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0005 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+burst cohort: n 200, arrival [1200.9, 1259.9] s, n_turns==20: 196 (0.980); n_turns<20 values [1, 7, 12, 18]
+   completed by end 200; t_end quantiles min/p10/q1/med/q3/p90/max: 1258 / 3910 / 4345 / 4673 / 4815 / 4915 / 5052
+   T=20 burst sessions t_end: min 3456 med 4676; T<20 burst sessions t_end: [1258.0, 1643.0, 2418.0, 3864.0]
+   burst turns completed by t=3000 s (value: n sessions): 1:1, 7:1, 12:1, 13:49, 14:84, 15:34, 16:16, 17:12, 18:2
+   burst turns completed by 2400 s: median 11 [1, 15]; by 3600 s: median 16 [1, 20]
+   lock-step (T=20 burst sessions): turn, n, p05, median, p95 of t_complete, 90% width, step of median, median latency
+           n   p05   med   p95  width90  step_med  lat_med
+   turn                                                   
+   1     196  1207  1253  1301       94        -1       24
+   2     196  1213  1303  1360      147        50       44
+   3     196  1234  1358  1426      192        55       53
+   4     196  1265  1431  1502      238        73       63
+   5     196  1315  1511  1594      279        80       75
+   6     196  1378  1605  1701      323        94       88
+   7     196  1450  1712  1816      366       107       99
+   8     196  1534  1826  1946      412       114      113
+   9     196  1626  1954  2096      470       128      128
+   10    196  1738  2109  2264      527       154      145
+   11    196  1857  2277  2446      590       169      163
+   12    196  1999  2460  2648      649       182      180
+   13    196  2154  2662  2871      716       202      197
+   14    196  2327  2888  3118      791       226      220
+   15    196  2526  3133  3385      860       245      243
+   16    196  2731  3405  3681      950       272      266
+   17    196  2961  3705  4001     1040       300      294
+   18    196  3222  4024  4327     1105       319      313
+   19    196  3504  4348  4661     1157       324      320
+   20    196  3808  4676  4952     1145       328      315
+   blackout completions: 8 = origin {'base': 4, 'burst': 4}, n_turns {20: 6, 12: 1, 3: 1}, arrival_s range [1165, 2626]
+   late completions: 111 = origin {'base': 111}, n_turns<20: 5, arrival_s range [1793, 5168]
+   at t=3000 s: 374 requests in flight, 192 from burst sessions
+
+##### 1.35x-burst-s2 (20261105-145244)  sessions: 1097  completed 517; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0008 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+burst cohort: n 200, arrival [1200.8, 1259.1] s, n_turns==20: 194 (0.970); n_turns<20 values [1, 7, 11, 14, 16, 19]
+   completed by end 200; t_end quantiles min/p10/q1/med/q3/p90/max: 1203 / 3768 / 4137 / 4576 / 4828 / 4930 / 5069
+   T=20 burst sessions t_end: min 3274 med 4599; T<20 burst sessions t_end: [1203.0, 1499.0, 2288.0, 2424.0, 2587.0, 4339.0]
+   burst turns completed by t=3000 s (value: n sessions): 1:1, 7:1, 11:1, 12:2, 13:60, 14:54, 15:28, 16:33, 17:14, 18:6
+   burst turns completed by 2400 s: median 11 [1, 16]; by 3600 s: median 16 [1, 20]
+   lock-step (T=20 burst sessions): turn, n, p05, median, p95 of t_complete, 90% width, step of median, median latency
+           n   p05   med   p95  width90  step_med  lat_med
+   turn                                                   
+   1     194  1209  1239  1298       88        -1       13
+   2     194  1217  1279  1344      128        40       35
+   3     194  1226  1344  1427      201        66       49
+   4     194  1239  1410  1499      260        66       62
+   5     194  1279  1477  1588      310        66       68
+   6     194  1334  1566  1701      367        89       86
+   7     194  1403  1678  1830      427       113       98
+   8     194  1477  1791  1956      479       112      110
+   9     194  1566  1927  2109      543       136      128
+   10    194  1678  2063  2293      614       137      141
+   11    194  1791  2243  2478      687       179      159
+   12    194  1925  2417  2686      761       175      180
+   13    194  2063  2617  2919      856       199      201
+   14    194  2224  2849  3178      955       233      221
+   15    194  2403  3084  3463     1060       234      248
+   16    194  2609  3364  3761     1152       280      268
+   17    194  2841  3652  4072     1231       288      290
+   18    194  3084  3973  4386     1302       321      304
+   19    194  3365  4291  4688     1323       319      302
+   20    194  3661  4599  4970     1308       308      296
+   blackout completions: 14 = origin {'burst': 10, 'base': 4}, n_turns {20: 11, 16: 1, 14: 1, 5: 1}, arrival_s range [1173, 2240]
+   late completions: 127 = origin {'base': 127}, n_turns<20: 3, arrival_s range [1764, 5094]
+   at t=3000 s: 394 requests in flight, 192 from burst sessions
+
+##### 1.65x-noburst-s0 (20261105-145242)  sessions: 1094  completed 1083; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0005 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+
+##### 1.65x-noburst-s1 (20261105-145247)  sessions: 1046  completed 1032; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0005 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+
+##### 1.65x-noburst-s2 (20261105-145248)  sessions: 1089  completed 1077; completed with turns_completed!=n_turns: 0; last ok turn != n_turns: 0; |t_end - last t_complete| max 0.0006 s; plan n_turns mismatches 0; duplicate (sid,turn) ok rows 0
+
+=== hit fraction (cached/prompt > 0.5) of completed turns, 300-s bins (by t_complete)
+      1.65x-burst-s0  1.65x-burst-s1  1.65x-burst-s2  1.35x-burst-s0  1.35x-burst-s1  1.35x-burst-s2  1.65x-noburst-s0  1.65x-noburst-s1  1.65x-noburst-s2
+b300                                                                                                                                                      
+0              0.928            0.94           0.939           0.934           0.939           0.942             0.928              0.94             0.939
+300            0.929           0.942           0.944            0.95           0.946            0.94             0.924             0.942             0.944
+600            0.949           0.953            0.95           0.954           0.949            0.95             0.949             0.953              0.95
+900            0.953            0.95           0.954           0.952            0.95           0.953             0.953              0.95             0.954
+1200           0.123           0.061           0.126           0.124           0.092           0.131             0.947             0.955             0.939
+1500               0               0               0               0               0               0             0.952             0.945             0.954
+1800               0               0               0               0               0               0             0.948             0.952             0.958
+2100               0               0               0               0               0               0             0.949             0.952             0.943
+2400               0               0               0               0               0               0             0.954             0.942             0.951
+2700               0               0               0               0               0               0             0.946             0.948             0.947
+3000               0               0               0               0               0               0             0.947             0.954             0.951
+3300               0               0               0               0               0               0             0.952             0.944             0.947
+3600               0               0               0               0               0               0             0.948             0.954             0.945
+3900               0               0               0               0               0               0              0.95             0.952             0.957
+4200               0               0               0               0               0               0             0.948             0.938             0.943
+4500               0               0               0               0               0               0             0.951              0.95             0.943
+4800               0               0               0               0               0               0             0.947             0.955             0.959
+5100               0               0               0               0               0               0             0.949             0.957             0.946
+5400               0               0               0               0               0               0             0.949             0.947              0.95
+5700               0               0               0               0               0               0             0.948             0.951             0.949
+6000               0               0               0               0               0               0             0.949              0.94             0.951
+6300               0               0               0               0               0               0             0.957             0.955             0.953
+6600               0               0               0               0               0               0             0.941             0.945              0.94
+6900               0               0               0               0               0               0             0.954             0.951             0.954
+7200               0               0               0               0               0               0             0.949             0.952             0.953
+7500               0               0               0               0               0               0             0.945             0.947             0.946
+7800               0               0               0               0               0               0              0.95              0.95             0.947
+8100               0               0               0               0               0               0             0.949             0.954             0.948
+8400               0               0               0               0               0               0              0.95             0.946             0.956
+
+=== session completions / lambda_ref, 300-s bins (by t_end)
+      1.65x-burst-s0  1.65x-burst-s1  1.65x-burst-s2  1.35x-burst-s0  1.35x-burst-s1  1.35x-burst-s2  1.65x-noburst-s0  1.65x-noburst-s1  1.65x-noburst-s2
+b300                                                                                                                                                      
+0              0.792           0.932           0.839           0.699           0.839           0.559             0.792             0.932             0.839
+300            2.749           1.631           1.398           1.911           1.445           1.165             2.749             1.631             1.398
+600            1.724           1.538           1.957           1.911           1.258           1.445             1.724             1.538             1.957
+900            2.004           1.678           2.237           1.305           1.538           1.957             2.004             1.678             2.237
+1200            0.28           0.466            0.14            0.28           0.326           0.233             1.631             1.584             1.445
+1500           0.093            0.28           0.186            0.14           0.186           0.093             2.004             1.911              2.05
+1800            0.14           0.047           0.047           0.047               0               0             1.771             1.817             1.538
+2100            0.14           0.093               0           0.047           0.047           0.093             1.491             1.398             1.864
+2400               0            0.14           0.233               0           0.093           0.093             1.212             1.538             2.237
+2700               0           0.047           0.047               0               0           0.047             1.398             1.911             1.864
+3000           0.093               0           0.047           0.093           0.093           0.047             1.864             2.004             1.212
+3300           0.186           0.047           0.047           0.326           0.186           0.466              2.47             1.724             1.491
+3600            0.28           0.093            0.28           0.746           0.792           0.746             1.911             2.004             1.817
+3900           1.165           0.652           0.559           0.979           0.699           1.538             1.584             1.957             2.004
+4200           0.839           0.839           1.025           1.165           1.538           1.398             1.491             1.351             1.445
+4500           1.212           1.817           1.491           2.004           3.681           2.749             1.631             1.957             1.817
+4800           2.563           3.541           1.445           4.147           2.796           2.982             1.724             1.771             2.144
+5100           3.448           2.796           2.796           0.652            0.28           0.326             1.678             1.957             1.491
+5400           0.606           0.233           2.283           0.466           0.419           0.373             1.584             1.584             1.724
+5700           0.373           0.513           0.326           0.419            0.28           0.746             1.957             1.118             1.584
+6000           0.513            0.28           0.373           0.885           0.839           0.466             2.144             1.305             1.864
+6300           0.559           0.419           0.466           0.559           0.606           0.652             1.864             1.771             1.445
+6600           0.746           0.652           0.419           0.792           0.746           0.513             1.398             1.118             1.445
+6900            0.28           0.559           0.606           0.932           0.419           0.559             1.724             1.864              2.19
+7200           0.746           0.885           0.559           0.373           0.652           0.792              2.05             2.283             1.864
+7500           0.652           0.466           0.513           0.746           0.559           0.979             1.165             1.771             1.771
+7800           0.513           0.373           0.419            0.28           0.746           1.118             1.631             1.957             1.771
+8100           0.559           0.699           0.606           0.606           1.072           1.025             1.957             1.631             1.864
+8400           0.652           0.606           0.373           0.606           0.979           0.932             1.864             1.025             1.817

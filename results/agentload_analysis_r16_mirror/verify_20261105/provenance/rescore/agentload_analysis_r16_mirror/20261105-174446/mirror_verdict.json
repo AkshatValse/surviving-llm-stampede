@@ -1,0 +1,67 @@
+{
+ "cells": {
+  "1.65": {
+   "role": "decisive",
+   "calls": {
+    "0": [
+     "RENEWAL"
+    ],
+    "1": [
+     "RENEWAL"
+    ],
+    "2": [
+     "RENEWAL"
+    ]
+   },
+   "verdict": "PASS"
+  },
+  "1.35": {
+   "role": "secondary",
+   "calls": {
+    "0": [
+     "RENEWAL"
+    ],
+    "1": [
+     "RENEWAL"
+    ],
+    "2": [
+     "RENEWAL"
+    ]
+   },
+   "verdict": "PASS"
+  }
+ },
+ "W6_order": {
+  "0": true,
+  "1": true,
+  "2": true
+ },
+ "W9_controls_good": {
+  "0": true,
+  "1": true,
+  "2": true
+ },
+ "W10_capacity": {
+  "e0a_calibration": "results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/results/agentload_analysis_miss/20261105-162735/calibration.json",
+  "lambda_miss_measured": 0.07596651364534537,
+  "over_lambda_ref": 1.0619634206720117,
+  "model_over_lambda_ref": 1.0460918059169675,
+  "late_below_measured_capacity": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "predictions": {
+  "source": {
+   "git_ref": "r16-mirror-reg:results/theory/r16/mirror_predictions.json",
+   "commit": "bc81ee71f7f55c890f7f0cec33083b98e0be4807",
+   "commit_unix": 1793909228
+  },
+  "predates_all_counted_runs": true
+ },
+ "endpoint_problems": []
+}

@@ -1,0 +1,86 @@
+{
+ "definitions": "The secondary / exploratory measures on a GPU run dir, with the frozen analysis helpers (analysis.throughput):\n    out_2100_2400 = outstanding_mean over [2100, 2400) (requests in flight + gated sessions, time-average); out_3300 =\n    outstanding_at(3300); alive_T = backlog_at(sessions, T) (sessions in the system, right-continuous); t_fu150 = start of\n    the first 150-s window [1200 + 150 k, + 150) whose hit_frac_followup (ok turns >= 2 completing in it, cached / prompt >\n    windows.cached_frac_threshold) is < 0.5; hit_eval = hit_frac_turns over [5700, 8700) (the frozen endpoint's hit).",
+ "runs": [
+  {
+   "run_dir": "results/nova/r15_a2_s0_17256873_pulled_20261105-082300/results/agentload_e2_burst/20261105-055338",
+   "label": "sglang-fcfs-r1-toolslow-d15-165",
+   "seed": 0,
+   "rate_mult": 1.65,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 15
+   },
+   "t_end_s": 8700.016211620532,
+   "hit_eval": 0.0,
+   "out_2100_2400": 36.871915008177325,
+   "out_3300": 82.0,
+   "alive_2100": 40.0,
+   "alive_2400": 50.0,
+   "alive_3000": 63.0,
+   "t_fu150": 1950.0
+  },
+  {
+   "run_dir": "results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/results/agentload_e2_burst/20261105-060452",
+   "label": "sglang-fcfs-r1-toolslow-d15-165",
+   "seed": 1,
+   "rate_mult": 1.65,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 15
+   },
+   "t_end_s": 8700.015453600325,
+   "hit_eval": 0.9343856979840244,
+   "out_2100_2400": 6.212115499181629,
+   "out_3300": 0.0,
+   "alive_2100": 34.0,
+   "alive_2400": 7.0,
+   "alive_3000": 11.0,
+   "t_fu150": null
+  },
+  {
+   "run_dir": "results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/results/agentload_e2_burst/20261105-060529",
+   "label": "sglang-fcfs-r1-toolslow-d15-165",
+   "seed": 2,
+   "rate_mult": 1.65,
+   "tool_slowdown": {
+    "t_s": 1200,
+    "width_s": 900,
+    "add_s": 15
+   },
+   "t_end_s": 8700.016682969406,
+   "hit_eval": 0.9239488117001828,
+   "out_2100_2400": 5.626092750690862,
+   "out_3300": 2.0,
+   "alive_2100": 28.0,
+   "alive_2400": 12.0,
+   "alive_3000": 8.0,
+   "t_fu150": null
+  }
+ ],
+ "provenance": {
+  "git": {
+   "commit": "e0fd53cb375fa9731bd6cc01c12f1e0df82348cb",
+   "dirty": true,
+   "branch": "r15/tonight"
+  },
+  "argv": [
+   "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\analysis\\r15_sim_toolslow.py",
+   "measure",
+   "--run-dirs",
+   "results/nova/r15_a2_s0_17256873_pulled_20261105-082300/results/agentload_e2_burst/20261105-055338",
+   "results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/results/agentload_e2_burst/20261105-060452",
+   "results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/results/agentload_e2_burst/20261105-060529",
+   "--out",
+   "results/theory/r15/toolslow_measured_r15_t2.json"
+  ],
+  "created": "2026-11-05T08:36:48-0600",
+  "file_sha256": {
+   "analysis/r15_sim_toolslow.py": "0b1541a2e203ff36fba858e3ec8a0eaac72998af3ea725bf02712c3a056de638",
+   "analysis/throughput.py": "ca4cf885a5c4034530e06a703255c817dacfdfb52adbfb28b28b0c1d2116ec81",
+   "analysis/load.py": "edea89771e2054e2cf257b7a0b65fe788ad4bf46d861efece2816164eb52b547",
+   "configs/agentload_analysis.yaml": "e3330b60e672b141def55f51d8dba4a01a19a2220cbf1720b6c28061aa5658b8"
+  }
+ }
+}

@@ -1,0 +1,21 @@
+r15 pull: TOOLSLOW-D15 (cell T2) seeds 1 and 2, jobs 17256874-75, 2026-11-05
+
+Source clone on Nova: /work/classtmp/avalse/swapp/repo_r15_tonight at e05a262 (tag r15-reg), git status clean.
+17256874 (seed 1) and 17256875 (seed 2) COMPLETED 0:0 on nova22-gpu-3, ended 08:33:02 and 08:33:38 CST
+(sacct_17256874-17256875.txt here). Run directories results/agentload_e2_burst/20261105-060452 (seed 1) and
+20261105-060529 (seed 2); in-job analyses results/agentload_analysis_burst/20261105-0832{55}/0833{31},
+results/agentload_analysis_burst2/20261105-083256 and -083332; job log dirs results/nova_job_logs/1725687{4,5}-*;
+logs/pm-tsd15-1725687{4,5}.out. Seed 0 is in results/nova/r15_a2_s0_17256873_pulled_20261105-082300/.
+
+Pull (08:35 CST): pulls_r15/a2_s12_20261105.tar.xz (5,945,328 bytes); sha256
+2b98a6585c55842cfb31441e82fe694079d0d474b37f4e9a86960073c128c4c0 on Nova and on the PC (equal); remote archive deleted.
+
+Analyses (PC, r15/tonight, PYTHONPATH="src;."):
+  Registered T1/T2 verdict over all six TOOLSLOW runs:
+    python -m analysis.r15_cells classify --run-dirs <3 T1 dirs> <T2 seed 0 dir> <the 2 dirs here> --out-root <this>/analysis
+    -> analysis/agentload_analysis_r15/20261105-083614/: T1 TRAPS, T2 NO-TRAP.
+  Scoring against notes/PREDICTIONS_r15.md section 4 (frozen calls copied into the scorer):
+    -> analysis/r15_t1_t2_scoring.json (scorer: session scratchpad tonight/score_t2.py; copied to analysis/score_t2.py here)
+  Exploratory measures: python -m analysis.r15_sim_toolslow measure --run-dirs <3 T2 dirs> --out results/theory/r15/toolslow_measured_r15_t2.json
+  Trap-state law (icml-trap-pred, S1-S5) on the stuck seed, scorer analysis/theory/icml/score_new.py at fdb80c9:
+    python -m analysis.theory.icml.score_new --cell a100_300k --trigger-s 1200 --run-dirs <3 T2 dirs> --out <this>/analysis/icml_score_new_t2

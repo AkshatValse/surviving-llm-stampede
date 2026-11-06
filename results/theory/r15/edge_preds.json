@@ -1,0 +1,897 @@
+{
+  "name": "r15_edge_preds",
+  "status": "FROZEN",
+  "exploratory": true,
+  "cell": "r15 REPLICATE-EDGE: A100 300k SGLang FCFS (sglang-fcfs-r1-edgerep), 2.5 x lambda_ref, 3000 s from empty, plans of seeds 0 and 4 (jobs A: 0 4 0, B: 4 0 4)",
+  "written": "2026-11-05T03:01:10",
+  "blindness": "written before any run of this cell was submitted; the outcomes of the two ORIGINAL runs (seed 0 UNSTABLE at 1600 s, seed 4 STABLE) are known and selected the plans, so the per-plan calls below are retrodictions of the originals and predictions only of whether the replicates repeat them",
+  "rule_file": "configs/r15_edge_replicate.yaml",
+  "headline": {
+    "deterministic_comparators": {
+      "count": "REPRODUCIBLE",
+      "turns": "REPRODUCIBLE",
+      "token_work": "REPRODUCIBLE"
+    },
+    "pred2_level_crossing": "REPRODUCIBLE",
+    "simulator": {
+      "mixed": "REPRODUCIBLE",
+      "separate": "REPRODUCIBLE"
+    },
+    "simulator_calls": {
+      "0": {
+        "mixed": "UNSTABLE",
+        "separate": "UNSTABLE"
+      },
+      "4": {
+        "mixed": "STABLE",
+        "separate": "STABLE"
+      }
+    },
+    "simulator_tau_s": {
+      "0": {
+        "mixed": 1600.0,
+        "separate": 1600.0
+      },
+      "4": {
+        "mixed": null,
+        "separate": null
+      }
+    },
+    "simulator_speed_first_flip": {
+      "mixed": {
+        "0": {
+          "call_at_1": "UNSTABLE",
+          "first_flip_slower": null,
+          "first_flip_faster": 0.7
+        },
+        "4": {
+          "call_at_1": "STABLE",
+          "first_flip_slower": 1.3,
+          "first_flip_faster": null
+        }
+      },
+      "separate": {
+        "0": {
+          "call_at_1": "UNSTABLE",
+          "first_flip_slower": null,
+          "first_flip_faster": 0.75
+        },
+        "4": {
+          "call_at_1": "STABLE",
+          "first_flip_slower": 1.3,
+          "first_flip_faster": null
+        }
+      }
+    },
+    "F2_exchangeable": {
+      "verdict": "PLAN-CONDITIONAL ESCAPE",
+      "P_PLAN_CONDITIONAL_ESCAPE": 0.990250035110624,
+      "P_REPRODUCIBLE": 0.009749964889375998
+    },
+    "F2_realized_rate_band": {
+      "verdict": "PLAN-CONDITIONAL ESCAPE",
+      "P_REPRODUCIBLE": 0.0028159902859455173
+    },
+    "reading": "every deterministic predictor (plan statistics, level crossing, the simulator) predicts REPRODUCIBLE; only the F2 law read as independent draws predicts PLAN-CONDITIONAL ESCAPE (P about 0.99). A within-node disagreement would contradict all deterministic predictors; REPRODUCIBLE contradicts F2-as-independent-draws but not F2 as a cell law with plan-dependent hazard."
+  },
+  "deterministic_comparators": {
+    "definitions": {
+      "count": "n sessions arriving in [0, 3000) / (3000 lambda_ref)",
+      "turns": "total turns of those sessions / (3000 lambda_ref x 15)  (15 = workload.mean_turns, as verify-N3 rates.py)",
+      "token_work": "sum over sessions of T L0 + (Delta + d) T (T - 1) / 2 with L0 2000, Delta + d 650 (Mtok; all-miss prompt tokens)"
+    },
+    "per_seed": {
+      "0": {
+        "n_sessions": 585,
+        "realized_mult_count": 2.7259756581409293,
+        "turns_total": 8718,
+        "turn_load_mult": 2.708268465831638,
+        "token_work_Mtok": 92.00855,
+        "n_arrivals_first_1500_s": 292,
+        "max_arrivals_in_600_s": 132,
+        "resolved_rate": 0.17883505252298068,
+        "committed_2p5x_outcome": "UNSTABLE"
+      },
+      "3": {
+        "n_sessions": 539,
+        "realized_mult_count": 2.5116254354495062,
+        "turns_total": 8095,
+        "turn_load_mult": 2.5147319604160487,
+        "token_work_Mtok": 82.3938,
+        "n_arrivals_first_1500_s": 276,
+        "max_arrivals_in_600_s": 127,
+        "resolved_rate": 0.17883505252298068,
+        "committed_2p5x_outcome": "STABLE"
+      },
+      "4": {
+        "n_sessions": 572,
+        "realized_mult_count": 2.6653984212933532,
+        "turns_total": 8019,
+        "turn_load_mult": 2.4911223706703267,
+        "token_work_Mtok": 84.32375,
+        "n_arrivals_first_1500_s": 284,
+        "max_arrivals_in_600_s": 128,
+        "resolved_rate": 0.17883505252298068,
+        "committed_2p5x_outcome": "STABLE"
+      },
+      "5": {
+        "n_sessions": 530,
+        "realized_mult_count": 2.469687348401184,
+        "turns_total": 8021,
+        "turn_load_mult": 2.491743675663635,
+        "token_work_Mtok": 82.3719,
+        "n_arrivals_first_1500_s": 269,
+        "max_arrivals_in_600_s": 115,
+        "resolved_rate": 0.17883505252298068,
+        "committed_2p5x_outcome": "STABLE"
+      }
+    },
+    "brackets": {
+      "count": {
+        "stable_max": 2.6653984212933532,
+        "unstable_min": 2.7259756581409293,
+        "separates": true
+      },
+      "turns": {
+        "stable_max": 2.5147319604160487,
+        "unstable_min": 2.708268465831638,
+        "separates": true
+      },
+      "token_work": {
+        "stable_max": 84.32375,
+        "unstable_min": 92.00855,
+        "separates": true
+      }
+    },
+    "calls": {
+      "0": {
+        "count": "UNSTABLE",
+        "turns": "UNSTABLE",
+        "token_work": "UNSTABLE"
+      },
+      "4": {
+        "count": "STABLE",
+        "turns": "STABLE",
+        "token_work": "STABLE"
+      }
+    },
+    "predicted_verdict_each": {
+      "count": "REPRODUCIBLE",
+      "turns": "REPRODUCIBLE",
+      "token_work": "REPRODUCIBLE"
+    },
+    "note": "the brackets were measured on these very runs (seeds 0 and 4 define them), so the calls are retrodictions of the originals; for the replicates they predict that every run of a plan repeats its original (REPRODUCIBLE), because a deterministic plan statistic cannot differ between replicates of one plan"
+  },
+  "simulator": {
+    "engine": "round-6 calibrated engine (configs/r6_predict.yaml, asserted equal) via configs/r11_predict_basin.yaml and experiments/r11_predict_basin.py _work + e0b_classify (unchanged); plans = the exact client plans",
+    "primary_mode": "mixed",
+    "modes": {
+      "mixed": "mixed",
+      "separate": "separate_prefill_priority"
+    },
+    "deterministic_given_plan": true,
+    "per_plan": {
+      "0": {
+        "mixed": {
+          "n_sessions": 585,
+          "registered_rule": {
+            "stable": false,
+            "final_queue_lastwin": 121.32467820896157,
+            "trend_rise": 134.12468060531248,
+            "stopped_early": 0,
+            "tail_hit": 0.03355704697986577,
+            "max_queue": 128.0
+          },
+          "r15_rule": {
+            "label": "UNSTABLE",
+            "tau_s": 1600.0,
+            "stable_kind": null,
+            "min_hit_after_warm": 0.0,
+            "last_window_hit": 0.0,
+            "coarse_300s": "XXXXX20000"
+          }
+        },
+        "separate": {
+          "n_sessions": 585,
+          "registered_rule": {
+            "stable": false,
+            "final_queue_lastwin": 114.48589327872313,
+            "trend_rise": 131.84274171675577,
+            "stopped_early": 0,
+            "tail_hit": 0.06737012987012987,
+            "max_queue": 128.0
+          },
+          "r15_rule": {
+            "label": "UNSTABLE",
+            "tau_s": 1600.0,
+            "stable_kind": null,
+            "min_hit_after_warm": 0.0,
+            "last_window_hit": 0.0,
+            "coarse_300s": "XXXXX30000"
+          }
+        }
+      },
+      "4": {
+        "mixed": {
+          "n_sessions": 572,
+          "registered_rule": {
+            "stable": true,
+            "final_queue_lastwin": 0.04604362969625072,
+            "trend_rise": -0.0161866516648318,
+            "stopped_early": 0,
+            "tail_hit": 0.9221398305084746,
+            "max_queue": 4.0
+          },
+          "r15_rule": {
+            "label": "STABLE",
+            "tau_s": null,
+            "stable_kind": "good",
+            "min_hit_after_warm": 0.9920739762219286,
+            "last_window_hit": 1.0,
+            "coarse_300s": "XXXXXXXXXX"
+          }
+        },
+        "separate": {
+          "n_sessions": 572,
+          "registered_rule": {
+            "stable": true,
+            "final_queue_lastwin": 0.035267013822499395,
+            "trend_rise": -0.02162982483382222,
+            "stopped_early": 0,
+            "tail_hit": 0.9221604447974583,
+            "max_queue": 7.0
+          },
+          "r15_rule": {
+            "label": "STABLE",
+            "tau_s": null,
+            "stable_kind": "good",
+            "min_hit_after_warm": 0.9920739762219286,
+            "last_window_hit": 1.0,
+            "coarse_300s": "XXXXXXXXXX"
+          }
+        }
+      }
+    },
+    "reproduces_committed_r11_e0b_rows": {
+      "0|mixed": true,
+      "0|separate": true,
+      "4|mixed": true,
+      "4|separate": true
+    },
+    "predicted_verdict_by_mode": {
+      "mixed": "REPRODUCIBLE",
+      "separate": "REPRODUCIBLE"
+    },
+    "speed_sensitivity_descriptive": {
+      "engine_time_keys_scaled": [
+        "iter_fixed_s",
+        "iter_floor_s",
+        "per_token_s",
+        "decode_attn_s",
+        "prefill_attn_s"
+      ],
+      "service_time_factors": [
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95,
+        0.98,
+        0.99,
+        1.0,
+        1.01,
+        1.02,
+        1.05,
+        1.1,
+        1.15,
+        1.2,
+        1.25,
+        1.3
+      ],
+      "calls": {
+        "0.7": {
+          "mixed": {
+            "0": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.75": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1900.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.8": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.85": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1800.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.9": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.95": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1800.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.98": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "0.99": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.0": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.01": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.02": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.05": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.1": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.15": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.2": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.25": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1500.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 700.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "STABLE",
+              "r15_tau_s": null,
+              "registered_stable": true
+            }
+          }
+        },
+        "1.3": {
+          "mixed": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 1900.0,
+              "registered_stable": false
+            }
+          },
+          "separate": {
+            "0": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 600.0,
+              "registered_stable": false
+            },
+            "4": {
+              "r15_label": "UNSTABLE",
+              "r15_tau_s": 2200.0,
+              "registered_stable": false
+            }
+          }
+        }
+      },
+      "first_flip": {
+        "mixed": {
+          "0": {
+            "call_at_1": "UNSTABLE",
+            "first_flip_slower": null,
+            "first_flip_faster": 0.7
+          },
+          "4": {
+            "call_at_1": "STABLE",
+            "first_flip_slower": 1.3,
+            "first_flip_faster": null
+          }
+        },
+        "separate": {
+          "0": {
+            "call_at_1": "UNSTABLE",
+            "first_flip_slower": null,
+            "first_flip_faster": 0.75
+          },
+          "4": {
+            "call_at_1": "STABLE",
+            "first_flip_slower": 1.3,
+            "first_flip_faster": null
+          }
+        }
+      },
+      "note": "f > 1 = slower service; the 300k E2 trapped all-miss token rate spans 2.0 % across nova22-gpu-1/2/3 (N3 review), i.e. f within about 0.99-1.01"
+    },
+    "caveats": [
+      "the simulator attributes hits by admission time, the engine by completion time",
+      "the simulator has no service noise: it cannot produce a same-plan disagreement except through a speed difference (the sensitivity rows)",
+      "the r11 E0F note called seed 4 (2.665 x) its least secure stable call; 11/20 extra seeds at 2.5 x were stable (mixed)"
+    ]
+  },
+  "F2": {
+    "source": "results/theory/merged/a100_300k.json from_empty_edge.p_escape_fine['2.5'] (= p_escape_registered; frozen at r13-theory-pred 997d2c4)",
+    "horizon_s": 3000.0,
+    "target": "n_b (all-miss end)",
+    "edge_mult": 2.337396077850235,
+    "exchangeable_independent_replicates": {
+      "p_unstable_per_run": 0.6907021823486226,
+      "P_seed0_unstable_3of3": 0.32951294802906067,
+      "P_seed4_stable_3of3": 0.029589019028521214,
+      "P_REPRODUCIBLE_given_3_plus_3": 0.009749964889375998,
+      "P_PLAN_CONDITIONAL_ESCAPE_given_3_plus_3": 0.990250035110624,
+      "P_disagreement_in_plan0": 0.6704870519709394,
+      "P_disagreement_in_plan4": 0.9704109809714788,
+      "P_same_gpu_pair_differs": 0.4272653552949454,
+      "P_at_least_one_same_gpu_pair_differs": 0.671975026754575,
+      "expected_unstable_replicates_per_plan": 2.072106547045868
+    },
+    "effective_horizon_derived": {
+      "note": "derived, not frozen: the r15 rule's last collapse window starts at 2800 s and needs a fall to <= 0.2, so the effective horizon is shorter than 3000 s; with the constant hazard implied by p(3000) the probability at 2700 s and 2500 s is",
+      "T_escape_s": 2556.5625508033872,
+      "p_at_2700_s": 0.6521923178869837,
+      "p_at_2500_s": 0.6238907223998436
+    },
+    "predicted_verdict": "PLAN-CONDITIONAL ESCAPE",
+    "reading": "F2 is a law for a cell, not for a fixed plan: read as independent draws it predicts that both plans disagree with themselves. With the arrival path held fixed only service noise is left, so under F2's own noise model these disagreement probabilities are upper bounds (Jensen: E[q^4]/E[q] >= E[q]^3 for the plan-conditional collapse probability q)."
+  },
+  "pred2_realized_rate_band": {
+    "source": "results/theory/pred2/e0f.json rows['2.5'].per_seed (frozen at r13-theory-pred2 cfa7712)",
+    "per_plan": {
+      "0": {
+        "role": "retrodiction (outcome known)",
+        "n_sessions": 585,
+        "realized_mult": 2.7259756581409293,
+        "p_unstable_exchangeable": 0.6907021823486226,
+        "p_unstable_realized_rate": 0.8784202798685781
+      },
+      "4": {
+        "role": "prediction",
+        "n_sessions": 572,
+        "realized_mult": 2.6653984212933532,
+        "p_unstable_exchangeable": 0.6907021823486226,
+        "p_unstable_realized_rate": 0.8392412216882018
+      }
+    },
+    "P_REPRODUCIBLE_given_3_plus_3": 0.0028159902859455173,
+    "P_PLAN_CONDITIONAL_ESCAPE_given_3_plus_3": 0.9971840097140545,
+    "predicted_verdict": "PLAN-CONDITIONAL ESCAPE"
+  },
+  "pred2_level_crossing": {
+    "source": "results/theory/pred2/e0f.json rows['2.5'].per_seed[*].level_crossing (deterministic on the exact plan)",
+    "per_plan": {
+      "0": {
+        "V2": 321981.3465672725,
+        "S_good": 1.4852871313912483,
+        "t_lim": 2532.690506153674,
+        "first_crossing_s": 1464.0,
+        "peak_live_kv": 352200.0,
+        "unstable": true
+      },
+      "4": {
+        "V2": 321981.3465672725,
+        "S_good": 1.4852871313912483,
+        "t_lim": 2532.690506153674,
+        "first_crossing_s": null,
+        "peak_live_kv": 304750.0,
+        "unstable": false
+      }
+    },
+    "calls": {
+      "0": "UNSTABLE",
+      "4": "STABLE"
+    },
+    "predicted_verdict": "REPRODUCIBLE"
+  },
+  "provenance": {
+    "git_head": "8aaabdb364ab156aed7c681828ad3b6d169e50e8",
+    "git_branch": "r15/tonight",
+    "git_status_porcelain": [
+      "?? analysis/r15_cells.py",
+      "?? analysis/r15_cut.py",
+      "?? analysis/r15_edge.py",
+      "?? analysis/r15_pred2_toolslow.py",
+      "?? analysis/r15_prereg.py",
+      "?? analysis/r15_sim_toolslow.py",
+      "?? configs/agentload_e2_cut_a115.yaml",
+      "?? configs/agentload_e2_cut_b085.yaml",
+      "?? configs/agentload_e2_toolslow_d15.yaml",
+      "?? configs/agentload_e2_toolslow_d30w1800.yaml",
+      "?? configs/agentload_prereg_2026-11-05_cut_a115.yaml",
+      "?? configs/agentload_prereg_2026-11-05_cut_b085.yaml",
+      "?? configs/agentload_prereg_2026-11-05_toolslow_d15_165.yaml",
+      "?? configs/agentload_prereg_2026-11-05_toolslow_d30w1800.yaml",
+      "?? configs/r15_edge_replicate.yaml",
+      "?? experiments/r15_edge_preds.py",
+      "?? notes/PREDICTIONS_r15.md",
+      "?? notes/PREDICTIONS_r15_edge.md",
+      "?? tests/test_r15_cut.py",
+      "?? tests/test_r15_edge.py",
+      "?? tests/test_r15_preds_toolslow.py",
+      "?? tests/test_r15_toolslow.py"
+    ],
+    "sha256": {
+      "configs/r15_edge_replicate.yaml": "7687f8fc3b47cfc1f7db64196fdd9cfa4fa63b4a9ce54171bdfbc73791f5df86",
+      "configs/r11_predict_basin.yaml": "48228d93c82dbd397fc03cc84f37ac4e81d4e53f8de5c6af466bcbf7868f5545",
+      "configs/r11_basin_predict.yaml": "2f340909e707c967adf2b5051feae0dbbbb141843730c2044f3f20e3c823f334",
+      "results/theory/merged/a100_300k.json": "c19ab083e891eb96ea7915ff9d799d46c35289096459fbf390ce253f29d1d3f9",
+      "results/theory/pred2/e0f.json": "d6dc391133e741aeb94faac29c38701b24a4f3b8f17de551c0edcec562b835ef",
+      "results/r11_predict_basin/20261030-194539/e0b_runs.csv": "ddbcc55e30ef4502307e0b6d026976069e9b7367f036fe7b630aa82febc8535e",
+      "configs/r6_predict.yaml": "15240ebec2d58946592015df5a0ffc663f80debfe8cc5f69b8f6eb7f6f57bdb4",
+      "configs/agentload_e0_cap.yaml": "e9ca2816dda43c825572a9d0919d960295cb7e6e91de625e909eb20cd4503ef1",
+      "src/agentload/workload.py": "b848f31d198b2f87063f36ecff1197ae89414432402985878439af6bb5946c60",
+      "src/agentload/config.py": "3ce8bf2a4e502ccdc7e1b9d6f12462265c5d1bd424858ff5b2af0eed1ae9107d",
+      "experiments/r11_predict_basin.py": "5d5e086459da95a3f9f38097bcf0be8f61fbc055b541022bfd7ac995eb9bb3f3",
+      "analysis/r15_edge.py": "3a5b0f77cf364427b85b6719df9c21fa69aad5f9572db54f78134cf7736d0e2d",
+      "experiments/r15_edge_preds.py": "9beb4fbf1c433bc9b8365b65384cf93ea8e88f73583425544f98f91b88c8df6d"
+    },
+    "hostname": "Akshat-PC",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "argv": [
+      "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+      "experiments/r15_edge_preds.py"
+    ],
+    "wall_s": 6.965082
+  }
+}

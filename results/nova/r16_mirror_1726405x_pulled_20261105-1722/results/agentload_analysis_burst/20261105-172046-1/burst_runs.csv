@@ -1,0 +1,2 @@
+label,seed,rate_mult,t_burst,t_end_s,aborted,abort_reason,n_post_windows,trap_run_s,trapped,hit_eval,n_eval_windows,tail_queue_mean,tail_hit_rate,tail_queue_slope_per_window,hit_returned,queue_returned,recovered,n_pre_windows,pre_hit,pre_queue_mean,good_before,trapped_aborted,verdict,is_trap,hysteresis_run,run_dir,arm
+sglang-fcfs-r1-mirror-k20,2,1.35,1200.0,8700.014610795304,False,,6,6000.0,True,0.0,2,442.4066666666667,0.0,61.61250000000001,False,False,False,1,0.9444762449914138,0.0,True,False,trapped,True,True,results/agentload_e2_burst/20261105-145244,burst

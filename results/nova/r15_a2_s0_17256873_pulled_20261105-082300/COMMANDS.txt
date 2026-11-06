@@ -1,0 +1,12 @@
+r15 pull: TOOLSLOW-D15 (cell T2, sglang-fcfs-r1-toolslow-d15-165) seed 0, job 17256873, 2026-11-05
+
+Source clone on Nova: /work/classtmp/avalse/swapp/repo_r15_tonight at e05a262 (tag r15-reg), git status clean.
+17256873 COMPLETED 0:0 on nova22-gpu-3, ended 08:21:48 CST (sacct_17256873.txt here). Run directory
+results/agentload_e2_burst/20261105-055338; in-job analyses results/agentload_analysis_burst/20261105-082142 and
+results/agentload_analysis_burst2/20261105-082142; job log dir results/nova_job_logs/17256873-20261105-055229;
+logs/pm-tsd15-17256873.out.
+
+Pull (08:23 CST): pulls_r15/a2_s0_20261105.tar.xz (2,585,468 bytes); sha256
+5210d8ad5c1200ec545efd3e2b57f0f684559ddd5e87ff7c07ee6dd6a347c8dd on Nova and on the PC (equal); remote archive deleted.
+Interim classification (T1 + this run): analysis/agentload_analysis_r15/20261105-082838/. The final T1/T2 verdict is in
+results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/analysis/.

@@ -1,0 +1,419 @@
+==================== 20261105-145227 burst 1.65 seed0
+  frozen: results/theory/r16/mirror_plans/burst_1.65_seed0.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: 7cd50fe5b4ee
+  sha_frozen: aaf268fa2221
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1294
+  n_frozen: 1294
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 575
+  tool_time_total_s_maxabs: 8.526512829121202e-14
+  tool_time_total_s_maxrel: 5.390981189296775e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 697}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9806800618238022
+  plan_n_T20: 1269
+  plan_T_lt20_values: [1, 2, 4, 4, 5, 6, 6, 9, 9, 9, 10, 10]
+  plan_ET: 19.825347758887172
+  plan_origins: {'base': 1094, 'burst': 200}
+  burst_n: 200
+  burst_arrival_min_max: (1200.3514822532811, 1259.887801838668)
+  burst_in_[1200,1260): 200
+  burst_share_T20: 0.99
+  base_in_[1200,1260): 6
+  base_arrival_max: 8697.336163977197
+  ses_rows: 1294
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9806800618238022
+  ses_status: {'cancelled': 781, 'completed': 513}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 17479
+==================== 20261105-145240 burst 1.65 seed2
+  frozen: results/theory/r16/mirror_plans/burst_1.65_seed2.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: a7b913e5c568
+  sha_frozen: 9065bdac9164
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1289
+  n_frozen: 1289
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 568
+  tool_time_total_s_maxabs: 5.684341886080802e-14
+  tool_time_total_s_maxrel: 4.978644406758521e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 693}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.978277734678045
+  plan_n_T20: 1261
+  plan_T_lt20_values: [1, 1, 4, 5, 5, 5, 5, 5, 7, 7, 7, 8]
+  plan_ET: 19.7866563227308
+  plan_origins: {'base': 1089, 'burst': 200}
+  burst_n: 200
+  burst_arrival_min_max: (1200.8339032982065, 1259.1346297801242)
+  burst_in_[1200,1260): 200
+  burst_share_T20: 0.97
+  base_in_[1200,1260): 7
+  base_arrival_max: 8685.293974389118
+  ses_rows: 1289
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.978277734678045
+  ses_status: {'cancelled': 823, 'completed': 466}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 16809
+==================== 20261105-145242 noburst 1.65 seed0
+  frozen: results/theory/r16/mirror_plans/noburst_1.65_seed0.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: fe9b7aa37f5d
+  sha_frozen: 49ae33f297a9
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1094
+  n_frozen: 1094
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 496
+  tool_time_total_s_maxabs: 8.526512829121202e-14
+  tool_time_total_s_maxrel: 5.390981189296775e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 598}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9789762340036563
+  plan_n_T20: 1071
+  plan_T_lt20_values: [1, 4, 4, 5, 6, 6, 9, 9, 9, 10, 11, 11]
+  plan_ET: 19.819012797074954
+  plan_origins: {'base': 1094}
+  burst_n: 0
+  base_in_[1200,1260): 6
+  base_arrival_max: 8697.336163977197
+  ses_rows: 1094
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9789762340036563
+  ses_status: {'completed': 1083, 'cancelled': 11}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 21542
+==================== 20261105-145244 burst 1.35 seed2
+  frozen: results/theory/r16/mirror_plans/burst_1.35_seed2.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: 308d6b53655b
+  sha_frozen: 85c58ae13c7f
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1097
+  n_frozen: 1097
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 481
+  tool_time_total_s_maxabs: 5.684341886080802e-14
+  tool_time_total_s_maxrel: 4.978644406758521e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 589}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9772105742935278
+  plan_n_T20: 1072
+  plan_T_lt20_values: [1, 1, 4, 5, 5, 5, 5, 7, 7, 7, 8, 9]
+  plan_ET: 19.77757520510483
+  plan_origins: {'base': 897, 'burst': 200}
+  burst_n: 200
+  burst_arrival_min_max: (1200.8339032982065, 1259.1346297801242)
+  burst_in_[1200,1260): 200
+  burst_share_T20: 0.97
+  base_in_[1200,1260): 7
+  base_arrival_max: 8685.293974389118
+  ses_rows: 1097
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9772105742935278
+  ses_status: {'cancelled': 580, 'completed': 517}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 15861
+==================== 20261105-145244-1 burst 1.35 seed0
+  frozen: results/theory/r16/mirror_plans/burst_1.35_seed0.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: 2239efc2b288
+  sha_frozen: e79bdcd5aa2f
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1101
+  n_frozen: 1101
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 490
+  tool_time_total_s_maxabs: 8.526512829121202e-14
+  tool_time_total_s_maxrel: 5.390981189296775e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 591}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9809264305177112
+  plan_n_T20: 1080
+  plan_T_lt20_values: [1, 2, 4, 5, 6, 6, 9, 9, 9, 10, 11, 11]
+  plan_ET: 19.826521344232518
+  plan_origins: {'base': 901, 'burst': 200}
+  burst_n: 200
+  burst_arrival_min_max: (1200.3514822532811, 1259.887801838668)
+  burst_in_[1200,1260): 200
+  burst_share_T20: 0.99
+  base_in_[1200,1260): 5
+  base_arrival_max: 8697.336163977197
+  ses_rows: 1101
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9809264305177112
+  ses_status: {'cancelled': 605, 'completed': 496}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 15961
+==================== 20261105-145244-2 burst 1.65 seed1
+  frozen: results/theory/r16/mirror_plans/burst_1.65_seed1.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: 30b663cf4887
+  sha_frozen: b868bf3e24eb
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1246
+  n_frozen: 1246
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 538
+  tool_time_total_s_maxabs: 5.684341886080802e-14
+  tool_time_total_s_maxrel: 5.623133130347349e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 652}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9823434991974318
+  plan_n_T20: 1224
+  plan_T_lt20_values: [1, 1, 3, 3, 3, 4, 6, 6, 7, 7, 10, 12]
+  plan_ET: 19.816211878009632
+  plan_origins: {'base': 1046, 'burst': 200}
+  burst_n: 200
+  burst_arrival_min_max: (1200.9484701451956, 1259.9283890711513)
+  burst_in_[1200,1260): 200
+  burst_share_T20: 0.98
+  base_in_[1200,1260): 7
+  base_arrival_max: 8696.030912250819
+  ses_rows: 1246
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9823434991974318
+  ses_status: {'cancelled': 767, 'completed': 479}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 16801
+==================== 20261105-145246 burst 1.35 seed1
+  frozen: results/theory/r16/mirror_plans/burst_1.35_seed1.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: 6289764325a3
+  sha_frozen: dbb6eb60638e
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1057
+  n_frozen: 1057
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 457
+  tool_time_total_s_maxabs: 5.684341886080802e-14
+  tool_time_total_s_maxrel: 5.623133130347349e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 555}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9810785241248817
+  plan_n_T20: 1037
+  plan_T_lt20_values: [1, 1, 3, 3, 3, 4, 6, 7, 7, 10, 12, 12]
+  plan_ET: 19.802270577105013
+  plan_origins: {'base': 857, 'burst': 200}
+  burst_n: 200
+  burst_arrival_min_max: (1200.9484701451956, 1259.9283890711513)
+  burst_in_[1200,1260): 200
+  burst_share_T20: 0.98
+  base_in_[1200,1260): 5
+  base_arrival_max: 8696.030912250819
+  ses_rows: 1057
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9810785241248817
+  ses_status: {'cancelled': 561, 'completed': 496}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 15567
+==================== 20261105-145247 noburst 1.65 seed1
+  frozen: results/theory/r16/mirror_plans/noburst_1.65_seed1.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: d51223915ab2
+  sha_frozen: b70d400af8fe
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1046
+  n_frozen: 1046
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 461
+  tool_time_total_s_maxabs: 5.684341886080802e-14
+  tool_time_total_s_maxrel: 5.623133130347349e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 556}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.982791586998088
+  plan_n_T20: 1028
+  plan_T_lt20_values: [1, 3, 3, 3, 4, 6, 6, 7, 10, 12, 12, 14]
+  plan_ET: 19.821223709369026
+  plan_origins: {'base': 1046}
+  burst_n: 0
+  base_in_[1200,1260): 7
+  base_arrival_max: 8696.030912250819
+  ses_rows: 1046
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.982791586998088
+  ses_status: {'completed': 1032, 'cancelled': 14}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 20601
+==================== 20261105-145248 noburst 1.65 seed2
+  frozen: results/theory/r16/mirror_plans/noburst_1.65_seed2.csv
+  wt_frozen_eq_tag: True
+  bytes_equal: False
+  sha_run: ae3087b442ea
+  sha_frozen: fd1d31b4eef6
+  header_run: ['sid', 'origin', 'idx', 'arrival_s', 'n_turns', 'tool_time_total_s']
+  header_eq: True
+  n_run: 1089
+  n_frozen: 1089
+  sid_exact: True
+  idx_exact: True
+  n_turns_exact: True
+  origin_exact: True
+  arrival_s_exact_float: True
+  arrival_s_n_differ: 0
+  arrival_s_maxabs: 0.0
+  arrival_s_maxrel: 0.0
+  tool_time_total_s_exact_float: False
+  tool_time_total_s_n_differ: 476
+  tool_time_total_s_maxabs: 5.684341886080802e-14
+  tool_time_total_s_maxrel: 4.978644406758521e-16
+  text_cells_differ_by_col: {'sid': 0, 'origin': 0, 'idx': 0, 'arrival_s': 0, 'n_turns': 0, 'tool_time_total_s': 584}
+  plan_turns_min_max: (1, 20)
+  plan_share_T20: 0.9797979797979798
+  plan_n_T20: 1067
+  plan_T_lt20_values: [1, 4, 5, 5, 5, 5, 5, 7, 7, 8, 9, 9]
+  plan_ET: 19.79522497704316
+  plan_origins: {'base': 1089}
+  burst_n: 0
+  base_in_[1200,1260): 7
+  base_arrival_max: 8685.293974389118
+  ses_rows: 1089
+  ses_sid_set_eq_plan: True
+  ses_nturns_eq_plan: True
+  ses_origin_eq_plan: True
+  ses_arrival_eq_plan: True
+  ses_share_T20: 0.9797979797979798
+  ses_status: {'completed': 1077, 'cancelled': 12}
+  completed_turns_eq_nturns: True
+  max_turns_completed: 20
+  req_turn_max: 20
+  req_nturns_max: 20
+  req_n: 21437
+
+=== paired arms (1.65 x): noburst plan vs burst plan's base rows
+  seed 0: burst plan 1294 rows (1094 base), noburst 1094 rows; base rows identical (arrival_s, n_turns, tool_time_total_s): True
+  seed 1: burst plan 1246 rows (1046 base), noburst 1046 rows; base rows identical (arrival_s, n_turns, tool_time_total_s): True
+  seed 2: burst plan 1289 rows (1089 base), noburst 1089 rows; base rows identical (arrival_s, n_turns, tool_time_total_s): True

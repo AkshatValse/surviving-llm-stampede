@@ -1,0 +1,4 @@
+removed '/work/classtmp/avalse/swapp/pulls_r15/cut_b0_20261105.tar.xz'
+JobID|JobName|Submit|Start|End|State|ExitCode|NodeList|AllocTRES
+17256870|pm-cut085|2026-11-05T03:57:14|2026-11-05T04:21:14|2026-11-05T06:50:40|COMPLETED|0:0|nova22-gpu-2|billing=1,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=20G,node=1
+17256870.batch|4748388K|02:29:26|COMPLETED

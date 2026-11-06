@@ -1028,3 +1028,164 @@ Every BURST run sits at hit 0.000 over the evaluation window with an uncached-to
 **Against the blind predictions:** simulator round 12 (`notes/PREDICTIONS_llama31.md`, tag `r12-llama31-predictions-frozen`, GitHub 02:14 Sat, before Stage C ended and E0b started): V1 (token costs × 1.21 to Llama's measured rate) got the peak n (20) and the cap (20) right, put μ*/λ_miss at 3.52 / 3.48 (real 3.28 turns), the cliff a little late (0.5-hit 30.6 / 31.6 vs 29.4; hit(32) 0.38 / 0.47 vs 0.20) and the edge at 2.5 × (mixed) / 2.0 × (separate) vs real 2.0 ×; V0 (unscaled) edge 2.0 ×. It predicted PASS at 1.35 and 1.65 × (BURST trapped 9/10 and 8/10 in V1 mixed, NOBURST 10/10, CAPPED 10/10): real 1/3 and 2/3 trapped. Every BURST run is stuck as predicted (hit 0, trapped token ratio 0.985–1.068 predicted, 1.012–1.054 real; backlog 181 / 252 predicted vs 196–210 / 267–288 real), but the slope test, which the simulator already flagged as the fragile part at low λ, fails in 3 of 6 real runs against about 1–2 in 10 simulated. Theory (lead's round 13, tags `r13-theory-pred` 02:05:30 and `r13-theory-pred2` 04:20:20): its registration-conditional run on the registered rates and cap (`a36f441`, `d12eef2` on `r12/llama31-theory-cond`, committed 07:52 before any E2 job started) gave trapped token ratio 1.004 / 1.013, BURST backlog 191 / 266, NOBURST hit 0.932 at 1.35 / 1.65 × (real 1.012–1.050 / 1.030–1.054, 196–210 / 267–288, 0.925–0.935); the lead scores the curve and window predictions.
 **Verified vs. not:** Verified: pool size, banners and model guard on every run (9/9 Stage C, 6/6 E0b, model string in config_effective.yaml), registration binding (check-job before submission; burst2 provenance: first and last commit `1559f8e` before every E2 run, committed clean), all 18 accounting records, every archive checksum at both ends, the per-run table. Not verified: anything beyond one model per family, one GPU type, the 300k pool and three seeds per point; one run per n and per E0b multiple (the cap choice n = 20 vs 24 is within noise).
 **Interpretation:** The mechanism does not depend on the model: Llama-3.1-8B has a 17% lower all-miss capacity but the same curve shape, peak location, window (edge 2.0 × λ_miss) and registered points as Qwen2.5-7B. After the burst every BURST run is stuck at zero hits at the all-miss token rate while every paired NOBURST stays good and every CAPPED arm recovers, at both points. The registered rule calls 3 of the 6 trapped, because the backlog slope at the lower point grows too slowly to clear 0.5 (λ − λ_miss) within 7500 s, so the decisive PASS rests on 1.65 × alone; 1.35 × is a FAIL by the registered rule, with stuck-but-not-trapped runs (the Qwen cell's 1.35 × had 1 such run in 3; here 2 in 3).
+
+## 2026-11-05 — r15 TOOLSLOW-W traps 3/3 with no burst (registered), the trap-state law holds on it blind; REPLICATE-EDGE reproducible 6/6 (exploratory)
+
+**Question:** Does a dependency slowdown alone, with no arrival burst, trap the engine when it lasts long enough (T1, TOOLSLOW-W)? Do the frozen trap-state predictions of the trap renewal theorem (tag `icml-trap-pred`) hold on a trap entered without a burst? Is the 2.5 x from-empty edge fixed by the arrival path or by service noise (REPLICATE-EDGE, exploratory)?
+**Setup:** Registration commit `e05a262` (tag `r15-reg`), pushed 03:18:36 CST. Five jobs submitted at 03:21:38 CST from the frozen clone `repo_r15_tonight` at `e05a262`, with `--mem=20G`; all COMPLETED 0:0 by 06:04 CST.
+- T1: `sglang-fcfs-r1-toolslow-d30w1800`, 1.35 x lambda_ref, NOBURST arrivals, +30 s on every tool call starting in [1200, 3000) s, seeds 0-2 (jobs 17256674-76). CRN-paired with the committed NOBURST controls; W = [5700, 8700) s.
+- EDGE: `sglang-fcfs-r1-edgerep`, MODE=cap at 2.5 x for 3000 s, plans of seeds 0 and 4 three times each (jobs 17256677 "0 4 0", 17256678 "4 0 4").
+- Pull: `results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/` (COMMANDS.txt, sacct records).
+- Predictions: `notes/PREDICTIONS_r15.md`, `notes/PREDICTIONS_r15_edge.md` (`r15-reg`); trap-state law `notes/PREDICTIONS_icml_trap.md` (`icml-trap-pred`, `6b47a6c`, pushed 00:24:47 CST).
+**Result:**
+- T1 is **TRAPS**. All three runs are STUCK (hit 0.000 over W; backlog slopes 0.0192 / 0.0184 / 0.0232 /s against the threshold 0.0125), and their NOBURST controls are GOOD (hit 0.930-0.934). All runs are counted, bound to the registration and paired; 1620 / 1569 / 1763 tool calls were slowed, all inside the window.
+- EDGE is **REPRODUCIBLE**. Seed 0's plan is UNSTABLE in 3/3 replicates (tau 1600, 1600, 1800 s; original 1600 s). Seed 4's plan is STABLE in 3/3 (original stable). All six replicates are valid, with byte-identical plans and engine verified. They ran on nova22-gpu-3, on two GPUs; seed 0's original ran on nova22-gpu-1.
+- Registered analysis: `analysis/agentload_analysis_r15/20261105-061431` and `analysis/agentload_analysis_r15_edge/20261105-061605` under the pull. Paper input: `notes/PAPER_INPUT_r15.md`.
+**Against predictions:**
+- T1: the simulator in both modes, pred2's fluid verdict and pred2's per-seed layer (P(TRAPS) = 1.00) all called TRAPS, and all were correct. The cell does not separate the models.
+  - Exploratory measures against the simulator: t_fu150 1950 / 1950 / 2100 (exact); alive at 3000 s 55 / 70 / 74 (simulator 57 / 72 / 76).
+  - Outstanding at 3300 s was 65 / 67 / 64 against 57 / 62 / 70, missing the frozen "within 5" reference on seeds 0 and 2.
+- Trap-state law (rules S1-S5, frozen before the runs) on the three T1 runs: pooled S1 composition +1.9%, S2 gap slope 1.075 gamma, S3 completion +1.9% of D (every run above lambda_ref), S4 backlog slope +29% of alpha. All pass, so not refuted. Per seed, S5's side is wrong for seed 1 only.
+- EDGE: every deterministic predictor called REPRODUCIBLE: the plan statistics, pred2's level crossing, and the calibrated simulator (tau band 1500-1800 s). F2 read as independent draws gave P(REPRODUCIBLE) = 0.0097.
+**Verified vs. not:**
+- Verified:
+  - archive sha256 at both ends;
+  - an independent recompute from the raw CSVs by a subagent with its own code: hit_eval, slopes, STUCK/GOOD, manipulation, plan bytes, binding, the exploratory measures, the S1-S4 statistics, and the EDGE labels, tau, validity and verdict, all matching;
+  - sacct records.
+- Not verified:
+  - The T1 design is not blind (chosen after r14 d30 trapped 1/3, and after reading simulator outputs); the outcome is.
+  - S1-S5's tolerances were calibrated on committed runs.
+  - The EDGE sample is small (2 plans, 6 runs) and the replicates ran on one node.
+  - The large MaxRSS of jobs 17256675/76 (13.2 / 12.6 GB) is attributed to page cache, not checked.
+**Interpretation:**
+- The trap needs no arrival burst. A 30 s tool slowdown that lasts 1800 s traps every seed at 1.35 x, while the same one lasting 900 s trapped 1 of 3 (r14). The trapped state it produces is the one the theorem describes, with numbers frozen from burst-triggered traps.
+- Near the from-empty edge, a run's fate repeated with its arrival path in 8 of 8 runs. So the cell-level escape probability reflects workload variation across plans, not noise within a plan.
+
+## 2026-11-05 — r15 CUT-A (Corollary 3 arrival cut to 1.15 x): registered PASS, theory-favoured 3/3; the late window singles out model F
+
+**Question:** After a burst traps the engine at 1.65 x lambda_ref, does cutting arrivals to 1.15 x clear the trap? That rate lies below the trapped throughput measured in uncut runs and above the all-miss capacity. Corollary 3 of the trap renewal theorem says it does not.
+**Setup:**
+- Theory predictions: tag `icml-cut-pred` (`2f90267`), pushed 02:25:43 CST.
+- Rule: commit `11b0e4e`, tag `r15-cut-reg`, pushed 03:54:49 CST.
+- Jobs 17256867-69 (seeds 0-2), submitted 03:57:14 CST from the frozen clone `repo_r15_cut` at `11b0e4e`. All three ran on nova22-gpu-1 and COMPLETED 0:0 by 06:36.
+- Pull: `results/nova/r15_cut_a_1725686x_pulled_20261105-063800/` (COMMANDS.txt, sacct records, sha256 db4812fb... on both ends).
+- CUT-B seed 0 (job 17256870, nova22-gpu-2) was pulled at 06:51 into `results/nova/r15_cut_b0_17256870_pulled_20261105-065100/`. CUT-B waits for seeds 1 and 2.
+**Result:**
+- CUT-A **PASS**. All three runs are counted, bound to the registration and STUCK (follow-up hit 0.000 over [5700, 8700) s). The manipulation check passes: pre-cut sessions identical to the controls, post-cut thinned plan exact, kept-count z = -0.09 / -1.70 / -0.71.
+- Slopes of N over [3000, 8700): measured +0.00404 / -0.00217 / +0.00295 /s. Model F's frozen values +0.00392 / -0.00258 / +0.00284; naive (lambda'_plan - D_trap) -0.00943 / -0.02036 / -0.00987; quasi-static (lambda'_plan - lambda_ref) +0.01461 / +0.00864 / +0.01320. So theory-favoured 3/3.
+- Sign clause: S over [5700, 8700) was +0.00705 / -0.00274 / +0.01315, positive in 2 of 3. Model F predicted seed 1 negative.
+- CUT-B seed 0 (interim): S -0.00854 against model F -0.00953 and naive -0.03294, so theory-favoured. Stuck, draining slowly.
+**Against predictions:**
+- The theory's registered secondary predictions all hold for CUT-A:
+  - completion over [5700, 8700) within 0.001 /s of the per-seed plug-ins (tolerance 0.006);
+  - served prompt within 0.9% (tolerance 5%);
+  - 300 s-bin dip 0.7 / 9.6 / 11.0% (< 15%);
+  - last bin 226 / 162 / 195 (> 150).
+- Not registered as a test, but against frozen values: the [5700, 8700) slopes match model F's frozen `w5700` slopes within 0.00014 / 0.00085 / 0.00025 /s. Zero-drift, midpoint, quasi-static and naive constant-throughput readings all miss by at least 0.004 /s there.
+**Verified vs. not:**
+- Verified:
+  - a blind recompute with its own code: full agreement, no failed check;
+  - an adversarial review: verdict, numbers and timeline robust under 1 s sampling, other bins, trimmed windows, in-flight requests and D_trap over [5700, 8700); margins >= 0.005 /s;
+  - all 65 CUT tests pass;
+  - the archive sha256.
+- Not verified, or limiting:
+  - The registered PASS's comparators are both constant-throughput endpoints. A zero-drift story fits [3000, 8700) as well as model F, so the PASS alone does not single out the theorem.
+  - The rule was finalised after the per-seed predictions were read. One change (the sign window) loosened it. The draft rule gives the same PASS.
+  - Agreement within 0.0004 /s is at the engine's run-to-run jitter (0.0001-0.0005 /s).
+  - Model F's backlog levels run 5-10 sessions high.
+  - 3 seeds on one node; "did not clear" holds within 8700 s.
+**Interpretation:**
+- A cut below the trap's measured throughput but above the all-miss capacity left every run trapped. Over the last 3000 s the backlog regrew in seeds 0 and 2 at model F's frozen rates, and completions varied by plan as model F said; no constant-throughput reading fits.
+- This is the engine evidence for Corollary 3: the throughput a trapped engine shows overstates the arrival rate it can recover at. The evidence comes through the persistence and the late window, not through the registered comparison alone.
+
+## 2026-11-05 — r15 CUT-B PASS (slow drain, still stuck at 8700 s) and TOOLSLOW-D15 NO-TRAP (the simulator's per-seed call, against pred2's fluid verdict)
+
+**Question:**
+- CUT-B: with arrivals cut to 0.85 x lambda_ref, below the all-miss capacity, does the trap drain slowly, as model F says, or at the trapped throughput?
+- TOOLSLOW-D15 (T2): does a 15 s tool slowdown over [1200, 2100) s at 1.65 x lambda_ref trap the engine? This is the cell where the calibrated simulator (S/G/G) and pred2's fluid verdict (S/S/S) disagree.
+**Setup:**
+- CUT-B jobs 17256870-72 (`r15-cut-reg`, clone `repo_r15_cut` at `11b0e4e`). T2 jobs 17256873-75 (`r15-reg`, clone `repo_r15_tonight` at `e05a262`). All COMPLETED 0:0 by 08:33 CST; all 14 jobs of the night COMPLETED.
+- Pulls: `results/nova/r15_cut_b0_17256870_pulled_20261105-065100/`, `r15_cut_b12_1725687x_pulled_20261105-082300/`, `r15_a2_s0_17256873_pulled_20261105-082300/`, `r15_a2_s12_1725687x_pulled_20261105-083500/`. Each has its COMMANDS.txt and its sha256 checked on both ends.
+**Result:**
+- **CUT-B PASS.** Theory-favoured 3/3, S < 0 in 3/3, all STUCK (follow-up hit 0.000).
+  - S over [3000, 8700): -0.00854 / -0.01260 / -0.01237 /s against model F -0.00953 / -0.01310 / -0.01233 and naive -0.03294 / -0.04282 / -0.03355.
+  - N at 8700 s was 140 / 77 / 89 (model F 139 / 79 / 94).
+  - The final registered CUT verdict over all six runs: CUT-A PASS, CUT-B PASS (`.../r15_cut_b12_.../analysis/agentload_analysis_r15_cut/20261105-082543`).
+- **T2 NO-TRAP.** Seed 0 STUCK (hit 0.000); seeds 1 and 2 GOOD (hit 0.934 / 0.924, equal to their NOBURST controls). All counted, bound and paired (`.../r15_a2_s12_.../analysis/agentload_analysis_r15/20261105-083614`).
+**Against predictions:**
+- CUT-B:
+  - The registered naive reading would have reached the hit-recovery onset n_b = 32.7 at 5656-7245 s. The runs stayed stuck, so persistence discriminates here.
+  - The quasi-static reading (completions at the all-miss capacity, not a registered CUT-B comparator) fits the slopes about as well as model F.
+  - Model F's distinctive prediction held post hoc: completions below the all-miss capacity, 0.918 / 0.932 / 0.974 lambda_ref against 0.918 / 0.955 / 0.979.
+  - Its frozen secondary predictions hold: completion within 0.0017 /s, served prompt within 0.8% (10.9-11.5k tokens against 8.4-8.8k uncut), gap trend negative in 3/3.
+- T2:
+  - The simulator (both modes) is correct 3/3 per seed, and its cell call NO-TRAP is correct. pred2's fluid verdict TRAPS is wrong (1/3). pred2's per-seed modal call is correct 3/3.
+  - P(NO-TRAP) = 0.409, log score -0.894; Brier 0.087 / 0.091.
+  - The stuck seed passes S1-S4 of the trap-state law (composition +0.1%, gap 1.02 gamma, completion +10% of D, slope -15% of alpha). S5 is close-miss 0.0104 > 0.01.
+  - Exploratory misses: alive at 2100 s for seed 1 (+4); outstanding at 3300 s for seed 0 (+7); seed 0's t_fu150 one bin early.
+**Verified vs. not:**
+- Verified: the archive sha256 values; the registered classifiers; the provenance exports re-run after the last job (push_times_2026-11-05.tsv now has end times).
+- Pending at the time of writing: an independent blind recompute of CUT-B and T2 (subagent).
+- Not verified: the T2 design is blind in outcome only; 3 seeds per cell; CUT-B's quasi-static alternative was not registered.
+**Interpretation:**
+- On the engine, a cut below the trapped throughput but above the all-miss capacity left every run trapped (CUT-A). A cut below the all-miss capacity drained the trap only slowly, still trapped after 6300 s of cut (CUT-B). This is the pattern of Theorem 1(a) and Corollary 3.
+- In T2, the exact-plan simulator beat the plan-averaged fluid model on the one cell built to separate them. Whether a short tool slowdown traps the engine at 1.65 x depends on the arrival plan, as the per-seed layer said.
+
+## 2026-11-05 — r16 MIRROR registered (step-capped workload; model F predicts a reversed youth premium) and submitted
+**Question:** Theorem 2 writes the trapped completion rate as D = lambda_miss H(z) Gamma(z), with H set by the turn-count law.
+For agents that run to a fixed step budget (T nearly deterministic), H is well below 1. Does the engine then complete
+sessions BELOW its all-miss capacity, with model F's transient (a completion blackout, then a wave), rather than at the
+steady near-capacity rate that every throughput-curve reading predicts?
+**Design:** configs/agentload_e2_mirror_k20.yaml = configs/agentload_e2_burst.yaml with mean_turns 1000 and max_turns 20.
+- Cell sglang-fcfs-r1-mirror-k20.
+- BURST at 1.65x (decisive) and 1.35x (secondary), NOBURST controls at 1.65x, seeds 0-2.
+- One E0a of the workload.
+- Rules M1-M4 (decisive) and W5-W10 (secondary): analysis/r16_mirror.py.
+- Frozen predictions: notes/PREDICTIONS_r16_mirror.md and results/theory/r16/mirror_predictions.json.
+- The tolerances come from model F's timing on committed standard-workload runs (factor 0.9223).
+**Freeze:** commit bc81ee7, tag r16-mirror-reg, pushed 14:07:35 CST (GitHub activity log: branch r16/mirror created at bc81ee7, 20:07:35Z). Erratum 18ac5e6 corrects the writing time in the note.
+**Nova:** frozen clone repo_r16_mirror at bc81ee7, built from a 649 MB bundle (sha256 eb9812c0..., equal on both ends after
+an append; the first scp was cut by the lead's own timeout).
+- Smoke test 17264039: MODE=miss, 300 s, the workload confirmed in config_effective.yaml.
+- Submitted 14:50:52-53 CST, in the registered order:
+  - 17264055-57: BURST 1.65x, seeds 0-2;
+  - 17264058-60: NOBURST 1.65x;
+  - 17264061: E0a;
+  - 17264062-64: BURST 1.35x.
+- All started 14:50:57-14:51:28 CST. Every E2 job printed PREREG_OK.
+**Deviation (recorded):** the E0a job 17264061 FAILED its own pre-run time-budget check at 14:51:57.
+- It needed 7080 s, including the default population-check run, against the 5400 s of the registered submit line's
+  --time 01:30:00. Nothing ran.
+- It was resubmitted unchanged except --time 02:15:00 as 17264093 (14:53:08) and passed the check.
+- No registered rule uses the E0a (secondary W10 only).
+
+## 2026-11-05 evening — r16 MIRROR result: PASS at 1.65x (decisive) and at 1.35x (secondary)
+
+**Runs:** all nine BURST/NOBURST jobs COMPLETED 0:0 (ends 17:20:42-17:21:03 CST); the resubmitted E0a 17264093 COMPLETED at
+16:27:41. Pulled read-only: `results/nova/r16_mirror_1726405x_pulled_20261105-1722/` (archive sha256 342bd2a1...) and
+`results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/` (sha256 3ab5012b...); COMMANDS.txt in each. Every run is
+bound to the registration (prereg sha256 88e20ce2..., run_blockers empty), uses the frozen plan, finished, and reached 8700 s.
+**Registered scoring** (`analysis.r16_mirror classify`, code identical to the tag; predictions read from the tag):
+`results/agentload_analysis_r16_mirror/20261105-173136/` (commit f641b02).
+- 1.65x DECISIVE: RENEWAL in seeds 0, 1 and 2 -> **PASS**. Rates in lambda_ref, measured (model F):
+  - blackout [2400, 3600): 0.070 (0.047), 0.058 (0.070), 0.093 (0.093); rule M1 <= 0.30;
+  - wave (median t_end of the 200 burst sessions, all completed): 4996 (5195), 4945 (5135), 5089 (5157) s; M2 +-599/590/594 s;
+  - late [6600, 8700): 0.592 (0.546), 0.606 (0.599), 0.499 (0.486); M3 <= 0.85;
+  - backlog slope [6000, 8700): 0.0767 (F 0.0789, QS 0.0478), 0.0837 (0.0857, 0.0441), 0.0935 (0.0930, 0.0518) /s; M4 holds;
+  - STUCK in all three (hit 0.000 over [5700, 8700)).
+- 1.35x SECONDARY: RENEWAL in seeds 0, 1 and 2 -> **PASS**. Blackout 0.105 / 0.093 / 0.163 (F 0.000 / 0.058 / 0.070); wave
+  4759 / 4673 / 4576 s (F 4883 / 4802 / 4870); late 0.619 / 0.739 / 0.845 (F 0.599 / 0.686 / 0.726); slope 0.0557 / 0.0504 /
+  0.0496 (F 0.0565 / 0.0534 / 0.0603; QS 0.0274 / 0.0192 / 0.0278). Near the threshold: seed 2's late 0.845 against M3's 0.85
+  (127 completions; 128 would have failed M3, making that seed MIXED and the cell still PASS 2/3).
+- Secondary: W5 (calibrated wave +-5%) holds in 5 of 6 runs; it fails for 1.65x seed 2 (5089 s against 4850 +- 182 s). W6 (wave
+  earlier at 1.35x) holds in every seed (shifts 237 / 271 / 513 s; model 287-334). W7 (composition +-5%) and W8 (late +-0.25)
+  hold in all six. W9: all three NOBURST controls GOOD (completions 1.66-1.82 lambda_ref in the two windows, hit 0.95, slope about
+  0). W10: the E0a puts this workload's all-miss capacity at 0.07597 /s = 1.062 lambda_ref (model 1.046); every trapped run's
+  late completions are below it (47-57% of it at 1.65x).
+- Model F's timing on this workload: (wave - 1200) / (F - 1200), the median-based ratio, 0.950 / 0.952 / 0.983 (1.65x) and 0.966 / 0.964 /
+  0.920 (1.35x), against 0.9125-0.9327 on the standard workload.
+**Provenance:** `provenance/push_times_2026-11-05-r16.tsv`: the registration was on GitHub 41.5 min before the first MIRROR job
+was submitted. The errata d8c49b7 (prose) were pushed at 16:19:36, during the runs and before any output was read.
+**Figure:** `results/theory/r16/fig_mirror.{pdf,png}` (figures/r16/fig_mirror.py with the three 1.65x BURST runs).
+**Next:** independent verification (blind recompute, provenance, rule audit, artifact skeptic, claims), then PAPER_INPUT_r16
+part 1 for the paper session.

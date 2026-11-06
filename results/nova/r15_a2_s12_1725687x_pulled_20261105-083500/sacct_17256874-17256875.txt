@@ -1,0 +1,5 @@
+JobID|JobName|Submit|Start|End|State|ExitCode|NodeList|AllocTRES
+17256874|pm-tsd15|2026-11-05T03:57:14|2026-11-05T06:03:36|2026-11-05T08:33:02|COMPLETED|0:0|nova22-gpu-3|billing=1,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=20G,node=1
+17256875|pm-tsd15|2026-11-05T03:57:14|2026-11-05T06:04:13|2026-11-05T08:33:38|COMPLETED|0:0|nova22-gpu-3|billing=1,cpu=16,gres/gpu:a100=1,gres/gpu=1,mem=20G,node=1
+17256874.batch|4412216K|02:29:26|COMPLETED
+17256875.batch|4426120K|02:29:25|COMPLETED

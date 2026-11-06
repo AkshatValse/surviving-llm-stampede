@@ -1,0 +1,49 @@
+
+##### POP32 (17264093)  agentload_e0_miss/20261105-145429  node nova22-gpu-1 job 17264093 label sglang-nocache-mirror-k20 status finished duration 2700 wall 2701
+   outcome: sessions started 225 completed 193 failed 0 cancelled 32; requests ok 4104 error 0 cancelled 17; errors_by_kind {}; abort None; max_inflight 32; scrape failures 0 skipped 0
+   req status {'ok': 4104, 'cancelled': 17}, http {200.0: 4104, nan: 17}, cached tokens total 0, completion_tokens!=100: 0, prompt mismatch 0, n_turns values {7: 1, 10: 2, 16: 1, 19: 1, 20: 220}
+   cancelled requests: t_complete set [2700.0]; max gap between ok completions 25.08 s; max latency 46.9 s; sched_delay max 0.0120
+     window  sessions  sess_per_s  sess_over_ref  turns  turns_per_s  turns_based_over_ref  unc_tok_per_s  mean_prompt  lat_med
+ [900,2700)       129    0.071667         1.0019   2709        1.505                 1.062          12120       8053.5     16.2
+ [600,2700)       160     0.07619         1.0651   3126       1.4886                1.0504          12196       8193.3   16.673
+[1200,2700)       125    0.083333         1.1649   2292        1.528                1.0782          12266       8027.8   16.059
+ [900,1800)        64    0.071111        0.99409   1349       1.4989                1.0577          12027       8023.9    16.48
+[1800,2700)        65    0.072222         1.0096   1360       1.5111                1.0663          12214       8082.8   15.998
+ [300,2700)       193    0.080417         1.1242   3595       1.4979                 1.057          12120         8091   16.379
+   session completions per 120-s bin: 240:1 360:31 480:1 720:16 840:15 960:2 1080:2 1200:25 1320:5 1560:13 1680:17 1800:2 1920:6 2040:15 2160:10 2280:1 2400:9 2520:19 2640:3
+   completions in six 300-s blocks of [900,2700): [4, 30, 30, 12, 22, 31]; mean 21.5 sd 11.2 -> SE of the 1800-s rate 0.214 lambda_ref
+   turns in six 300-s blocks: [417, 493, 439, 405, 484, 471]; turns-based SE 0.0351 lambda_ref
+
+##### POP64 check (17264093)  agentload_e0_miss_popcheck/20261105-154232  node nova22-gpu-1 job 17264093 label sglang-nocache-mirror-k20 status finished duration 2700 wall 2701
+   outcome: sessions started 256 completed 192 failed 0 cancelled 64; requests ok 4247 error 0 cancelled 61; errors_by_kind {}; abort None; max_inflight 64; scrape failures 0 skipped 0
+   req status {'ok': 4247, 'cancelled': 61}, http {200.0: 4247, nan: 61}, cached tokens total 0, completion_tokens!=100: 0, prompt mismatch 0, n_turns values {7: 1, 10: 2, 16: 1, 19: 1, 20: 251}
+   cancelled requests: t_complete set [2700.0]; max gap between ok completions 24.94 s; max latency 73.0 s; sched_delay max 0.0417
+     window  sessions  sess_per_s  sess_over_ref  turns  turns_per_s  turns_based_over_ref  unc_tok_per_s  mean_prompt  lat_med
+ [900,2700)       130    0.072222         1.0096   2806       1.5589                   1.1          12304       7892.9   39.152
+ [600,2700)       191    0.090952         1.2715   3192         1.52                1.0726          12176       8010.7   40.587
+[1200,2700)       126       0.084         1.1743   2218       1.4787                1.0434          12255       8288.1   42.618
+ [900,1800)        66    0.073333         1.0252   1412       1.5689                1.1071          12280       7827.4   39.042
+[1800,2700)        64    0.071111        0.99409   1394       1.5489                1.0929          12328       7959.1   39.294
+ [300,2700)       191    0.079583         1.1125   3555       1.4812                1.0452          12235       8259.9   42.262
+   session completions per 120-s bin: 120:1 600:10 720:41 840:12 960:2 1320:2 1440:8 1560:29 1680:23 1800:2 2160:5 2280:13 2400:25 2520:18 2640:1
+   completions in six 300-s blocks of [900,2700): [4, 7, 55, 2, 18, 44]; mean 21.7 sd 22.5 -> SE of the 1800-s rate 0.429 lambda_ref
+   turns in six 300-s blocks: [588, 352, 472, 519, 346, 529]; turns-based SE 0.0951 lambda_ref
+
+##### smoke POP32 300s (17264039)  agentload_e0_miss/20261105-145027  node nova22-gpu-1 job 17264039 label sglang-nocache-mirror-k20-smoke status finished duration 300 wall 302
+   outcome: sessions started 32 completed 0 failed 0 cancelled 32; requests ok 511 error 0 cancelled 29; errors_by_kind {}; abort None; max_inflight 32; scrape failures 0 skipped 0
+   req status {'ok': 511, 'cancelled': 29}, http {200.0: 511, nan: 29}, cached tokens total 0, completion_tokens!=100: 0, prompt mismatch 0, n_turns values {19: 1, 20: 31}
+   cancelled requests: t_complete set [300.0]; max gap between ok completions 24.65 s; max latency 41.4 s; sched_delay max 0.0115
+
+##### smoke POP64 300s (17264039)  agentload_e0_miss_popcheck/20261105-145831  node nova22-gpu-1 job 17264039 label sglang-nocache-mirror-k20-smoke status finished duration 300 wall 301
+   outcome: sessions started 65 completed 1 failed 0 cancelled 64; requests ok 692 error 0 cancelled 64; errors_by_kind {}; abort None; max_inflight 64; scrape failures 0 skipped 0
+   req status {'ok': 692, 'cancelled': 64}, http {200.0: 692, nan: 64}, cached tokens total 0, completion_tokens!=100: 0, prompt mismatch 0, n_turns values {10: 1, 19: 1, 20: 63}
+   cancelled requests: t_complete set [300.0]; max gap between ok completions 23.50 s; max latency 44.2 s; sched_delay max 0.0308
+
+=== W10 robustness: LATE (registered scorer values, lambda_ref units) against each all-miss capacity estimate
+   1.65x-s0: LATE 0.592 (n 89, Poisson SE 0.063); ratio to each estimate: E0a POP32 sessions [900,2700): 0.591, E0a POP32 turns-based: 0.558, POP64 sessions [900,2700): 0.587, POP64 turns-based: 0.539, model (frozen): 0.566
+   1.65x-s1: LATE 0.606 (n 91, Poisson SE 0.064); ratio to each estimate: E0a POP32 sessions [900,2700): 0.605, E0a POP32 turns-based: 0.570, POP64 sessions [900,2700): 0.600, POP64 turns-based: 0.551, model (frozen): 0.579
+   1.65x-s2: LATE 0.499 (n 75, Poisson SE 0.058); ratio to each estimate: E0a POP32 sessions [900,2700): 0.498, E0a POP32 turns-based: 0.470, POP64 sessions [900,2700): 0.495, POP64 turns-based: 0.454, model (frozen): 0.477
+   1.35x-s0: LATE 0.619 (n 93, Poisson SE 0.064); ratio to each estimate: E0a POP32 sessions [900,2700): 0.618, E0a POP32 turns-based: 0.583, POP64 sessions [900,2700): 0.613, POP64 turns-based: 0.563, model (frozen): 0.592
+   1.35x-s1: LATE 0.739 (n 111, Poisson SE 0.070); ratio to each estimate: E0a POP32 sessions [900,2700): 0.738, E0a POP32 turns-based: 0.696, POP64 sessions [900,2700): 0.732, POP64 turns-based: 0.672, model (frozen): 0.706
+   1.35x-s2: LATE 0.845 (n 127, Poisson SE 0.075); ratio to each estimate: E0a POP32 sessions [900,2700): 0.844, E0a POP32 turns-based: 0.796, POP64 sessions [900,2700): 0.837, POP64 turns-based: 0.769, model (frozen): 0.808
+   estimates: E0a POP32 sessions [900,2700) = 1.0019, E0a POP32 turns-based = 1.0620, POP64 sessions [900,2700) = 1.0096, POP64 turns-based = 1.1000, model (frozen) = 1.0461

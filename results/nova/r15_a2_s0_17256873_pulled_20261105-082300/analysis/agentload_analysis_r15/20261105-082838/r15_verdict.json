@@ -1,0 +1,107 @@
+{
+  "by_seed": {
+    "0": {
+      "T1": "stuck",
+      "T2": "stuck",
+      "control_burst@1.35": "stuck",
+      "control_noburst@1.35": "good",
+      "control_burst@1.65": "stuck",
+      "control_noburst@1.65": "good"
+    },
+    "1": {
+      "T1": "stuck",
+      "control_burst@1.35": "stuck",
+      "control_noburst@1.35": "good",
+      "control_burst@1.65": "stuck",
+      "control_noburst@1.65": "good"
+    },
+    "2": {
+      "T1": "stuck",
+      "control_burst@1.35": "stuck",
+      "control_noburst@1.35": "good",
+      "control_burst@1.65": "stuck",
+      "control_noburst@1.65": "good"
+    }
+  },
+  "decision": {
+    "cells": {
+      "T1": {
+        "label": "sglang-fcfs-r1-toolslow-d30w1800",
+        "mult": 1.35,
+        "rule": "T1 (sglang-fcfs-r1-toolslow-d30w1800) is decided alone, with no conjunction with any other cell: TRAPS iff STUCK in >= 2 of the 3 registered seeds; NO-TRAP iff GOOD in >= 2 of 3; else MIXED (a cell that meets both counts, possible only through runs that are both STUCK and GOOD, is MIXED)",
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "need": 2,
+        "seeds_present": [
+          0,
+          1,
+          2
+        ],
+        "missing_seeds": [],
+        "duplicate_seeds": [],
+        "stuck": 3,
+        "good": 0,
+        "stuck_seeds": [
+          0,
+          1,
+          2
+        ],
+        "good_seeds": [],
+        "possible_outcomes": [
+          "TRAPS"
+        ],
+        "outcome": "TRAPS",
+        "outcome_if_missing_count_against": "TRAPS"
+      },
+      "T2": {
+        "label": "sglang-fcfs-r1-toolslow-d15-165",
+        "mult": 1.65,
+        "rule": "T2 (sglang-fcfs-r1-toolslow-d15-165) is decided alone, with no conjunction with any other cell: TRAPS iff STUCK in >= 2 of the 3 registered seeds; NO-TRAP iff GOOD in >= 2 of 3; else MIXED (a cell that meets both counts, possible only through runs that are both STUCK and GOOD, is MIXED)",
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "need": 2,
+        "seeds_present": [
+          0
+        ],
+        "missing_seeds": [
+          1,
+          2
+        ],
+        "duplicate_seeds": [],
+        "stuck": 1,
+        "good": 0,
+        "stuck_seeds": [
+          0
+        ],
+        "good_seeds": [],
+        "possible_outcomes": [
+          "TRAPS",
+          "NO-TRAP",
+          "MIXED"
+        ],
+        "outcome": null,
+        "outcome_if_missing_count_against": "MIXED"
+      }
+    },
+    "note": "per cell, no conjunction: outcome is TRAPS / NO-TRAP / MIXED once no result of the missing seeds could change it, None before (and None, with outcome_if_missing_count_against None, while a seed has two counted runs); outcome_if_missing_count_against is the call if the missing seeds never come"
+  },
+  "endpoint_problems": [],
+  "endpoints": {
+    "stuck_hit_below": 0.2,
+    "good_hit_above": 0.8,
+    "eval_window_s": [
+      5700.0,
+      8700.0
+    ],
+    "trapped_co_primary_n": [
+      100
+    ],
+    "source": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\configs\\r11_basin_predict.yaml"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "experiment": "agentload_analysis_r15_cut",
+  "status": "finished",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+    "-m",
+    "analysis.r15_cut",
+    "classify",
+    "--run-dirs",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040702",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040722",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040746",
+    "--prereg",
+    "configs/agentload_prereg_2026-11-05_cut_a115.yaml",
+    "configs/agentload_prereg_2026-11-05_cut_b085.yaml",
+    "--theory-git",
+    "icml-cut-pred:results/theory/icml/cut_predictions.json",
+    "--out-root",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/analysis"
+  ],
+  "git": {
+    "commit": "24dcc913dca8722eb72f348eec0da8041bcd69fa",
+    "dirty": true,
+    "branch": "r15/tonight",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-11-05T06:39:31",
+  "end_time": "2026-11-05T06:39:36",
+  "wall_s": 4.528953,
+  "slurm_env": {},
+  "run_dirs": [
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040702",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040722",
+    "results/nova/r15_cut_a_1725686x_pulled_20261105-063800/results/agentload_e2_burst/20261105-040746"
+  ],
+  "prereg": [
+    "configs/agentload_prereg_2026-11-05_cut_a115.yaml",
+    "configs/agentload_prereg_2026-11-05_cut_b085.yaml"
+  ],
+  "control_root": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst",
+  "theory": "icml-cut-pred:results/theory/icml/cut_predictions.json"
+}

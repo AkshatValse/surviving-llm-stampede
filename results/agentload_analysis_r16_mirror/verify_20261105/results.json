@@ -1,0 +1,959 @@
+{
+ "recompute": {
+  "runs": [
+   {
+    "run": "20261105-145227",
+    "arm": "burst",
+    "rate_mult": 1.65,
+    "seed": 0,
+    "blackout": 0.06989681174720333,
+    "late": 0.5924586900477234,
+    "wave": 4995.929418277927,
+    "burst_completed": 200,
+    "slope": 0.07673843110178315,
+    "lambda_plan": 0.12259259259259259,
+    "M1": true,
+    "M2": true,
+    "M3": true,
+    "M4": true,
+    "stuck": true,
+    "call": "RENEWAL",
+    "hit_turns_4500": 0.0005499037668408029,
+    "hit_turns_5700": 0.0007593014426727411,
+    "hit_tokens_4500": 7.684187574860796e-08,
+    "hit_tokens_5700": 1.0693371579959018e-07
+   },
+   {
+    "run": "20261105-145244-2",
+    "arm": "burst",
+    "rate_mult": 1.65,
+    "seed": 1,
+    "blackout": 0.05824734312266944,
+    "late": 0.6057723684757622,
+    "wave": 4944.502429891843,
+    "burst_completed": 200,
+    "slope": 0.08367798369433509,
+    "lambda_plan": 0.11888888888888889,
+    "M1": true,
+    "M2": true,
+    "M3": true,
+    "M4": true,
+    "stuck": true,
+    "call": "RENEWAL",
+    "hit_turns_4500": 0,
+    "hit_turns_5700": 0,
+    "hit_tokens_4500": 0,
+    "hit_tokens_5700": 0
+   },
+   {
+    "run": "20261105-145240",
+    "arm": "burst",
+    "rate_mult": 1.65,
+    "seed": 2,
+    "blackout": 0.0931957489962711,
+    "late": 0.4992629410514523,
+    "wave": 5088.594989806879,
+    "burst_completed": 200,
+    "slope": 0.09353768608318054,
+    "lambda_plan": 0.12666666666666668,
+    "M1": true,
+    "M2": true,
+    "M3": true,
+    "M4": true,
+    "stuck": true,
+    "call": "RENEWAL",
+    "hit_turns_4500": 0.0004231311706629055,
+    "hit_turns_5700": 0.000580046403712297,
+    "hit_tokens_4500": 5.958457633380074e-08,
+    "hit_tokens_5700": 8.297641948452283e-08
+   },
+   {
+    "run": "20261105-145244-1",
+    "arm": "burst",
+    "rate_mult": 1.35,
+    "seed": 0,
+    "blackout": 0.10484521762080498,
+    "late": 0.6190860469038009,
+    "wave": 4758.6851528161205,
+    "burst_completed": 200,
+    "slope": 0.05567306059677697,
+    "lambda_plan": 0.10222222222222223,
+    "M1": true,
+    "M2": true,
+    "M3": true,
+    "M4": true,
+    "stuck": true,
+    "call": "RENEWAL",
+    "hit_turns_4500": 0.00087706475661453,
+    "hit_turns_5700": 0.00020669698222405952,
+    "hit_tokens_4500": 1.1711761829611433e-07,
+    "hit_tokens_5700": 2.7343061083031306e-08
+   },
+   {
+    "run": "20261105-145246",
+    "arm": "burst",
+    "rate_mult": 1.35,
+    "seed": 1,
+    "blackout": 0.0931957489962711,
+    "late": 0.7389091527561494,
+    "wave": 4673.194390581455,
+    "burst_completed": 200,
+    "slope": 0.05039114391143911,
+    "lambda_plan": 0.09407407407407407,
+    "M1": true,
+    "M2": true,
+    "M3": true,
+    "M4": true,
+    "stuck": true,
+    "call": "RENEWAL",
+    "hit_turns_4500": 0,
+    "hit_turns_5700": 0,
+    "hit_tokens_4500": 0,
+    "hit_tokens_5700": 0
+   },
+   {
+    "run": "20261105-145244",
+    "arm": "burst",
+    "rate_mult": 1.35,
+    "seed": 2,
+    "blackout": 0.16309256074347442,
+    "late": 0.8454185801804592,
+    "wave": 4575.5934975934215,
+    "burst_completed": 200,
+    "slope": 0.049655834327860006,
+    "lambda_plan": 0.1025925925925926,
+    "M1": true,
+    "M2": true,
+    "M3": true,
+    "M4": true,
+    "stuck": true,
+    "call": "RENEWAL",
+    "hit_turns_4500": 0.0028793550244745176,
+    "hit_turns_5700": 0.002268041237113402,
+    "hit_tokens_4500": 3.807870105934946e-07,
+    "hit_tokens_5700": 2.935074811054559e-07
+   },
+   {
+    "run": "20261105-145242",
+    "arm": "noburst",
+    "rate_mult": 1.65,
+    "seed": 0,
+    "blackout": 1.7357708250555492,
+    "late": 1.684180321146899,
+    "wave": null,
+    "burst_completed": 0,
+    "slope": -0.0009682254443362276,
+    "lambda_plan": 0.12259259259259259,
+    "M1": null,
+    "M2": null,
+    "M3": null,
+    "M4": null,
+    "stuck": false,
+    "call": null,
+    "hit_turns_4500": 0.9493964268469338,
+    "hit_turns_5700": 0.9495548961424333,
+    "hit_tokens_4500": 0.9233668909761309,
+    "hit_tokens_5700": 0.9235858255387531
+   },
+   {
+    "run": "20261105-145247",
+    "arm": "noburst",
+    "rate_mult": 1.65,
+    "seed": 1,
+    "blackout": 1.7940181681782186,
+    "late": 1.664209803504841,
+    "wave": null,
+    "burst_completed": 0,
+    "slope": -0.0003347431987331026,
+    "lambda_plan": 0.11888888888888889,
+    "M1": null,
+    "M2": null,
+    "M3": null,
+    "M4": null,
+    "stuck": false,
+    "call": null,
+    "hit_turns_4500": 0.9501170721775425,
+    "hit_turns_5700": 0.9493168796826796,
+    "hit_tokens_4500": 0.9238024695660182,
+    "hit_tokens_5700": 0.9233432703388501
+   },
+   {
+    "run": "20261105-145248",
+    "arm": "noburst",
+    "rate_mult": 1.65,
+    "seed": 2,
+    "blackout": 1.7008224191819477,
+    "late": 1.8173171054272865,
+    "wave": null,
+    "burst_completed": 0,
+    "slope": 0.00014777218404154292,
+    "lambda_plan": 0.12666666666666668,
+    "M1": null,
+    "M2": null,
+    "M3": null,
+    "M4": null,
+    "stuck": false,
+    "call": null,
+    "hit_turns_4500": 0.9498708504735482,
+    "hit_turns_5700": 0.9499332443257676,
+    "hit_tokens_4500": 0.923543791521453,
+    "hit_tokens_5700": 0.9236716929913373
+   }
+  ],
+  "cell_verdicts": {
+   "1.65": "PASS (RENEWAL in 3/3 seeds; same as registered mirror_verdict.json: PASS, RENEWAL x3)",
+   "1.35": "PASS (RENEWAL in 3/3 seeds; same as registered mirror_verdict.json: PASS, RENEWAL x3)"
+  },
+  "disagreements": [
+   "SUMMARY: 22 field-level disagreements out of 252 values compared (compare_registered.py). None of them is a boolean, call or verdict. Every M1-M4, STUCK, call and cell verdict is identical. All the differences come from 4 definitional causes, listed below.",
+   "slope 20261105-145227 (1.65x s0): mine 0.07673843110178315 vs registered 0.07673457466565563 (rel 5.0e-5)",
+   "slope 20261105-145244-2 (1.65x s1): mine 0.08367798369433509 vs registered 0.08367138360155985 (rel 7.9e-5)",
+   "slope 20261105-145240 (1.65x s2): mine 0.09353768608318054 vs registered 0.09353684885193297 (rel 9.0e-6)",
+   "slope 20261105-145244-1 (1.35x s0): mine 0.05567306059677697 vs registered 0.05567225206270404 (rel 1.5e-5)",
+   "slope 20261105-145246 (1.35x s1): mine 0.05039114391143911 vs registered 0.05038406874373316 (rel 1.4e-4)",
+   "slope 20261105-145244 (1.35x s2): mine 0.049655834327860006 vs registered 0.04964366536258209 (rel 2.5e-4)",
+   "slope 20261105-145242 (NOBURST 1.65x s0): mine -0.0009682254443362276 vs registered -0.0009699507753428521 (rel 1.8e-3)",
+   "slope 20261105-145247 (NOBURST 1.65x s1): mine -0.0003347431987331026 vs registered -0.00033483432915425203 (rel 2.7e-4)",
+   "slope 20261105-145248 (NOBURST 1.65x s2): mine 0.00014777218404154292 vs registered 0.000148823337002319 (rel 7.1e-3)",
+   "CAUSE of all 9 slope differences: the brief samples N(t) at integer seconds and averages 10 samples per bin. The registered scorer evidently uses the exact time-average of the backlog step function over each [10k, 10k+10) bin. That variant (probe_slope.py V1: start arrival_s, end t_end for completed/failed, else run end; 270 bins, centres 10k+5) reproduces every registered slope to at most 5e-15 relative. Its [5700, 8700) version also reproduces the registered basin backlog_slope column to at most 3e-15. No boolean changes: the largest slope shift is 1.2e-5 /s, while the smallest M4 margin (|S-S_QS| - |S-S_F|) is 0.0112 /s (1.35x s2).",
+   "hit fraction [5700,8700] turn share 20261105-145227: mine (brief: cached_tokens > 0) 0.0007593014426727411 vs registered hit_eval 0.0",
+   "hit fraction [5700,8700] turn share 20261105-145240: mine 0.000580046403712297 vs registered hit_eval 0.0",
+   "hit fraction [5700,8700] turn share 20261105-145244-1: mine 0.00020669698222405952 vs registered hit_eval 0.0",
+   "hit fraction [5700,8700] turn share 20261105-145244: mine 0.002268041237113402 vs registered hit_eval 0.0",
+   "CAUSE of the 4 hit differences: configs/agentload_analysis.yaml:19 selects hit_metric frac_turns_cached_gt50, but the brief says 'cached tokens > 0'. Each of these four runs has 1-20 turns with 1-50 cached tokens. Two readings of gt50 each reproduce the registered hit_eval exactly in all 9 runs: cached_tokens > 50, and cached/prompt > 0.5 (the tagged prereg has cached_frac_threshold 0.5 at line 187). The registered hit_eval is the [5700,8700] window (eval_from 5700). STUCK is unchanged under all 8 readings (4 metrics x 2 windows): burst runs are at most 0.0029, NOBURST runs at least 0.923, threshold 0.2.",
+   "S_QS 20261105-145227: mine 0.04776175259259259 vs registered 0.047761439370584344",
+   "S_QS 20261105-145244-2: mine 0.044058048888888895 vs registered 0.04405773566688065",
+   "S_QS 20261105-145240: mine 0.05183582666666668 vs registered 0.051835513444658435",
+   "S_QS 20261105-145244-1: mine 0.027391382222222233 vs registered 0.027391069000213986",
+   "S_QS 20261105-145246: mine 0.019243234074074078 vs registered 0.01924292085206583",
+   "S_QS 20261105-145244: mine 0.0277617525925926 vs registered 0.027761439370584354",
+   "CAUSE of the 6 S_QS differences, each a constant offset of 3.132e-7 /s: the brief's capacity constant 0.07483084 differs from the frozen lambda_miss_model 0.07483115322200824 (mirror_predictions.json:14, tag r16-mirror-reg). With the JSON value my S_QS equals the registered one bitwise in all 6 runs. M4 is unchanged under either constant.",
+   "burst_completed for the 3 NOBURST runs (20261105-145242, -145247, -145248): my script leaves it undefined because those runs have no burst sessions; the registered file has 0. This is a representational difference only; the count is 0 either way."
+  ],
+  "code_path": "C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/recompute/recompute_mirror.py",
+  "notes": "COMMAND (from the scratch dir C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/recompute):\nPYTHONIOENCODING=utf-8 \"C:/Users/Akshat/Desktop/Claude Code/.venvs/nova-research/Scripts/python.exe\" -I recompute_mirror.py --pred mirror_predictions_tag.json --plans-dir \"<wt>/results/theory/r16/mirror_plans\" --out-dir . <the 9 run dirs>\n- mirror_predictions_tag.json is the output of `git show r16-mirror-reg:results/theory/r16/mirror_predictions.json`. The working-tree copy is identical (git diff --quiet returned 0); the same holds for the prereg/e2 configs, the frozen plans and configs/agentload_analysis.yaml.\n- The script imports only numpy, pandas and yaml; nothing from the repo. I opened none of the forbidden analysis/*.py files.\n- Outputs: recompute_out.json and recompute_runs.csv, both written 17:38:09. I first opened the registered files after that (show_registered.py is from 17:39:32). Post-hoc scripts: compare_registered.py, probe_slope.py, compare_bins_and_margins.py, extra_checks.py, all in the same dir.\n\nIDENTITY (from meta.json, config_effective.yaml, argv and plan.csv; every source agrees):\n- 145227 = job 17264055, burst 1.65x, seed 0\n- 145244-2 = job 17264056, burst 1.65x, seed 1\n- 145240 = job 17264057, burst 1.65x, seed 2\n- 145242 = job 17264058, NOBURST 1.65x, seed 0\n- 145247 = job 17264059, NOBURST 1.65x, seed 1\n- 145248 = job 17264060, NOBURST 1.65x, seed 2\n- 145244-1 = job 17264062, burst 1.35x, seed 0\n- 145246 = job 17264063, burst 1.35x, seed 1\n- 145244 = job 17264064, burst 1.35x, seed 2\nAll nine runs: label sglang-fcfs-r1-mirror-k20, status finished, run end 8700.014-8700.114 s, no abort, git bc81ee7 (clean), prereg sha 88e20ce2..., mean_turns 1000 / max_turns 20, resolved rate = mult x lambda_ref.\nEach plan.csv equals its frozen plan: sid, origin, idx and n_turns exactly; arrival_s bitwise; tool_time_total_s within 5.6e-16 relative (float text formatting only).\nEvery burst run has 200/200 burst sessions completed before 8700 s. No session has status failed.\n\nPER RUN (burst; rates in lambda_ref; completion counts in brackets; S_QS uses the brief's constant):\n| run | blackout | late | wave (F, tol) s | slope (S_F, S_QS) | lambda_plan (base arrivals) | M1-M4 | call |\n|---|---|---|---|---|---|---|---|\n| 1.65 s0 | .0699 [6] | .5925 [89] | 4995.9 (5194.7, 599.2) | .076738 (.078944, .047762) | .122593 (331) | TTTT | RENEWAL |\n| 1.65 s1 | .0582 [5] | .6058 [91] | 4944.5 (5135.4, 590.3) | .083678 (.085715, .044058) | .118889 (321) | TTTT | RENEWAL |\n| 1.65 s2 | .0932 [8] | .4993 [75] | 5088.6 (5157.5, 593.6) | .093538 (.093000, .051836) | .126667 (342) | TTTT | RENEWAL |\n| 1.35 s0 | .1048 [9] | .6191 [93] | 4758.7 (4883.0, 552.4) | .055673 (.056524, .027391) | .102222 (276) | TTTT | RENEWAL |\n| 1.35 s1 | .0932 [8] | .7389 [111] | 4673.2 (4801.8, 540.3) | .050391 (.053358, .019243) | .094074 (254) | TTTT | RENEWAL |\n| 1.35 s2 | .1631 [14] | .8454 [127] | 4575.6 (4870.2, 550.5) | .049656 (.060308, .027762) | .102593 (277) | TTTT | RENEWAL |\nNOBURST (blackout, late, slope): s0 1.7358 [149], 1.6842 [253], -0.000968; s1 1.7940 [154], 1.6642 [250], -0.000335; s2 1.7008 [146], 1.8173 [273], +0.000148.\n\nAGREEMENT: bitwise equal to the registered values (max relative difference 0.0):\n- blackout and late rates, and their counts; wave, burst_completed, lambda_plan, S_F, F_wave, run_end_s;\n- plan_matches_frozen, stuck, M1-M4, call, cell verdicts;\n- the 25 per-300-s bins in mirror_bins.json (an extra check), for all 9 runs.\n\nMARGINS:\n- M3 at 1.35x s2 (job 17264064) holds by ONE completion: 127 against 127.69 needed (late 0.8454 vs 0.85). No completion falls within 2 s of 6600 or 8700, so the window convention cannot flip it. If M3 had failed, that seed would be MIXED and the 1.35x cell would still PASS 2/3.\n- Every other margin is wide: M1 needs at most 14 of 25.75 completions; M2 has at least 256 s of room; M4 at least 0.0112 /s; CURVE is never close (blackout at most 0.163).\n\nAMBIGUITIES:\n(a) Backlog bin mean. Resolved as the brief says, with 1-s samples. The exact-average reading reproduces the registered slope; no boolean changes. The bin-centre choice (+5 or +4.5) does not change the slope.\n(b) Hit metric. Resolved as the brief's \"> 0\". Both gt50 readings give 0.0 for every burst run and the same values as \"> 0\" for NOBURST. STUCK agrees across both windows and all metrics in all 9 runs.\n(c) The STUCK window: I used both windows as the brief asks; the registered scorer uses [5700, 8700].\n(d) The registered STUCK is the basin classify. Its backlog_slope also exceeds 0.5(mult-1)lambda_ref in every burst run and is below it in every NOBURST run, so no change.\n(e) The S_QS constant: see disagreements.\n(f) Wave median with even n: numpy's average of the middle two values. The lower and upper medians also pass M2.\n(g) Call precedence: irrelevant here, since all burst runs are STUCK with CURVE false.\n\nCOMPLETIONS PER 300-s BIN, [1200, 8700), all origins (bins start at 1200, 1500, ..., 8400):\n- 1.65 s0: 6 2 3 3 0 0 2 4 6 25 18 26 55 74 13 8 11 12 16 6 16 14 11 12 14\n- 1.65 s1: 10 6 1 2 3 1 0 1 2 14 18 39 76 60 5 11 6 9 14 12 19 10 8 15 13\n- 1.65 s2: 3 4 1 0 5 1 1 1 6 12 22 32 31 60 49 7 8 10 9 13 12 11 9 13 8\n- 1.35 s0: 6 3 1 1 0 0 2 7 16 21 25 43 89 14 10 9 19 12 17 20 8 16 6 13 13\n- 1.35 s1: 7 4 0 1 2 0 2 4 17 15 33 79 60 6 9 6 18 13 16 9 14 12 16 23 21\n- 1.35 s2: 5 2 0 2 2 1 1 10 16 33 30 59 64 7 8 16 10 14 11 12 17 21 24 22 20\n- NB s0: 35 43 38 32 26 30 40 53 41 34 32 35 37 36 34 42 46 40 30 37 44 25 35 42 40\n- NB s1: 34 41 39 30 33 41 43 37 43 42 29 42 38 42 34 24 28 38 24 40 49 38 42 35 22\n- NB s2: 31 44 33 40 48 40 26 32 39 43 31 39 46 32 37 34 40 31 31 47 40 38 38 40 39\n\nEXTRA (outside the brief, rule text from the tagged note): W5, W6, W8 and W10 all match the registered values. W5 is False only at 1.65 s2 (|wave - F_cal| 238.7 > 182.5). The E0a lambda_miss_turns_based is 0.0759665 = 1.062 lambda_ref.\n\nNOT CHECKED: prereg_bound/run_blockers (needs analysis.prereg code); P_served, fu_hit, W7 and the GOOD classification; job/server logs and Slurm records (not in this brief)."
+ },
+ "provenance": {
+  "checks": [
+   {
+    "name": "1a. Registration on GitHub before every MIRROR Submit and Start",
+    "passed": true,
+    "evidence": "provenance/github_activity_2026-11-05-r16.json:153-159: id 49158340380, branch_creation refs/heads/r16/mirror 0000000 -> bc81ee71f7f55c890f7f0cec33083b98e0be4807 at 2026-11-05T20:07:35Z = 14:07:35 CST. I re-queried GitHub read-only with `gh api -X GET 'repos/AkshatValse/Nova-Research/activity?per_page=100&ref=refs/heads/r16/mirror'` and got the same id and timestamp. It is the ref's earliest event, and the ref has no force_push. Commit and tagger time are 14:07:08 CST (set by the committer), so the push came 27 s after the commit. The sacct times are CST: the _utc export differs by exactly 6 h on all 12 rows, and the job banners say -06:00. Margins after 14:07:35 (sacct file lines 2-13): smoke 17264039 Submit 14:49:05 (+2490 s = 41 min 30 s), Start 14:49:07 (+2492 s). The nine counted jobs: Submit 14:50:52 (+2597 s; 17264064 at 14:50:53, +2598 s), Start 14:50:57 (17264055, +2602 s) to 14:51:28 (17264063 and 17264064, +2633 s). E0a 17264061: Submit 14:50:52 (+2597 s), Start 14:51:26 (+2631 s). E0a 17264093: Submit 14:53:08 (+2733 s), Start 14:53:11 (+2736 s). Run t0 from meta.json: 14:52:28.58 to 14:52:49.36 CST (+2693.6 to +2714.4 s). Script: scratchpad/mirror_verify/provenance/check_sacct.py"
+   },
+   {
+    "name": "1b. Tag r16-mirror-reg points to bc81ee7 (locally and on GitHub)",
+    "passed": true,
+    "evidence": "`git rev-parse 'r16-mirror-reg^{commit}'` = bc81ee71f7f55c890f7f0cec33083b98e0be4807; the annotated tag object is 7c22f15bea556faf01556cf8458f5cfe40785c04, tagger date 2026-11-05T14:07:08-06:00. `git ls-remote origin` gives refs/tags/r16-mirror-reg 7c22f15... and ^{} bc81ee7.... The same object appears at provenance/github_tag_refs_2026-11-05-r16.json:183. `gh api -X GET repos/AkshatValse/Nova-Research/git/tags/7c22f15...` returns object bc81ee7 and tagger 20:07:08Z."
+   },
+   {
+    "name": "2a. Job ID of each run (job log, meta.json slurm_env, nova_job_logs run_dirs file)",
+    "passed": true,
+    "evidence": "All three sources agree for every run. 20261105-145227 = 17264055 (BURST 1.65 seed 0). 145244-2 = 17264056 (BURST 1.65 seed 1). 145240 = 17264057 (BURST 1.65 seed 2). 145242 = 17264058 (NOBURST 1.65 seed 0). 145247 = 17264059 (NOBURST seed 1). 145248 = 17264060 (NOBURST seed 2). 145244-1 = 17264062 (BURST 1.35 seed 0). 145246 = 17264063 (BURST 1.35 seed 1). 145244 = 17264064 (BURST 1.35 seed 2). Sources: each log's line 5 'job: <id> name=...', its line 669 '\"out_dir\": \"results/agentload_e2_burst/<run>\"', meta.json slurm_env.SLURM_JOB_ID, and nova_job_logs/<job>-*/run_dirs_burst.txt. Each log has exactly one agentload run. sacct NodeList equals meta.hostname for all nine."
+   },
+   {
+    "name": "2b. Git commit recorded at run start",
+    "passed": true,
+    "evidence": "In all nine meta.json files: git.commit = bc81ee71f7f55c890f7f0cec33083b98e0be4807, dirty false, branch r16-mirror-reg-run, captured_at 'run start'. Job logs lines 50-52 say the same: commit bc81ee7..., branch r16-mirror-reg-run, '0 changed/untracked paths'."
+   },
+   {
+    "name": "2c. prereg_sha256 equals sha256 of the tagged registration",
+    "passed": true,
+    "evidence": "`git show r16-mirror-reg:configs/agentload_prereg_2026-11-05_mirror_k20.yaml | sha256sum` = 88e20ce2201b34c2baf246dfbc9690b947828092f3fd4b18eaccab53e3b5601b, the same as the working-tree file. All nine runs carry this value in meta.json prereg_sha256, in config_effective.yaml meta.prereg_sha256, and in job log line 555 PREREG_SHA256=88e20ce2...."
+   },
+   {
+    "name": "2d. Workload config sha256 equals the tagged configs/agentload_e2_mirror_k20.yaml",
+    "passed": true,
+    "evidence": "The tagged blob's sha256 is afea48b8327bb5245ed64921ebdc3a12853c769e630519c762fa484894bb3d73. It matches the tagged prereg protocol.e2_config_sha256 (line 56) and mirror_predictions.json config_sha256. Job log lines 1 and 60 of all nine runs read 'E2_CONFIG=configs/agentload_e2_mirror_k20.yaml sha256=afea48b8...'. Each run's config.yaml, a verbatim copy, is byte-identical to the tagged blob (`cmp`), and this is the file run_blockers hashes. meta.json argv names --config configs/agentload_e2_mirror_k20.yaml but records no sha256 of it. config_effective.yaml is a re-serialized merge with no sha field."
+   },
+   {
+    "name": "2e. PREREG_OK in every job log",
+    "passed": true,
+    "evidence": "Each of the nine logs has exactly one line 556: 'PREREG_OK file=/work/classtmp/avalse/swapp/repo_r16_mirror/configs/agentload_prereg_2026-11-05_mirror_k20.yaml commit=bc81ee71f7f55c890f7f0cec33083b98e0be4807 committed_clean=True'. Line 57 shows PREREG_ALLOW_UNCOMMITTED=0."
+   },
+   {
+    "name": "2f. Label, arm, rate, seed",
+    "passed": true,
+    "evidence": "The label is sglang-fcfs-r1-mirror-k20 in meta.engine_label, config_effective meta.engine_label and the SubmitLine ENGINE_LABEL. Arm (meta.arm = config_effective meta.arm = SubmitLine ARMS): BURST runs have arrivals.burst {n 200, t_s 1200, width_s 60}; NOBURST runs set arrivals.burst=null. rate_mult in argv, config_effective and SubmitLine MULTS: 1.65 for 17264055-60 and 1.35 for 17264062-64. All NOBURST runs are at 1.65, as registered. lambda_ref_resolved is 0.07153402100919228, the registered measured.lambda_ref, and the resolved rates are 0.118031 and 0.096571 /s. The seed agrees across meta.seeds, argv --seed, config_effective run.seed and SubmitLine SEEDS."
+   },
+   {
+    "name": "2g. Completed: status finished, run end >= 8700 s, not aborted",
+    "passed": true,
+    "evidence": "All nine have meta status 'finished', abort_reason null and t_abort_s null. outcome.t_end_s runs from 8700.014 to 8700.114 (145246 = 8700.114, the rest 8700.014-8700.018). sessions_failed 0, requests_error 0, sessions_never_admitted 0. sacct shows COMPLETED 0:0, and job logs end 'all runs finished (0 failed)' (line 748, or 742 for NOBURST). The server logs have 0 Traceback/Exception/OOM and one server start each."
+   },
+   {
+    "name": "3. plan.csv against the frozen plan at the tag (all six columns)",
+    "passed": true,
+    "evidence": "My code compared each plan.csv with `git show r16-mirror-reg:results/theory/r16/mirror_plans/<arm>_<mult>_seed<k>.csv` (scratchpad/mirror_verify/provenance/check_plans.py plus an exact csv/float() pass). No plan.csv is byte-identical. All nine are row-identical: same row count and header, and sid, origin, idx, n_turns and arrival_s are text-identical in every row. tool_time_total_s differs only in the last digits, by at most 5.68e-14 s (at most 3 ulp) in 555-697 rows per run (145227: 697, 145240: 693, 145242: 598, 145244: 589, 145244-1: 591, 145244-2: 652, 145246: 555, 145247: 556, 145248: 584). The registered criterion (r16_mirror.py:48-51, 103, 190-202: sid/origin/idx/n_turns exact, times within 1e-9 s) holds, and the scorer shows plan_matches_frozen True for all nine. The working-tree frozen plans are byte-identical to the tag."
+   },
+   {
+    "name": "4. Effective workload is step-capped; burst of 200 in [1200,1260)",
+    "passed": true,
+    "evidence": "config_effective.yaml of all nine has workload.mean_turns 1000 and max_turns 20. meta expected_turns_per_session is 19.8111, which equals (1-0.999^20)/0.001. n_turns runs from 1 to 20 in both plan and sessions.csv, which agree on sid, n_turns, origin and arrival_s. The share with exactly 20 turns: 145227 0.9807 (1269/1294), 145244-2 0.9823, 145240 0.9783, 145244-1 0.9809, 145246 0.9811, 145244 0.9772, 145242 0.9790, 145247 0.9828, 145248 0.9798. The largest turn index in requests.csv is 20, and every completed session completed n_turns turns. Each BURST run has 200 origin=burst sessions, all arriving in [1200, 1260): seed 0 1200.351-1259.888, seed 1 1200.948-1259.928, seed 2 1200.834-1259.135. All 200 sent turn 1, at most 2.8 ms after the planned arrival, with gate_wait 0. NOBURST runs have 0 burst sessions, and their base rows equal the base rows of the same-seed BURST plan."
+   },
+   {
+    "name": "5a. Registered scorer used the tagged predictions; its outputs reproduce",
+    "passed": true,
+    "evidence": "results/agentload_analysis_r16_mirror/20261105-173136/mirror_verdict.json:59-64 gives source git_ref 'r16-mirror-reg:results/theory/r16/mirror_predictions.json', commit bc81ee71f7f5..., commit_unix 1793909228, predates_all_counted_runs true. I re-ran `PYTHONPATH=\"src;.\" python -B -m analysis.r16_mirror classify --run-dirs <the nine> --e0a-calib <calibration.json> --out-root <scratch>/rescore`. mirror_verdict.json, mirror_runs.csv and mirror_bins.json came out byte-identical to the committed ones (sha256 4e835bc8..., c7e27b30..., 512b66f3...). All nine rows have counted True, prereg_bound True and no blockers."
+   },
+   {
+    "name": "5b. analysis/, src/, configs/, prereg/ identical to the tag",
+    "passed": true,
+    "evidence": "`git diff --stat r16-mirror-reg -- analysis src configs prereg` is empty for the working tree, and `git diff --stat r16-mirror-reg HEAD -- ...` is empty for HEAD. HEAD moved from d8c49b7 to f641b02 (the lead's results commit) while I worked; both are identical to the tag on these paths. `git ls-files --others [--ignored] --exclude-standard -- analysis src configs prereg` lists nothing, and there are no .py files at the worktree root. slurm/, mirror_predictions.json and mirror_plans/ are unchanged. On every local ref, the registered files (prereg, workload config, r16_mirror.py, mirror_predict.py, predictions, plans) are touched only by bc81ee7."
+   },
+   {
+    "name": "6. E0a deviation: 17264061 failed, 17264093 resubmitted with --time 02:15:00",
+    "passed": true,
+    "evidence": "sacct line 9: 17264061 FAILED, ExitCode 1:0, Start 14:51:26, End 14:51:57, --time=01:30:00 (the registered e0a_line, r16_mirror.py:393). Log pm-mire0a-17264061.out:470-471: 'time budget (pre): need 7080s (runs+gaps+overhead 5880s, margin 600s, startup 600s), remaining 5369s' / 'FATAL: planned runs do not fit the remaining wall time'. No server was launched and no run happened. sacct line 13: 17264093 COMPLETED 0:0, Submit 14:53:08, and its SubmitLine string-equals the registered E0a line except for --time=01:30:00 -> --time=02:15:00. GEN_EXTRA is an env prefix and does not appear in SubmitLine, but it took effect: the E0a runs' argv include workload.mean_turns=1000 and max_turns=20, and config_effective agrees. 17264093 ran POP 32 at seed 0 (log line 578) and the POP-64 check (line 601)."
+   },
+   {
+    "name": "6b. No registered rule uses E0a (tagged rule text)",
+    "passed": true,
+    "evidence": "Tagged notes/PREDICTIONS_r16_mirror.md:74 says it is 'a measurement only; no rule uses it'. Lines 107-113 list W10 under 'Secondary (registered, reported, not in the verdict)'. Tagged analysis/r16_mirror.py:22-23 says 'no threshold below uses it' and 46-47 defines W10 as secondary. In code, e0a_calib enters only out['W10_capacity'] (358-365). M4's S_QS uses the frozen lambda_miss_model (248). Run lambda_ref comes from the standard workload's prereg/inputs/2026-10-23/calibration.json. The tagged workload config lines 16-17 say 'which no rule uses for its thresholds'."
+   },
+   {
+    "name": "7. Account / partition / QoS of every job",
+    "passed": true,
+    "evidence": "All 12 SubmitLines (17264039, 17264055-64, 17264093) have --account=f2026.coms.6250.02 --partition=instruction --qos=instruction, and the Account and Partition columns agree. The export has no QOS column, but every job banner (log line 5) prints qos=instruction and the nine meta.json files have SLURM_JOB_QOS=instruction. SBATCH_* override env was empty in every log."
+   },
+   {
+    "name": "Extra: SubmitLines and order against the registered sbatch-lines",
+    "passed": true,
+    "evidence": "`python -B -m analysis.r16_mirror sbatch-lines` prints the registered lines (it never submits). The GEN_EXTRA prefix stripped, 11 of 12 sacct SubmitLines are string-identical to their registered line, the exception being 17264093's --time. The JobID order follows the registered order: smoke, 165b x3, 165n x3, e0a, 135b x3, then the e0a resubmission."
+   },
+   {
+    "name": "Extra: pulled data against the in-job analyses computed on Nova",
+    "passed": true,
+    "evidence": "For each of the nine runs, results/.../agentload_analysis_burst2/*/trap_v2_runs.csv (n_sessions_completed_eval, n_turns_completed_eval, t0_unix, prereg_sha256) equals my recount from the pulled sessions.csv and requests.csv over [5700, t_end]. Example: 145227 has 120 sessions and 5268 turns in both. The archive sha256s in COMMANDS.txt could not be checked because the archives were deleted."
+   },
+   {
+    "name": "Extra: engine and GPU binding",
+    "passed": true,
+    "evidence": "Every server.log server_args shows schedule_policy fcfs, max_total_tokens 300000, disable_radix_cache False, context_length 49152 and revision a09a35458c70.... Job logs show REFRESH=1. All runs are on NVIDIA A100 80GB PCIe, 81920 MiB. Jobs sharing a node had distinct GPU bus IDs with 0 MiB in use at start: gpu-2 05/06/85/C6, gpu-3 46/C5/C6, gpu-1 06/45."
+   }
+  ],
+  "problems": [
+   {
+    "severity": "should-disclose",
+    "what": "The E0a run was not submitted as registered. The registered E0a submit line (--time 01:30:00) could never have run: the job script's default POP-64 check needs 7080 s against 5400 s, so 17264061 failed its pre-check. The resubmission 17264093 used --time 02:15:00 and was otherwise identical. Only secondary W10 uses the E0a; the verdict does not.",
+    "evidence": "sacct lines 9 and 13; pm-mire0a-17264061.out:470-471; r16_mirror.py:393 (tag). Already recorded in notes/LOG.md (2026-11-05 entry, 'Deviation (recorded)') and the E0a COMMANDS.txt. Any text reporting W10 or the E0a capacity (1.062 lambda_ref) should state it."
+   },
+   {
+    "severity": "minor",
+    "what": "No plan.csv is byte-identical to its frozen plan. They match row for row, but tool_time_total_s differs by up to 3 ulp (5.7e-14 s) in 555-697 rows per run. This passes the registered tolerance (1e-9 s). Write 'equal to the frozen plan within the registered tolerance (exact in sid/origin/idx/n_turns/arrival_s)' and never 'byte-identical'.",
+    "evidence": "scratchpad/mirror_verify/provenance/check_plans.out and the exact float pass (max abs diff 5.68e-14 s); r16_mirror.py:103, 190-202 (tag)."
+   },
+   {
+    "severity": "minor",
+    "what": "GitHub keeps no push time for tags (the activity log holds only refs/heads events). The freeze record's 'tagged ... and pushed to GitHub before any MIRROR job' can be verified only for the commit bc81ee7 (branch r16/mirror created at 14:07:35 CST), not for the tag. The tag now points to that same commit on GitHub, so what was frozen is unaffected.",
+    "evidence": "provenance/github_activity_2026-11-05-r16.json: 165 events, all 'heads' (133 push, 32 branch_creation); tagged notes/PREDICTIONS_r16_mirror.md:150-153; provenance/README.md:63 ('Tag objects carry no push time')."
+   },
+   {
+    "severity": "minor",
+    "what": "The tagged note's writing time ('about 16:00 CST') is impossible: the commit is from 14:07:08. Erratum 18ac5e6, prose only, corrected it. It reached GitHub at 14:49:22, before the counted jobs (14:50:52) but 17 s after the smoke job 17264039 was submitted.",
+    "evidence": "git show r16-mirror-reg:notes/PREDICTIONS_r16_mirror.md line 3; activity id 49162713099 (bc81ee7->daa9dd4, 20:49:22Z); working-tree errata block (git diff r16-mirror-reg -- notes/PREDICTIONS_r16_mirror.md)."
+   },
+   {
+    "severity": "minor",
+    "what": "The E0a pull's COMMANDS.txt says 17264093 ran 'closed POP 32 seeds 0-2'. It ran seed 0 only, plus the POP-64 check at seed 0.",
+    "evidence": "results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/COMMANDS.txt:17 against SubmitLine SEEDS=0 (sacct line 13), pm-mire0a-17264093.out:55 (SEEDS=\"0\"), and its only runs at lines 578 (closed_n=32 --seed 0) and 601 (closed_n=64 --seed 0)."
+   },
+   {
+    "severity": "minor",
+    "what": "Prose range in the tagged note: '97.7-98.2% of the sessions in the plans run exactly 20 turns'. The 12 frozen plans actually span 97.72-98.28%: noburst_1.65_seed1 is 1028/1046 = 98.28%, and that plan is the counted NOBURST run 17264059. No rule uses this.",
+    "evidence": "tagged notes/PREDICTIONS_r16_mirror.md:17; awk over `git show r16-mirror-reg:results/theory/r16/mirror_plans/*.csv`."
+   },
+   {
+    "severity": "minor",
+    "what": "Not a deviation, but it can mislead a reader. The registration YAML still carries the generic E2 template's pass_rule, kill_conditions and assumptions_note, which mention a CAPPED arm MIRROR does not run. The job script's per-job `summarize burst`/`burst2` outputs in every job log (e.g. \"kill_strict\": true, \"kill_test_pass_decisive\": false) come from that generic machinery and cover one run each. They are not MIRROR results. The MIRROR rules are lambda_selection.rule plus analysis/r16_mirror.py.",
+    "evidence": "tagged configs/agentload_prereg_2026-11-05_mirror_k20.yaml:169-199 versus 125-138; pm-mir165b-17264055.out:690-745."
+   }
+  ],
+  "summary": "All nine counted runs are bound to the r16-mirror-reg registration, and the registration was on GitHub well before any MIRROR job. The only deviation from the registration is the E0a resubmission with --time 02:15:00 (jobs 17264061 and 17264093), which only the secondary W10 uses. Everything else not as registered is prose or documentation and enters no rule: plan.csv files are not byte-identical to the frozen plans (equal within the registered tolerance), GitHub keeps no push time for the tag itself, and a few lines of notes are wrong.\n\nTiming: GitHub's activity log records the creation of branch r16/mirror at bc81ee7 at 20:07:35Z = 14:07:35 CST. I re-queried GitHub read-only and got the same record. The commit and tagger time is 14:07:08 CST. The first MIRROR job, smoke test 17264039, was submitted at 14:49:05 (+2490 s) and started at 14:49:07 (+2492 s). The nine counted jobs were submitted at 14:50:52-53 (+2597 to +2598 s) and started at 14:50:57-14:51:28 (+2602 to +2633 s). The E0a resubmission 17264093 was submitted at 14:53:08 (+2733 s). The tag points to bc81ee7 both locally and on GitHub.\n\nThe nine runs: each one records commit bc81ee7 (branch r16-mirror-reg-run, clean) and the tagged registration's sha256 88e20ce2. Each job log shows the workload config sha256 afea48b8 and one PREREG_OK line. All nine have the registered label, arm, rate and seed, finished at 8700.01-8700.11 s and were not aborted. Each plan.csv matches its frozen plan row for row, within the registered tolerance. The workload really is step-capped (mean_turns 1000, max_turns 20, 97.7-98.3% of sessions at exactly 20 turns), and every BURST run has exactly 200 burst sessions arriving in [1200, 1260) s.\n\nThe scorer: its verdict file shows it read the predictions from the tag. Rerunning it with the code from the tag (output to scratch only) reproduced all three output files byte for byte. analysis/, src/, configs/ and prereg/ are identical to the tag. All 12 submit lines match the registered lines except the E0a --time, and every job used account f2026.coms.6250.02, partition instruction, QoS instruction.\n\nCould not check:\n- whether Nova holds MIRROR-workload jobs outside the exported sacct list (it lists only cited jobs; there is no cluster access from here);\n- the sha256s of the pulled archives (they were deleted), though the pulled files match the counts that the analyses run on Nova recorded;\n- the Nova bundle's sha256.\n\nI changed nothing in any repository: git commands ran with GIT_OPTIONAL_LOCKS=0 and Python with -B, and no bytecode was written. The very first `git status` ran before I set that, so it may have refreshed the index's stat cache.\n\nMy scripts and outputs are in C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/provenance:\n- check_runs.py, check_runs.out, runs_provenance.csv\n- check_sacct.py, check_sacct.out, registered_sbatch_lines.txt\n- check_plans.py, check_plans.out, plans_workload.csv\n- gh_activity_r16_mirror_live.json\n- rescore/agentload_analysis_r16_mirror/20261105-174446/ (the scorer rerun)"
+ },
+ "rulesAudit": {
+  "summary": "The registered verdict is computed correctly. When I re-ran the tagged scorer, mirror_runs.csv, mirror_verdict.json and mirror_bins.json came out byte-identical. I also re-implemented every measure without importing analysis.*, and all of them match. The tagged model-F code, re-run on the frozen plans, reproduces the frozen per-seed F values (wave median, S_F, late) exactly.\n\nHand re-derivation from mirror_runs.csv: all six BURST runs are STUCK (hit_eval 0.000) with M1-M4 all true, so every seed is RENEWAL. That gives RENEWAL 3/3 in both cells: PASS at 1.65x (decisive) and PASS at 1.35x (secondary).\n\nCode against the tagged text: I found ten discrepancies (STUCK window end, plan tolerance, run-end slack, seed-call precedence, M2 undefined case, wave set, W10 estimator, W6 prose, base-only lambda_plan, backlog estimator). None changes any boolean or call for these nine runs. I checked each one against the raw data.\n\nDecisive-cell margins are large:\n- M1: 18 or more extra blackout completions needed to flip.\n- M2: at least 399 s of spare tolerance.\n- M3: 37 or more extra late completions needed to flip.\n- M4: S minus the midpoint is at least +0.0134/s.\n- STUCK: hit 0.000 against 0.2.\n\nThe only near-threshold primary case is M3 at 1.35x seed 2: 127 completions against a ceiling of 127.69. One more completion makes it 0.852, M3 fails, and the call becomes MIXED; the 1.35x cell still PASSes at 2/3. ±1 s edge shifts do not flip it. Moving the window start later by more than 11.3 s does.\n\nSecondary rules:\n- W5 FAILS at 1.65x seed 2: 238.7 s against a tolerance of 182.5 s, over by 56.2 s. The 0.922 timing factor did not carry over. The registered per-session statistic on MIRROR is 0.924-0.982 (mean 0.954); 5 of 6 values fall outside the calibration range of 0.9125-0.9327.\n- W5 also nearly fails at 1.35x seed 0 (margin 7.9 s; two sessions crossing the median would flip it).\n- W6 order holds 3/3, but the shifts are 237/271/513 s against model F's 312/334/287 s.\n- W7, W8, W9 and W10 pass.\n\nCaveats on what the PASS shows:\n- M4 is not independent of M3. Exactly, S = S_A - S_C, and S_A is fixed by the plan, so M4 is a second test of the post-wave completion shortfall. RENEWAL therefore rests on three distinct observations: blackout, wave timing, and lull.\n- The late window measures model F's transient lull, not Theorem 2's asymptote. F's late values are 0.49-0.73 λref against asymptotes of 0.806 and 0.910 λref; at 1.35x a second completion wave is entering the window.\n- M2's ±15% band is 1.9-8.6 times the observed errors, and the registration gives no alternative wave-time value.\n\nNo failure confound found: no session or request failures, the cache works before the burst and in NOBURST, the engine runs at the E0a all-miss token rate, and the plans are exact. What I could not check: whether any MIRROR jobs exist beyond the cited ones (no Slurm access), and the tag's own push time (the GitHub export has no tag events).",
+  "checks": [
+   {
+    "name": "Registered scorer reproduces byte-identically",
+    "passed": true,
+    "evidence": "From the worktree root: PYTHONIOENCODING=utf-8 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=\"src;.\" python -m analysis.r16_mirror classify --run-dirs <the 9 dirs> --e0a-calib results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/results/agentload_analysis_miss/20261105-162735/calibration.json --out-root C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/rules/rerun. diff against results/agentload_analysis_r16_mirror/20261105-173136: mirror_runs.csv, mirror_verdict.json and mirror_bins.json are IDENTICAL. No __pycache__ was written in the worktree (find count 0 before and after)."
+   },
+   {
+    "name": "Independent re-implementation of every measure",
+    "passed": true,
+    "evidence": "C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/rules/c_recompute.py (no analysis.* imports) recomputes blackout_n, late_n, wave_time, burst_completed, slope, lambda_plan, hit_eval, P_served and run_end from sessions/requests/plan.csv. All match mirror_runs.csv to within 1e-9 for all 9 runs. The model-F slope estimator (1-s sampling, completed-only departures) differs from the scorer's exact step integration by at most 1.2e-5/s."
+   },
+   {
+    "name": "Tagged model F reproduces the frozen F values",
+    "passed": true,
+    "evidence": "C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/rules/h_modelF.py calls mirror_predict.build_plan, cut_predict.plan_fifo, burst_timing and backlog_stats on the frozen plans. It never calls main(), so nothing is written. The wave median, S_F over [6000,8700) and the late completion all equal the tagged results/theory/r16/mirror_predictions.json for all 6 BURST cells/seeds. lambda_miss_model is 0.07483115322200824 in both."
+   },
+   {
+    "name": "Code and frozen inputs identical to tag r16-mirror-reg",
+    "passed": true,
+    "evidence": "git diff --stat r16-mirror-reg -- analysis src configs results/theory/r16/mirror_predictions.json results/theory/r16/mirror_plans is empty. During the audit HEAD moved from d8c49b7 to f641b02, committed 17:37:10 CST by another session. That commit adds pulls, scorer outputs, provenance and fig_mirror.pdf/png only. Every run's meta.json records git commit bc81ee7, dirty False. config.yaml sha256 (LF) = afea48b8...3d73, which equals the registered e2_config_sha256. prereg_sha256 = 88e20ce2...601b, which equals the file."
+   },
+   {
+    "name": "Windows and inclusive/exclusive ends",
+    "passed": true,
+    "evidence": "completion_rate is half-open [w0,w1) (tagged r15_cut.py:573-577), matching the note's [2400,3600) and [6600,8700). The wave uses t_end <= 8700 inclusive (r16_mirror.py:209), matching 'completed by 8700 s' (docstring l.26) and model F's burst_timing (mirror_predict.py:104-105). No completion lies within 0.29 s of any window edge. There are 0 completions in [8700, t_end_s] in every run. No boolean can change."
+   },
+   {
+    "name": "Which sessions count; t_end of unfinished sessions; backlog definition",
+    "passed": true,
+    "evidence": "Completions count status=='completed', all origins. All late-window completions are base sessions; the blackout window has 1-10 burst completions. In 9 runs there are 0 failed sessions and 0 request errors (meta outcome). Every cancelled session has t_end 8700.016-8700.152. n_events (r15_cut.py:536-547) sends non-completed sessions out at run_end (> 8700); model F uses inf. The two are equivalent on [6000,8700). sessions.csv arrival_s equals plan arrival_s to 9e-13 s, and the first send lags arrival by about 1 ms."
+   },
+   {
+    "name": "OLS window and binning",
+    "passed": true,
+    "evidence": "n_grid uses 10-s bins aligned at multiples of 10 s. grid_slope (r15_cut.py:563-570) selects [6000,8700) and gets slope_bins = 270 in every row of mirror_runs.csv. OLS fits bin means against bin centres, as the note's M4 row says."
+   },
+   {
+    "name": "lambda_ref units",
+    "passed": true,
+    "evidence": "M1/M3/CURVE divide by run.lambda_ref_value (meta lambda_ref_resolved = 0.07153402100919228), and W10 divides by pred['lambda_ref'], the same number. run_blockers checks it against the registration. Count ceilings: M1 at most 25 completions (0.30 x 0.0715340 x 1200 = 25.75); M3 at most 127 (127.69); CURVE blackout at least 73. S_QS = lambda_plan(base arrivals, plan.csv) - lambda_miss_model 0.074831/s, which equals the frozen qs_slope."
+   },
+   {
+    "name": "STUCK window and hit metric",
+    "passed": true,
+    "evidence": "The code evaluates hit_eval over [t_b+4500, run.t_end_s+1e-9] (trap_v2.py:120,194), not the frozen [5700,8700) (r11_basin_predict.yaml:35,60). basin.py:301 computes window_matches_endpoints but basin.py:305 ignores it, and r16_mirror.py:241 does not copy it. Impact: none. No ok turn completed in (8700, t_end_s], and the hit is the same over both windows: BURST 0.000 in all 6 (follow-up hit 1.000 in [600,1200), 0.04-0.10 in [1200,1800), then 0.000); NOBURST 0.9496/0.9493/0.9499."
+   },
+   {
+    "name": "Counted-run conditions",
+    "passed": true,
+    "evidence": "All 9 rows: counted True, prereg_bound True, plan_matches_frozen True, status finished, aborted False, t_end_s 8700.014-8700.114. The plan tolerance in code is 1e-9 x max(1, max|ref|), about 8.7e-6 s for arrival_s (r16_mirror.py:200), against 'within 1e-9 s' in the docstring (l.50-51). The actual differences are 0 s (arrival) and 5.7e-14 s (tool_time_total). The run-end check allows 8700-1e-6 (r16_mirror.py:320). Neither changes anything. Each of the 9 jobs ran exactly 1 run (job logs: one 'agentload run:' line each)."
+   },
+   {
+    "name": "Seed-call and cell-verdict logic; M2 undefined case",
+    "passed": true,
+    "evidence": "The code ranks NOT-TRAPPED before RENEWAL before CURVE (r16_mirror.py:257-265). The text's two 'iff' clauses conflict for a non-STUCK run with both rates >= 0.85, but all 6 BURST runs are STUCK. M2 is set False when fewer than 100 burst sessions completed (r16_mirror.py:210,252); the text only says 'undefined'. All runs have 200/200 completed by 5620 s. cell_verdict (275-287) matches docstring l.38-41."
+   },
+   {
+    "name": "Hand re-derivation of the cell verdicts",
+    "passed": true,
+    "evidence": "From mirror_runs.csv, 1.65x seeds 0/1/2: stuck True, M1-M4 True, so RENEWAL x3 and PASS (3 >= 2). 1.35x seeds 0/1/2: same, RENEWAL x3 and PASS. Each seed has exactly one counted BURST run, so the result is neither UNDECIDED nor PENDING."
+   },
+   {
+    "name": "Margins, primary rules (BURST runs)",
+    "passed": true,
+    "evidence": "1.65x s0/s1/s2:\n- M1: 0.070/0.058/0.093 (6/5/8 completions; +20/+21/+18 to flip).\n- M2: |err| 198.8/190.9/68.9 s against tolerance 599.2/590.3/593.6 s.\n- M3: 0.592/0.606/0.499 (89/91/75; +39/+37/+53 to flip).\n- M4: |S-S_F| 0.0022/0.0020/0.0005 against |S-S_QS| 0.0290/0.0396/0.0417; S minus midpoint +0.0134/+0.0188/+0.0211 /s.\n1.35x s0/s1/s2:\n- M1: 0.105/0.093/0.163 (+17/+18/+12 to flip).\n- M2: 124.3/128.6/294.7 s against 552.4/540.3/550.5 s.\n- M3: 0.619/0.739/0.845 (93/111/127; +35/+17/+1 to flip).\n- M4: 0.0009/0.0030/0.0107 against 0.0283/0.0311/0.0219; S minus midpoint +0.0137/+0.0141/+0.0056 /s.\nSTUCK: hit 0.000 against 0.2 in all six. CURVE: the maximum blackout is 0.163 against 0.85 (at least 59 completions away). Script: C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/rules/d_margins.py"
+   },
+   {
+    "name": "Perturbations (±1 completion, ±1 s edge shifts)",
+    "passed": true,
+    "evidence": "C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/rules/e_perturb.py.\n- ±1 s shifts of any M1/M3 edge flip nothing. 1.35x s2 stays at 127 (0.8450-0.8458); 1.65x s0 and s2 lose 1-2 completions at an end of 8699.\n- M4: ±1 s and ±10 s window shifts move S by at most 0.0003/s; the 1.35x s2 margin stays +0.0050 to +0.0059.\n- M2: moving one burst completion across the median shifts it by at most 4.7 s.\n- +1 late completion flips only M3 at 1.35x s2 (128 gives 0.8521). That seed becomes MIXED (blackout 0.163 is far from CURVE); the 1.35x cell stays PASS at 2/3; the decisive cell is unaffected.\n- A late-window start moved later by more than 11.3 s also flips that M3 ([6630,8700) gives 0.8577; [6660,8700) gives 0.8634), because no completion falls in [6600, 6635.2). Moving the start earlier, or the end earlier, does not."
+   },
+   {
+    "name": "W5 calibrated wave (±5%)",
+    "passed": false,
+    "evidence": "|wave - F_cal| against 0.05 (F_cal - 1200), all in seconds:\n- 1.65x s0: 111.7 vs 184.2, PASS (+72.6).\n- 1.65x s1: 115.0 vs 181.5, PASS (+66.5).\n- 1.65x s2: 238.7 vs 182.5, FAIL (over by 56.2 s; wave 5088.6 against F_cal 4849.9).\n- 1.35x s0: 161.9 vs 169.8, PASS (+7.9; two sessions crossing the median flip it: 4767.3 > 4766.6).\n- 1.35x s1: 151.3 vs 166.1, PASS (+14.8).\n- 1.35x s2: 9.4 vs 169.3, PASS.\nRegistered per-session calibration statistic on these runs: 0.9449, 0.9520, 0.9823, 0.9651, 0.9583, 0.9236 (mean 0.954), against the frozen 0.9223 (range 0.9125-0.9327)."
+   },
+   {
+    "name": "W6 order",
+    "passed": true,
+    "evidence": "wave(1.35x) < wave(1.65x) for seeds 0/1/2: 4758.7<4995.9, 4673.2<4944.5, 4575.6<5088.6, all true. Measured shifts 237.2/271.3/513.0 s against frozen model-F shifts 311.7/333.6/287.2 s (differences -74.5/-62.3/+225.8 s). Only seed 1 lies inside the tagged prose range of 270-330 s. The rule is order-only (r16_mirror.py:355)."
+   },
+   {
+    "name": "W7 composition, W8 late level, W9 controls, W10 capacity",
+    "passed": true,
+    "evidence": "- W7: P_served differs from F by +2.61/+2.06/+0.20% (1.65x) and +1.46/+1.65/+2.37% (1.35x); tolerance 5%.\n- W8: late - F = +0.047/+0.007/+0.013 and +0.020/+0.053/+0.120; tolerance 0.25. Every sign is positive.\n- W9: NOBURST s0/s1/s2 are GOOD (state recovered, follow-up hit 1.000 throughout).\n- W10: E0a lambda_miss_turns_based 0.075967/s = 1.062 λref against the model's 1.046 (+1.5%); the sessions-based value is 1.002 and the POP-64 check gives 1.100. Late is below all three in 6/6 (maximum 0.845)."
+   },
+   {
+    "name": "Trap is real; no failure/timeout or slowdown confound",
+    "passed": true,
+    "evidence": "- All 9 server logs show disable_radix_cache False, fcfs, max_total_tokens 300000 and REFRESH=1.\n- 0 failed sessions and 0 request errors. In-flight cancelled requests were sent at or after 8235 s and cancelled at 8700.02-8700.15 s, against request_timeout 7200 s.\n- In [5700,8700) the trapped engines served 1.56-1.76 ok turns/s (1.04-1.17x the E0a's 1.505) at 12052-12493 uncached tok/s (0.99-1.03x the E0a's 12120). The engine ran at its all-miss capacity: the low completion rate comes from the young age mix (mean served turn 8.7-10.0), not from a slow engine.\n- Each job had its own A100: distinct PCI bus IDs in banner.txt, although 4 jobs shared node nova22-gpu-2."
+   },
+   {
+    "name": "Predictions predate the runs",
+    "passed": true,
+    "evidence": "Commit bc81ee7 is dated 14:07:08 CST. The GitHub activity export shows branch creation of r16/mirror at bc81ee71 at 2026-11-05T20:07:35Z. The first job (smoke 17264039) started at 14:49:07 CST, and the first counted run's t0_unix is 1793911948.6 (2720 s after commit_unix). The remote tag refs export has refs/tags/r16-mirror-reg pointing to tag object 7c22f15, which points to bc81ee7. mirror_verdict.json loaded its predictions from git ref r16-mirror-reg."
+   }
+  ],
+  "problems": [
+   {
+    "severity": "should-disclose",
+    "what": "M4 is not independent of M3. Because N(t) is arrivals minus completions and the arrivals come from the frozen plan, the M4 slope decomposes exactly into a fixed arrival term minus an OLS-weighted completion rate over [6000,8700). M4 is therefore a second test of the same post-wave completion shortfall that M3 measures. RENEWAL rests on three distinct observations (blackout, wave timing, lull), not four.",
+    "evidence": "C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/rules/m_decomp.py shows S = S_A - S_C to 5 decimals in every run. For 1.65x s0: 0.11852 - 0.04178 = 0.07673. M4 is equivalent to S_C below a run-specific ceiling of 0.771/0.835/0.798 λref (1.65x) and 0.819/0.877/0.868 λref (1.35x). The OLS-weighted completion rates S_C (0.584/0.572/0.503; 0.627/0.680/0.789 λref) track M3's late values (0.592/0.606/0.499; 0.619/0.739/0.845)."
+   },
+   {
+    "severity": "should-disclose",
+    "what": "M3's late window tests model F's post-wave transient lull, not Theorem 2's asymptotic reversed youth premium (D/lambda_miss = 0.77 at 1.65x, 0.87 at 1.35x). At 1.35x the asymptote is above the M3 threshold, and the late window already contains the onset of a second completion wave. The PASS supports the plan-driven FIFO transient; it does not measure the asymptotic value.",
+    "evidence": "Frozen JSON: asymptotics D_over_lam_ref = 0.806 (1.65x) and 0.910 (1.35x). Model F's own late-window values are 0.546/0.599/0.486 and 0.599/0.686/0.726. Measured 300-s bins at 1.35x s2 (mirror_bins.json), bins 7500-8700: 0.98, 1.12, 1.03, 0.93 λref (F: 0.47, 1.12, 0.89, 1.03). At 1.35x s1: 0.56, 0.75, 1.07, 0.98."
+   },
+   {
+    "severity": "should-disclose",
+    "what": "The registered timing calibration did not carry over to this workload, and W5 fails at 1.65x seed 2. M2's ±15% band is 1.9-8.6 times the observed timing errors, and the registration gives no wave-time value for the throughput-curve alternatives (its M2 column says only 'no wave'). M2 can falsify model F's timing, but it does not discriminate between model F and the registered alternatives.",
+    "evidence": "The registered per-session statistic (mirror_predict.timing_calibration) applied to the MIRROR runs gives 0.9449/0.9520/0.9823 (1.65x) and 0.9651/0.9583/0.9236 (1.35x), mean 0.954, against the frozen 0.9223 (range 0.9125-0.9327 over 6 standard runs). W5 at 1.65x s2: 238.7 s against 182.5 s. M2 errors are 198.8/190.9/68.9/124.3/128.6/294.7 s against tolerances of 540-599 s. Note line 83: the alternatives column for M2 says 'no wave'."
+   },
+   {
+    "severity": "minor",
+    "what": "The '1.35x RENEWAL 3/3' result is one completion away from 2/3. The 1.35x PASS itself survives that change.",
+    "evidence": "1.35x s2 late_n = 127 against a ceiling of 127.69 (0.85 x 0.0715340 x 2100). 128 completions gives 0.8521, M3 False, call MIXED (blackout 0.163 < 0.85), and the cell is still PASS on seeds 0 and 1. ±1 s edge shifts do not flip it. A start moved later by 11.3 s or more does ([6630,8700) gives 0.8577). The same run also has the largest model-F misfits: S - S_F = -0.0107/s (-17.7%, about 10x the frozen standard-workload residual sd of 0.00108), W8 +0.120, blackout 2.33x F."
+   },
+   {
+    "severity": "minor",
+    "what": "Code-vs-text discrepancies. None changes any boolean or call for these nine runs:\n(a) the STUCK window runs to run.t_end_s+1e-9 inclusive, not the frozen [5700,8700), and window_matches_endpoints is never checked;\n(b) the plan tolerance is relative (1e-9 x column max) rather than 1e-9 s;\n(c) the run-end check allows 8700-1e-6 s;\n(d) NOT-TRAPPED takes precedence over CURVE where the text's two 'iff' clauses conflict;\n(e) an undefined M2 (fewer than 100 completed) counts as M2 False, which the text leaves unstated;\n(f) the wave uses only burst sessions completed by 8700 (the note says just 'burst sessions');\n(g) W10 uses lambda_miss_turns_based, an estimator the text does not name;\n(h) lambda_plan counts base arrivals only;\n(i) the backlog estimator differs from model F's (exact integration with failed sessions departing, against 1-s sampling with completed-only departures).",
+    "evidence": "Tagged files:\n(a) trap_v2.py:120,194; basin.py:301,305; r16_mirror.py:241. 0 turns completed in (8700, t_end_s]; hit is the same over both windows.\n(b) r16_mirror.py:200; actual differences 0 and 5.7e-14 s.\n(c) r16_mirror.py:320; t_end_s 8700.014-8700.114.\n(d) r16_mirror.py:257-265; all BURST runs STUCK.\n(e) r16_mirror.py:210,252; 200/200 completed.\n(f) r16_mirror.py:207-209, the same as mirror_predict.py:104-105.\n(g) r16_mirror.py:361; the booleans are the same at 1.002 or 1.100 λref.\n(h) r15_cut.py:580-583; burst arrivals all fall in [1200.35,1259.93].\n(i) r15_cut.py:536-547 against cut_predict.py:157-169; there are no failed sessions and the slopes agree to 1.2e-5/s."
+   },
+   {
+    "severity": "minor",
+    "what": "W6's registered parenthetical magnitude is wrong (already covered by the working-tree erratum). The measured shifts also miss the per-seed model values by large amounts, but the rule tests order only.",
+    "evidence": "Tagged note line 109 says '270-330 s'; the frozen shifts are 311.7/333.6/287.2 s. Measured shifts are 237.2/271.3/513.0 s."
+   },
+   {
+    "severity": "minor",
+    "what": "The E0a pull record overstates the E0a design, and W10's capacity figure depends on which estimator and population are used.",
+    "evidence": "results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/COMMANDS.txt says 'closed POP 32 seeds 0-2'. Only seed 0 ran: sacct SEEDS=0, job log 17264093 line 578 shows '--seed 0', and lambda_miss_runs.csv has 1 row. lambda_miss is 1.062 λref (turns-based, POP 32), 1.002 (sessions-based) and 1.100 (POP-64 popcheck, turns-based). The E0a ran on nova22-gpu-1 alongside NOBURST seeds 1 and 2. Its job was resubmitted with --time 02:15:00 after 17264061 failed its pre-check (7080 s needed > 5369 s available)."
+   },
+   {
+    "severity": "minor",
+    "what": "Provenance gap: the GitHub activity export has no tag events, so the push time of r16-mirror-reg is not recorded directly. The scorer's predates check uses the author-set commit time rather than the server push time.",
+    "evidence": "provenance/github_activity_2026-11-05-r16.json contains only refs/heads events (133 push, 32 branch_creation). The commit itself was pushed as branch creation at 20:07:35Z. r16_mirror.py:367-369 compares commit_unix (from git show --format=%ct) with min t0. Both times precede the runs by about 45 min, so there is no impact."
+   },
+   {
+    "severity": "minor",
+    "what": "Scope. The PASS rejects the three registered throughput-curve readings, which the registration itself describes as producing 'no blackout or wave'. No age-structured or FIFO alternative with different costs was registered. Beyond the M2 and M4 numbers, the PASS therefore does not single out model F's particular renewal law among models that share its turn-count structure.",
+    "evidence": "Tagged note lines 29-35 list the alternatives (quasi-static, Lu et al. fluid, Eq. (fluid)) and say 'None of them gives a blackout or a wave'. The rules table (lines 80-85) compares only against these. Not checkable: whether other MIRROR jobs exist outside the cited sacct records (no Slurm access), and the pulled tarballs against Nova (the remote archives were deleted; only the sha256 recorded in COMMANDS.txt remains)."
+   }
+  ]
+ },
+ "artifact": {
+  "checks": [
+   {
+    "name": "1. Engine busy at the all-miss rate during the blackout [2400,3600) in all 6 BURST runs",
+    "passed": true,
+    "evidence": "Turns completed 1.46-1.60 /s. Uncached prefill from requests.csv (prompt-cached, by t_complete) was 12,070-12,470 tok/s, 0.996-1.029x E0a's 12,120. Two other sources agree: server.log 'Prefill batch' #new-token gives 11,950-12,430 tok/s, and metrics.csv prefill_effective_tokens_total{mode=input} gives 11,940-12,440 tok/s with device_hit 0. Server running reqs: mean 25-32, min 7-21. Waiting: mean 332-389, min 264-306. Running and queue were never 0 at any 5-s scrape in [1500,8650). scheduler_idle_seconds_total rate was 0. nvidia-smi gpu_util.csv: 99.99-100% (min 99), power 298-300 W. Client latency: median 231-242 s, max 287-311 s; server queue_time mean 208-225 s. No retractions or paused reqs (gauges max 0). Scripts: scratchpad/mirror_verify/artifact/a02_runs.py and a03_gpu_serverlog.py (outputs in .../artifact/out/windows_requests.csv, windows_metrics.csv, gpu_serverlog_windows.csv)."
+   },
+   {
+    "name": "2. No stall, idle period, crash, restart, OOM, preemption or timeout",
+    "passed": true,
+    "evidence": "Largest gap between request completions after 1200 s: 10.8-19.4 s, none over 30 s. Largest gap between engine batch log lines in [1200,8700]: 2-4 s. Server prefill per 60-s bin: min 10,383-11,624 tok/s, idle at most 1.3%. One 'Started server process' per server.log. No Traceback, exception, OOM, CUDA-error or retract lines; keyword hits are only startup warnings and the server_args line. The single create_error_response (e.g. 17264055 server.log:36504) is at t=8699.3-8699.7 s, i.e. the end-of-run cancel. Cache flushes happen only before and after each run (job_events.log). Slurm: all 9 COMPLETED 0:0 (provenance/sacct_cited_jobs_2026-11-05-r16.txt). wall_s is 8701.4-8701.6 and metrics_skipped_ticks is 0, so the job was never suspended. Max latency is 482 s against request_timeout_s 7200."
+   },
+   {
+    "name": "2b. Errors and cancellations in the client records",
+    "passed": true,
+    "evidence": "meta.json outcome in all 9 runs: requests_error 0, sessions_failed 0, errors_by_kind {}, abort_reason null, prompt_tokens_mismatch 0. requests.csv: every row is either ok with HTTP 200 or cancelled. Cancellations all have t_complete=8700 and t_send>=8235 s (the run end). All ok requests have completion_tokens == 100. prompt_tokens == 2000+650(turn-1) exactly (max 14,350, under the native 32,768). No duplicate (sid,turn). Every run's events.log is 0 bytes. Job logs have no WARN/ERROR after the config dump. Every in-job guards.json has 0 errors and 0 warnings."
+   },
+   {
+    "name": "2c. Client ran the plan faithfully, with no client throttle",
+    "passed": true,
+    "evidence": "plan.csv equals the frozen plan in `git show r16-mirror-reg:results/theory/r16/mirror_plans/*` in all 9 runs (max |dt| 8.5e-14 s). Session start lag (t_first_send-arrival_s) is at most 0.075 s. sched_delay p99.9 is at most 4.4 ms; the overall max is 2.27 s on one request. Per completed session, the realized sum of inter-turn gaps differs from the planned tool_time_total_s by at most 0.39 s. The connector is uncapped (src/agentload/client.py:572 TCPConnector(limit=0)). max_inflight 4000 was never reached (max 823), gate n_waited 0. Client in-flight equals server running+queue (1.65x s0 blackout: 405 vs 402), so nothing queued hidden in the HTTP layer."
+   },
+   {
+    "name": "2d. Service order is FIFO, as model F assumes",
+    "passed": true,
+    "evidence": "For requests sent in [2400,8000) in each BURST run (about 9,000-9,700 each), Spearman(send order, completion order) = 1.000000. Median and p99 count of later-sent requests finishing first is 0; the max is 0-17. Inline python check over requests.csv."
+   },
+   {
+    "name": "3. NOBURST controls show steady completions and good hits; comparison with BURST",
+    "passed": true,
+    "evidence": "Completions in every window are 1.58-1.82 lambda_ref (300-s bins 1.2-2.5), with no blackout and no wave. Follow-up turns (turn>=2) hit 0.9999 after 1500 s. All-turn hit is 0.94-0.95, the ceiling given that first turns always miss. Server queue was 0 at every scrape. Latency median about 1.5 s, max 2.4-9.7 s. NOBURST: 2.25-2.69 turns/s at 1,400-1,900 uncached tok/s plus 17,500-19,800 cached tok/s. BURST trapped: 1.46-1.71 turns/s at 12,000-12,500 uncached tok/s and 0 cached. The pre-burst windows of paired seeds are identical (e.g. s0: 2.693 vs 2.692 turns/s, 156 vs 156 sessions)."
+   },
+   {
+    "name": "4. Burst cohort: T=20, mid-way at 3000 s, and the wave is its 20th turns",
+    "passed": true,
+    "evidence": "194-198 of 200 burst sessions have T=20. All 200 completed by 8700 s in all 6 runs. No T=20 burst session ended before 3237 s. At t=3000 s the T=20 burst sessions had completed 12-19 turns, mostly 13-14 (1.65x s0 counts: 12:17, 13:88, 14:41, 15:20, 16:22, 17:8, 18:2), and burst sessions held 190-195 of the 366-430 in-flight requests. They advance in lock-step: the median completion time of turn k steps by 48 s at turn 2, rising to 368 s (1.65x s0) and 385 s (s1) at turn 20, which equals the median latency plus the 5-s tool time. Wave (median t_end) is 4576-5089 s, matching mirror_runs.csv. The blackout completions (5-14 per run) are pre-burst base sessions, T<20 sessions and the earliest burst arrivals. Late completions are all base sessions. Script a04_cohort.py."
+   },
+   {
+    "name": "5. Cache state over time",
+    "passed": true,
+    "evidence": "BURST runs before the burst: hit fraction 0.93-0.95 (follow-up 0.99-1.00). It drops to 0.06-0.13 in the [1200,1500) bin. It is exactly 0 in every 60-s bin from 1260-1320 s and every 300-s bin from 1500 s to 8700 s, with token-level cached fraction at most 4.3e-7. NOBURST: 0.92-0.96 in every 300-s bin. Server args are identical across the 9 jobs except port and random_seed (FCFS, 300k pool, LRU, radix on). The trapped runs sit at zero hits. Outputs: .../artifact/out/hit300.csv and bins60_*.csv."
+   },
+   {
+    "name": "5b. Low late completions come from the turn mix, not a slower engine",
+    "passed": true,
+    "evidence": "Late window [6600,8700): 1.53-1.71 turns/s at 12,000-12,450 uncached tok/s (0.99-1.03x E0a). Only 2.0-3.7% of the turns served were 20th turns, against 5% for a stationary population. Mean turn index 8.9-10.2, and 26-31% of served turns were turns 1-5."
+   },
+   {
+    "name": "6. E0a sanity (POP 32 run and POP-64 check, job 17264093)",
+    "passed": true,
+    "evidence": "Workload is mean_turns 1000 / max_turns 20 (config_effective.yaml). Radix cache disabled, 0 cached tokens, 0 errors, cancellations only at 2700 s, all completions 100 tokens. Uncached rate 12,120 / 12,304 tok/s, so the POP-64 check is +1.5% (inside 5%). Turns-based capacity 1.062 / 1.100 lambda_ref. Scheduler idle 0.17% / 0%. Median prefill rate per full 8192-token chunk: 13,623 in E0a (nova22-gpu-1) vs 13,150-13,800 in the trapped BURST runs (gpu-2, gpu-3), so the hardware is comparable within about 3.5%. Script a05_e0a.py."
+   },
+   {
+    "name": "6b. Is 'late completions below the measured all-miss capacity' robust?",
+    "passed": true,
+    "evidence": "All six late rates (0.499-0.845 lambda_ref) are below every capacity estimate: sessions-based over any window I tried is at least 0.994; turns-based is 1.04-1.10; the model gives 1.046. Ratio to turns-based 1.062: 0.47-0.57 at 1.65x and 0.58-0.80 at 1.35x. The tightest case is 1.35x s2: 0.845 (n=127, Poisson SE 0.075) against at least 0.994."
+   },
+   {
+    "name": "Node and GPU heterogeneity",
+    "passed": true,
+    "evidence": "Jobs sharing a node used distinct GPUs (nvidia-smi bus ids: gpu-2 05/06/85/C6, gpu-3 46/C5/C6, gpu-1 06/45/46/C6) and distinct CPU affinity sets. Trapped prefill rates across the six GPUs fall within about 2% (11,940-12,470 tok/s). The 1.35x cell spans gpu-2 (s1) and gpu-3 (s0, s2) with the same behavior."
+   }
+  ],
+  "problems": [
+   {
+    "severity": "should-disclose",
+    "what": "For this workload, E0a's sessions-based lambda_miss (0.071666 /s = 1.002 lambda_ref, in calibration.json and COMMANDS.txt) depends on the window chosen. The closed POP-32 population starts synchronized and T is nearly fixed, so session completions come in waves that persist through the [900,2700) window. The turns-based value is stable and is the one to cite; the LOG already uses it (1.062). There is only one E0a run (n_runs 1), so no SE.",
+    "evidence": "a05_e0a.py over results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/results/agentload_e0_miss/20261105-145429. Completions per 300-s block in [900,2700): POP32 [4,30,30,12,22,31]; POP64 [4,7,55,2,18,44]. Sessions-based rate by window, same POP32 run: [900,2700) 1.002, [600,2700) 1.065, [1200,2700) 1.165, [900,1800) 0.994. POP64 run: 0.994-1.27. Turns-based: 1.050-1.078 (POP32), 1.043-1.107 (POP64). The W10 conclusion holds under every variant."
+   },
+   {
+    "severity": "minor",
+    "what": "COMMANDS.txt for the E0a pull says job 17264093 ran 'closed POP 32 seeds 0-2 + the POP-64 check'. It actually ran seed 0 only, which is what was registered.",
+    "evidence": "results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/COMMANDS.txt:17 vs logs/pm-mire0a-17264093.out:55 (SEEDS=\"0\") and :578 (a single '--seed 0 --set arrivals.closed_n=32' run). calibration.json has n_runs 1. The registered line has SEEDS=0 (analysis/r16_mirror.py:398). This is a documentation error only."
+   },
+   {
+    "severity": "minor",
+    "what": "All three decisive 1.65x BURST runs, plus 1.35x s1, ran at the same time on one node (nova22-gpu-2), on separate GPUs. E0a ran on another node (gpu-1). All-miss speed varies about 2-3% between GPUs. The slowest is 1.65x s2, which could explain part of its late wave (the W5 miss) but cannot change any M-rule.",
+    "evidence": "sacct NodeList and nvidia-smi bus ids in the job logs. 1.65x s2 (17264057, bus C6): blackout prefill 11,950 tok/s and 13,150 tok/s per full chunk, vs 12,350 / 13,630 for s0 and 13,623 per chunk in E0a. Its wave is 5089 s against W5's 4850+-182; M2 margin is 68 of 594 s. NOBURST pairs also ran on other GPUs and nodes (e.g. s0 on gpu-3). That is harmless: NOBURST engines ran at about 12% of all-miss prefill with an empty queue."
+   },
+   {
+    "severity": "minor",
+    "what": "GPU utilization by itself does not show the engine is saturated. SGLang's own sglang:utilization and sglang:fwd_occupancy gauges read 0 in every run (not populated in 0.5.22). nvidia-smi reports 93-95% utilization and about 285 W even for the lightly loaded NOBURST engines. Saturation has to be shown from the prefill token rate, the non-empty queue and scheduler idle = 0, as done here.",
+    "evidence": "windows_metrics.csv: utilization_mean and fwd_occupancy_mean are 0 in every run and window. gpu_serverlog_windows.csv: NOBURST gpu_util_mean 90.9-95.7%, power 278-291 W, vs BURST trapped 99.7-100% and 297-300 W."
+   },
+   {
+    "severity": "minor",
+    "what": "Completion gaps of about 19-25 s exist, inside E0a's measurement window and once in a BURST run after the burst. They are prefill-first scheduling phases, roughly the 300k-token pool divided by 12k tok/s, not stalls. Worth noting for anyone who audits gaps.",
+    "evidence": "E0a POP32: 24.8-s gap starting at t=2062 s; POP64: 24.9 s at 1442 s. 1.35x s2: 19.4 s after 1200 s. The engine batch log shows no gap over 2 s in E0a [900,2700) and none over 2-4 s in BURST [1200,8700], and scheduler idle is about 0."
+   },
+   {
+    "severity": "minor",
+    "what": "By design, the 1.35x secondary cell has no NOBURST control (the registration has NOBURST only at 1.65x). That the burst caused the 1.35x trap rests on the 1.65x controls plus each 1.35x run's own pre-burst follow-up hit fraction of 1.00.",
+    "evidence": "configs/agentload_prereg_2026-11-05_mirror_k20.yaml lambda_selection: noburst at 1.65x only. a04/a06 outputs: 1.35x pre-burst follow-up hit 1.0000, then 0.0000 from 1500 s."
+   }
+  ],
+  "summary": "Artifact risk is LOW. I found no cause other than FIFO queueing of a zero-hit engine at its all-miss rate that could have produced the blackout, the wave and the low late completions; that queueing is model F's mechanism.\n\nIn all six BURST runs the engine stayed busy at the all-miss rate through the blackout. It served 1.46-1.60 turns/s and 11,950-12,470 uncached tok/s (0.99-1.03x E0a's 12,120), with three independent sources agreeing (client requests, server batch log, engine counters). Hits were exactly zero. The queue never emptied (264-389 waiting) and the scheduler was never idle. The GPU sat at 100% and 300 W, and service was strictly FIFO (Spearman 1.000000).\n\nThere were no errors, aborts, restarts, retractions, OOMs, timeouts or client throttling, and no completion gap over 20 s after the burst. Cancellations happened only at 8700 s. The client ran the frozen plan to within milliseconds.\n\nThe burst cohort explains the blackout. 97-99% of its sessions have T=20. At 3000 s they were 12-19 turns in and advancing in lock-step, with per-turn steps growing from 48 s to about 375 s, which is the FIFO latency. The wave is their 20th turns; median 4576-5089 s, and all 200 completed.\n\nLate completions are low because of the turn mix: only 2.0-3.7% of the turns served late were final turns (5% would be stationary), while turns kept being served at the full rate.\n\nThe NOBURST controls stayed good the whole run: follow-up hit 0.9999, empty queue, 1.6-1.8 lambda_ref steady.\n\nE0a is clean: no errors, POP-64 within +1.5%. W10 holds against every capacity estimate (late 0.50-0.85 vs at least 0.994 lambda_ref). However, E0a's sessions-based lambda_miss depends on the window because of cohort waves, so the turns-based 1.062 should be quoted. COMMANDS.txt wrongly says seeds 0-2.\n\nAll my scripts and outputs are under C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/artifact (a01-a06 *.py, out/*.csv, a0*_out.txt). I did not edit anything in the worktree."
+ },
+ "claims": {
+  "headline": "In a registered test frozen on GitHub before any MIRROR job, the only change was a 20-step budget for the agents, and model F's predicted reversal of the youth premium held on SGLang: after a 200-session burst, all six BURST runs (1.65 and 1.35 λref, seeds 0–2) stayed at zero hits. They almost stopped completing sessions (0.06–0.16 λref over [2400,3600) s), finished the burst cohort in a wave at 4576–5089 s (69–295 s before model F's frozen times), and then completed 0.50–0.85 λref over [6600,8700) s. That is below the measured all-miss capacity of 1.06 λref and below the ~1.05 λref every throughput-curve reading predicts, so the registered rule called RENEWAL in 3 of 3 seeds in both the decisive and the secondary cell. The test is blind in outcome only: the workload was chosen with the model.",
+  "claims": [
+   "Verdict. The registered scorer gives PASS in the decisive cell (1.65 λref) and PASS in the secondary cell (1.35 λref), RENEWAL in seeds 0, 1 and 2 of each (results/agentload_analysis_r16_mirror/20261105-173136/mirror_verdict.json, cells). It used code identical to tag r16-mirror-reg and read the predictions from the tag (mirror_verdict.json predictions.source.git_ref). Two verifiers re-ran it and reproduced mirror_runs.csv, mirror_bins.json and mirror_verdict.json byte for byte (sha256 c7e27b30…, 512b66f3…, 4e835bc8…, which I confirmed with sha256sum). A blind re-implementation that imports no repository code matched every M1–M4, STUCK, call and cell verdict.",
+   "Registration and binding. Commit bc81ee7 (14:07:08 CST, tag r16-mirror-reg) reached GitHub at 14:07:35 CST: branch r16/mirror was created at bc81ee7 at 20:07:35Z (provenance/github_activity_2026-11-05-r16.json:153-159). That was 41.5 min before the first MIRROR job was submitted (cache-off smoke test 17264039, 14:49:05) and 43.3 min before the nine counted jobs (17264055-60 and 17264062-64, 14:50:52-53; provenance/sacct_cited_jobs_2026-11-05-r16.txt lines 2-12). Every run's meta.json records commit bc81ee7 (clean) and prereg_sha256 88e20ce2…, which equals sha256 of the tagged registration (spot-checked by me for all nine). All nine finished at 8700.01-8700.11 s with 0 failed sessions and 0 request errors. Each was driven by its frozen plan, exact in sid/origin/idx/n_turns/arrival_s, with tool times within 5.7e-14 s.",
+   "Trapped, with good controls. All six BURST runs were STUCK: hit fraction 0.000 over [5700,8700) s (mirror_runs.csv hit_eval and fu_hit_5700_8700 = 0.0). In each, all 200 burst sessions completed by 8700 s (burst_completed = 200). The three NOBURST controls at 1.65 λref stayed GOOD (W9 3/3): hit 0.9493-0.9499, which is the ceiling 1-1/E[T] = 0.9495 for E[T] = 19.81; follow-up hit 0.9999-1.0000; completions 1.66-1.82 λref in both windows; backlog slopes -0.00097 to +0.00015 /s.",
+   "Blackout (M1 ≤ 0.30 λref). Over [2400,3600) s, the 1.65 λref runs completed 0.070, 0.058 and 0.093 λref (6, 5 and 8 sessions) against model F's frozen 0.047, 0.070 and 0.093. The 1.35 λref runs completed 0.105, 0.093 and 0.163 (9, 8 and 14) against 0.000, 0.058 and 0.070. The standard workload's six committed traps completed 1.05-1.48 λref in the same window (I recomputed this from their sessions.csv: 1.048-1.479).",
+   "Wave (M2: within 15% of model F's elapsed time). The median completion of the 200 burst sessions came at 4996, 4945 and 5089 s at 1.65 λref (model F 5195, 5135, 5157; tolerance ±599, 590, 594 s). At 1.35 λref it came at 4759, 4673 and 4576 s (model F 4883, 4802, 4870; tolerance ±552, 540, 551 s). Every wave was early, by 69-295 s, which is 1.7-8.0% of the elapsed time. At 1.65 λref the waves peaked at 2.8-3.5 λref per 300-s bin (model F 3.2-4.4).",
+   "Lull below the all-miss capacity (M3 ≤ 0.85 λref). Over [6600,8700) s the runs completed 0.592, 0.606 and 0.499 λref at 1.65 (model F 0.546, 0.599, 0.486) and 0.619, 0.739 and 0.845 at 1.35 (model F 0.599, 0.686, 0.726). All six are below this workload's measured all-miss rate of 1.062 λref (E0a, turns-based). That is 47-57% of it at 1.65 λref and 58-80% at 1.35 λref. They are also below the sessions-based 1.002 and the model's 1.046. The standard workload's traps completed 1.01-1.35 λref in the same window. On one engine and protocol, the sign of the trapped-completion premium followed the turn-count law, as Theorem 2's H predicts (H 0.699 at 1.65 λref, against 0.989 for the standard workload).",
+   "Backlog (M4: slope nearer model F's than the quasi-static one). At 1.65 λref the OLS slopes over [6000,8700) s were 0.0767, 0.0837 and 0.0935 /s (model F 0.0789, 0.0857, 0.0930; quasi-static 0.0478, 0.0441, 0.0518). That is 1.61-1.90 times the plan's excess load, against model F's 1.65-1.95, and within -2.8% to +0.6% of model F. At 1.35 λref the slopes were 0.0557, 0.0504 and 0.0496 (model F 0.0565, 0.0534, 0.0603; quasi-static 0.0274, 0.0192, 0.0278), 1.5-17.7% below model F. Every slope was nearer model F's than the quasi-static one, by at least 0.011 /s.",
+   "Registered secondary checks (not in the verdict). W5 held in 5 of 6 and failed in 1. W6 held in 3 of 3: shifts 237, 271 and 513 s against model F's 312, 334 and 287 s, and only the order is registered. W7 held in 6 of 6 (served prompt +0.2% to +2.6% of model F). W8 held in 6 of 6 (late completions 0.007-0.120 λref above model F, every one positive). W9 held in 3 of 3. W10: the E0a measured 1.062 λref (model 1.046, +1.5%), and every late value lies below it (mirror_verdict.json W10_capacity).",
+   "Post hoc checks by the verifiers, not registered, found no artifact. The trapped engines prefilled at the all-miss token rate: 11,950-12,470 uncached tok/s, 0.99-1.03 times the E0a's 12,120. The queue never emptied, and completion order was strictly FIFO (Spearman 1.000000). There were no errors, restarts or timeouts. The burst cohort advanced in lock-step, and the wave is its 20th turns. The late lull comes from the young turn mix (2.0-3.7% of served turns were 20th turns, against 5% stationary), not from a slower engine. Before the burst, follow-up hits at 1.35 λref were 1.00, and they were 0.000 from 1500 s on."
+  ],
+  "caveats": [
+   "Blind in outcome only, and these limits are already registered and must stay in the text. The lead chose the workload after computing model F's and the fluid model's predictions for it and for K = 15, 20, 25 and mean_turns 30, 40, 60. K = 20 was picked for the capacity match (1.046 against 1.004 λref) and the wide basin (n_u 41.8). The M2/W5 timing factor (0.9223) and the M1/M3/CURVE thresholds were set from the standard workload's committed runs. No simulator prediction was made. The test was registered on 5 Nov, after Lu et al.'s paper (2 Nov).",
+   "Near threshold: 1.35 λref seed 2 (job 17264064) passed M3 by one completion (127 against a ceiling of 127.69; 0.8454 against 0.85). One more late completion, or a late window starting at least 11.3 s later, would have made that seed MIXED. The 1.35 λref cell would still pass 2/3, and the decisive cell is unaffected. The same run has the largest model-F misfits: slope 17.7% below S_F, late +0.120 λref, blackout 2.3 times model F. W5 at 1.35 λref seed 0 held by only 7.9 s (161.9 against 169.8 s).",
+   "A registered secondary check failed. W5 failed at 1.65 λref seed 2 (job 17264057): |5088.6 - 4849.9| = 238.7 s against 182.5 s. The standard workload's timing calibration did not transfer: (wave-1200)/(F-1200) is 0.92-0.98 on MIRROR against 0.9125-0.9327 there, so model F ran only 2-8% slow and the 0.9223 factor over-corrected. The text should report the miss; the proposed fill-ins do.",
+   "Scope of the rejection. The registered alternatives are only the throughput-curve readings (quasi-static, Lu et al.'s dN/dt = λ - X(N)/K, Eq. (fluid)), and none of them predicts a blackout or a wave. The PASS rejects them. It does not single out model F among FIFO or age-structured models with the same nearly deterministic turn count. No alternative wave time was registered, and M2's ±15% band is 1.9-8.6 times the observed timing errors.",
+   "M4 is not independent of M3. The plan fixes the arrivals, so the backlog slope is the arrival rate minus a weighted completion rate over a window overlapping M3's. RENEWAL therefore rests on three observations (blackout, wave, lull), not four.",
+   "The late window measures model F's post-wave transient (frozen values 0.49-0.73 λref), not Theorem 2's asymptote (D = 0.81 and 0.91 λref; D/λmiss = 0.771 and 0.870). At 1.35 λref a second completion wave enters the window: seed 2 completed 1.01 λref over [7500,8700) s (model F 0.87). 'Below the all-miss capacity' is shown only for the registered window, within an 8700-s run.",
+   "E0a deviation. The registered E0a job 17264061 failed its own pre-run time check. It needed 7080 s and had 5369 s left of the registered --time 01:30:00 (pm-mire0a-17264061.out:470-471), so no run started. It was resubmitted as 17264093 at 14:53:08 with --time 02:15:00 and nothing else changed (sacct lines 9 and 13). Only the secondary W10 uses it. It is a single run with no SE. The sessions-based estimate depends on the window (about 0.99-1.17 λref, because synchronized cohorts arrive in waves), so quote the turns-based 1.062. The E0a COMMANDS.txt says 'seeds 0-2', but only seed 0 ran.",
+   "Breadth. One engine (SGLang 0.5.22, FCFS with waiting-prefix refresh), one GPU type (A100 80GB PCIe), one model (Qwen2.5-7B-Instruct), one 300k pool, one synthetic workload family (exponential 5 s tool times, fixed tool and output lengths, no shared prefixes), one burst (200 sessions in [1200,1260) s), two rates and three seeds per cell. Seeds are shared: NOBURST uses the same base plans as BURST, and the same seed indices are used at both rates. These are not independent trials.",
+   "NOBURST controls ran only at 1.65 λref (by design). That the burst caused the 1.35 λref trap rests on the 1.65 λref controls and on those runs' pre-burst follow-up hit of 1.00 (a post hoc verifier check).",
+   "Co-location. The three decisive runs ran concurrently on nova22-gpu-2 on separate GPUs; the E0a ran on nova22-gpu-1. All-miss speed varies about 2-3% between GPUs, and 1.65 λref seed 2 was on the slowest one, which may explain part of its W5 miss. No M-rule is affected.",
+   "Provenance details. The paper's '14:07:37' (Section 4.1 line 144, App. C line 177, Table 14 line 718) is wrong: GitHub's activity log gives 14:07:35 CST. That log records the push of commit bc81ee7 (branch creation), not of the tag object, which carries no push time. The repository is private, so readers see only the export. Erratum 18ac5e6 (prose: the note's writing time) reached GitHub at 14:49:22, 17 s after the smoke job was submitted and before the counted jobs. Erratum d8c49b7 (prose) was pushed at 16:19:36 during the runs; 'before any output was read' rests on the lead's record, since the cluster keeps no access times. The plan.csv files equal the frozen plans within the registered tolerance but are not byte-identical (tool_time_total_s off by at most 5.7e-14 s).",
+   "The verifiers' artifact and mechanism checks (token rate, FIFO order, cohort lock-step, turn mix) are post hoc. If the paper cites them, it must label them so.",
+   "The scorer's code and its docstring differ in ten places (STUCK window end, plan tolerance, run-end slack, call precedence, an undefined M2 counted as False, and others). None changes any boolean for these nine runs. The registration YAML still carries the generic E2 template's pass_rule and kill_conditions, which mention a CAPPED arm. The per-job 'summarize burst' outputs in the job logs (for example kill_strict) are not MIRROR results.",
+   "Do not copy these documentation errors: the tagged note's 'about 16:00 CST' (corrected by 18ac5e6), '97.7-98.2%' (the actual range is 97.72-98.28%), W6 '270-330 s' (actual 287-334 s, d8c49b7) and the 1.4 backlog multiple (that is asymptotic; the plan-driven value is 1.65-1.95). Also the E0a COMMANDS.txt 'seeds 0-2', and the uncommitted notes/LOG.md evening entry's 'NOBURST completions 1.70-1.82' (the registered windows give 1.66-1.82).",
+   "Space, which I measured on a scratch build of 7ea6eef. The main-text slack is about 4 lines at the foot of p. 11 (usable only by text before §7) plus about 3 lines at the foot of p. 12. The proposed core and fix entries fill p. 11 and leave p. 12 unchanged, so the build stays at 65 pages. Adding the two optional conclusion and Limitations sentences still ends the main text on p. 12, with about 1 line spare. A longer 4.1 outcome (+6 lines) pushed 'Use of AI tools' and 'Acknowledgments' to p. 13, so do not lengthen the 4.1 text. The Table 18 rows add one appendix page (66).",
+   "Packaging. After the fill-ins only \\repourl stays pending, so the strict packager needs ALLOW_PENDING=1, not 9. Copy results/theory/r16/fig_mirror.pdf (commit f641b02) to paper/figs/fig_mirror.pdf and add it to the upload list in ARXIV_METADATA.md. Fig. 4 must become a figure* at \\textwidth: the figure is 6.6 in wide, and at column width its 7.5-pt labels would shrink to about 3.8 pt. Recount the comments field: 65 pages, or 66 with the Table 18 rows. Merge r16/mirror into the paper branch so the cited files exist.",
+   "The abstract does not mention MIRROR. It is at 1917 of 1920 form characters. The optional abstract fill-in adds 2 characters but drops 'in two cells', 'alone' and 'backlogs rising or falling slowly'. Akshat should decide, and COORD/release-tools/count.py must confirm the count.",
+   "Working files, for the lead and not for the paper, all under C:/Users/Akshat/AppData/Local/Temp/claude/93194b88851e3ff4/90500cb0-d13d-4ffe-a42a-2ca3a3f8018c/scratchpad/mirror_verify/claims/. The exact fill-ins are in fillins.py, fillins_final.json and fillins_final.jsonl. The unified diff against 7ea6eef is mirror_fillins_7ea6eef.diff. The test build with every fill-in is main_with_mirror_fillins.pdf (66 pages, main text ending on p. 12, 0 overfull boxes, 1 pending marker). The numbers come from claims_numbers.py, claims_numbers.out and claims_numbers_burst.csv. Nothing in the worktree was changed. The uncommitted notes/LOG.md edit there (mtime 17:38) is the lead's, not mine."
+  ],
+  "not_shown": [
+   "The asymptotic reversed premium (D/λmiss = 0.771 at 1.65 λref, 0.870 at 1.35 λref) and the H × Γ factorization: only a post-wave transient window was measured, the runs end at 8700 s, and at 1.35 λref completions were climbing toward the capacity by the end.",
+   "That model F's renewal law, rather than any FIFO or age-structured model with a nearly deterministic turn count, is the right description: only the throughput-curve readings were registered as rivals.",
+   "Wave timing to the calibrated ±5%: W5 failed once, and the standard workload's timing factor did not carry over.",
+   "Generality to other engines (vLLM), GPUs (H200), models (Llama), pools, burst sizes, tool-time laws, real agent traces, step budgets other than 20, or other turn-count laws.",
+   "Statistical strength beyond three seeds per cell on shared plans; no interval or significance statement is supported.",
+   "Behaviour after 8700 s: whether the trap persists or completions stay below capacity.",
+   "Any operational consequence for step-capped workloads, for example Corollary 3's drain threshold when D < λmiss: no cut, cap or shed arm was run on this workload.",
+   "That the burst, and nothing else, caused the trap at 1.35 λref: that cell had no NOBURST control.",
+   "A precise all-miss capacity for this workload: one E0a run, no SE, and estimator-dependent values of 1.00-1.10 λref.",
+   "That the engine converges to model F, which the paper itself disclaims.",
+   "Blindness in design: the workload was selected using the model's predictions."
+  ],
+  "fillins": [
+   {
+    "location": "paper/sections/v3_intro.tex:64-65 (contribution 2, \\pending{MIRROR outcome}; core)",
+    "current_text": "A further blind test, MIRROR, uses a step-capped\nworkload for which the theory predicts completions \\emph{below} the all-miss capacity \\pending{MIRROR outcome}.",
+    "proposed_latex": "A further blind test, MIRROR, with a step-capped\nworkload for which the theory predicts completions \\emph{below} the all-miss capacity, passed at both rates: all six trapped\nruns completed 0.50--0.85~$\\lref$, against a measured 1.06~$\\lref$."
+   },
+   {
+    "location": "paper/sections/v3_evidence.tex:41 (Table 2 ledger, MIRROR row, Result cell; stays 3 lines, so the float does not grow; core)",
+    "current_text": "workload chosen with the model & \\pending{MIRROR outcome} & \\ref{app:blind}\\\\",
+    "proposed_latex": "workload chosen with the model & pass at both rates, RENEWAL 3/3 each; late 0.50--0.85~$\\lref$, below the measured 1.06; rejects only the throughput-curve readings & \\ref{app:blind}\\\\"
+   },
+   {
+    "location": "paper/sections/v3_evidence.tex:148-149 (Section 4.1 outcome; +3.5 lines, the longest that fits; core)",
+    "current_text": "Outcome:\n\\pending{MIRROR outcome}.",
+    "proposed_latex": "Outcome:\nPASS at both rates, RENEWAL in 3 of 3 seeds each: at 1.65~$\\lref$, 0.06--0.09~$\\lref$, waves at 4945--5089\\,s,\nthen 0.50--0.61~$\\lref$, below the measured capacity of 1.06~$\\lref$. This rejects only the throughput-curve readings; a\nsecondary check, the calibrated wave time, missed in 1 of 6 runs."
+   },
+   {
+    "location": "paper/sections/v3_app_blind.tex:137-142 (Fig. 4 box at about line 138 and caption marker at about line 141, replaced together because the float becomes figure*; first copy results/theory/r16/fig_mirror.pdf at f641b02 to paper/figs/fig_mirror.pdf; core)",
+    "current_text": "\\begin{figure}[htbp]\\centering\n\\fbox{\\parbox[c][0.5\\columnwidth][c]{0.93\\columnwidth}{\\centering\\footnotesize\\pending{MIRROR figure,\n\\fpath{figures/r16/fig_mirror.py}: (a) completions per 300\\,s bin after the burst, (b) the backlog}}}\n\\caption{MIRROR at 1.65~$\\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the\nstep-capped workload (blue, dashed) and the MIRROR runs (orange). \\pending{MIRROR runs}}\\label{fig:mirror}\n\\end{figure}",
+    "proposed_latex": "\\begin{figure*}[tbp]\\centering\n\\includegraphics[width=\\textwidth]{figs/fig_mirror.pdf}\n\\caption{MIRROR at 1.65~$\\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the\nstep-capped workload (blue, dashed) and the MIRROR runs (orange). (a)~Session completions per 300\\,s bin, in $\\lref$; dotted:\nthe model's all-miss capacities of the two workloads (1.004 and 1.046~$\\lref$). (b)~Sessions in the system, 300\\,s means.\nOrange: the decisive cell's three BURST runs (jobs 17264055--57, seeds 0--2), all RENEWAL; the dashed lines were frozen under\ntag \\texttt{r16-mirror-reg} before any MIRROR job. Grey: jobs 17093390, 17093396 and 17093402\n(\\fpath{figures/r16/fig_mirror.py}).}\\label{fig:mirror}\n\\end{figure*}"
+   },
+   {
+    "location": "paper/sections/v3_app_blind.tex:198 (App. C MIRROR outcome: paragraph, table and scope paragraph; core)",
+    "current_text": "test came after Lu et al.'s paper. Outcome: \\pending{MIRROR runs, per-seed calls and scores, W5--W10}.",
+    "proposed_latex": "test came after Lu et al.'s paper. Outcome: PASS in both cells, RENEWAL in 3 of 3 seeds each (the registered scorer at the tag's code, reading the\npredictions from the tag; \\fpath{results/agentload_analysis_r16_mirror/20261105-173136/}). The nine runs (jobs 17264055--60 and\n17264062--64, submitted at 14:50:52--53 CST and ended at 17:20:42--17:21:03) all count: each is the registered cell's, finished\nat 8700\\,s, is bound to the registration and was driven by its frozen plan (exact in sessions, turn counts and arrival times; tool\ntimes within $10^{-13}$\\,s). Measured, with model~F's frozen value in parentheses (rates in $\\lref$; slopes in sessions/s, model~F's\nand the quasi-static one):\n\\begin{center}\\footnotesize\n\\resizebox{\\columnwidth}{!}{%\n\\begin{tabular}{@{}c c c c c@{}}\n\\toprule\nrate, seed & $[2400,3600)$ & wave (s) & $[6600,8700)$ & slope (F / QS)\\\\\n\\midrule\n1.65, 0 & 0.070 (0.047) & 4996 (5195) & 0.592 (0.546) & 0.0767 (0.0789 / 0.0478)\\\\\n1.65, 1 & 0.058 (0.070) & 4945 (5135) & 0.606 (0.599) & 0.0837 (0.0857 / 0.0441)\\\\\n1.65, 2 & 0.093 (0.093) & 5089 (5157) & 0.499 (0.486) & 0.0935 (0.0930 / 0.0518)\\\\\n1.35, 0 & 0.105 (0.000) & 4759 (4883) & 0.619 (0.599) & 0.0557 (0.0565 / 0.0274)\\\\\n1.35, 1 & 0.093 (0.058) & 4673 (4802) & 0.739 (0.686) & 0.0504 (0.0534 / 0.0192)\\\\\n1.35, 2 & 0.163 (0.070) & 4576 (4870) & 0.845 (0.726) & 0.0496 (0.0603 / 0.0278)\\\\\n\\bottomrule\n\\end{tabular}}\n\\end{center}\nEvery seed was called RENEWAL. All six BURST runs were stuck (hit fraction 0.000 over $[5700,8700)$\\,s), and in each all 200\nburst sessions completed by 8700\\,s. The rules held with room in every run but one. The blackout windows held 5--14 completions, against M1's ceiling of 25.75;\nthe waves came 69--295\\,s before model~F's times (1.7--8.0\\% of the elapsed time, against M2's 15\\%) and peaked at 2.8--3.5~$\\lref$\nper 300\\,s bin at 1.65~$\\lref$ (model~F 3.2--4.4); the backlog grew 1.61--1.90 times as fast as the plan's excess load at\n1.65~$\\lref$ (model~F 1.65--1.95), and every slope was nearer model~F's than the quasi-static one by at least 0.011\\,/s. At\n1.35~$\\lref$, seed~2's 127 late completions were 0.7 below M3's ceiling of 127.7 (0.845 against 0.85): one more would have made that\nseed MIXED, and the cell would still have passed, 2 of 3. Secondary checks: W5 held in 5 of 6 runs and failed at 1.65~$\\lref$,\nseed~2 (5089\\,s against $F_{\\mathrm{cal}}=4850\\pm182$\\,s); on this workload model~F's timing ran 2--8\\% slow\n($(\\text{wave}-1200)/(F-1200)=0.92$--0.98), not the 8\\% that the factor 0.9223 removes. W6 held in 3 of 3 seeds, with shifts of\n237, 271 and 513\\,s against model~F's 312, 334 and 287\\,s. W7 held in 6 of 6 (served prompt $+0.2$ to $+2.6$\\% of model~F's) and W8\nin 6 of 6 (late completions 0.007--0.120~$\\lref$ above model~F's). W9: the three NOBURST controls stayed good, with hit fraction\n0.949--0.950, the ceiling $1-1/E[T]$ of this workload, completions of 1.66--1.82~$\\lref$ in both windows and backlog slopes within\n0.001\\,/s of zero. W10: the E0a of this workload (one run, closed population 32, cache off) measured an all-miss rate of\n1.062~$\\lref$ turns-based (1.002 counting sessions), against the model's $\\lmiss=1.046~\\lref$, above every late value. The registered E0a job (17264061) failed its own\npre-run time check, which needed 7080\\,s where 5369\\,s of the registered 01:30:00 limit were left, so no run started; it was\nresubmitted as 17264093 (14:53:08) with \\texttt{-{}-time 02:15:00} and nothing else changed, and only W10 uses it.\n\nWhat the pass shows. The registered alternatives are throughput-curve readings, which predict neither the blackout nor the wave, so\nthe pass rejects them but does not separate model~F from other models with its FIFO turn structure. M4 is not an independent fourth check: the plan\nfixes the arrivals, so the backlog slope is the plan's arrival rate less a weighted completion rate over $[6000,8700)$\\,s, nearly\nwhat M3 measures over $[6600,8700)$\\,s; the pass rests on three observations, the blackout, the wave and the lull. The late window measures\nmodel~F's post-wave lull, not its asymptotic $D$ (0.81 and 0.91~$\\lref$ at 1.65 and 1.35~$\\lref$); at 1.35~$\\lref$ a second\ncompletion wave enters the window, and seed~2 completed 1.01~$\\lref$ over $[7500,8700)$\\,s (model~F 0.87). The NOBURST\ncontrols ran at 1.65~$\\lref$ only, the three decisive runs on one node (separate GPUs), and the test covers one engine, GPU,\nmodel and workload family."
+   },
+   {
+    "location": "paper/sections/v3_app_stampede.tex:635 (Table 12, tab:frozensum15, MIRROR row Outcome cell; core)",
+    "current_text": "Blind in time; the workload was chosen after these predictions had been computed & \\pending{MIRROR outcome} (\\S\\ref{sec:mirror})\\\\",
+    "proposed_latex": "Blind in time; the workload was chosen after these predictions had been computed & PASS at 1.65 and 1.35 $\\lref$, RENEWAL in 3 of 3 seeds each; all six stuck at zero hits, NOBURST good 3 of 3; at 1.65 $\\lref$: 0.06--0.09 $\\lref$ over $[2400,3600)$\\,s, the wave at 4945--5089\\,s, 0.50--0.61 $\\lref$ over $[6600,8700)$\\,s, below the measured all-miss capacity (1.062 $\\lref$); the calibrated wave (W5) missed in 1 of 6 (\\S\\ref{sec:mirror})\\\\"
+   },
+   {
+    "location": "paper/sections/v3_app_stampede.tex:718 (Table 14, tab:ledger, MIRROR row: on-GitHub time corrected and jobs and outcome filled; core)",
+    "current_text": "\\texttt{bc81ee7} 11-05 14:07:08 & 14:07:37 & 9 runs and one E0a, \\pending{jobs and outcome} (\\S\\ref{sec:mirror})\\\\",
+    "proposed_latex": "\\texttt{bc81ee7} 11-05 14:07:08 & 14:07:35 & 9 runs and one E0a, submitted 14:50:52--53 (17264055--64; the E0a, 17264061, failed its time check and ran as 17264093 at 14:53:08); pass at 1.65 and 1.35 $\\lref$, RENEWAL 3 of 3 each (\\S\\ref{sec:mirror})\\\\"
+   },
+   {
+    "location": "paper/sections/v3_evidence.tex:144 (EXISTING sentence now wrong: push time; GitHub's log says 14:07:35)",
+    "current_text": "pushed at 14:07:37 CST on 2026-11-05, before any job) calls",
+    "proposed_latex": "pushed at 14:07:35 CST on 2026-11-05, before any job) calls"
+   },
+   {
+    "location": "paper/sections/v3_app_blind.tex:177 (EXISTING sentence now wrong: push time)",
+    "current_text": "\\texttt{bc81ee7}, tag \\texttt{r16-mirror-reg}, pushed at 14:07:37 CST on 2026-11-05, before any job;",
+    "proposed_latex": "\\texttt{bc81ee7}, tag \\texttt{r16-mirror-reg}, pushed at 14:07:35 CST on 2026-11-05, before any job;"
+   },
+   {
+    "location": "paper/sections/v3_app_blind.tex:150 (EXISTING sentence inconsistent with W10, which uses the E0a)",
+    "current_text": "workload measures its all-miss capacity, which no rule uses.",
+    "proposed_latex": "workload measures its all-miss capacity, which only the secondary check W10 uses."
+   },
+   {
+    "location": "paper/sections/v3_evidence.tex:129-130 (Section 4.1; 'every trapped run ... above it' is contradicted two sentences later by MIRROR unless scoped; no extra line)",
+    "current_text": "consistent\nwith every trapped run at a load above the all-miss capacity completing sessions above it",
+    "proposed_latex": "consistent\nwith every trapped run of our workload at a load above the all-miss capacity completing sessions above it"
+   },
+   {
+    "location": "paper/sections/v3_intro.tex:37-38 (intro 'The question': an unscoped claim that trapped runs complete faster than the all-miss capacity is now false for MIRROR; no extra line)",
+    "current_text": "Trapped runs at\nloads above the all-miss capacity measured with caching disabled",
+    "proposed_latex": "Trapped runs of our workload at\nloads above the all-miss capacity measured with caching disabled"
+   },
+   {
+    "location": "paper/sections/v3_evidence.tex:55 (Section 4: MIRROR's trapped runs are a ninth cell, so 'every trapped run we have, in eight cells' is no longer true)",
+    "current_text": "We test model~F on every trapped run we have, in eight cells:",
+    "proposed_latex": "We test model~F on every trapped run of our workload, in eight cells:"
+   },
+   {
+    "location": "paper/sections/v3_evidence.tex:5 (Fig. 2 caption: MIRROR's six stuck runs are not in the figure; the caption does not grow)",
+    "current_text": "\\caption{Theorem~\\ref{thm:trap} against every stuck run, as a function of the load",
+    "proposed_latex": "\\caption{Theorem~\\ref{thm:trap} against every stuck run of our workload, as a function of the load"
+   },
+   {
+    "location": "paper/sections/v3_conclusion.tex:31-33 (Conclusion: 'the backlog grows at a fraction of the excess load' is false for the step-capped case, where model F gives 1.4 asymptotically and MIRROR measured 1.61-1.90; no extra line)",
+    "current_text": "the backlog grows\nat a fraction of the excess load (0.6 to 0.8 at our loads) and the turns served are young and short; for our workload sessions then\ncomplete faster than the all-miss capacity.",
+    "proposed_latex": "the backlog grows\nat a fixed multiple of the excess load and the turns served are young and short; for our workload the multiple is 0.6 to 0.8\nand sessions complete faster than the all-miss capacity."
+   },
+   {
+    "location": "paper/sections/v3_app_stampede.tex:211 (App. E registered trap criterion (a): the general claim 'completes sessions faster than lmiss' is now contradicted by MIRROR)",
+    "current_text": "Criterion (a) uses tokens because a trapped engine with a growing backlog completes sessions faster than $\\lmiss$ while it prefills at the all-miss token rate",
+    "proposed_latex": "Criterion (a) uses tokens because a trapped engine with a growing backlog completes sessions at a rate other than $\\lmiss$ (faster for our workload, slower with a 20-step budget, \\S\\ref{sec:mirror}) while it prefills at the all-miss token rate"
+   },
+   {
+    "location": "paper/sections/v3_app_stampede.tex:932 (Table 19, tab:prov, MIRROR row; no marker, but the release checklist asks for the pull directories; this compact form avoids the 'Float too large' error the full paths caused)",
+    "current_text": "MIRROR & \\fpath{results/theory/r16/}, \\fpath{analysis/r16_mirror.py}, \\fpath{analysis/theory/icml/mirror_predict.py}, \\fpath{configs/agentload_e2_mirror_k20.yaml} (tag \\texttt{r16-mirror-reg}, \\texttt{bc81ee7}; erratum \\texttt{d8c49b7})\\\\",
+    "proposed_latex": "MIRROR & \\fpath{results/nova/r16_mirror_*_pulled_20261105-*/}, \\fpath{results/agentload_analysis_r16_mirror/} (\\texttt{f641b02}); \\fpath{results/theory/r16/}, \\fpath{analysis/r16_mirror.py}, \\fpath{analysis/theory/icml/mirror_predict.py} (tag \\texttt{r16-mirror-reg}, \\texttt{bc81ee7}; erratum \\texttt{d8c49b7})\\\\"
+   },
+   {
+    "location": "paper/sections/v3_app_stampede.tex:883-884 (Table 18, tab:timeline-r15: MIRROR rows per the release checklist; adds one appendix page, 65 to 66)",
+    "current_text": "11-05 08:35 & TOOLSLOW-D15 seeds 1 and 2 pulled; registered verdict at 08:36\\\\\n\\bottomrule",
+    "proposed_latex": "11-05 08:35 & TOOLSLOW-D15 seeds 1 and 2 pulled; registered verdict at 08:36\\\\\n\\addlinespace\n11-05 14:07 & MIRROR (round 16): registration, frozen predictions and plans (\\texttt{bc81ee7}, 14:07:08); tag \\texttt{r16-mirror-reg}; on GitHub 14:07:35\\\\\n11-05 14:49 & MIRROR cache-off smoke test submitted (17264039, 14:49:05); the erratum to the prediction note's writing time (\\texttt{18ac5e6}, 14:24:49) reached GitHub at 14:49:22\\\\\n11-05 14:50 & MIRROR jobs submitted in the registered order (17264055--64, 14:50:52--53); the E0a, 17264061, failed its pre-run time check (14:51:57) and was resubmitted as 17264093 (14:53:08) with a longer time limit\\\\\n11-05 16:19 & errata to the prediction note's prose (\\texttt{d8c49b7}, 16:19:32) pushed (16:19:36), during the runs and before any MIRROR output was read\\\\\n11-05 16:59 & the E0a pulled (it ended at 16:27:41)\\\\\n11-05 17:22 & the nine MIRROR runs pulled (they ended at 17:20:42--17:21:03); registered verdict at 17:31\\\\\n\\bottomrule"
+   },
+   {
+    "location": "paper/sections/v3_app_stampede.tex:866 (Table 18 caption, with the rows above)",
+    "current_text": "\\caption{Order of the round-15 events, 2026-11-05 (times CST; commit times by the committer, push times from GitHub's activity log, job times by Slurm's accounting, pull and verdict times from the pull records in \\fpath{results/nova/r15_*_pulled_*}).}",
+    "proposed_latex": "\\caption{Order of the round-15 and round-16 (MIRROR) events, 2026-11-05 (times CST; commit times by the committer, push times from GitHub's activity log, job times by Slurm's accounting, pull and verdict times from the pull records in \\fpath{results/nova/r15_*_pulled_*} and \\fpath{results/nova/r16_*_pulled_*}).}"
+   },
+   {
+    "location": "paper/sections/v3_conclusion.tex:32-33 (OPTIONAL, applied after the conclusion fix above: the conclusion's one mention of MIRROR; fits on p. 12 together with the next item)",
+    "current_text": "and sessions complete faster than the all-miss capacity.",
+    "proposed_latex": "and sessions complete faster than the all-miss capacity, and with a 20-step budget slower, as a blind test found on the engine after a burst."
+   },
+   {
+    "location": "paper/sections/v3_conclusion.tex:14 (OPTIONAL: Limitations, MIRROR's scope next to CUT's)",
+    "current_text": "what singles out model~F against intermediate readings is post hoc. The from-empty runs",
+    "proposed_latex": "what singles out model~F against intermediate readings is post hoc; MIRROR's rule rejects only the throughput-curve readings.\nThe from-empty runs"
+   },
+   {
+    "location": "paper/main.tex:57 (OPTIONAL, author's call: abstract; +2 form characters, so 1919 of 1920 expected; drops 'in two cells', 'alone' and 'backlogs rising or falling slowly'; not checked with count.py)",
+    "current_text": "Blind in outcome, 4 runs in two cells trapped by a tool slowdown alone met 4 of 5 pre-set scores, and after arrival cuts the traps persisted, backlogs rising or falling slowly, as predicted.",
+    "proposed_latex": "Blind in outcome, 4 runs trapped by a tool slowdown met 4 of 5 pre-set scores, cut traps persisted, and with a 20-step budget, trapped runs completed below the all-miss capacity, as predicted."
+   }
+  ],
+  "numbers_used": [
+   {
+    "value": "PASS at 1.65 and at 1.35 λref; RENEWAL in 3 of 3 seeds each",
+    "source": "results/agentload_analysis_r16_mirror/20261105-173136/mirror_verdict.json: cells.1.65 and cells.1.35, fields calls and verdict"
+   },
+   {
+    "value": "six trapped runs; hit fraction 0.000; all six stuck",
+    "source": "mirror_runs.csv: stuck=True, hit_eval=0.0, fu_hit_5700_8700=0.0 on the six burst rows"
+   },
+   {
+    "value": "200 burst sessions completed by 8700 s",
+    "source": "mirror_runs.csv burst_completed = 200 (burst rows)"
+   },
+   {
+    "value": "late 0.50-0.85 λref (all six); 0.592/0.606/0.499 and 0.619/0.739/0.845",
+    "source": "mirror_runs.csv late_rate (min 0.49926 for 20261105-145240, max 0.84542 for 20261105-145244)"
+   },
+   {
+    "value": "1.65 λref late 0.50-0.61",
+    "source": "mirror_runs.csv late_rate on the 1.65 burst rows, 0.49926-0.60577"
+   },
+   {
+    "value": "blackout 0.06-0.09 at 1.65 λref; 0.070/0.058/0.093 and 0.105/0.093/0.163",
+    "source": "mirror_runs.csv blackout_rate (1.65 rows 0.05825-0.09320; 1.35 rows 0.09320-0.16309)"
+   },
+   {
+    "value": "5-14 blackout completions",
+    "source": "mirror_runs.csv blackout_n (5 to 14)"
+   },
+   {
+    "value": "M1 ceiling 25.75 completions",
+    "source": "BLACKOUT_MAX 0.30 (tagged analysis/r16_mirror.py:100) × lambda_ref 0.07153402 (mirror_runs.csv) × 1200 s"
+   },
+   {
+    "value": "waves 4996/4945/5089 s and 4759/4673/4576 s; range 4945-5089 at 1.65",
+    "source": "mirror_runs.csv wave_time"
+   },
+   {
+    "value": "model F waves 5195/5135/5157 and 4883/4802/4870 s",
+    "source": "mirror_runs.csv F_wave = tagged mirror_predictions.json cells.<mult>.seeds.<s>.burst_timing.median"
+   },
+   {
+    "value": "waves 69-295 s early; 1.7-8.0% of the elapsed time; M2 15%",
+    "source": "mirror_runs.csv F_wave - wave_time (68.9-294.7 s), divided by (F_wave - 1200); WAVE_TOL_REL 0.15 (r16_mirror.py:101)"
+   },
+   {
+    "value": "wave peaks 2.8-3.5 λref per 300-s bin (model F 3.2-4.4)",
+    "source": "mirror_bins.json maxima of the three 1.65 runs (3.448, 3.541, 2.796); mirror_predictions.json cells.1.65.seeds.*.peak.rate_over_lam_ref (3.308, 4.380, 3.169)"
+   },
+   {
+    "value": "model F blackout 0.047/0.070/0.093 and 0.000/0.058/0.070; late 0.546/0.599/0.486 and 0.599/0.686/0.726",
+    "source": "tagged mirror_predictions.json cells.<mult>.seeds.<s>.windows.blackout and late .completion_over_lam_ref"
+   },
+   {
+    "value": "slopes 0.0767/0.0837/0.0935 and 0.0557/0.0504/0.0496 /s",
+    "source": "mirror_runs.csv slope"
+   },
+   {
+    "value": "S_F 0.0789/0.0857/0.0930 and 0.0565/0.0534/0.0603; S_QS 0.0478/0.0441/0.0518 and 0.0274/0.0192/0.0278",
+    "source": "mirror_runs.csv S_F and S_QS (equal to mirror_predictions.json windows.slope.slope and qs_slope)"
+   },
+   {
+    "value": "backlog 1.61-1.90 times the plan's excess (model F 1.65-1.95)",
+    "source": "mirror_runs.csv slope/S_QS = 1.607, 1.899, 1.804 and S_F/S_QS = 1.653, 1.946, 1.794 (1.65 rows)"
+   },
+   {
+    "value": "nearer model F's slope by at least 0.011 /s",
+    "source": "mirror_runs.csv: min over burst rows of |slope-S_QS| - |slope-S_F| = 0.0112 (20261105-145244)"
+   },
+   {
+    "value": "127 late completions; ceiling 127.7; 0.845 against 0.85",
+    "source": "mirror_runs.csv late_n 127 and late_rate 0.84542 (20261105-145244); LATE_MAX 0.85 (r16_mirror.py:100) × 0.07153402 × 2100 = 127.69"
+   },
+   {
+    "value": "W5: 5089 s against F_cal 4850 ± 182 s; 1 of 6 missed",
+    "source": "mirror_runs.csv wave_time 5088.59, F_wave_cal 4849.94, W5_calibrated_wave False (20261105-145240 only); 0.05 × (4849.94 - 1200) = 182.50"
+   },
+   {
+    "value": "timing ratio 0.92-0.98; 2-8% slow",
+    "source": "(wave_time - 1200)/(F_wave - 1200) from mirror_runs.csv = 0.9197-0.9826"
+   },
+   {
+    "value": "8% bias; factor 0.9223; 0.9125-0.9327",
+    "source": "tagged notes/PREDICTIONS_r16_mirror.md:119-125"
+   },
+   {
+    "value": "W6 shifts 237/271/513 s; model F 312/334/287 s",
+    "source": "mirror_runs.csv wave_time(1.65) - wave_time(1.35) per seed; F_wave differences (311.7/333.6/287.2); mirror_verdict.json W6_order"
+   },
+   {
+    "value": "W7 +0.2% to +2.6%",
+    "source": "(mirror_runs.csv P_served_5700_8700 - mirror_predictions.json windows.w5700.P_served_mean)/the latter: +2.61/+2.06/+0.20/+1.46/+1.65/+2.37%"
+   },
+   {
+    "value": "W8 +0.007 to +0.120 λref",
+    "source": "mirror_runs.csv late_rate - mirror_predictions.json windows.late.completion_over_lam_ref"
+   },
+   {
+    "value": "NOBURST hit 0.949-0.950; ceiling 1-1/E[T]",
+    "source": "mirror_runs.csv hit_eval 0.94932-0.94993 (NOBURST rows); mirror_predictions.json workload.ET 19.8111, giving 0.9495"
+   },
+   {
+    "value": "NOBURST completions 1.66-1.82 λref; slopes within 0.001 /s",
+    "source": "mirror_runs.csv blackout_rate/late_rate on NOBURST rows (1.6642-1.8173); slope -0.00097 to +0.00015; mirror_verdict.json W9_controls_good"
+   },
+   {
+    "value": "measured all-miss rate 1.06 / 1.062 λref (turns-based)",
+    "source": "mirror_verdict.json W10_capacity.over_lambda_ref 1.06196 = calibration.json (results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/results/agentload_analysis_miss/20261105-162735/) lambda_miss_turns_based 0.0759665 / lambda_ref 0.0715340"
+   },
+   {
+    "value": "1.002 counting sessions",
+    "source": "the same calibration.json lambda_miss 0.0716659 / 0.0715340"
+   },
+   {
+    "value": "one run, closed population 32",
+    "source": "calibration.json n_runs 1; logs/pm-mire0a-17264093.out:578 (closed_n=32, --seed 0)"
+   },
+   {
+    "value": "model λmiss 1.046 λref; standard 1.004 λref",
+    "source": "tagged mirror_predictions.json lambda_miss_model_over_ref 1.04609 and lambda_miss_standard_model_over_ref 1.00427"
+   },
+   {
+    "value": "asymptotic D 0.81 and 0.91 λref",
+    "source": "mirror_predictions.json cells.1.65/1.35.asymptotics.D_over_lam_ref 0.80602 / 0.91021"
+   },
+   {
+    "value": "seed 2 at 1.35 λref: 1.01 λref over [7500,8700) s (model F 0.87)",
+    "source": "mirror_bins.json 20261105-145244, mean of the last four 300-s bins 1.014; mirror_predictions.json cells.1.35.seeds.2.completion_bins.rate_over_lam_ref, last four 0.874"
+   },
+   {
+    "value": "E0a check: 7080 s needed, 5369 s left, 01:30:00",
+    "source": "results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/logs/pm-mire0a-17264061.out:470-471; tagged analysis/r16_mirror.py:393"
+   },
+   {
+    "value": "17264093 at 14:53:08 with --time 02:15:00; failure at 14:51:57; E0a ended 16:27:41",
+    "source": "provenance/sacct_cited_jobs_2026-11-05-r16.txt lines 9 and 13"
+   },
+   {
+    "value": "jobs 17264055-60, 17264062-64 (17264055-64 incl. E0a); submitted 14:50:52-53; ended 17:20:42-17:21:03",
+    "source": "provenance/sacct_cited_jobs_2026-11-05-r16.txt lines 3-12; meta.json slurm_env.SLURM_JOB_ID"
+   },
+   {
+    "value": "decisive runs: jobs 17264055-57",
+    "source": "meta.json slurm_env of 20261105-145227 / 145244-2 / 145240; sacct lines 3-5"
+   },
+   {
+    "value": "grey traces: jobs 17093390, 17093396, 17093402",
+    "source": "meta.json slurm_env of results/nova/e2_170933xx_pulled_20261025-144558/results/agentload_e2_burst/{20261024-155120,20261024-184132,20261025-000043}; figures/r16/fig_mirror.py:6"
+   },
+   {
+    "value": "on GitHub at 14:07:35 CST; commit 14:07:08",
+    "source": "provenance/github_activity_2026-11-05-r16.json:153-159 (id 49158340380, 2026-11-05T20:07:35Z); provenance/push_times_2026-11-05-r16.tsv row 2"
+   },
+   {
+    "value": "smoke test 17264039 submitted 14:49:05",
+    "source": "sacct line 2"
+   },
+   {
+    "value": "18ac5e6 committed 14:24:49, on GitHub 14:49:22; d8c49b7 16:19:32 / 16:19:36",
+    "source": "provenance/push_times_2026-11-05-r16.tsv rows 8-9"
+   },
+   {
+    "value": "E0a pulled 16:59; runs pulled 17:22; verdict 17:31",
+    "source": "COMMANDS.txt line 1 of the two r16 pull directories; verdict directory name 20261105-173136"
+   },
+   {
+    "value": "tool times within 1e-13 s",
+    "source": "provenance verifier's check_plans (maximum difference 5.68e-14 s in tool_time_total_s)"
+   },
+   {
+    "value": "f641b02",
+    "source": "git log: the commit adding the pulls, the verdict and fig_mirror.pdf (on origin/r16/mirror)"
+   },
+   {
+    "value": "20-step budget",
+    "source": "configs/agentload_e2_mirror_k20.yaml max_turns 20; mirror_predictions.json workload.max_turns 20"
+   },
+   {
+    "value": "standard-workload traps 1.05-1.48 and 1.01-1.35 λref (already in the text)",
+    "source": "tagged note lines 34-35; recomputed by me from sessions.csv of the six standard E2 BURST runs: 1.048-1.479 and 1.012-1.351"
+   }
+  ],
+  "disagreements_with_verifiers": "None of the four reports disagrees with the registered verdict, with any call or with any M1-M4/STUCK boolean, and I found no reason to.\n\n1. The blind recompute differs from the registered output in 22 of 252 values. All are definitional: the exact time-averaged backlog against 1-s samples (at most 1.2e-5 /s, against a smallest M4 margin of 0.0112 /s), the cached>50% hit metric against cached>0 (configs/agentload_analysis.yaml:18-19), a rounded λmiss constant (offset 3.1e-7 /s), and NaN against 0 for burst_completed in NOBURST. The registered values are what the tagged code computes (two verifiers reproduced the files byte for byte), so the registered output stands.\n\n2. For the timing bias I quote (wave-1200)/(F-1200) = 0.920-0.983, which can be computed from the published table. The rules audit's registered per-session statistic is 0.924-0.982. Both round to 0.92-0.98.\n\n3. No verifier raised these:\n   - The uncommitted notes/LOG.md evening entry gives NOBURST completions of '1.70-1.82 λref in both windows'. The registered windows give 1.664-1.817 (late 1.664 at seed 1, 1.684 at seed 0). The artifact skeptic's '1.58-1.82' covers other windows.\n   - App. C's existing 'which no rule uses' for the E0a contradicts W10.\n   - The general sentences in the intro, the Section 4 lead-in, the Fig. 2 caption, App. E criterion (a) and the conclusion ('a fraction of the excess load') become false once MIRROR is in the paper. I give a zero-length scope fix for each.\n\n4. The brief's 'about four spare lines on p. 12' is close but not exact. I measured about 4 lines at the foot of p. 11 (usable only by text before §7) and about 3 at the foot of p. 12. The fill-ins were sized and test-built to fit: main text still ends on p. 12, with no overfull boxes."
+ }
+}

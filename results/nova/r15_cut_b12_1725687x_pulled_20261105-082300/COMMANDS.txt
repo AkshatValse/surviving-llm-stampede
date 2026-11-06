@@ -1,0 +1,21 @@
+r15 pull: CUT-B seeds 1 and 2 (lambda' = 0.85 x lambda_ref), jobs 17256871-72, 2026-11-05
+
+Source clone on Nova: /work/classtmp/avalse/swapp/repo_r15_cut at 11b0e4e (tag r15-cut-reg), git status clean.
+17256871 (seed 1, nova22-gpu-2) and 17256872 (seed 2, nova22-gpu-3) COMPLETED 0:0, ended 08:21:09 and 08:21:54 CST
+(sacct_17256871-17256872.txt here). Run directories results/agentload_e2_burst/20261105-055259 (seed 1) and
+20261105-055344 (seed 2); in-job analyses results/agentload_analysis_burst/20261105-0821{02,47},
+results/agentload_analysis_burst2/20261105-0821{03,48}; job log dirs results/nova_job_logs/1725687{1,2}-*;
+logs/pm-cut085-1725687{1,2}.out. Seed 0 is in results/nova/r15_cut_b0_17256870_pulled_20261105-065100/.
+
+Pull (08:23 CST): tar | xz -T2 -6 on Nova -> pulls_r15/cut_b12_20261105.tar.xz (4,297,356 bytes);
+sha256 37d73004a5ed1c28393e78e542dd86df52ed1d1faf363dfb6e56fefab8080be8 on Nova and on the PC (equal); extracted with
+tar --force-local; the remote archive was deleted.
+
+Final registered CUT verdict (all six CUT runs; PC, r15/tonight, PYTHONPATH="src;."):
+  python -m analysis.r15_cut classify --run-dirs <3 CUT-A dirs> <CUT-B seed 0 dir> <the 2 dirs here>
+    --prereg configs/agentload_prereg_2026-11-05_cut_a115.yaml configs/agentload_prereg_2026-11-05_cut_b085.yaml
+    --theory-git icml-cut-pred:results/theory/icml/cut_predictions.json --out-root <this>/analysis
+  -> analysis/agentload_analysis_r15_cut/20261105-082543/: CUT-A PASS, CUT-B PASS.
+CUT-B secondary and alternative comparisons (analysis/theory/icml/measured.py window_stats at fdb80c9, run from a git
+archive of fdb80c9 in the session scratchpad; constant-throughput alternatives from plan.csv base arrivals):
+  -> analysis/icml_cut_secondary_cut_b.json

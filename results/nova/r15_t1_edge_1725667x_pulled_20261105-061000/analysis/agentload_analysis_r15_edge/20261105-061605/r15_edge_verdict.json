@@ -1,0 +1,287 @@
+{
+  "verdict": {
+    "verdict": "REPRODUCIBLE",
+    "disagreement_observed": false,
+    "disagreement_level": null,
+    "noise_induced_escape_at_fixed_workload": false,
+    "disagreement_among_new_runs_observed": false,
+    "originals_match_known_outcomes": true,
+    "plans": {
+      "0": {
+        "original": "UNSTABLE",
+        "original_known_outcome": "UNSTABLE",
+        "n_valid_replicates": 3,
+        "replicates_unstable": 3,
+        "replicates_stable": 0,
+        "disagree": false,
+        "location": null,
+        "disagree_among_new_runs": false,
+        "location_among_new_runs": null,
+        "runs": [
+          {
+            "role": "original",
+            "job": "17084754",
+            "node": "nova22-gpu-1",
+            "gpu_bus_id": "00000000:86:00.0",
+            "run_position": 1,
+            "content_salt": 1,
+            "label": "UNSTABLE",
+            "tau_s": 1600.0,
+            "run_dir": "results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_e0_cap/20261023-151551-1"
+          },
+          {
+            "role": "replicate",
+            "job": "17256677",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:45:00.0",
+            "run_position": 1,
+            "content_salt": 1,
+            "label": "UNSTABLE",
+            "tau_s": 1600.0,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032421"
+          },
+          {
+            "role": "replicate",
+            "job": "17256677",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:45:00.0",
+            "run_position": 3,
+            "content_salt": 3,
+            "label": "UNSTABLE",
+            "tau_s": 1600.0,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051027"
+          },
+          {
+            "role": "replicate",
+            "job": "17256678",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:46:00.0",
+            "run_position": 2,
+            "content_salt": 2,
+            "label": "UNSTABLE",
+            "tau_s": 1800.0,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041757"
+          }
+        ]
+      },
+      "4": {
+        "original": "STABLE",
+        "original_known_outcome": "STABLE",
+        "n_valid_replicates": 3,
+        "replicates_unstable": 0,
+        "replicates_stable": 3,
+        "disagree": false,
+        "location": null,
+        "disagree_among_new_runs": false,
+        "location_among_new_runs": null,
+        "runs": [
+          {
+            "role": "original",
+            "job": "17168507",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:06:00.0",
+            "run_position": 2,
+            "content_salt": 2,
+            "label": "STABLE",
+            "tau_s": null,
+            "run_dir": "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e0_cap/20261031-021452"
+          },
+          {
+            "role": "replicate",
+            "job": "17256677",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:45:00.0",
+            "run_position": 2,
+            "content_salt": 2,
+            "label": "STABLE",
+            "tau_s": null,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041724"
+          },
+          {
+            "role": "replicate",
+            "job": "17256678",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:46:00.0",
+            "run_position": 1,
+            "content_salt": 1,
+            "label": "STABLE",
+            "tau_s": null,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032455"
+          },
+          {
+            "role": "replicate",
+            "job": "17256678",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:46:00.0",
+            "run_position": 3,
+            "content_salt": 3,
+            "label": "STABLE",
+            "tau_s": null,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051100"
+          }
+        ]
+      }
+    },
+    "label_key": "label",
+    "exploratory": true,
+    "not_decisive": "exploratory whatever the outcome; the claim is stated as 'k of n same-plan replicates (dis)agreed', never as a test of metastability or of the F2 escape law"
+  },
+  "verdict_with_registered_stable_rule_descriptive": {
+    "verdict": "REPRODUCIBLE",
+    "disagreement_observed": false,
+    "disagreement_level": null,
+    "noise_induced_escape_at_fixed_workload": false,
+    "disagreement_among_new_runs_observed": false,
+    "originals_match_known_outcomes": true,
+    "plans": {
+      "0": {
+        "original": "UNSTABLE",
+        "original_known_outcome": "UNSTABLE",
+        "n_valid_replicates": 3,
+        "replicates_unstable": 3,
+        "replicates_stable": 0,
+        "disagree": false,
+        "location": null,
+        "disagree_among_new_runs": false,
+        "location_among_new_runs": null,
+        "runs": [
+          {
+            "role": "original",
+            "job": "17084754",
+            "node": "nova22-gpu-1",
+            "gpu_bus_id": "00000000:86:00.0",
+            "run_position": 1,
+            "content_salt": 1,
+            "label_registered": "UNSTABLE",
+            "tau_s": 1600.0,
+            "run_dir": "results/nova/e0b_1708475x_pulled_20261024-150639/results/agentload_e0_cap/20261023-151551-1"
+          },
+          {
+            "role": "replicate",
+            "job": "17256677",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:45:00.0",
+            "run_position": 1,
+            "content_salt": 1,
+            "label_registered": "UNSTABLE",
+            "tau_s": 1600.0,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032421"
+          },
+          {
+            "role": "replicate",
+            "job": "17256677",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:45:00.0",
+            "run_position": 3,
+            "content_salt": 3,
+            "label_registered": "UNSTABLE",
+            "tau_s": 1600.0,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051027"
+          },
+          {
+            "role": "replicate",
+            "job": "17256678",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:46:00.0",
+            "run_position": 2,
+            "content_salt": 2,
+            "label_registered": "UNSTABLE",
+            "tau_s": 1800.0,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041757"
+          }
+        ]
+      },
+      "4": {
+        "original": "STABLE",
+        "original_known_outcome": "STABLE",
+        "n_valid_replicates": 3,
+        "replicates_unstable": 0,
+        "replicates_stable": 3,
+        "disagree": false,
+        "location": null,
+        "disagree_among_new_runs": false,
+        "location_among_new_runs": null,
+        "runs": [
+          {
+            "role": "original",
+            "job": "17168507",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:06:00.0",
+            "run_position": 2,
+            "content_salt": 2,
+            "label_registered": "STABLE",
+            "tau_s": null,
+            "run_dir": "results/nova/b1_e0f_1716850x_pulled_20261031-040517/results/agentload_e0_cap/20261031-021452"
+          },
+          {
+            "role": "replicate",
+            "job": "17256677",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:45:00.0",
+            "run_position": 2,
+            "content_salt": 2,
+            "label_registered": "STABLE",
+            "tau_s": null,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041724"
+          },
+          {
+            "role": "replicate",
+            "job": "17256678",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:46:00.0",
+            "run_position": 1,
+            "content_salt": 1,
+            "label_registered": "STABLE",
+            "tau_s": null,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032455"
+          },
+          {
+            "role": "replicate",
+            "job": "17256678",
+            "node": "nova22-gpu-3",
+            "gpu_bus_id": "00000000:46:00.0",
+            "run_position": 3,
+            "content_salt": 3,
+            "label_registered": "STABLE",
+            "tau_s": null,
+            "run_dir": "C:/Users/Akshat/Desktop/Claude Code/Nova-Research-wt/tonight/results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051100"
+          }
+        ]
+      }
+    },
+    "label_key": "label_registered",
+    "exploratory": true,
+    "not_decisive": "exploratory whatever the outcome; the claim is stated as 'k of n same-plan replicates (dis)agreed', never as a test of metastability or of the F2 escape law"
+  },
+  "jobs": {
+    "17256677": {
+      "seeds_by_position": [
+        0,
+        4,
+        0
+      ],
+      "planned_job": "A",
+      "nodes": [
+        "nova22-gpu-3"
+      ],
+      "gpus": [
+        "00000000:45:00.0"
+      ]
+    },
+    "17256678": {
+      "seeds_by_position": [
+        4,
+        0,
+        4
+      ],
+      "planned_job": "B",
+      "nodes": [
+        "nova22-gpu-3"
+      ],
+      "gpus": [
+        "00000000:46:00.0"
+      ]
+    }
+  },
+  "rule_file": "configs/r15_edge_replicate.yaml"
+}

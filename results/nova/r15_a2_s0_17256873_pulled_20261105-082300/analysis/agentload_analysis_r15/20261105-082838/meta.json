@@ -1,0 +1,54 @@
+{
+  "experiment": "agentload_analysis_r15",
+  "status": "finished",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+    "-m",
+    "analysis.r15_cells",
+    "classify",
+    "--run-dirs",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e2_burst/20261105-032338",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e2_burst/20261105-032413",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e2_burst/20261105-032418",
+    "results/nova/r15_a2_s0_17256873_pulled_20261105-082300/results/agentload_e2_burst/20261105-055338",
+    "--out-root",
+    "results/nova/r15_a2_s0_17256873_pulled_20261105-082300/analysis"
+  ],
+  "git": {
+    "commit": "e0fd53cb375fa9731bd6cc01c12f1e0df82348cb",
+    "dirty": true,
+    "branch": "r15/tonight",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-11-05T08:28:25",
+  "end_time": "2026-11-05T08:28:38",
+  "wall_s": 13.122793,
+  "slurm_env": {},
+  "run_dirs": [
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e2_burst/20261105-032338",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e2_burst/20261105-032413",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e2_burst/20261105-032418",
+    "results/nova/r15_a2_s0_17256873_pulled_20261105-082300/results/agentload_e2_burst/20261105-055338"
+  ],
+  "prereg": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\configs\\agentload_prereg_2026-11-05_toolslow_d30w1800.yaml",
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\configs\\agentload_prereg_2026-11-05_toolslow_d15_165.yaml"
+  ],
+  "control_root": "C:\\Users\\Akshat\\Desktop\\Claude Code\\Nova-Research-wt\\tonight\\results\\nova\\e2_170933xx_pulled_20261025-144558\\results\\agentload_e2_burst"
+}

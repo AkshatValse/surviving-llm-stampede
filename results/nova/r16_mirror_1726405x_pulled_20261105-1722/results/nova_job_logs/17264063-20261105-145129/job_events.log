@@ -1,0 +1,6 @@
+14:52:44 flush HTTP 200 (/flush_cache) after 0 retries
+14:52:45 flush HTTP 200 (/flush_cache) after 0 retries
+14:52:45 reset_and_verify: verified=true canary 1: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_1_*.json
+17:20:48 flush HTTP 200 (/flush_cache) after 0 retries
+17:20:48 flush HTTP 200 (/flush_cache) after 0 retries
+17:20:48 reset_and_verify: verified=true canary 2: prime rc=0 check rc=0 (rc legend: 0 ok, 1 failed, 3 unverifiable); see canary_2_*.json

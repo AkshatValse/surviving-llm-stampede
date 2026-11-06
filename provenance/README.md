@@ -61,3 +61,15 @@ Exported 2026-11-05 at about 06:50 CST (12:50 UTC). Every time of this round is 
 | `push_times_2026-11-05.tsv` | `python provenance/make_push_times.py --activity github_activity_2026-11-05.json --sacct sacct_cited_jobs_2026-11-05.txt --r15`: one row per (commit, batch) of round 15, times in CST. Every registration and prediction commit was on GitHub before the first job of its batch was submitted (margins 145 s to 3 h 32 min). The one later row is `fdb80c9`, which added the scorer's unregistered gamma/z column 777 s after the TOOLSLOW-W jobs were submitted and before any of their output existed. |
 
 Tag objects carry no push time. Each tag's commit is the "first on GitHub" commit of its branch push: `icml-trap-pred` = `6b47a6c` (branch `claude/theory-icml-2164a9` created 06:24:47Z), `icml-cut-pred` = `2f90267` (pushed 08:25:43Z), `r15-reg` = `e05a262` (in `185dac9`, branch `r15/tonight` created 09:18:36Z), `r15-cut-reg` = `11b0e4e` (in `063024e`, pushed 09:54:49Z).
+
+## Refresh of 2026-11-05 evening (round 16, MIRROR, CST)
+
+GitHub records exported 2026-11-05 at 22:28Z (16:28 CST); Slurm records exported at about 17:30 CST, after the last MIRROR job ended. All times CST (UTC-6). The earlier files above are unchanged.
+
+| File | What it is |
+|---|---|
+| `github_activity_2026-11-05-r16.json` | `gh api 'repos/AkshatValse/Nova-Research/activity?per_page=100' --paginate --slurp` (pages merged): 165 entries, 2026-10-22 22:45:50Z to 2026-11-05 22:19:36Z. Branch `r16/mirror` was created at `bc81ee7` (the registration, tag `r16-mirror-reg`) at 20:07:35Z = 14:07:35 CST. |
+| `github_tag_refs_2026-11-05-r16.json` | `gh api repos/AkshatValse/Nova-Research/git/matching-refs/tags --paginate --slurp`: 22 tags, including `r16-mirror-reg`. |
+| `sacct_cited_jobs_2026-11-05-r16.txt` | `sacct -j <IDs> -X -P -o JobID,JobName,Account,Partition,Submit,Start,End,State,ExitCode,NodeList,SubmitLine%2000` on nova-login-1 for the 12 jobs of round 16: smoke 17264039, BURST/NOBURST 17264055-60 and 17264062-64, E0a 17264061 (FAILED 1:0, its pre-run time-budget check) and 17264093 (its resubmission with `--time 02:15:00`). All billed to `f2026.coms.6250.02`, partition `instruction`. Every other job COMPLETED 0:0. |
+| `sacct_cited_jobs_2026-11-05-r16_utc.txt` | The same jobs with `TZ=UTC` and without the submit line. |
+| `push_times_2026-11-05-r16.tsv` | `python provenance/make_push_times.py --activity github_activity_2026-11-05-r16.json --sacct sacct_cited_jobs_2026-11-05-r16.txt --r16`. The registration was on GitHub 2,490 s (41.5 min) before the first MIRROR job (the cache-off smoke test 17264039) was submitted, and 2,597 s before the BURST, NOBURST and first E0a jobs (14:50:52). The erratum `18ac5e6` (writing time) arrived 90 s before those submissions. The errata `d8c49b7` (prose, found by the paper audit) arrived at 16:19:36, while the runs were in progress (they ended 17:20-17:21) and before any of their output was read. |

@@ -1,0 +1,23 @@
+Read-only pull of the nine MIRROR BURST/NOBURST jobs (r16), 2026-11-05 17:22 CST, by the lead session.
+
+On Nova (nova-login-1), from the frozen clone /work/classtmp/avalse/swapp/repo_r16_mirror (HEAD bc81ee7 = tag r16-mirror-reg,
+0 dirty paths), after every job had COMPLETED (sacct; ends 17:20:42-17:21:03 CST) and each job log showed PREREG_OK once:
+    bash /work/classtmp/avalse/swapp/pulls_r16/nova_pull.sh mirror 17264055 17264056 17264057 17264058 17264059 17264060 \
+        17264062 17264063 17264064
+      -> ../pulls_r16/mirror_20261105-1722.tar.xz, 24250800 bytes,
+         sha256 342bd2a1448a06ebbf1c7a040cd940646e7d818da3774751ea5ead8b6945dbdb
+On the PC:
+    scp nova:/work/classtmp/avalse/swapp/pulls_r16/mirror_20261105-1722.tar.xz .   (sha256 matched)
+    xz -dc mirror_20261105-1722.tar.xz | tar --force-local -xf - -C results/nova/r16_mirror_1726405x_pulled_20261105-1722
+    then the remote archive was deleted.
+
+Jobs and run directories (results/agentload_e2_burst/; arm, rate and seed from each run's meta.json and plan):
+    17264055-57  BURST   1.65 x lambda_ref, seeds 0-2   (decisive cell)
+    17264058-60  NOBURST 1.65 x, seeds 0-2              (controls)
+    17264062-64  BURST   1.35 x, seeds 0-2              (secondary cell)
+Registered scoring, on the PC from the r16/mirror worktree (analysis/, src/, configs/ identical to the tag):
+    PYTHONPATH="src;." python -m analysis.r16_mirror classify \
+        --run-dirs results/nova/r16_mirror_1726405x_pulled_20261105-1722/results/agentload_e2_burst/* \
+        --e0a-calib results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/results/agentload_analysis_miss/20261105-162735/calibration.json
+      -> results/agentload_analysis_r16_mirror/20261105-173136/ (mirror_runs.csv, mirror_bins.json, mirror_verdict.json)
+Slurm records: provenance/sacct_cited_jobs_2026-11-05-r16.txt (and _utc).

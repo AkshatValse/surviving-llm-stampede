@@ -1,0 +1,84 @@
+lambda_ref 0.07153402100919228  (pred JSON lambda_ref; mirror_runs.csv lambda_ref identical)
+lambda_miss_model 0.07483115322200824 = 1.0461 lref
+
+=== BURST 1.65 x  (rho 1.577; asymptotic D/lmiss 0.771, D/lref 0.806, H 0.699, Gamma 1.103)
+seed 0 job 17264055 (20261105-145227): call RENEWAL  M1-4 TrueTrueTrueTrue  stuck True hit 0.0000 fu_hit 0.0000
+   blackout 0.0699 [6 of <= 25.75] (F 0.0466)   late 0.5925 [89 of <= 127.69] (F 0.5459; late-F +0.0466)
+   wave 4995.9 (F 5194.7; err -198.8 s = -4.98% of F-1200; M2 tol 599.2; ratio 0.9502)  W5: |wave-Fcal| 111.7 vs 184.2 -> True
+   slope 0.07673 (F 0.07894, QS 0.04776); |S-SF| 0.00221 |S-SQS| 0.02897; (S-SF)/SF -2.8%; lam_plan 0.12259
+   P_served 7100.7 (F 6920.1; +2.61%) W7 True  W8 True  late/E0a(turns) 0.558 late/E0a(sess) 0.591  burst done 200  counted True plan True bound True end 8700.016 bins 270
+seed 1 job 17264056 (20261105-145244-2): call RENEWAL  M1-4 TrueTrueTrueTrue  stuck True hit 0.0000 fu_hit 0.0000
+   blackout 0.0582 [5 of <= 25.75] (F 0.0699)   late 0.6058 [91 of <= 127.69] (F 0.5991; late-F +0.0067)
+   wave 4944.5 (F 5135.4; err -190.9 s = -4.85% of F-1200; M2 tol 590.3; ratio 0.9515)  W5: |wave-Fcal| 115.0 vs 181.5 -> True
+   slope 0.08367 (F 0.08572, QS 0.04406); |S-SF| 0.00204 |S-SQS| 0.03961; (S-SF)/SF -2.4%; lam_plan 0.11889
+   P_served 7219.2 (F 7073.7; +2.06%) W7 True  W8 True  late/E0a(turns) 0.570 late/E0a(sess) 0.605  burst done 200  counted True plan True bound True end 8700.015 bins 270
+seed 2 job 17264057 (20261105-145240): call RENEWAL  M1-4 TrueTrueTrueTrue  stuck True hit 0.0000 fu_hit 0.0000
+   blackout 0.0932 [8 of <= 25.75] (F 0.0932)   late 0.4993 [75 of <= 127.69] (F 0.4859; late-F +0.0133)
+   wave 5088.6 (F 5157.5; err -68.9 s = -1.74% of F-1200; M2 tol 593.6; ratio 0.9826)  W5: |wave-Fcal| 238.7 vs 182.5 -> False
+   slope 0.09354 (F 0.09300, QS 0.05184); |S-SF| 0.00054 |S-SQS| 0.04170; (S-SF)/SF +0.6%; lam_plan 0.12667
+   P_served 6990.5 (F 6976.4; +0.20%) W7 True  W8 True  late/E0a(turns) 0.470 late/E0a(sess) 0.498  burst done 200  counted True plan True bound True end 8700.014 bins 270
+
+=== BURST 1.35 x  (rho 1.291; asymptotic D/lmiss 0.870, D/lref 0.910, H 0.825, Gamma 1.055)
+seed 0 job 17264062 (20261105-145244-1): call RENEWAL  M1-4 TrueTrueTrueTrue  stuck True hit 0.0000 fu_hit 0.0000
+   blackout 0.1048 [9 of <= 25.75] (F 0.0000)   late 0.6191 [93 of <= 127.69] (F 0.5991; late-F +0.0200)
+   wave 4758.7 (F 4883.0; err -124.3 s = -3.38% of F-1200; M2 tol 552.4; ratio 0.9662)  W5: |wave-Fcal| 161.9 vs 169.8 -> True
+   slope 0.05567 (F 0.05652, QS 0.02739); |S-SF| 0.00085 |S-SQS| 0.02828; (S-SF)/SF -1.5%; lam_plan 0.10222
+   P_served 7559.4 (F 7450.7; +1.46%) W7 True  W8 True  late/E0a(turns) 0.583 late/E0a(sess) 0.618  burst done 200  counted True plan True bound True end 8700.016 bins 270
+seed 1 job 17264063 (20261105-145246): call RENEWAL  M1-4 TrueTrueTrueTrue  stuck True hit 0.0000 fu_hit 0.0000
+   blackout 0.0932 [8 of <= 25.75] (F 0.0582)   late 0.7389 [111 of <= 127.69] (F 0.6857; late-F +0.0533)
+   wave 4673.2 (F 4801.8; err -128.6 s = -3.57% of F-1200; M2 tol 540.3; ratio 0.9643)  W5: |wave-Fcal| 151.3 vs 166.1 -> True
+   slope 0.05038 (F 0.05336, QS 0.01924); |S-SF| 0.00297 |S-SQS| 0.03114; (S-SF)/SF -5.6%; lam_plan 0.09407
+   P_served 7859.9 (F 7732.3; +1.65%) W7 True  W8 True  late/E0a(turns) 0.696 late/E0a(sess) 0.738  burst done 200  counted True plan True bound True end 8700.114 bins 270
+seed 2 job 17264064 (20261105-145244): call RENEWAL  M1-4 TrueTrueTrueTrue  stuck True hit 0.0000 fu_hit 0.0000
+   blackout 0.1631 [14 of <= 25.75] (F 0.0699)   late 0.8454 [127 of <= 127.69] (F 0.7256; late-F +0.1198)
+   wave 4575.6 (F 4870.2; err -294.7 s = -8.03% of F-1200; M2 tol 550.5; ratio 0.9197)  W5: |wave-Fcal| 9.4 vs 169.3 -> True
+   slope 0.04964 (F 0.06031, QS 0.02776); |S-SF| 0.01066 |S-SQS| 0.02188; (S-SF)/SF -17.7%; lam_plan 0.10259
+   P_served 7727.4 (F 7548.4; +2.37%) W7 True  W8 True  late/E0a(turns) 0.796 late/E0a(sess) 0.844  burst done 200  counted True plan True bound True end 8700.015 bins 270
+
+=== ranges
+1.65: blackout 0.058-0.093; late 0.499-0.606; wave 4945-5089; err -199 to -69; |err|/elapsed 1.7-5.0%; ratio 0.950-0.983; S 0.0767-0.0935; S/S_F-1 -2.8 to +0.6%; late/E0a 0.470-0.570; hit max 0.0000
+1.35: blackout 0.093-0.163; late 0.619-0.845; wave 4576-4759; err -295 to -124; |err|/elapsed 3.4-8.0%; ratio 0.920-0.966; S 0.0496-0.0557; S/S_F-1 -17.7 to -1.5%; late/E0a 0.583-0.796; hit max 0.0000
+all: blackout 0.058-0.163 late 0.499-0.845
+S_QS range 0.0192-0.0518; S_F range 0.0534-0.0930
+(S-S_QS)/S_QS: +61%, +90%, +80%, +103%, +162%, +79%
+S/(lam_plan - lmiss_model): 1.61, 1.90, 1.80, 2.03, 2.62, 1.79
+S_F/(S_QS): 1.65, 1.95, 1.79, 2.06, 2.77, 2.17
+W6 shifts (wave 1.65 - wave 1.35), measured / model F:
+   seed 0: 237.2 / 311.7
+   seed 1: 271.3 / 333.6
+   seed 2: 513.0 / 287.2
+
+=== NOBURST 1.65 x
+seed 0 job 17264058 (20261105-145242): good True state recovered hit 0.9496 fu_hit 0.9999 blackout 1.7358 [149] late 1.6842 [253] slope -0.00097 counted True end 8700.015
+seed 1 job 17264059 (20261105-145247): good True state recovered hit 0.9493 fu_hit 1.0000 blackout 1.7940 [154] late 1.6642 [250] slope -0.00033 counted True end 8700.018
+seed 2 job 17264060 (20261105-145248): good True state recovered hit 0.9499 fu_hit 1.0000 blackout 1.7008 [146] late 1.8173 [273] slope +0.00015 counted True end 8700.015
+NOBURST completions, both windows: 1.664-1.817; hit 0.9493-0.9499; slope -0.00097 to +0.00015
+
+=== E0a (W10)
+lambda_miss_turns_based 0.075967 /s = 1.0620 lref; sessions-based 0.071666 = 1.0018 lref; uncached tok/s 12120; n_runs 1; host ['nova22-gpu-1']
+POP-64 check: turns-based 1.1000 lref, sessions 1.0096, tok/s 12304 (+1.5%)
+verdict W10: 1.0620 (model 1.0461); late below: [True, True, True, True, True, True]
+(E0a - model)/model = +1.52%
+
+=== verdict
+1.65 decisive PASS {'0': ['RENEWAL'], '1': ['RENEWAL'], '2': ['RENEWAL']}
+1.35 secondary PASS {'0': ['RENEWAL'], '1': ['RENEWAL'], '2': ['RENEWAL']}
+W6 {'0': True, '1': True, '2': True} W9 {'0': True, '1': True, '2': True} predates {'source': {'git_ref': 'r16-mirror-reg:results/theory/r16/mirror_predictions.json', 'commit': 'bc81ee71f7f55c890f7f0cec33083b98e0be4807', 'commit_unix': 1793909228}, 'predates_all_counted_runs': True}
+
+=== 300-s completion bins (lref), last 1200 s [7500, 8700) and late window, BURST runs
+1.65 s0: late-window bins [0.75, 0.28, 0.75, 0.65, 0.51, 0.56, 0.65]; mean [7500,8700) 0.594; peak 3.45 at bin start 5100
+        model F late bins [0.65, 0.61, 0.37, 0.61, 0.7, 0.47, 0.42]; mean [7500,8700) 0.548; peak 3.31 at 5100
+1.65 s1: late-window bins [0.65, 0.56, 0.89, 0.47, 0.37, 0.7, 0.61]; mean [7500,8700) 0.536; peak 3.54 at bin start 4800
+        model F late bins [0.61, 0.65, 0.65, 0.84, 0.23, 0.51, 0.7]; mean [7500,8700) 0.571; peak 4.38 at 5100
+1.65 s2: late-window bins [0.42, 0.61, 0.56, 0.51, 0.42, 0.61, 0.37]; mean [7500,8700) 0.478; peak 2.80 at bin start 5100
+        model F late bins [0.56, 0.47, 0.61, 0.47, 0.47, 0.47, 0.37]; mean [7500,8700) 0.443; peak 3.17 at 5100
+1.35 s0: late-window bins [0.79, 0.93, 0.37, 0.75, 0.28, 0.61, 0.61]; mean [7500,8700) 0.559; peak 4.15 at bin start 4800
+        model F late bins [0.79, 0.84, 0.42, 0.47, 0.7, 0.42, 0.56]; mean [7500,8700) 0.536; peak 4.15 at 4800
+1.35 s1: late-window bins [0.75, 0.42, 0.65, 0.56, 0.75, 1.07, 0.98]; mean [7500,8700) 0.839; peak 3.68 at bin start 4500
+        model F late bins [0.89, 0.37, 0.51, 0.61, 0.56, 0.79, 1.07]; mean [7500,8700) 0.757; peak 4.43 at 4800
+1.35 s2: late-window bins [0.51, 0.56, 0.79, 0.98, 1.12, 1.03, 0.93]; mean [7500,8700) 1.014; peak 2.98 at bin start 4800
+        model F late bins [0.61, 0.42, 0.56, 0.47, 1.12, 0.89, 1.03]; mean [7500,8700) 0.874; peak 3.40 at 4800
+
+=== standard-workload comparison numbers quoted by the tagged note: 1.05-1.48 (blackout window), 1.01-1.35 (late)
+model F frozen ranges at 1.65: blackout [0.047, 0.07, 0.093] late [0.546, 0.599, 0.486] wave [5194.7, 5135.4, 5157.5]
+model F frozen ranges at 1.35: blackout [0.0, 0.058, 0.07] late [0.599, 0.686, 0.726] wave [4883.0, 4801.8, 4870.2]

@@ -1,0 +1,55 @@
+{
+  "experiment": "agentload_analysis_r15_edge",
+  "status": "finished",
+  "argv": [
+    "C:\\Users\\Akshat\\Desktop\\Claude Code\\.venvs\\nova-research\\Scripts\\python.exe",
+    "-m",
+    "analysis.r15_edge",
+    "classify",
+    "--run-dirs",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032421",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041724",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051027",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032455",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041757",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051100",
+    "--out-root",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/analysis"
+  ],
+  "git": {
+    "commit": "063024e420cd39a056d83c5b27af8ecada032370",
+    "dirty": true,
+    "branch": "r15/tonight",
+    "captured_at": "run start"
+  },
+  "seeds": [
+    0,
+    4
+  ],
+  "versions": {
+    "python": "3.12.10",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "aiohttp": "3.10.5",
+    "pandas": "2.2.2",
+    "yaml": "6.0.1",
+    "scipy": "1.13.1"
+  },
+  "hostname": "Akshat-PC",
+  "hardware": "Apple M3 Max CPU (simulation)",
+  "start_time": "2026-11-05T06:16:04",
+  "end_time": "2026-11-05T06:16:05",
+  "wall_s": 1.247355,
+  "slurm_env": {},
+  "run_dirs": [
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032421",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041724",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051027",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-032455",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-041757",
+    "results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/results/agentload_e0_cap/20261105-051100"
+  ],
+  "rule": "configs/r15_edge_replicate.yaml",
+  "params": "configs/agentload_analysis.yaml",
+  "exploratory": true
+}
