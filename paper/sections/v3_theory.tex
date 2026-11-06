@@ -151,7 +151,7 @@ every BURST run of the first three registered tests (gap$/R_M=4.1$--9.7, Table~\
 long before it returns, so (F1) is self-consistent, and becomes more so as the trap ages. The pool need not be full: admitted
 requests held 55--83\% of it on average in the trapped SGLang runs with 300k and 600k pools (the engine's gauge, which also counts
 locked prefixes), and 85--94\% with the native pool and on
-vLLM. This is a heuristic consistency argument, not part of the theorem: $R_M$ is a turnover scale, not a pathwise eviction bound. With
+vLLM (post hoc, computed after Lu et al.'s paper appeared; Appendix~\ref{app:dataonly}). This is a heuristic consistency argument, not part of the theorem: $R_M$ is a turnover scale, not a pathwise eviction bound. With
 Poisson arrivals, Kendall's branching argument puts the probability that the all-miss queue ever empties at 0.35 for $\rho=1.01$ and
 $4\times10^{-23}$ at 1.35, for a burst of 200 sessions into an empty engine and the remaining work 3000\,s later taken as realized
 and equal to the fluid's (Appendix~\ref{app:trap}); these are not bounds, since hits return first.

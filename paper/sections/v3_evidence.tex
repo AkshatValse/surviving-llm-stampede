@@ -13,7 +13,7 @@ growth at $\rho-1$). Retrospective: the theory was derived after these runs were
 
 \begin{table*}[t]
 \centering\footnotesize
-\caption{Evidence ledger: every claim of the paper with its test, its status and the appendix that reports it. Status:
+\caption{Evidence ledger: the paper's main claims, each with its test, its status and the appendix that reports it. Status:
 pre-registered or registered as in Table~\ref{tab:stampede}; blind in outcome, predictions frozen before the runs existed (blind
 tests use tolerances set on earlier runs); retrospective, theory derived after the runs were read; post hoc, an analysis chosen
 after the outcome. Run counts are runs, not independent trials: seeds 0--2 recur across tests. Commits, tags and clock times are
@@ -38,7 +38,7 @@ The backlog grows at $\alpha$, not $\lambda-\lmiss$ & same & retrospective & slo
 \multicolumn{5}{@{}l}{\emph{Blind tests, registered on 2026-11-05 after Lu et al.'s paper appeared (\S\ref{sec:validation}, \S\ref{sec:control})}}\\
 The trap-state law holds on traps with no burst & TOOLSLOW-W (3 stuck), TOOLSLOW-D15 (1 stuck) & pre-registered; blind in outcome & 4 of 5 pre-set scores pass pooled; the per-run slope check failed in 2 of 4 runs & \ref{app:blind}\\
 Which seeds a slowdown traps & TOOLSLOW-D15; 3 runs & pre-registered; two frozen predictors & NO-TRAP, as the simulator said per seed; the first-principles fluid verdict (TRAPS) missed & \ref{app:blind}\\
-Model~F's prediction that a near-deterministic turn count reverses the premium & MIRROR; 6 BURST, 3 NOBURST runs & pre-registered; blind in outcome; workload chosen with the model & pass at both rates, RENEWAL 3/3 each; late 0.50--0.85~$\lref$, below the measured 1.06; rejects only the throughput-curve readings & \ref{app:blind}\\
+Model~F's prediction that a near-deterministic turn count reverses the premium & MIRROR; 6 BURST, 3 NOBURST runs & pre-registered; blind in outcome; workload chosen with the model & pass at both rates, RENEWAL 3/3 each; lull 0.50--0.845~$\lref$, below the measured 1.06; rejects only the throughput-curve readings & \ref{app:blind}\\
 A cut into $[\lmiss,D)$ does not clear the trap & CUT-A; 3 runs & pre-registered; blind in outcome; rule fixed after the predictions were read & pass: theory-favoured 3/3, stuck 3/3; rejects only the naive and quasi-static readings (a constant rate at the cut fits as well); late slopes post hoc & \ref{app:blind}\\
 A cut below $\lmiss$ drains only slowly & CUT-B; 3 runs & as CUT-A & pass: theory-favoured 3/3, backlog falling 3/3, still trapped 3/3 at 8700\,s & \ref{app:blind}\\
 \addlinespace
@@ -69,7 +69,7 @@ and to within 3\% in 50 of the 57 runs: the trapped engine serves turns 9--41\% 
 \item \emph{Gap growth.} The gap between a session's turns grows linearly in time. We regress it on the turn's completion time;
 a turn that completes at $t$ joined at about $t/z$, so model~F's slope is $\gamma/z=1-1/z$. Measured over predicted, the ratio has
 median 1.01 (mean 0.96). Per run it ranges from 0.04 to 1.81; the low values are the seed-1 runs at 1.35~$\lref$, whose plans
-deliver fewer arrivals than nominal (below).
+deliver fewer arrivals than nominal (below) and which completed sessions faster than $D$, leaving their backlogs nearly flat.
 \item \emph{Youth premium.} Every stuck run completes sessions above $\lref$, at 1.10--2.03~$\lref$ (up to 2.40 in the from-empty
 runs), and on average 1.055 times $D$ (0.90--1.21). Part of the excess over $D$ is a congested engine computing prompt tokens faster
 than the 32-session reference behind $\lref$, most on the H200 and the native pool (Appendix~\ref{app:trapdata}); on vLLM and Llama
@@ -107,7 +107,7 @@ after the 900\,s TOOLSLOW arm had trapped 1 of 3 and after reading simulator out
 \item \emph{TOOLSLOW-W}: every tool call that starts in $[1200,3000)$\,s takes 30\,s longer, at 1.35~$\lref$, seeds 0--2, paired
 with the committed NOBURST runs of 2026-10-24/25 (same plans, not run alongside); the cell TRAPS if at least 2 of 3 runs are stuck. Outcome: TRAPS. All three runs were stuck (hit
 0.000 over $[5700,8700)$\,s) while their paired NOBURST runs stayed good; on the same plans the 900\,s slowdown had trapped 1 of 3. The pooled scores pass: composition $+1.9$\% (limit $\pm5$\%), gap
-slope $1.075\gamma$ (1.089 against $\gamma/z$), completions $+1.9$\% of $D$ with every run above $\lref$, and backlog slope $+29$\% of $\alpha$ (limit
+slope $1.075\gamma$ (1.089 against the unregistered $\gamma/z$), completions $+1.9$\% of $D$ with every run above $\lref$, and backlog slope $+29$\% of $\alpha$ (limit
 $\pm35$\%). Per run, composition is within $\pm8$\% in all three, and S5's plug-in lies on the measured side of the threshold in 2 of
 3 runs and within 0.01\,/s in 3 of 3. Every model we froze predicted this outcome, so the cell tests the trap-state law on a trap
 entered with no burst, not the models against each other; it does not separate the longer gap from the capacity loss and the larger
@@ -137,15 +137,15 @@ is 0.771 ($H=0.699$, $\Gamma=1.103$), against 1.223 for the standard workload. D
 three things at 1.65~$\lref$ (Fig.~\ref{fig:mirror} in Appendix~\ref{app:blind}): completions nearly stop for about 40\,min after the burst (0.05--0.09~$\lref$
 over $[2400,3600)$\,s), because the burst cohort must pass through 20 FIFO cycles, each longer than the last, before any of it can
 finish; the cohort then completes in a wave, its median completion at 5135--5195\,s; and completions then stay near half the
-all-miss capacity (0.49--0.60~$\lref$ over $[6600,8700)$\,s), while the backlog grows 1.65--1.95 times as fast as the plan's excess load $\lambda_{\mathrm{plan}}-\lmiss$ over $[6000,8700)$\,s (1.4 times asymptotically). Every
+all-miss capacity (0.49--0.60~$\lref$ over $[6600,8700)$\,s, a transient lull; 0.81~$\lref$ asymptotically), while the backlog grows 1.65--1.95 times as fast as the plan's excess load $\lambda_{\mathrm{plan}}-\lmiss$ over $[6000,8700)$\,s (1.4 times asymptotically). Every
 throughput-curve reading (the quasi-static model, Lu et al.'s $\dot N=\lambda-X(N)/K$~\citep{lu2026cachetrap}, $K$ their requests per session, read on this workload,
 our Eq.~\eqref{eq:fluid} of Appendix~\ref{app:qs}) predicts steady completions near 1.05~$\lref$ and no wave; the standard workload's traps completed
 1.05--1.48~$\lref$ over the first window and 1.01--1.35~$\lref$ over the second. The registered rule (tag \texttt{r16-mirror-reg},
 pushed at 14:07:35 CST on 2026-11-05, before any job) calls a stuck BURST run RENEWAL if both completion windows, the wave and the
 backlog slope fall on model~F's side of frozen thresholds, and CURVE if both windows are at least 0.85~$\lref$; the cell passes with
 2 of 3 RENEWAL and fails with 2 of 3 CURVE (Appendix~\ref{app:blind}). The predictions are blind in outcome only:
-the workload was chosen after model~F's predictions for it and for a few alternatives had been computed, the timing tolerance comes
+the workload was chosen after model~F's and our fluid model's predictions for it and for a few alternatives had been computed, the timing tolerance comes
 from the standard workload's committed runs, no simulator prediction was made, and the test came after Lu et al.'s paper. Outcome:
 PASS at both rates, RENEWAL in 3 of 3 seeds each: at 1.65~$\lref$, completions of 0.06--0.09~$\lref$, waves at 4945--5089\,s,
-then 0.50--0.61~$\lref$, below the measured capacity of 1.06~$\lref$. This rejects only the throughput-curve readings; a
+then 0.50--0.61~$\lref$, below the measured capacity of 1.06~$\lref$. MIRROR measures that lull, not the asymptotic $D$, and rejects only the throughput-curve readings; a
 secondary check, the calibrated wave time, missed in 1 of 6 runs.

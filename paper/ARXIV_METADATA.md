@@ -1,13 +1,15 @@
 # arXiv submission metadata
 
-## Reframe draft (2026-11-05, branch `claude/reframe-draft-211a57`): NOT for submission yet
+## Reframe draft (2026-11-05, branch `claude/reframe-draft-211a57`): the version for submission
 
-The draft below is under review by the authors (Akshat Valse; Dr. Ali Jannesari reviews before anything is posted). It is not
-submitted and nothing is posted. The TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's
+Akshat confirmed the repository and the title on 2026-11-05 at about 19:45 CST: the paper's URL is the existing repository
+https://github.com/AkshatValse/surviving-llm-stampede, and the title stays "Inside the Trap: A Renewal Law for Prefix-Cache Collapse
+in LLM Agent Serving". Dr. Ali Jannesari signs off before anything is posted; Akshat submits. Nothing is submitted or posted yet.
+The upload package is `Nova-Research-wt/arxiv-upload-v2/` (built by the lead with `ALLOW_PENDING=0`). The TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's
 PAPER_INPUT parts 1, 2a and 2b, and MIRROR's from `notes/PAPER_INPUT_r16.md` part 1 (merged from `r16/mirror` at 3531c4f).
 
-**Pending markers (1; the strict packager counts them in the sources and, independently, in the test build's PDF):** `\repourl`
-(the Code and data availability statement) only. MIRROR's eight markers were filled with part 1 ("MIRROR round" below). The
+**Pending markers: none.** `\repourl` was set to the repository URL on 2026-11-05 (the strict packager counts the markers in the
+sources and, independently, in the test build's PDF; both give 0). MIRROR's eight markers were filled with part 1 ("MIRROR round" below). The
 sentences that depended on MIRROR without a marker (Section 7, App. E.1, Section 3's pointer to Section 4.1, Table 19's MIRROR row)
 were checked against the outcome; Table 19's MIRROR row now names the runs' pull directories.
 
@@ -35,6 +37,13 @@ copied from `results/theory/r16/` (f641b02), the lead's two polish notes and the
 1's caveats, and round 16's provenance exports cited in App. E.12 and E.13. Strict packager (`ALLOW_PENDING=1`): OK; 13 inputs, 8
 figures, 1 marker in the sources and 1 in the PDF, test build 66 pages, no missing file, undefined reference or overfull box.
 
+**Final audit round (2026-11-05 evening; independent 10-agent audit of 35435a7, 40 findings confirmed, none must-fix):** the lead
+applied the should-fix items (MIRROR's late window called a transient lull, not the asymptote, in Section 4.1, the ledger, the
+Limitations and the conclusion; the abstract's 0.6-0.8 backlog multiple scoped to our workload; two more "faster than the
+all-miss capacity" sentences scoped; App. E.10's fresh-seed log-likelihood sentence corrected; App. E.4's drain-estimate
+antecedent; this file's withdrawn-version headings marked as history) and the cheap text nits; the record is in
+`results/agentload_analysis_r16_mirror/verify_20261105/` on `r16/mirror` and the lead's scratchpad. Abstract 1916 form characters.
+
 **Categories (Akshat decides on the form; audit ARX-6):** primary cs.DC (LLM serving engines, SGLang and vLLM, and their admission
 and caching behaviour under load: Sections 2 and 5, App. E; the closest serving work, PEEK, CONCUR, MISA-T, VAMP and XPerf: Section 6
 and App. F). Cross-list cs.PF (performance modelling and measurement: the renewal law of the trapped server, model F, in Section 3,
@@ -45,13 +54,14 @@ multiprogramming-level load control; ThunderAgent and Continuum, which treat age
 withdrawn version's rationale (below) advised against cs.LG: the paper has no learning method, and moderators may remove such a
 cross-list.
 
-**License:** author decision; record the choice here (options under "License options" below).
+**License:** author decision; record the choice here (options under "License options" in the record of the withdrawn version below; they apply unchanged).
 
 **Upload rule:** exactly the strict packager's tarball, built at posting with `ALLOW_PENDING=0`: `main.tex`, `main.bbl`, the 13
 files of `paper/sections/`, the eight figure PDFs listed above (with `fig_mirror.pdf`); nothing else from
 `paper/` (not `refs.bib`, `NUMBERS.md`, this file, `derived/`, `main.pdf` or the other files in `figs/`).
 
-**Release checklist (not markers in the paper; the repository decision is Akshat's):**
+**Release checklist (not markers in the paper). The repository is decided: the existing stampede repository. Its release, the
+push of this version and making it public again, waits for Akshat's explicit approval and must happen before the announcement:**
 - Repository and release build (audit ARX-3): add the paper branch to `public-release/config/refs.conf` and make it the tip branch
   of `tools/tip.py`; build a fresh `provenance/REDACTIONS.md`; E.13's redaction counts ("four notes files", "one clause from each of
   two commit messages", "five local tool-configuration files") are those of the 11-04 build: recompute them at the release build;
@@ -68,7 +78,7 @@ files of `paper/sections/`, the eight figure PDFs listed above (with `fig_mirror
 **Comments field (suggested; recount pages if the text changes):**
 
 ```text
-66 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
+66 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: https://github.com/AkshatValse/surviving-llm-stampede
 ```
 
 Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
@@ -84,10 +94,10 @@ Everything after the next horizontal rule is the record of the withdrawn r10/arx
 **Abstract (form text; the LaTeX abstract in `main.tex` expands to it with `count.py`):**
 
 ```text
-Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip an engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates), a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealization of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly, the backlog at 0.6 to 0.8 of the excess load here, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs trapped by a tool slowdown met 4 of 5 pre-set scores, cut traps persisted, and with a 20-step budget, trapped runs completed below the all-miss capacity, as predicted. Of two exits, refusing arrivals sheds sessions; a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
+Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip an engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates), a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealization of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly and the turns served are young and short. For our workload the backlog grows at 0.6 to 0.8 of the excess load and sessions complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs trapped by a tool slowdown met 4 of 5 pre-set scores, cut traps persisted, and with a 20-step budget, trapped runs completed below the all-miss capacity, as predicted. Of two exits, refusing arrivals sheds sessions; a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
 ```
 
-Count (`COORD/release-tools/count.py paper/main.tex <out>`): 1919 form characters, limit 1920 (margin 1); no pending marker is left
+Count (`COORD/release-tools/count.py paper/main.tex <out>`): 1916 form characters, limit 1920 (margin 4); no pending marker is left
 in the abstract. The text is the final review's proposal (`notes/review_54d3529/abstract_proposed.tex` on `r15/tonight`) with the
 audit's HON-16 change, "In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates)", paid for by
 four trims that drop no claim: "tip a serving engine" to "tip an engine", "the backlog grows at" to "the backlog at", ", while a
@@ -100,20 +110,23 @@ or fall after the cuts, all still stated in Sections 1, 4 and 5.
 
 ---
 
+## Record of the withdrawn r10/arxiv version (not for this submission; do not copy its title, abstract or comments)
+
+
 
 Prepared 2026-10-31 for the build of `paper/main.tex` with the r10/arxiv revision, the registered vLLM verdict, the first-principles model and the frozen-prediction section applied; updated for fill 2 (the registered rescue result, the reordered main text), its fix-up rounds, and the review fix round of 2026-10-31 (Saturday review: the cliff attributed to hit-dependent running reservations, Proposition 4 retitled, blindness and KAIROS positioning corrected); updated again for fill 3 (2026-10-31: the pool sweep, BASIN-2, and the 600k H200 and Llama-3.1-8B curves, edges and registrations), and reconciled with `paper/NUMBERS.md` against the final build of fill 3 on 2026-10-31 ("Fill 3 changes" below); updated for fill 4 (2026-11-01: the H200 600k and Llama-3.1-8B paired tests, SHED, TOOLSLOW and the provenance refresh; "Fill 4 changes" below). The PDF abstract in `main.tex` is the LaTeX form of the form abstract below: the two texts are identical once the macros are expanded (`$\lref$` to `$\lambda_{ref}$`, `\sps` to ` sessions/s`, `3000\,s` to `3000 s`, `\%` to `%`). If one is edited, edit the other and recount.
 
-## Title
+### Title (withdrawn version)
 
 Surviving an Agentic LLM Stampede: Preventing and Recovering from Throughput Collapse in Systems with KV-Prefix Caching
 
-## Authors
+### Authors (withdrawn version)
 
 Akshat Valse, Ali Jannesari
 
 (Department of Computer Science, Iowa State University, Ames, IA, USA. Corresponding author: avalse@iastate.edu. Ali Jannesari: jannesar@iastate.edu. The authors should confirm both addresses.)
 
-## Abstract (form)
+### Abstract (form) (withdrawn version)
 
 ```text
 Prefix caching keeps an LLM agent session's KV across tool calls, so a hit prefills only new tokens. This can make the high-hit state metastable, in the physics sense. In a pre-registered paired test on SGLang 0.5.22 (Qwen2.5-7B-Instruct, one A100, 300k-token pool) at 1.35 and 1.65 times the all-miss capacity, a burst of 200 sessions left 6 of 6 runs at zero hits to the end, 7500 s later (5 trapped by the registered rule); without it 6 of 6 stayed good; a client-side cap of 20 drained it in 6 of 6. The test also passed with SGLang's own 955,757-token pool, on vLLM 0.32.0 (registered; a frozen mechanism check failed), for Llama-3.1-8B at 1.65 times only and on an H200 at 600k; at 300k its all-miss capacity rose 2.7-fold, the peak 1.6-fold. In registered rescue tests that cap (64 with SGLang's pool), engaged in an established trap, rescued 9 of 9 runs with no session shed; released after the drain, every run stayed good at the same load, uncapped controls at zero hits. Registered tests at 1.65 times put the basin boundary between bursts of 40 and 60. We derive fluid throughput $\mu(n)$ from first principles, with misses swelling running requests' KV and nothing fitted to any $\mu(n)$, hit or trap data (another GPU or engine takes one speed factor): its all-miss onset is the sessions in tool calls plus one pool of running sessions, uniform speedup cannot raise its peak ratio, and its exponential-gap closure needs running KV for zero hits. In sample it matches SGLang's peaks within 10%, not vLLM's cliff; its frozen predictions held for the rescue, both basin rules (the first on runs mostly over at freezing) and a doubled A100 pool, not for a halved pool's peak and edge, H200 tails, trapped token rates, 4 of 9 release times, one seed's basin probabilities, another model's edge or a 30 s tool slowdown. Rates are nominal and sessions synthetic (exponential tool times, no shared prefixes).
@@ -123,7 +136,7 @@ The private-repository variant of the abstract and its ancillary file set were w
 
 What the abstract says, against the paper. The opening test sentence reports E2 (Sec. 5.2): BURST at zero hits in 6 of 6 runs to the end, 5 of them trapped by the registered rule (seed 1 at 1.35 x is indeterminate); "the test also passed" covers native E2 and, as "registered" (not pre-registered), the vLLM test, whose frozen mechanism decision rule is not met because the online detector also alarmed in two capped runs ("a frozen mechanism check failed"; Review A dropped "there" for length). The H200 clause gives the measured 2.71-fold and 1.63-fold ratios, rounded (Sec. 5.5); the H200 with the 300k pool has no registered test. Fill 4 (2026-11-01) rewrote that sentence: "The test also passed with SGLang's own 955,757-token pool, on vLLM 0.32.0 (registered; ...), for Llama-3.1-8B at 1.65 times only and on an H200 at 600k; at 300k its all-miss capacity rose 2.7-fold, the peak 1.6-fold." "Also passed" inherits "pre-registered" from the opening test except where "registered" is written (vLLM); the Llama and 600k H200 registrations reached GitHub 47 and 63 s before their jobs were submitted, so both are pre-registered by the paper's definition (untagged). "For Llama-3.1-8B at 1.65 times only": the registered analysis passes at 1.65 times (BURST trapped 2 of 3) and fails at 1.35 times (trapped 1 of 3: one indeterminate, one draining), so the test passes at one of its two registered points; all six BURST runs were at zero hits, which is descriptive and not the registered criterion (Secs. 1, 7, 10, 11). "On an H200 at 600k": pass at both points (BURST trapped 2 of 3 and 3 of 3, at zero hits 6 of 6; NOBURST good and CAPPED recovered 6 of 6). "At 300k its" refers to the H200, relative to the A100 (2.71-fold and 1.63-fold, Sec. 5.5); "its peak" became "the peak" and "the measured all-miss capacity" became "the all-miss capacity" (the body defines lambda_ref as the measured estimate) for length. The rescue sentence reports the registered rescue tests R1 and R4 (Sec. 5.3): 9 of 9 runs rescued, no session shed, every run good after release at the same arrival process and matching its no-burst control, the same-seed uncapped controls at zero hits; release came only after both client queues had been empty for 300 s, which the abstract states as "released after the drain" (fix-up 2 of fill 2) and the body in full. The basin sentence is BASIN-2 (registration name B2; Sec. 5.4): 40 sessions good and 60 stuck in 3 of 3 seeds, so the boundary lies between 40 and 60 in every seed ("Registered tests": BASIN-1 had put it between 25 and 100, which BASIN-2 narrows; "bursts of 40 and 60" relies on "a burst of 200 sessions" earlier for the unit; "at 1.65 times" names the rate, 1.65 times lambda_ref, at which both basin tests ran, since the boundary depends on the rate: the frozen critical burst is 59.4 sessions at 1.35 times and 53.4 at 1.65 times; fix round 3 of fill 3 added it, after fix round 2 had left it out for length). The model sentence follows Sec. 6: nothing fitted to any mu(n), hit or trap data ("measurement" until fix round 3 of fill 3); one speed factor for the H200 and vLLM cells ("another GPU or engine": vLLM is slower than SGLang, so not "faster"); the mechanism of the cliff, hit-dependent running reservations ("misses swelling running requests' KV"; on every partially hitting state the gap is still the tool time, and the queue sets it only on the all-miss branch, Sec. 6.1); the all-miss onset of Proposition 2 under the additional no-slack fluid closure; the non-increasing peak-ratio law of Proposition 3 under uniform cost scaling ("uniform speedup cannot raise its peak ratio"); and Proposition 4, whose zero-hit conclusion here is restricted to the exponential-gap mean-field closure at finite positive throughput. It does not show that exogenous gaps cannot produce a cliff, since the model's own cliff forms with exogenous gaps. "In sample" marks that the agents that derived the model knew the SGLang curves. The outcome sentence reports the frozen predictions in hand (Sec. 7): held for the rescue verdicts (blind in time), both basin tests' registered rules (BASIN-1's pass, probability 0.995, "on runs mostly over at freezing": blind by access only; Review A replaced "on runs begun before freezing", which understated how far the runs had gone: the three 100-session runs had ended 0.2-1.6 h before the theory push at 02:05:30 and the three 25-session runs, 6230-7807 s of 8700 s elapsed, were past their bursts and inside the evaluation window [5700, 8700) s; BASIN-2's bracket, pred2 probability 0.66, blind in time) and the A100 with a 600k-token pool ("a doubled A100 pool": every scored quantity within tolerance, blind in time); missed for the A100 peak (+11.5%) and from-empty edge (two grid steps) with a 150k pool ("a halved pool's peak and edge"), the H200 tails past the peak at 300k and 600k (at 600k also the crossing, 4.4 sessions late; "H200 tails", "the H200 curves' tails" until Review A), 4 of the 9 rescue release times (one R1 release, +18.8%, and all three R4 releases, 19-22% late, outside the frozen +-15%) and BASIN-2's primary per-seed probabilities for seed 0 at 40 and 50 sessions (0.78 and 0.86 stuck; both good: "one seed's basin probabilities") and the Llama-3.1-8B from-empty edge (a priori 2.55 lambda_ref in absolute rates, measured in [2.0, 2.5), one grid step high: a near miss under the frozen scoring rule, from-empty runs blind in time; "another model's edge", added in Review A so that the list does not read as complete while omitting it). For length the abstract no longer names the H200's nominal from-empty edge (a hit at 300k, blind by access only, and at 600k, blind in time), the H200 600k peak ratio or the rest of the Llama-3.1-8B curve (within tolerance on the peak and crossing; it names the edge, a near miss, as "another model's edge"; the crossing, 29.65, fails pred2's declared test of the tool-call term, threshold 29.89, and pred2's nearest-predictor rule picks M/E_lb, by 0.06 sessions over the frozen crossing it lists, 30.92 (the frozen crossing at the measured speed factor, 30.856, would win by 0.006); pred2 declared both rules after that curve had been read, so the failed test is not a frozen prediction in the abstract's sense and is not listed among its misses, and Secs. 1, 6.2, 7, 10 and 11 report the failure); Sec. 7 reports them. Every from-empty edge the abstract counts as held (the doubled A100 pool) is scored in nominal multiples, which "Rates are nominal" covers; in realized rates F2 lies below the measured bracket there and at both H200 pools. Fill 4 outcome sentence: "held for the rescue, both basin rules (...) and a doubled A100 pool, not for a halved pool's peak and edge, H200 tails, trapped token rates, 4 of 9 release times, one seed's basin probabilities, another model's edge or a 30 s tool slowdown". "Trapped token rates": pred2's frozen trapped token ratio for the 600k H200 paired test (1.054, 1.064) lay 0.038-0.049 below 5 of 6 runs, outside its +-0.03 tolerance, and the Llama registration-conditional token ratio (1.004, 1.013) was within +-0.03 in only 3 of 6 runs (0.031-0.046 low in the other 3); the trapped backlogs of both were within tolerance (not claimed in the abstract). Since the fill-4 fix round, Secs. 1, 7, 10, 11 and H name both misses. "A 30 s tool slowdown": TOOLSLOW's 30 s arm, which pred2 predicted stuck in every seed (probability 1.00 per seed; rule 0.80), was stuck in 1 of 3, so the registered rule was not met; the 10 s arm held (good 3 of 3). SHED (pass, as pred2 predicted, probability 0.997) and the 600k H200 registration (predicted exactly) are not named among the holds, for length; Secs. 1, 5.3, 7, 8, 10 and 11 report SHED, including the 355-378 sessions the 3600 s stop refused against none for the cap. The simulator's pass prediction for the Llama test at 1.35 times missed (Secs. 7, 10); the abstract's list concerns the first-principles model, so it is not listed there. "Four tests are pending" (fill 3) is gone. "Rates are nominal and sessions synthetic (exponential tool times, no shared prefixes)" replaces fill 3's "Rates are nominal; registered results use one model, one GPU and synthetic sessions (...)": with the Llama and 600k H200 verdicts the registered results now span two models and two GPU types (all but one registered test on Qwen2.5-7B, all but one on the A100; Sec. 1, last paragraph; Sec. 10, scope). Fill 3's note on that clause, kept for the record: "Registered results use one model, one GPU" ("one GPU type" until fix round 3 of fill 3): every registered verdict in hand is on Qwen2.5-7B and a single A100, so one GPU type and one GPU per engine; the two registered tests on another model or GPU are among the four pending. "Exponential tool times" ("exponential tools" until Review A) matches the body's wording (Sec. 1: exponential 5 s tool times). Fill 3 also dropped "only" from the H200 clause, "stayed" from the rescue sentence's last clause and shortened the in-sample clause ("matches the SGLang peaks within 10%", since fix round 3 of fill 3 "matches SGLang's peaks within 10%": F1 +3.6% and +6.3% turns-based) to make room. Review A made room for "another model's edge", "mostly over at freezing" and "tool times" with ", not vLLM's earlier cliff" (was "but misses vLLM's earlier cliff"), "(a frozen mechanism check failed)" (was "... failed there"), "; a client-side cap" (was ", and a client-side cap") and "H200 tails" (was "the H200 curves' tails"). It does not claim the H200 peak ratio, which is not blind to the first author. The second sentence glosses "metastable" as the physics sense (the good state persists until a large enough perturbation; in Bronson et al.'s terms the trap is the metastable failure state, Sec. 1-2). The review fix round dropped "=0.0715 sessions/s" (Sec. 4.2 and Fig. 1 give it) and "like its no-burst control" (Sec. 5.3) to make room. (Fill 3 replaced "others are pending" by "four tests are pending".) The request-level FCFS bound (Proposition 6 since fix-up 2 of fill 2, stated and proved in Appendix E) is no longer in the abstract; Sec. 3.4 summarizes it. The from-empty clause of the earlier abstract is gone; the body (Secs. 5.1, 7) states that the seed-0 bracket was not replicated with fresh seeds.
 
-## Character counts
+### Character counts (withdrawn version)
 
 Current abstract check (fill 4, 2026-11-01): 1917 LaTeX source characters and 1914 submission-form characters, leaving 6 against the 1920-character limit used by this checklist (`count.py` on `main.tex`; `count_abs.py` of the form text above against the extracted LaTeX abstract: "expanded latex == form: True"). Fill 4 added the Llama and 600k H200 clauses, "trapped token rates" and "a 30 s tool slowdown" (+150 or so) and paid with "four tests are pending", "registered results use one model, one GPU and", "measured", "earlier" and the H200 clause's wording. The scope-corrected check before fill 4: 1904 LaTeX source characters and 1902 submission-form characters, leaving 18. Expanding thin spaces and escaped percent signs makes the LaTeX abstract equal to the form above. The new wording explicitly identifies a fluid model, states a non-increasing peak ratio and limits the zero-hit statement to its exponential-gap closure. These are text checks, not an arXiv processing or PDF-layout check. The dated counts below are historical; recount after any further edit.
 
@@ -136,7 +149,7 @@ expanded latex == form: True
 
 The historical Review A margin was 1 character (2026-10-31: "another model's edge" in the list of misses, +10 with the list trims; "mostly over at freezing", +2; "exponential tool times", +5; paid for with ", not vLLM's", -6, "failed)" for "failed there)", -6, and "; a client-side cap" for ", and a client-side cap", -4: 1919). The margin was 2 characters (fill 3, 2026-10-31: the BASIN-2 and pool-sweep outcomes, the per-seed basin miss and "four tests are pending"; from 1903). Those edits left one character at that revision; the current count is stated above. (Fix round 3 of fill 3 added "at 1.65 times" to the basin sentence, +14, and paid for it with "data" for "measurement", -7, "SGLang's peaks" for "the SGLang peaks", -2, and "one GPU" for "one GPU type", -5: still 1918.) (Review fix round: 1903, from 1911.) (Fix-up 2 of fill 2 replaced "after its release every run stayed good" with "released after the drain, every run stayed good", +8 characters, from 1903. Fill 2 rewrote the abstract around the rescue result: 1912 form characters. Fix-up 1 of fill 2 replaced "the native-pool release times" with "4 of 9 release times", which also counts the R1 release that missed the frozen tolerance.)
 
-## Comments field
+### Comments field (withdrawn version)
 
 Title change (2026-11-01, Akshat): the title is now "Surviving an Agentic LLM Stampede: Preventing and Recovering from Throughput Collapse in Systems with KV-Prefix Caching". It wraps to two lines, so the build has 80 pages: the main text still ends on p. 25 (conclusion p. 25), and every appendix starts one page later (A p. 33, H p. 68). Then (Akshat, same day) the Use of AI tools statement was replaced by the shorter text agreed with the authors and Section 10 was retitled Limitations: 79 pages, main text pp. 1-25, Appendix A from p. 32.
 
@@ -150,7 +163,7 @@ Counted on 2026-10-31 from the build after Review A in the worktree (pdflatex, b
 
 The pages were recounted after fill 4 resolved the last test outcomes (79); recount again if the text changes before posting.
 
-## Fill 3 changes (2026-10-31)
+### Fill 3 changes (2026-10-31) (withdrawn version)
 
 - Results filled: the pool sweep at 150k and 600k tokens (blind in time; at 600k every scored quantity within tolerance, at 150k the peak ratio, +11.5%, and the from-empty edge, two grid steps, missed), BASIN-2 (registered; bracketed, 40 good and 60 stuck in 3 of 3 seeds; pred2's rule held, its primary per-seed probabilities were wrong for seed 0 at 40 and 50, its secondary crossing right in 9 of 9), the H200 600k curve, edge and registration (4d1d431; peak ratio, peak position, edge and registration as predicted, the tail softer and the crossing 4.4 sessions late) and the Llama-3.1-8B curve, edge, registration (1559f8e) and pre-E2 predictions (peak and crossing within tolerance, the edge a near miss; the crossing fails pred2's later-declared test of the tool-call term). Every number added is in `paper/NUMBERS.md`, "Fill 3", its three fix rounds and its final reconciliation.
 - Text: the abstract (basin sentence, outcome sentence, "four tests are pending"), Secs. 1, 4.1-4.3, 5.1, 5.4, 5.5, 6, 7, 8, 9, 10 and 11, and Appendices A-D, G, H and I. No sentence calls the pool sweep, BASIN-2, or the H200 600k or Llama-3.1-8B curves, edges, registrations or predictions pending.
@@ -158,27 +171,27 @@ The pages were recounted after fill 4 resolved the last test outcomes (79); reco
 - Length: 69 to 74 pages; main text pp. 1-22 to pp. 1-23; abstract 1903 to 1918 form characters (margin 17 to 2).
 - Still pending (seven items, NUMBERS.md "Pending"): the H200 600k and Llama-3.1-8B paired tests, SHED, TOOLSLOW, the refreshed accounting export, the push-log evidence for the registrations and predictions pushed after the archived export, and `\repourl`. The PDF shows 12 red `\pending{}` markers: four verdict cells in Appendix H (Tables 18-20, pp. 66-68), four outcome cells of Table 9 (`tab:ledger`, Appendix B, p. 36), the accounting export in the caption of Table 6 (`tab:stages`, p. 30), two in Appendix D (push-log proofs, accounting export; p. 42) and `\repourl` (Code and data availability, p. 23).
 
-## Fill 4 changes (2026-11-01)
+### Fill 4 changes (2026-11-01) (withdrawn version)
 
 - Results filled: the H200 600k paired test (pre-registered; pass at 1.5 and 2.0 x; BURST T I T and T T T), the Llama-3.1-8B paired test (pre-registered; pass at 1.65 x, fail at 1.35 x; BURST I D T and T I T, all six at zero hits), SHED (pass: 600 s stuck, 3600 s good, 2 of 2 each; 56-59 and 355-378 sessions refused, none for the cap) and TOOLSLOW (rule not met: 10 s good 3 of 3, 30 s stuck 1 of 3; a miss of pred2), each scored against its frozen predictions; the provenance refresh (accounting export of all 258 cited jobs, activity log and push times of 2026-11-01). Every number is in `paper/NUMBERS.md`, "Fill 4".
 - Text: the abstract (test sentence, outcome sentence, last sentence), Secs. 1, 4.3, 5.3, 5.5, 6.4, 7, 8, 10, 11 and Appendices A-D, G, H and I.1. No sentence calls any test pending; the only `\pending{}` is `\repourl`.
 - Tables and figures: `tab:frozensum` gains SHED and TOOLSLOW rows (the "Pending" row removed) and is placed `[!tp]`, now on its own float page (p. 19); `tab:timeline-r11` gains four rows; the `tab:stages` caption was shortened and its detail moved into the text of Appendix A. Still 11 figures and 20 tables.
 - Length: 75 to 79 pages; main text pp. 1-24 to pp. 1-25; abstract 1902 to 1914 form characters (margin 18 to 6).
 
-## Categories
+### Categories (withdrawn version)
 
 - **Primary: cs.DC** (Distributed, Parallel, and Cluster Computing). The paper is about LLM serving engines (SGLang, vLLM) and their admission and caching behaviour under load. The closest serving work it compares with (PEEK, CONCUR, MISA-T, VAMP, XPerf) is listed there.
 - **Cross-list: cs.PF** (Performance). The core of the paper is performance modelling and measurement: closed-population throughput curves, a first-principles model of the thrashing curve (Sec. 6), a fluid model of the open system (Sec. 3), metastability and recovery thresholds. The queueing and metastability work it builds on (Alvaro et al.; Yao et al.) is in cs.PF.
 - **Cross-list: cs.OS** (Operating Systems). The mechanism is classical OS thrashing: working sets, KV eviction, multiprogramming-level load control. ThunderAgent and Continuum, which treat agent KV as an OS memory problem, are in cs.OS.
 - Not cs.LG or cs.AI: the paper has no learning method, and moderators may remove such a cross-list.
 
-## ACM classes
+### ACM classes (withdrawn version)
 
 C.4 (Performance of Systems); D.4.2 (Storage Management); D.4.8 (Performance).
 
 The ACM class field is optional. MSC classes do not apply.
 
-## License options
+### License options (withdrawn version)
 
 The license is chosen on the submission form and cannot be changed for this version afterwards.
 
@@ -188,7 +201,7 @@ The license is chosen on the submission form and cannot be changed for this vers
 
 This is an author decision.
 
-## Before submitting
+### Before submitting (withdrawn version)
 
 - Every `\pending{...}` marker must be resolved before posting. After fill 4 only `\repourl` remains (`paper/NUMBERS.md`, "Pending"). Do not post a PDF that shows a red marker. The current abstract margin is 6 form characters; any further change requires recounting the form text.
 - `\repourl` in `main.tex` is the single place for the URL of the new public repository, whose name the authors choose; put the same URL in the comments field. Create the repository from the staged redacted copy (`Nova-Research-wt/public-release/`), add a LICENSE, and create and push tag `arxiv-v1` at the public-release commit that `tools/tip.py` creates on `main` in the built `public.git` (the development hash of the posted commit does not exist in the public history); the availability statement and Table `tab:prov` cite that tag, and Appendix D cites `provenance/REDACTIONS.md` and `provenance/registration-proofs/`.

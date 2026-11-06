@@ -4,7 +4,7 @@
 that a finished turn rejoins at once. The engine runs about 28 requests concurrently at 300k (14--90 across our pools), vLLM preempts, and hits return as the backlog
 falls toward the onset, so model~F describes the trap, not the transitions into and out of it. We do not prove that the engine
 converges to model~F, and the theorem's limits are reached only geometrically: in the registered window, about 33--37 generations
-after the burst, a transient of order 10\% remains, so we compare with the exact fluid as well as with the limits. The premium is
+after the burst, a transient of order 10\% remains for our workload (MIRROR's late window, model~F's post-wave lull, lies 20--40\% below its asymptote), so we compare with the exact fluid as well as with the limits. The premium is
 proved positive for our workload at $\rho\ge1.04$; below that it rests on a floating-point bracket and a first-order expansion.
 
 \paragraph{The validation.} The check on the 57 stuck runs is retrospective: the theory was derived after they were read, and its
@@ -30,8 +30,8 @@ A burst can tip a prefix-cached agent server into a trap in which its cache stop
 observed this independently (in their disaggregated system the hit rate falls to about 0.3, in ours every turn misses). Idealized as
 model~F, the trap has an exact law: a linear renewal recursion along FIFO orbits carries every trapped state to the known
 self-similar regime~\citep{khanin2001steady}, fixed by a Perron root, in which the gap between turns grows linearly, the backlog grows
-at a load-dependent multiple of the excess load and the turns served are young and short; for our workload the multiple is 0.6 to 0.8
-and sessions complete faster than the all-miss capacity; with a 20-step budget they complete slower, as a blind test on the engine found after a burst. Checked
+at a load-dependent multiple of the excess load and the turns served are young and short; for our workload the multiple is 0.6 to 0.8 at our loads
+and sessions complete faster than the all-miss capacity; with a 20-step budget they complete slower, and a blind test on the engine found completions below that capacity in the transient after a burst. Checked
 retrospectively on 57 stuck runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws
 hold for the runs taken together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown
 alone, in four of the five pre-set scores (a per-run slope check failed in two). The practical reading is

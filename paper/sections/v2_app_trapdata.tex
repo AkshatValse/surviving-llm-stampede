@@ -45,8 +45,8 @@ compare it with $\gamma$, which is 1--13\% larger at these loads. The backlog co
 Table~\ref{tab:trap}, is the measured slope over model~F's $\alpha$, with the quasi-static $(\lambda-\lmiss)/\alpha$ in parentheses
 (\fpath{analysis/theory/icml/backlog_over_alpha.py}, \fpath{results/theory/icml/backlog_over_alpha.json}).
 
-\paragraph{From-empty collapses.} The 13 runs that lost the good state from empty are younger traps, observed over
-$[1500,3000)$\,s:
+\paragraph{From-empty collapses.} The 13 from-empty runs that were stuck over
+$[1500,3000)$\,s are younger traps:
 \begin{center}\footnotesize
 \setlength{\tabcolsep}{2.5pt}
 \resizebox{\columnwidth}{!}{%
@@ -87,8 +87,8 @@ congestion assumptions, Appendix~\ref{app:proofs}).
 reproduces the measured window arrival rates exactly. Seed~1's plan delivers 0.8--8.9\% fewer arrivals than nominal over the window
 in every cell and rate (5.8\% at 300k, 7.9\% on vLLM and 8.9\% on Llama at 1.35~$\lref$). The plug-in $\lambda_{\mathrm{window}}
 (\text{plan})-D$ lies within 0.01\,/s of the measured backlog slope in 49 of the 57 runs and within 0.002\,/s in 18, with median
-residual $-0.0022$\,/s because the engine completes slightly more than $D$. On the 36 runs of registered protocols (30 distinct
-plans; the 12 vLLM runs are six plans run twice; plans of different cells share seeds) it falls on the measured side of the registered threshold in 33 runs and for 27
+residual $-0.0022$\,/s because the engine completes slightly more than $D$. On the 36 runs of the five registered paired-test cells (30 registered runs and 6 earlier exploratory vLLM runs; 30 distinct
+plans, the 12 vLLM runs being six plans run twice; plans of different cells share seeds) it falls on the measured side of the registered threshold in 33 runs and for 27
 plans, against 23 for always predicting ``trapped''. The exceptions are H200 1.5~$\lref$ seed~1 (plug-in 0.04849 against a threshold
 of 0.04847), Llama 1.65~$\lref$ seed~1 (above it by 0.00005) and Llama 1.35~$\lref$ seed~0 (0.0205 against a measured 0.0052).
 
