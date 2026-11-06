@@ -1,14 +1,8 @@
 \section{Related work}\label{sec:related}
 
-\paragraph{Concurrent work.} Lu et al.~\citep{lu2026cachetrap}, who posted first, study the same phenomenon on hardware, on SGLang
-with prefill--decode disaggregation and a host KV tier, a hybrid mixture-of-experts model and real agent trajectories; they model it
-with a fluid population balance $\dot N=\lambda-X(N)/K$ over an empirical hit curve, restore service on hardware by removing the
-residual burst sessions, study recovery from an established trap in simulation and build a mitigation system. We add an exactly analysed idealization of the trapped state with its tests (\S\ref{sec:trap}--\ref{sec:validation}),
-an engine test of the reading that a trap's measured throughput exceeds the drain threshold (\S\ref{sec:control}; proved in model~F for our
-workload; their systems keep some reuse), a registered, replicated rescue of an established zero-hit trap at the same load without shedding,
-with the control removed and persistence tested, registered matched-arm evidence on colocated engines, including a second engine (\S\ref{sec:stampede}),
-and an entry model with an out-of-sample record (Appendix~\ref{app:entry}). They have real traces, disaggregated serving, a larger
-model, SLO goodput and a full mitigation system, which we do not; Appendix~\ref{app:lu} compares the two in detail.
+\paragraph{Concurrent work.} Concurrently with and independently of this work, Lu et al.~\citep{lu2026cachetrap} studied the same
+collapse on prefill--decode disaggregated SGLang. Our stampede and recovery experiments (\S\ref{sec:stampede}) were run before their
+paper appeared, and the theory and blind tests after it (Appendix~\ref{app:reuse}); Appendix~\ref{app:lu} relates the two.
 
 \paragraph{Thrashing, metastability and overloaded queues.} The thrashing collapse and the working-set remedy are
 Denning's~\citep{denning1968thrashing,denning1968working}; metastability from a unimodal throughput curve and bistability under

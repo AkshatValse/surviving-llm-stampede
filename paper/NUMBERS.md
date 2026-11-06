@@ -17,7 +17,7 @@ r10 manuscript). Map to this version: old 1 -> 1; old 2 -> 3 (old Theorem 1(a), 
 5 (CUT, the SHED retrodiction) and App. C (the full blind-test text), with old Table 1 -> App. B; old 4 -> App. E.9 (old Table 2
 -> App. F); old 5 -> 5 (old Table 3 -> App. E.7); old 6 and old Table 4 -> 2 and Table 1 (the round-15 rows -> Table 2); old 7 -> 6
 (the full concurrent-work paragraph -> App. F); old 8-9 -> 7-8; old App. A, B, C -> A, B, D (D4 -> F); old App. D-T -> E and F
-(the parts kept; `notes/RESTRUCTURE_2026-11-05.md` lists every cut block). The abstract changed in the audit fix round below (1917 form characters), in the MIRROR round (1919) and in the final audit round (1916; row "abstract" below).
+(the parts kept; `notes/RESTRUCTURE_2026-11-05.md` lists every cut block). The abstract changed in the audit fix round below (1917 form characters), in the MIRROR round (1919) in the final audit round (1916) and in the author round (1872; row "abstract" below).
 
 New numbers and restatements in this version:
 
@@ -104,7 +104,8 @@ Sources: PI1 = `notes/PAPER_INPUT_r16.md` part 1 (3531c4f); R16 = the registered
 | E0a pulled 16:59, runs pulled 17:22, registered verdict 17:31 | Tab. 18 | `results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/COMMANDS.txt`, `results/nova/r16_mirror_1726405x_pulled_20261105-1722/COMMANDS.txt`; R16 directory name |
 | 12 jobs in round 16's accounting export, exported after the last MIRROR job ended | E.13 | SA; `provenance/README.md` (round 16: Slurm records exported about 17:30 CST) |
 | Fig. 4: orange the decisive runs (jobs 17264055-57), grey the standard workload's traps (jobs 17093390, 17093396, 17093402); model capacities 1.004 and 1.046 lref | C (Fig. 4) | PI1 "The fill-ins" (the figure); `figures/r16/fig_mirror.py`; MI0 Design |
-| abstract: 1916 form characters (margin 4) | Abs | `COORD/release-tools/count.py paper/main.tex` |
+| abstract: 1872 form characters (margin 48) | Abs | `COORD/release-tools/count.py paper/main.tex` |
+| rescue pre-cap follow-up hits: 0 in 8 runs; 1 of 570 in R4 4.0x seed 2 (run 20261031-042858, cap at 2100 s; turns >= 2 completing in [1800, 2100) s with more than 50 cached tokens) | Abs, 1, 5, E.7 | results/nova/rescue_1716896x_pulled_20261031-070502/results/agentload_e2_burst/*/requests.csv |
 
 ## Reframe draft (2026-11-05): numbers in the new sections `paper/sections/v2_*.tex`
 

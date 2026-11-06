@@ -88,9 +88,5 @@ on the reference), but the rescue restored the evaluation window's goodput to wi
 \paragraph{What the rescue does and does not show.} Persistence here means that the drained state sustains itself once the cap no
 longer binds: the release rule waits until the gate is empty, so the tests do not cover a release while the cap still binds, and
 the cap is engaged at a fixed time, not on an online signal. The frozen first-principles model predicted the rescue in every cell,
-but 4 of its 9 release times fell outside its $\pm15$\% tolerance (R4 released 19--22\% late; Appendix~\ref{app:rescuetests} and Table~\ref{tab:frozensum}). Lu et
-al.\ restore service on hardware by terminating the burst sessions at the end of the burst, when the trap is incipient, prevent it
-with their controller active before the surge, and rescue an established trap in simulation by activating their controller late
-(and leaving it armed: its admission releases itself after a cool-down, but no reported run removes the controller and tests
-persistence; Appendix~\ref{app:lu}). What our tests add is a registered, replicated rescue of an \emph{established} zero-hit trap on
+but 4 of its 9 release times fell outside its $\pm15$\% tolerance (R4 released 19--22\% late; Appendix~\ref{app:rescuetests} and Table~\ref{tab:frozensum}). The tests show a registered, replicated rescue of an \emph{established} trap on
 the engine at the same offered load, without shedding, with the control removed and the good state persisting after it.

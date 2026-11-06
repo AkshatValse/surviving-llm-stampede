@@ -20,18 +20,6 @@ the engine into a state in which every turn misses, the queue grows, the gap bet
 is evicted before its owner returns. Fig.~\ref{fig:e2} shows this stampede on SGLang: at loads that the engine carried from empty,
 a burst of 200 sessions left it at zero hits for the remaining 7500\,s.
 
-\paragraph{What is not ours.} The phenomenon, its sustaining loop and a fluid model of its window are not new. Concurrently with
-and independently of this work, Lu et al.\ showed on prefill--decode disaggregated SGLang with real agent traces that a finite surge
-leaves the engine persistently degraded at a base load it previously sustained, identified the population--cache feedback that
-sustains the failure, and modelled the vulnerable window with a fluid population balance and an empirical hit-rate
-curve~\citep{lu2026cachetrap}. Their paper appeared first. The registered stampede and recovery experiments of \S\ref{sec:stampede}
-were designed, registered and run between 21 October and 1 November 2026, before it appeared (Appendix~\ref{app:reuse}); the theory
-of \S\ref{sec:trap} and the blind tests of \S\ref{sec:validation} and~\S\ref{sec:control} (registered on 2026-11-05) came
-afterwards, and the trap-state predictions were made with Lu et al.'s paper in hand. The collapse is Denning's
-thrashing~\citep{denning1968thrashing}, a bad state that a feedback loop sustains after its trigger is a metastable
-failure~\citep{bronson2021metastable,huang2022metastable}, and metastability from a unimodal throughput curve, with bounded admission
-as the cure, is classical~\citep{kleinrock1975aloha,carleial1975bistable,nelson1987stochastic}.
-
 \paragraph{The question.} This paper asks what the trapped state \emph{is}. Quasi-static models treat it as the falling branch
 of a throughput curve, $\dot n=\lambda-\mu(n)$; read literally in congestion, sessions then complete at the curve's low end and
 accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs of our workload at
@@ -57,7 +45,7 @@ recursion along FIFO orbits, which carries every trapped state into the regime, 
 premium. Corollary~\ref{cor:trapthr} is not new as mathematics; its engine test is.
 \item \textbf{The law on the engine} (\S\ref{sec:validation}). With no parameter fitted to any trap measurement, model~F matches,
 across 57 stuck runs on SGLang and vLLM, two GPUs and two models (36 of them in the five registered paired-test cells, on 30 distinct arrival
-plans: 30 registered runs and 6 earlier exploratory vLLM runs on the same plans), the trapped turn mix (within 3\% in 50 of them), the pooled linear growth of the gap (median ratio of measured to predicted
+plans: 30 registered runs and 6 earlier exploratory vLLM runs on the same plans), the mean prompt of the turns served (within 3\% in 50 of them), the pooled linear growth of the gap (median ratio of measured to predicted
 slope 1.01; per run 0.04--1.81) and completions above the all-miss capacity (in every run). These checks are retrospective. Blind
 in outcome, with tolerances set on the earlier runs, the four runs trapped by a tool slowdown alone in two pre-registered cells met
 four of the five pre-set scores; a per-run slope check failed in two of them.
@@ -69,7 +57,7 @@ throughput of the same seeds' uncut runs, but above the all-miss capacity, left 
 all-miss capacity shrank the three CUT-B backlogs only slowly, all still trapped 6300\,s after the cut, as model~F predicted. Each
 arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one, but not intermediate readings; what singles
 out model~F against them is post hoc. Refusing arrivals (SHED) drained a trap by shedding 355--378 sessions. Restoring reuse with a
-session cap, which leaves model~F, rescued 9 of 9 established zero-hit traps at the same offered load without shedding a session, at
+session cap, which leaves model~F, rescued 9 of 9 established traps at the same offered load without shedding a session, at
 a price of 386--569\,s of waiting at the client per paused session and, in a slowdown-only goodput computed post hoc, 45--97\% of the goodput of the hour after the burst, and
 the engine stayed good after the cap was removed.
 \item \textbf{A registered evidence base} (\S\ref{sec:stampede}, Appendix~\ref{app:stampede}): paired tests with matched no-burst
