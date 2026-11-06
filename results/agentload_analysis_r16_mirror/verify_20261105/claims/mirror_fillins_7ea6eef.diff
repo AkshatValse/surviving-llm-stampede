@@ -1,0 +1,256 @@
+diff -ru pristine/paper/sections/v3_app_blind.tex final/paper/sections/v3_app_blind.tex
+--- pristine/paper/sections/v3_app_blind.tex	2026-11-05 16:56:56.000000000 -0600
++++ final/paper/sections/v3_app_blind.tex	2026-11-05 18:31:46.671115500 -0600
+@@ -134,12 +134,15 @@
+ intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
+ \end{itemize}
+ 
+-\begin{figure}[htbp]\centering
+-\fbox{\parbox[c][0.5\columnwidth][c]{0.93\columnwidth}{\centering\footnotesize\pending{MIRROR figure,
+-\fpath{figures/r16/fig_mirror.py}: (a) completions per 300\,s bin after the burst, (b) the backlog}}}
++\begin{figure*}[tbp]\centering
++\includegraphics[width=\textwidth]{figs/fig_mirror.pdf}
+ \caption{MIRROR at 1.65~$\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the
+-step-capped workload (blue, dashed) and the MIRROR runs (orange). \pending{MIRROR runs}}\label{fig:mirror}
+-\end{figure}
++step-capped workload (blue, dashed) and the MIRROR runs (orange). (a)~Session completions per 300\,s bin, in $\lref$; dotted:
++the model's all-miss capacities of the two workloads (1.004 and 1.046~$\lref$). (b)~Sessions in the system, 300\,s means.
++Orange: the decisive cell's three BURST runs (jobs 17264055--57, seeds 0--2), all RENEWAL; the dashed lines were frozen under
++tag \texttt{r16-mirror-reg} before any MIRROR job. Grey: jobs 17093390, 17093396 and 17093402
++(\fpath{figures/r16/fig_mirror.py}).}\label{fig:mirror}
++\end{figure*}
+ 
+ \paragraph{MIRROR.} The test of \S\ref{sec:mirror} runs the E2 BURST protocol on cell \texttt{sglang-fcfs-r1-mirror-k20} (SGLang
+ 0.5.22, FCFS with the waiting-prefix refresh, 300k pool, Qwen2.5-7B-Instruct, A100 80GB PCIe) with
+@@ -147,7 +150,7 @@
+ 15 to 1000 and the maximum from 60 to 20, and nothing else; rates are multiples of the standard workload's registered
+ $\lref=0.071534$\sps. The arms run one per job, seeds 0--2, for 8700\,s, with the burst of 200 sessions in $[1200,1260)$\,s: BURST at
+ 1.65~$\lref$ (the decisive cell), BURST at 1.35~$\lref$ (secondary) and NOBURST at 1.65~$\lref$ (controls), and one E0a run of the
+-workload measures its all-miss capacity, which no rule uses. The step cap $K=20$ was chosen by computation only, comparing $K=15$,
++workload measures its all-miss capacity, which only the secondary check W10 uses. The step cap $K=20$ was chosen by computation only, comparing $K=15$,
+ 20 and 25 and mean turn counts of 30, 40 and 60 in the model: at $K=20$ the model's all-miss capacity matches the standard
+ workload's (1.046 against 1.004~$\lref$) and the good state's basin at 1.65~$\lref$ is wide (stable point 14.3 sessions, unstable
+ point 41.8), so the NOBURST controls should stay good; no engine run of the workload existed. Asymptotically, model~F gives
+@@ -174,7 +177,7 @@
+ In the quasi-static reading both completion windows are at 1.046~$\lref$.
+ 
+ The rules (\fpath{analysis/r16_mirror.py}; registration \fpath{configs/agentload_prereg_2026-11-05_mirror_k20.yaml}, commit
+-\texttt{bc81ee7}, tag \texttt{r16-mirror-reg}, pushed at 14:07:37 CST on 2026-11-05, before any job;
++\texttt{bc81ee7}, tag \texttt{r16-mirror-reg}, pushed at 14:07:35 CST on 2026-11-05, before any job;
+ \fpath{notes/PREDICTIONS_r16_mirror.md}) score each BURST run: M1, completions over $[2400,3600)$\,s at most 0.30~$\lref$; M2, the
+ wave within $0.15(F-1200\,\mathrm{s})$ of model~F's time $F$; M3, completions over $[6600,8700)$\,s at most 0.85~$\lref$; M4, the
+ least-squares slope of the 10\,s backlog over $[6000,8700)$\,s closer to model~F's than to the quasi-static slope. A seed is RENEWAL
+@@ -195,4 +198,49 @@
+ M3 and the CURVE threshold lie between model~F's values and the quasi-static ones, fixed from those values and from the standard
+ workload's measured traps. Not blind: the workload was chosen after model~F's predictions for it and for a few alternatives had been
+ computed; the timing factor comes from the standard workload's committed runs; no simulator prediction was made for MIRROR; and the
+-test came after Lu et al.'s paper. Outcome: \pending{MIRROR runs, per-seed calls and scores, W5--W10}.
++test came after Lu et al.'s paper. Outcome: PASS in both cells, RENEWAL in 3 of 3 seeds each (the registered scorer at the tag's code, reading the
++predictions from the tag; \fpath{results/agentload_analysis_r16_mirror/20261105-173136/}). The nine runs (jobs 17264055--60 and
++17264062--64, submitted at 14:50:52--53 CST and ended at 17:20:42--17:21:03) all count: each is the registered cell's, finished
++at 8700\,s, is bound to the registration and was driven by its frozen plan (exact in sessions, turn counts and arrival times; tool
++times within $10^{-13}$\,s). Measured, with model~F's frozen value in parentheses (rates in $\lref$; slopes in sessions/s, model~F's
++and the quasi-static one):
++\begin{center}\footnotesize
++\resizebox{\columnwidth}{!}{%
++\begin{tabular}{@{}c c c c c@{}}
++\toprule
++rate, seed & $[2400,3600)$ & wave (s) & $[6600,8700)$ & slope (F / QS)\\
++\midrule
++1.65, 0 & 0.070 (0.047) & 4996 (5195) & 0.592 (0.546) & 0.0767 (0.0789 / 0.0478)\\
++1.65, 1 & 0.058 (0.070) & 4945 (5135) & 0.606 (0.599) & 0.0837 (0.0857 / 0.0441)\\
++1.65, 2 & 0.093 (0.093) & 5089 (5157) & 0.499 (0.486) & 0.0935 (0.0930 / 0.0518)\\
++1.35, 0 & 0.105 (0.000) & 4759 (4883) & 0.619 (0.599) & 0.0557 (0.0565 / 0.0274)\\
++1.35, 1 & 0.093 (0.058) & 4673 (4802) & 0.739 (0.686) & 0.0504 (0.0534 / 0.0192)\\
++1.35, 2 & 0.163 (0.070) & 4576 (4870) & 0.845 (0.726) & 0.0496 (0.0603 / 0.0278)\\
++\bottomrule
++\end{tabular}}
++\end{center}
++Every seed was called RENEWAL. All six BURST runs were stuck (hit fraction 0.000 over $[5700,8700)$\,s), and in each all 200
++burst sessions completed by 8700\,s. The rules held with room in every run but one. The blackout windows held 5--14 completions, against M1's ceiling of 25.75;
++the waves came 69--295\,s before model~F's times (1.7--8.0\% of the elapsed time, against M2's 15\%) and peaked at 2.8--3.5~$\lref$
++per 300\,s bin at 1.65~$\lref$ (model~F 3.2--4.4); the backlog grew 1.61--1.90 times as fast as the plan's excess load at
++1.65~$\lref$ (model~F 1.65--1.95), and every slope was nearer model~F's than the quasi-static one by at least 0.011\,/s. At
++1.35~$\lref$, seed~2's 127 late completions were 0.7 below M3's ceiling of 127.7 (0.845 against 0.85): one more would have made that
++seed MIXED, and the cell would still have passed, 2 of 3. Secondary checks: W5 held in 5 of 6 runs and failed at 1.65~$\lref$,
++seed~2 (5089\,s against $F_{\mathrm{cal}}=4850\pm182$\,s); on this workload model~F's timing ran 2--8\% slow
++($(\text{wave}-1200)/(F-1200)=0.92$--0.98), not the 8\% that the factor 0.9223 removes. W6 held in 3 of 3 seeds, with shifts of
++237, 271 and 513\,s against model~F's 312, 334 and 287\,s. W7 held in 6 of 6 (served prompt $+0.2$ to $+2.6$\% of model~F's) and W8
++in 6 of 6 (late completions 0.007--0.120~$\lref$ above model~F's). W9: the three NOBURST controls stayed good, with hit fraction
++0.949--0.950, the ceiling $1-1/E[T]$ of this workload, completions of 1.66--1.82~$\lref$ in both windows and backlog slopes within
++0.001\,/s of zero. W10: the E0a of this workload (one run, closed population 32, cache off) measured an all-miss rate of
++1.062~$\lref$ turns-based (1.002 counting sessions), against the model's $\lmiss=1.046~\lref$, above every late value. The registered E0a job (17264061) failed its own
++pre-run time check, which needed 7080\,s where 5369\,s of the registered 01:30:00 limit were left, so no run started; it was
++resubmitted as 17264093 (14:53:08) with \texttt{-{}-time 02:15:00} and nothing else changed, and only W10 uses it.
++
++What the pass shows. The registered alternatives are throughput-curve readings, which predict neither the blackout nor the wave, so
++the pass rejects them but does not separate model~F from other models with its FIFO turn structure. M4 is not an independent fourth check: the plan
++fixes the arrivals, so the backlog slope is the plan's arrival rate less a weighted completion rate over $[6000,8700)$\,s, nearly
++what M3 measures over $[6600,8700)$\,s; the pass rests on three observations, the blackout, the wave and the lull. The late window measures
++model~F's post-wave lull, not its asymptotic $D$ (0.81 and 0.91~$\lref$ at 1.65 and 1.35~$\lref$); at 1.35~$\lref$ a second
++completion wave enters the window, and seed~2 completed 1.01~$\lref$ over $[7500,8700)$\,s (model~F 0.87). The NOBURST
++controls ran at 1.65~$\lref$ only, the three decisive runs on one node (separate GPUs), and the test covers one engine, GPU,
++model and workload family.
+diff -ru pristine/paper/sections/v3_app_stampede.tex final/paper/sections/v3_app_stampede.tex
+--- pristine/paper/sections/v3_app_stampede.tex	2026-11-05 16:56:56.000000000 -0600
++++ final/paper/sections/v3_app_stampede.tex	2026-11-05 18:31:46.676575400 -0600
+@@ -208,7 +208,7 @@
+ \subsection{The registered paired tests}\label{app:e2tests}
+ 
+ \paragraph{Decision rule and registration.}\label{sec:prereg}
+-Each run of a registered test lasts 8700\,s and is judged over $[t_b+4500,\,8700]$\,s; in the rule, $\lmiss$ is the cell's $\lref$. A BURST run is TRAPPED if $\lambda>\lmiss$ and (a) its uncached prefill token rate is within $\pm15\%$ of the cell's E0a all-miss rate (11,243 tokens/s at 300k) and (b) the slope of its backlog exceeds $0.5(\lambda-\lmiss)$, the slope being the least-squares slope of 10\,s bin means of the sessions in the system (arrived and not ended, including any held at the gate) over the window. A run is RECOVERED if over the last 300\,s its hit fraction exceeds 0.8 and its outstanding backlog (requests in flight plus sessions held at the gate) is below 20; NOBURST is good if RECOVERED. A run that is neither is DRAINING if its slope is negative and INDETERMINATE otherwise; the labels take precedence in the order trapped, recovered, draining, indeterminate. A rate PASSES if, in at least two of three seeds, BURST is trapped, NOBURST good and CAPPED recovered in that same seed. Criterion (a) uses tokens because a trapped engine with a growing backlog completes sessions faster than $\lmiss$ while it prefills at the all-miss token rate (Theorem~\ref{thm:premium}, \S\ref{sec:validation}); the paragraphs below give the evidence.
++Each run of a registered test lasts 8700\,s and is judged over $[t_b+4500,\,8700]$\,s; in the rule, $\lmiss$ is the cell's $\lref$. A BURST run is TRAPPED if $\lambda>\lmiss$ and (a) its uncached prefill token rate is within $\pm15\%$ of the cell's E0a all-miss rate (11,243 tokens/s at 300k) and (b) the slope of its backlog exceeds $0.5(\lambda-\lmiss)$, the slope being the least-squares slope of 10\,s bin means of the sessions in the system (arrived and not ended, including any held at the gate) over the window. A run is RECOVERED if over the last 300\,s its hit fraction exceeds 0.8 and its outstanding backlog (requests in flight plus sessions held at the gate) is below 20; NOBURST is good if RECOVERED. A run that is neither is DRAINING if its slope is negative and INDETERMINATE otherwise; the labels take precedence in the order trapped, recovered, draining, indeterminate. A rate PASSES if, in at least two of three seeds, BURST is trapped, NOBURST good and CAPPED recovered in that same seed. Criterion (a) uses tokens because a trapped engine with a growing backlog completes sessions at a rate other than $\lmiss$ (faster for our workload, slower with a 20-step budget, \S\ref{sec:mirror}) while it prefills at the all-miss token rate (Theorem~\ref{thm:premium}, \S\ref{sec:validation}); the paragraphs below give the evidence.
+ 
+ The registration was filled by formula from committed copies of the Stage~C curve, the E0a calibration and the E0b bracket: the window $(1,\,2.0)\,\lref$, its upper edge E0b's largest all-stable multiple; the rates one third and two thirds of the way across it, rounded to 0.05 (1.35 and 1.65 $\lref$), each of which must lie strictly between 1.1 times the window's lower edge and 0.9 times its upper edge, here $(1.1,\,1.8)\,\lref$, or the fill returns INCOMPLETE; and the cap, the smallest $n$ with $\mu(n)\ge0.95\mu^*$, which gives $\ncap=20$. We call a test pre-registered when its registration file was committed and pushed to GitHub before its runs, with GitHub's push log of our development repository as the record (not an entry in a third-party registry; pre-registered gates have been used in ML-systems measurement before~\citep{suram2026cacheable}); that repository is private, so readers see the log only as our export of it in \fpath{provenance/} (Appendix~\ref{app:prov}), which cannot be checked against GitHub independently. We call a test registered when a FILLED registration file (Table~\ref{tab:ledger}) binds its runs and was committed before its jobs were submitted; neither label says whether a prediction for the test was blind (\S\ref{sec:frozen}). The E2 and native tests are pre-registered, and so is every later registered test but one, although the text mostly calls these simply registered: the rescue tests R1 and R4 (\S\ref{sec:rescue}), the basin tests BASIN-1 and BASIN-2 (\S\ref{sec:basin}) and the TOOLSLOW and SHED tests, whose registrations reached GitHub 22 to 131 minutes before their jobs were submitted, and the 600k H200 and Llama-3.1-8B paired tests, whose registrations reached it 63 and 47\,s before theirs (\S\ref{sec:h200llama}). The exception is vLLM: its registration reached GitHub after its jobs were submitted, when two of them had started, so that test is registered, not pre-registered. On the H200 with the 300k pool the rule could not place its test points, so that cell has no registered test (\S\ref{sec:h200}). Appendix~\ref{app:prereg} gives the fill, its enforcement by the job script and the push time of every registration, and Appendix~\ref{app:timeline} every prediction round with its time record.
+ 
+@@ -632,7 +632,7 @@
+ \addlinespace[0.3pt]
+ REPLICATE-EDGE, 2.5 $\lref$ from empty, 300k, the plans of seeds 0 and 4 (exploratory, round 15) & Every deterministic predictor (the simulator in both modes, pred2's level crossing, the arrival, turn and token counts): each plan reproduces its original; H2 read as independent draws: reproducible with probability 0.0097. Blind in time; the plans were chosen knowing the originals & Reproducible: seed 0 collapsed in 3 of 3 (at 1600, 1600 and 1800\,s), seed 4 stable in 3 of 3; H2 does not describe same-plan replicates (\S\ref{sec:limits})\\
+ \addlinespace[0.3pt]
+-MIRROR, BURST at 1.65 (decisive) and 1.35 $\lref$, step-capped workload, at most 20 turns (registered, round 16) & Model~F (\texttt{r16-mirror-reg}), from each seed's exact plan, at 1.65 $\lref$: completions 0.05--0.09 $\lref$ over $[2400,3600)$\,s, a wave of the burst cohort at 5135--5195\,s, 0.49--0.60 $\lref$ over $[6600,8700)$\,s, backlog slopes nearer model~F's than the quasi-static ones. Blind in time; the workload was chosen after these predictions had been computed & \pending{MIRROR outcome} (\S\ref{sec:mirror})\\
++MIRROR, BURST at 1.65 (decisive) and 1.35 $\lref$, step-capped workload, at most 20 turns (registered, round 16) & Model~F (\texttt{r16-mirror-reg}), from each seed's exact plan, at 1.65 $\lref$: completions 0.05--0.09 $\lref$ over $[2400,3600)$\,s, a wave of the burst cohort at 5135--5195\,s, 0.49--0.60 $\lref$ over $[6600,8700)$\,s, backlog slopes nearer model~F's than the quasi-static ones. Blind in time; the workload was chosen after these predictions had been computed & PASS at 1.65 and 1.35 $\lref$, RENEWAL in 3 of 3 seeds each; all six stuck at zero hits, NOBURST good 3 of 3; at 1.65 $\lref$: 0.06--0.09 $\lref$ over $[2400,3600)$\,s, the wave at 4945--5089\,s, 0.50--0.61 $\lref$ over $[6600,8700)$\,s, below the measured all-miss capacity (1.062 $\lref$); the calibrated wave (W5) missed in 1 of 6 (\S\ref{sec:mirror})\\
+ \bottomrule
+ \end{tabular}
+ \end{table*}
+@@ -715,7 +715,7 @@
+ \fpath{2026-11-05_toolslow_d15_165.yaml} (TOOLSLOW-D15) & FILLED & \texttt{e05a262} 11-05 03:17:48 & 03:18:36 & 3 runs, submitted 03:57:14 (17256873--75); NO-TRAP: seed 0 stuck, seeds 1 and 2 good (\S\ref{sec:validation})\\
+ \fpath{configs/r15_edge_replicate.yaml} (REPLICATE-EDGE) & EXPLORATORY & \texttt{e05a262} 11-05 03:17:48 & 03:18:36 & 6 runs in two jobs, submitted 03:21:38 (17256677--78); both originals reproduced, 3 of 3 each (\S\ref{sec:limits})\\
+ \fpath{2026-11-05_cut_a115.yaml}, \fpath{_cut_b085.yaml} (CUT) & FILLED & \texttt{11b0e4e} 11-05 03:54:28 & 03:54:49 & 6 runs, submitted 03:57:14 (17256867--72); CUT-A and CUT-B pass (\S\ref{sec:control})\\
+-\fpath{2026-11-05_mirror_k20.yaml} (MIRROR) & FILLED & \texttt{bc81ee7} 11-05 14:07:08 & 14:07:37 & 9 runs and one E0a, \pending{jobs and outcome} (\S\ref{sec:mirror})\\
++\fpath{2026-11-05_mirror_k20.yaml} (MIRROR) & FILLED & \texttt{bc81ee7} 11-05 14:07:08 & 14:07:35 & 9 runs and one E0a, submitted 14:50:52--53 (17264055--64; the E0a, 17264061, failed its time check and ran as 17264093 at 14:53:08); pass at 1.65 and 1.35 $\lref$, RENEWAL 3 of 3 each (\S\ref{sec:mirror})\\
+ \bottomrule
+ \end{tabular}
+ \end{table*}
+@@ -863,7 +863,7 @@
+ 
+ \begin{table*}[tbp]
+ \centering\footnotesize
+-\caption{Order of the round-15 events, 2026-11-05 (times CST; commit times by the committer, push times from GitHub's activity log, job times by Slurm's accounting, pull and verdict times from the pull records in \fpath{results/nova/r15_*_pulled_*}).}\label{tab:timeline-r15}
++\caption{Order of the round-15 and round-16 (MIRROR) events, 2026-11-05 (times CST; commit times by the committer, push times from GitHub's activity log, job times by Slurm's accounting, pull and verdict times from the pull records in \fpath{results/nova/r15_*_pulled_*} and \fpath{results/nova/r16_*_pulled_*}).}\label{tab:timeline-r15}
+ \begin{tabular}{@{}p{2.3cm} >{\raggedright\arraybackslash}p{14.4cm}@{}}
+ \toprule
+ When & Event\\
+@@ -881,6 +881,13 @@
+ 11-05 06:51 & CUT-B seed~0 pulled\\
+ 11-05 08:23 & CUT-B seeds 1 and 2 and TOOLSLOW-D15 seed~0 pulled; registered verdict over all six CUT runs at 08:25\\
+ 11-05 08:35 & TOOLSLOW-D15 seeds 1 and 2 pulled; registered verdict at 08:36\\
++\addlinespace
++11-05 14:07 & MIRROR (round 16): registration, frozen predictions and plans (\texttt{bc81ee7}, 14:07:08); tag \texttt{r16-mirror-reg}; on GitHub 14:07:35\\
++11-05 14:49 & MIRROR cache-off smoke test submitted (17264039, 14:49:05); the erratum to the prediction note's writing time (\texttt{18ac5e6}, 14:24:49) reached GitHub at 14:49:22\\
++11-05 14:50 & MIRROR jobs submitted in the registered order (17264055--64, 14:50:52--53); the E0a, 17264061, failed its pre-run time check (14:51:57) and was resubmitted as 17264093 (14:53:08) with a longer time limit\\
++11-05 16:19 & errata to the prediction note's prose (\texttt{d8c49b7}, 16:19:32) pushed (16:19:36), during the runs and before any MIRROR output was read\\
++11-05 16:59 & the E0a pulled (it ended at 16:27:41)\\
++11-05 17:22 & the nine MIRROR runs pulled (they ended at 17:20:42--17:21:03); registered verdict at 17:31\\
+ \bottomrule
+ \end{tabular}
+ \end{table*}
+@@ -929,7 +936,7 @@
+ model~F check & \fpath{results/theory/icml/} (\fpath{trap_check.md}, \fpath{support.json}), \fpath{analysis/theory/icml/}, \fpath{configs/icml_trap_predict.yaml} (tag \texttt{icml-trap-pred}, \texttt{6b47a6c})\\
+ round 15 & \fpath{results/nova/r15_t1_edge_1725667x_pulled_20261105-061000/}, \fpath{results/nova/r15_cut_a_1725686x_pulled_20261105-063800/}, \fpath{results/nova/r15_cut_b0_17256870_pulled_20261105-065100/}, \fpath{results/nova/r15_cut_b12_1725687x_pulled_20261105-082300/}, \fpath{results/nova/r15_a2_s0_17256873_pulled_20261105-082300/}, \fpath{results/nova/r15_a2_s12_1725687x_pulled_20261105-083500/}; \fpath{analysis/r15_cut.py}; tags \texttt{r15-reg}, \texttt{r15-cut-reg} and \texttt{icml-cut-pred}\\
+ data-only analyses & \fpath{results/r15_dataonly/}, \fpath{analysis/r15_dataonly/}\\
+-MIRROR & \fpath{results/theory/r16/}, \fpath{analysis/r16_mirror.py}, \fpath{analysis/theory/icml/mirror_predict.py}, \fpath{configs/agentload_e2_mirror_k20.yaml} (tag \texttt{r16-mirror-reg}, \texttt{bc81ee7}; erratum \texttt{d8c49b7})\\
++MIRROR & \fpath{results/nova/r16_mirror_*_pulled_20261105-*/}, \fpath{results/agentload_analysis_r16_mirror/} (\texttt{f641b02}); \fpath{results/theory/r16/}, \fpath{analysis/r16_mirror.py}, \fpath{analysis/theory/icml/mirror_predict.py} (tag \texttt{r16-mirror-reg}, \texttt{bc81ee7}; erratum \texttt{d8c49b7})\\
+ push log, jobs & \fpath{provenance/}\\
+ figures & \fpath{figures/paper/}, \fpath{figures/rescue_paper_data.py}, \fpath{figures/theory_icml/} (Fig.~\ref{fig:trapuniv}), \fpath{figures/r16/} (Fig.~\ref{fig:mirror}), \fpath{paper/figs/README.md}\\
+ derived & \fpath{paper/derived/}, \fpath{figures/paper/derived_numbers.py}\\
+diff -ru pristine/paper/sections/v3_conclusion.tex final/paper/sections/v3_conclusion.tex
+--- pristine/paper/sections/v3_conclusion.tex	2026-11-05 16:56:56.000000000 -0600
++++ final/paper/sections/v3_conclusion.tex	2026-11-05 18:31:46.677579400 -0600
+@@ -11,7 +11,8 @@
+ scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind, and only in outcome:
+ the four runs trapped by a tool slowdown (three TOOLSLOW-W, one TOOLSLOW-D15), the six CUT runs and MIRROR's runs, all on the A100
+ with the 300k pool. In the CUT runs each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one;
+-what singles out model~F against intermediate readings is post hoc. The from-empty runs are single runs per rate, and at 300k the
++what singles out model~F against intermediate readings is post hoc; MIRROR's rule rejects only the throughput-curve readings.
++The from-empty runs are single runs per rate, and at 300k the
+ seed-0 bracket did not replicate on fresh seeds (\S\ref{sec:stampede}). In an exploratory replication on two plans chosen because
+ their outcomes were known, three runs each reproduced both originals, one collapse and one stable run, which suggests that the spread
+ across seeds at the edge comes from the plans rather than from service noise (six runs, on two GPUs of one node). The trapped windows
+@@ -29,8 +30,8 @@
+ observed this independently (in their disaggregated system the hit rate falls to about 0.3, in ours every turn misses). Idealized as
+ model~F, the trap has an exact law: a linear renewal recursion along FIFO orbits carries every trapped state to the known
+ self-similar regime~\citep{khanin2001steady}, fixed by a Perron root, in which the gap between turns grows linearly, the backlog grows
+-at a fraction of the excess load (0.6 to 0.8 at our loads) and the turns served are young and short; for our workload sessions then
+-complete faster than the all-miss capacity. Checked
++at a fixed multiple of the excess load and the turns served are young and short; for our workload the multiple is 0.6 to 0.8
++and sessions complete faster than the all-miss capacity, and with a 20-step budget slower, as a blind test found on the engine after a burst. Checked
+ retrospectively on 57 stuck runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws
+ hold for the runs taken together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown
+ alone, in four of the five pre-set scores (a per-run slope check failed in two). The practical reading is
+diff -ru pristine/paper/sections/v3_evidence.tex final/paper/sections/v3_evidence.tex
+--- pristine/paper/sections/v3_evidence.tex	2026-11-05 16:56:56.000000000 -0600
++++ final/paper/sections/v3_evidence.tex	2026-11-05 18:31:46.674271000 -0600
+@@ -2,7 +2,7 @@
+ 
+ \begin{figure*}[t]\centering
+ \includegraphics[width=\textwidth]{figs/fig_trap_universality.pdf}
+-\caption{Theorem~\ref{thm:trap} against every stuck run, as a function of the load $\rho=\lambda/\lmiss$. Points: the 57 stuck
++\caption{Theorem~\ref{thm:trap} against every stuck run of our workload, as a function of the load $\rho=\lambda/\lmiss$. Points: the 57 stuck
+ runs of the E2 protocol (orange) and the 13 from-empty runs that were stuck over $[1500,3000)$\,s (E0b, hollow). Lines: model~F
+ for each of the eight cells, nearly coincident (\S\ref{sec:trap}). No parameter is fitted to any trap measurement. (a)~Mean prompt of the turns served, over the
+ stationary mean: the tilted turn mix. (b)~Session completion rate over $\lmiss$: the youth premium, above 1. (c)~Backlog growth over
+@@ -38,7 +38,7 @@
+ \multicolumn{5}{@{}l}{\emph{Blind tests, registered on 2026-11-05 after Lu et al.'s paper appeared (\S\ref{sec:validation}, \S\ref{sec:control})}}\\
+ The trap-state law holds on traps with no burst & TOOLSLOW-W (3 stuck), TOOLSLOW-D15 (1 stuck) & pre-registered; blind in outcome & 4 of 5 pre-set scores pass pooled; the per-run slope check failed in 2 of 4 runs & \ref{app:blind}\\
+ Which seeds a slowdown traps & TOOLSLOW-D15; 3 runs & pre-registered; two frozen predictors & NO-TRAP, as the simulator said per seed; the first-principles fluid verdict (TRAPS) missed & \ref{app:blind}\\
+-Model~F's prediction that a near-deterministic turn count reverses the premium & MIRROR; 6 BURST, 3 NOBURST runs & pre-registered; blind in outcome; workload chosen with the model & \pending{MIRROR outcome} & \ref{app:blind}\\
++Model~F's prediction that a near-deterministic turn count reverses the premium & MIRROR; 6 BURST, 3 NOBURST runs & pre-registered; blind in outcome; workload chosen with the model & pass at both rates, RENEWAL 3/3 each; late 0.50--0.85~$\lref$, below the measured 1.06; rejects only the throughput-curve readings & \ref{app:blind}\\
+ A cut into $[\lmiss,D)$ does not clear the trap & CUT-A; 3 runs & pre-registered; blind in outcome; rule fixed after the predictions were read & pass: theory-favoured 3/3, stuck 3/3; rejects only the naive and quasi-static readings (a constant rate at the cut fits as well); late slopes post hoc & \ref{app:blind}\\
+ A cut below $\lmiss$ drains only slowly & CUT-B; 3 runs & as CUT-A & pass: theory-favoured 3/3, backlog falling 3/3, still trapped 3/3 at 8700\,s & \ref{app:blind}\\
+ \addlinespace
+@@ -52,7 +52,7 @@
+ \end{tabular}
+ \end{table*}
+ 
+-We test model~F on every trapped run we have, in eight cells: SGLang with the 300k pool (FCFS with and without its waiting-prefix
++We test model~F on every trapped run of our workload, in eight cells: SGLang with the 300k pool (FCFS with and without its waiting-prefix
+ refresh, the BASIN, SHED and TOOLSLOW runs, and stock LPM past its 128-request fallback), SGLang's native pool, vLLM, the H200 at
+ 300k and 600k, Llama-3.1-8B, and the 150k and 600k pools. vLLM, the H200 and Llama take one speed factor, fitted to their own
+ all-miss token rate, on the cost model of \S\ref{sec:trap}. No parameter is fitted to
+@@ -127,7 +127,7 @@
+ 
+ Theorem~\ref{thm:premium} factors the trapped completion rate as $D=\lmiss H(z)\Gamma(z)$: $\Gamma\ge1$ comes from the growth of
+ the context, and $H$ from the law of the turn count. $H$ is about 1 for our geometric turn count (0.989 at 1.65~$\lref$), consistent
+-with every trapped run at a load above the all-miss capacity completing sessions above it (CUT-B's runs, cut to below it,
++with every trapped run of our workload at a load above the all-miss capacity completing sessions above it (CUT-B's runs, cut to below it,
+ completed 0.92--0.97~$\lref$, as model~F predicts). For agents that run to a fixed step budget, a nearly
+ deterministic $T$ can put $H$ far enough below 1 to outweigh $\Gamma$, and the premium then reverses. MIRROR tests this. It repeats the E2
+ BURST protocol on the 300k A100 cell, seeds 0--2, at 1.65~$\lref$ (decisive) and 1.35~$\lref$ (secondary), with NOBURST
+@@ -141,9 +141,11 @@
+ throughput-curve reading (the quasi-static model, Lu et al.'s $\dot N=\lambda-X(N)/K$~\citep{lu2026cachetrap}, $K$ their requests per session, read on this workload,
+ our Eq.~\eqref{eq:fluid} of Appendix~\ref{app:qs}) predicts steady completions near 1.05~$\lref$ and no wave; the standard workload's traps completed
+ 1.05--1.48~$\lref$ over the first window and 1.01--1.35~$\lref$ over the second. The registered rule (tag \texttt{r16-mirror-reg},
+-pushed at 14:07:37 CST on 2026-11-05, before any job) calls a stuck BURST run RENEWAL if both completion windows, the wave and the
++pushed at 14:07:35 CST on 2026-11-05, before any job) calls a stuck BURST run RENEWAL if both completion windows, the wave and the
+ backlog slope fall on model~F's side of frozen thresholds, and CURVE if both windows are at least 0.85~$\lref$; the cell passes with
+ 2 of 3 RENEWAL and fails with 2 of 3 CURVE (Appendix~\ref{app:blind}). The predictions are blind in outcome only:
+ the workload was chosen after model~F's predictions for it and for a few alternatives had been computed, the timing tolerance comes
+ from the standard workload's committed runs, no simulator prediction was made, and the test came after Lu et al.'s paper. Outcome:
+-\pending{MIRROR outcome}.
++PASS at both rates, RENEWAL in 3 of 3 seeds each: at 1.65~$\lref$, 0.06--0.09~$\lref$, waves at 4945--5089\,s,
++then 0.50--0.61~$\lref$, below the measured capacity of 1.06~$\lref$. This rejects only the throughput-curve readings; a
++secondary check, the calibrated wave time, missed in 1 of 6 runs.
+diff -ru pristine/paper/sections/v3_intro.tex final/paper/sections/v3_intro.tex
+--- pristine/paper/sections/v3_intro.tex	2026-11-05 16:56:56.000000000 -0600
++++ final/paper/sections/v3_intro.tex	2026-11-05 18:31:46.673271200 -0600
+@@ -34,7 +34,7 @@
+ 
+ \paragraph{The question.} This paper asks what the trapped state \emph{is}. Quasi-static models treat it as the falling branch
+ of a throughput curve, $\dot n=\lambda-\mu(n)$; read literally in congestion, sessions then complete at the curve's low end and
+-accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs at
++accumulate at the excess over it. On our engines, where every trapped turn misses, both statements are wrong. Trapped runs of our workload at
+ loads above the all-miss capacity measured with caching disabled ($\lref$, the unit of every rate below) complete sessions faster
+ than it, by up to 2.4 times (one from-empty run at 6.5~$\lref$), while over the 57 stuck runs of our paired-test protocol their backlog grows, on
+ average, at about two thirds of the quasi-static rate. The gap matters to an operator: in model~F below, for our workload, a cut to just below the
+@@ -61,8 +61,9 @@
+ slope 1.01; per run 0.04--1.81) and completions above the all-miss capacity (in every run). These checks are retrospective. Blind
+ in outcome, with tolerances set on the earlier runs, the four runs trapped by a tool slowdown alone in two pre-registered cells met
+ four of the five pre-set scores; a per-run slope check failed in two of them.
+-A further blind test, MIRROR, uses a step-capped
+-workload for which the theory predicts completions \emph{below} the all-miss capacity \pending{MIRROR outcome}.
++A further blind test, MIRROR, with a step-capped
++workload for which the theory predicts completions \emph{below} the all-miss capacity, passed at both rates: all six trapped
++runs completed 0.50--0.85~$\lref$, against a measured 1.06~$\lref$.
+ \item \textbf{What trapped throughput does not tell} (\S\ref{sec:control}). After a burst, a cut in arrivals to below the trapped
+ throughput of the same seeds' uncut runs, but above the all-miss capacity, left all three CUT-A runs trapped, and a cut below the
+ all-miss capacity shrank the three CUT-B backlogs only slowly, all still trapped 6300\,s after the cut, as model~F predicted. Each

@@ -1,0 +1,170 @@
+[
+ {
+  "key": "intro_contrib2",
+  "file": "sections/v3_intro.tex",
+  "current": "A further blind test, MIRROR, uses a step-capped\nworkload for which the theory predicts completions \\emph{below} the all-miss capacity \\pending{MIRROR outcome}.",
+  "proposed": "A further blind test, MIRROR, with a step-capped\nworkload for which the theory predicts completions \\emph{below} the all-miss capacity, passed at both rates: all six trapped\nruns completed 0.50--0.85~$\\lref$, against a measured 1.06~$\\lref$.",
+  "set": "core",
+  "lines": "64-65"
+ },
+ {
+  "key": "ledger_row",
+  "file": "sections/v3_evidence.tex",
+  "current": "workload chosen with the model & \\pending{MIRROR outcome} & \\ref{app:blind}\\\\",
+  "proposed": "workload chosen with the model & pass at both rates, RENEWAL 3/3 each; late 0.50--0.85~$\\lref$, below the measured 1.06; rejects only the throughput-curve readings & \\ref{app:blind}\\\\",
+  "set": "core",
+  "lines": "41"
+ },
+ {
+  "key": "sec41_outcome",
+  "file": "sections/v3_evidence.tex",
+  "current": "Outcome:\n\\pending{MIRROR outcome}.",
+  "proposed": "Outcome:\nPASS at both rates, RENEWAL in 3 of 3 seeds each: at 1.65~$\\lref$, 0.06--0.09~$\\lref$, waves at 4945--5089\\,s,\nthen 0.50--0.61~$\\lref$, below the measured capacity of 1.06~$\\lref$. This rejects only the throughput-curve readings; a\nsecondary check, the calibrated wave time, missed in 1 of 6 runs.",
+  "set": "core",
+  "lines": "148-149"
+ },
+ {
+  "key": "fig4_box_and_caption",
+  "file": "sections/v3_app_blind.tex",
+  "current": "\\begin{figure}[htbp]\\centering\n\\fbox{\\parbox[c][0.5\\columnwidth][c]{0.93\\columnwidth}{\\centering\\footnotesize\\pending{MIRROR figure,\n\\fpath{figures/r16/fig_mirror.py}: (a) completions per 300\\,s bin after the burst, (b) the backlog}}}\n\\caption{MIRROR at 1.65~$\\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the\nstep-capped workload (blue, dashed) and the MIRROR runs (orange). \\pending{MIRROR runs}}\\label{fig:mirror}\n\\end{figure}",
+  "proposed": "\\begin{figure*}[tbp]\\centering\n\\includegraphics[width=\\textwidth]{figs/fig_mirror.pdf}\n\\caption{MIRROR at 1.65~$\\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the\nstep-capped workload (blue, dashed) and the MIRROR runs (orange). (a)~Session completions per 300\\,s bin, in $\\lref$; dotted:\nthe model's all-miss capacities of the two workloads (1.004 and 1.046~$\\lref$). (b)~Sessions in the system, 300\\,s means.\nOrange: the decisive cell's three BURST runs (jobs 17264055--57, seeds 0--2), all RENEWAL; the dashed lines were frozen under\ntag \\texttt{r16-mirror-reg} before any MIRROR job. Grey: jobs 17093390, 17093396 and 17093402\n(\\fpath{figures/r16/fig_mirror.py}).}\\label{fig:mirror}\n\\end{figure*}",
+  "set": "core",
+  "lines": "137-142"
+ },
+ {
+  "key": "appC_outcome",
+  "file": "sections/v3_app_blind.tex",
+  "current": "test came after Lu et al.'s paper. Outcome: \\pending{MIRROR runs, per-seed calls and scores, W5--W10}.",
+  "proposed": "test came after Lu et al.'s paper. Outcome: PASS in both cells, RENEWAL in 3 of 3 seeds each (the registered scorer at the tag's code, reading the\npredictions from the tag; \\fpath{results/agentload_analysis_r16_mirror/20261105-173136/}). The nine runs (jobs 17264055--60 and\n17264062--64, submitted at 14:50:52--53 CST and ended at 17:20:42--17:21:03) all count: each is the registered cell's, finished\nat 8700\\,s, is bound to the registration and was driven by its frozen plan (exact in sessions, turn counts and arrival times; tool\ntimes within $10^{-13}$\\,s). Measured, with model~F's frozen value in parentheses (rates in $\\lref$; slopes in sessions/s, model~F's\nand the quasi-static one):\n\\begin{center}\\footnotesize\n\\resizebox{\\columnwidth}{!}{%\n\\begin{tabular}{@{}c c c c c@{}}\n\\toprule\nrate, seed & $[2400,3600)$ & wave (s) & $[6600,8700)$ & slope (F / QS)\\\\\n\\midrule\n1.65, 0 & 0.070 (0.047) & 4996 (5195) & 0.592 (0.546) & 0.0767 (0.0789 / 0.0478)\\\\\n1.65, 1 & 0.058 (0.070) & 4945 (5135) & 0.606 (0.599) & 0.0837 (0.0857 / 0.0441)\\\\\n1.65, 2 & 0.093 (0.093) & 5089 (5157) & 0.499 (0.486) & 0.0935 (0.0930 / 0.0518)\\\\\n1.35, 0 & 0.105 (0.000) & 4759 (4883) & 0.619 (0.599) & 0.0557 (0.0565 / 0.0274)\\\\\n1.35, 1 & 0.093 (0.058) & 4673 (4802) & 0.739 (0.686) & 0.0504 (0.0534 / 0.0192)\\\\\n1.35, 2 & 0.163 (0.070) & 4576 (4870) & 0.845 (0.726) & 0.0496 (0.0603 / 0.0278)\\\\\n\\bottomrule\n\\end{tabular}}\n\\end{center}\nEvery seed was called RENEWAL. All six BURST runs were stuck (hit fraction 0.000 over $[5700,8700)$\\,s), and in each all 200\nburst sessions completed by 8700\\,s. The rules held with room in every run but one. The blackout windows held 5--14 completions, against M1's ceiling of 25.75;\nthe waves came 69--295\\,s before model~F's times (1.7--8.0\\% of the elapsed time, against M2's 15\\%) and peaked at 2.8--3.5~$\\lref$\nper 300\\,s bin at 1.65~$\\lref$ (model~F 3.2--4.4); the backlog grew 1.61--1.90 times as fast as the plan's excess load at\n1.65~$\\lref$ (model~F 1.65--1.95), and every slope was nearer model~F's than the quasi-static one by at least 0.011\\,/s. At\n1.35~$\\lref$, seed~2's 127 late completions were 0.7 below M3's ceiling of 127.7 (0.845 against 0.85): one more would have made that\nseed MIXED, and the cell would still have passed, 2 of 3. Secondary checks: W5 held in 5 of 6 runs and failed at 1.65~$\\lref$,\nseed~2 (5089\\,s against $F_{\\mathrm{cal}}=4850\\pm182$\\,s); on this workload model~F's timing ran 2--8\\% slow\n($(\\text{wave}-1200)/(F-1200)=0.92$--0.98), not the 8\\% that the factor 0.9223 removes. W6 held in 3 of 3 seeds, with shifts of\n237, 271 and 513\\,s against model~F's 312, 334 and 287\\,s. W7 held in 6 of 6 (served prompt $+0.2$ to $+2.6$\\% of model~F's) and W8\nin 6 of 6 (late completions 0.007--0.120~$\\lref$ above model~F's). W9: the three NOBURST controls stayed good, with hit fraction\n0.949--0.950, the ceiling $1-1/E[T]$ of this workload, completions of 1.66--1.82~$\\lref$ in both windows and backlog slopes within\n0.001\\,/s of zero. W10: the E0a of this workload (one run, closed population 32, cache off) measured an all-miss rate of\n1.062~$\\lref$ turns-based (1.002 counting sessions), against the model's $\\lmiss=1.046~\\lref$, above every late value. The registered E0a job (17264061) failed its own\npre-run time check, which needed 7080\\,s where 5369\\,s of the registered 01:30:00 limit were left, so no run started; it was\nresubmitted as 17264093 (14:53:08) with \\texttt{-{}-time 02:15:00} and nothing else changed, and only W10 uses it.\n\nWhat the pass shows. The registered alternatives are throughput-curve readings, which predict neither the blackout nor the wave, so\nthe pass rejects them but does not separate model~F from other models with its FIFO turn structure. M4 is not an independent fourth check: the plan\nfixes the arrivals, so the backlog slope is the plan's arrival rate less a weighted completion rate over $[6000,8700)$\\,s, nearly\nwhat M3 measures over $[6600,8700)$\\,s; the pass rests on three observations, the blackout, the wave and the lull. The late window measures\nmodel~F's post-wave lull, not its asymptotic $D$ (0.81 and 0.91~$\\lref$ at 1.65 and 1.35~$\\lref$); at 1.35~$\\lref$ a second\ncompletion wave enters the window, and seed~2 completed 1.01~$\\lref$ over $[7500,8700)$\\,s (model~F 0.87). The NOBURST\ncontrols ran at 1.65~$\\lref$ only, the three decisive runs on one node (separate GPUs), and the test covers one engine, GPU,\nmodel and workload family.",
+  "set": "core",
+  "lines": "198"
+ },
+ {
+  "key": "frozensum15_row",
+  "file": "sections/v3_app_stampede.tex",
+  "current": "Blind in time; the workload was chosen after these predictions had been computed & \\pending{MIRROR outcome} (\\S\\ref{sec:mirror})\\\\",
+  "proposed": "Blind in time; the workload was chosen after these predictions had been computed & PASS at 1.65 and 1.35 $\\lref$, RENEWAL in 3 of 3 seeds each; all six stuck at zero hits, NOBURST good 3 of 3; at 1.65 $\\lref$: 0.06--0.09 $\\lref$ over $[2400,3600)$\\,s, the wave at 4945--5089\\,s, 0.50--0.61 $\\lref$ over $[6600,8700)$\\,s, below the measured all-miss capacity (1.062 $\\lref$); the calibrated wave (W5) missed in 1 of 6 (\\S\\ref{sec:mirror})\\\\",
+  "set": "core",
+  "lines": "635"
+ },
+ {
+  "key": "ledger_tab_row",
+  "file": "sections/v3_app_stampede.tex",
+  "current": "\\texttt{bc81ee7} 11-05 14:07:08 & 14:07:37 & 9 runs and one E0a, \\pending{jobs and outcome} (\\S\\ref{sec:mirror})\\\\",
+  "proposed": "\\texttt{bc81ee7} 11-05 14:07:08 & 14:07:35 & 9 runs and one E0a, submitted 14:50:52--53 (17264055--64; the E0a, 17264061, failed its time check and ran as 17264093 at 14:53:08); pass at 1.65 and 1.35 $\\lref$, RENEWAL 3 of 3 each (\\S\\ref{sec:mirror})\\\\",
+  "set": "core",
+  "lines": "718"
+ },
+ {
+  "key": "push_time_41",
+  "file": "sections/v3_evidence.tex",
+  "current": "pushed at 14:07:37 CST on 2026-11-05, before any job) calls",
+  "proposed": "pushed at 14:07:35 CST on 2026-11-05, before any job) calls",
+  "set": "fix",
+  "lines": "144"
+ },
+ {
+  "key": "push_time_appC",
+  "file": "sections/v3_app_blind.tex",
+  "current": "\\texttt{bc81ee7}, tag \\texttt{r16-mirror-reg}, pushed at 14:07:37 CST on 2026-11-05, before any job;",
+  "proposed": "\\texttt{bc81ee7}, tag \\texttt{r16-mirror-reg}, pushed at 14:07:35 CST on 2026-11-05, before any job;",
+  "set": "fix",
+  "lines": "177"
+ },
+ {
+  "key": "appC_e0a_rule_use",
+  "file": "sections/v3_app_blind.tex",
+  "current": "workload measures its all-miss capacity, which no rule uses.",
+  "proposed": "workload measures its all-miss capacity, which only the secondary check W10 uses.",
+  "set": "fix",
+  "lines": "150"
+ },
+ {
+  "key": "appE_criterion_a",
+  "file": "sections/v3_app_stampede.tex",
+  "current": "Criterion (a) uses tokens because a trapped engine with a growing backlog completes sessions faster than $\\lmiss$ while it prefills at the all-miss token rate",
+  "proposed": "Criterion (a) uses tokens because a trapped engine with a growing backlog completes sessions at a rate other than $\\lmiss$ (faster for our workload, slower with a 20-step budget, \\S\\ref{sec:mirror}) while it prefills at the all-miss token rate",
+  "set": "fix",
+  "lines": "211"
+ },
+ {
+  "key": "sec41_every_trapped_run",
+  "file": "sections/v3_evidence.tex",
+  "current": "consistent\nwith every trapped run at a load above the all-miss capacity completing sessions above it",
+  "proposed": "consistent\nwith every trapped run of our workload at a load above the all-miss capacity completing sessions above it",
+  "set": "fix",
+  "lines": "129-130"
+ },
+ {
+  "key": "intro_question_scope",
+  "file": "sections/v3_intro.tex",
+  "current": "Trapped runs at\nloads above the all-miss capacity measured with caching disabled",
+  "proposed": "Trapped runs of our workload at\nloads above the all-miss capacity measured with caching disabled",
+  "set": "fix",
+  "lines": "37-38"
+ },
+ {
+  "key": "sec4_every_trapped_run",
+  "file": "sections/v3_evidence.tex",
+  "current": "We test model~F on every trapped run we have, in eight cells:",
+  "proposed": "We test model~F on every trapped run of our workload, in eight cells:",
+  "set": "fix",
+  "lines": "55"
+ },
+ {
+  "key": "fig2_caption_scope",
+  "file": "sections/v3_evidence.tex",
+  "current": "\\caption{Theorem~\\ref{thm:trap} against every stuck run, as a function of the load",
+  "proposed": "\\caption{Theorem~\\ref{thm:trap} against every stuck run of our workload, as a function of the load",
+  "set": "fix",
+  "lines": "5"
+ },
+ {
+  "key": "conclusion_backlog_scope",
+  "file": "sections/v3_conclusion.tex",
+  "current": "the backlog grows\nat a fraction of the excess load (0.6 to 0.8 at our loads) and the turns served are young and short; for our workload sessions then\ncomplete faster than the all-miss capacity.",
+  "proposed": "the backlog grows\nat a fixed multiple of the excess load and the turns served are young and short; for our workload the multiple is 0.6 to 0.8\nand sessions complete faster than the all-miss capacity.",
+  "set": "fix",
+  "lines": "31-33"
+ },
+ {
+  "key": "prov_row",
+  "file": "sections/v3_app_stampede.tex",
+  "current": "MIRROR & \\fpath{results/theory/r16/}, \\fpath{analysis/r16_mirror.py}, \\fpath{analysis/theory/icml/mirror_predict.py}, \\fpath{configs/agentload_e2_mirror_k20.yaml} (tag \\texttt{r16-mirror-reg}, \\texttt{bc81ee7}; erratum \\texttt{d8c49b7})\\\\",
+  "proposed": "MIRROR & \\fpath{results/nova/r16_mirror_*_pulled_20261105-*/}, \\fpath{results/agentload_analysis_r16_mirror/} (\\texttt{f641b02}); \\fpath{results/theory/r16/}, \\fpath{analysis/r16_mirror.py}, \\fpath{analysis/theory/icml/mirror_predict.py} (tag \\texttt{r16-mirror-reg}, \\texttt{bc81ee7}; erratum \\texttt{d8c49b7})\\\\",
+  "set": "appx",
+  "lines": "932"
+ },
+ {
+  "key": "timeline_rows",
+  "file": "sections/v3_app_stampede.tex",
+  "current": "11-05 08:35 & TOOLSLOW-D15 seeds 1 and 2 pulled; registered verdict at 08:36\\\\\n\\bottomrule",
+  "proposed": "11-05 08:35 & TOOLSLOW-D15 seeds 1 and 2 pulled; registered verdict at 08:36\\\\\n\\addlinespace\n11-05 14:07 & MIRROR (round 16): registration, frozen predictions and plans (\\texttt{bc81ee7}, 14:07:08); tag \\texttt{r16-mirror-reg}; on GitHub 14:07:35\\\\\n11-05 14:49 & MIRROR cache-off smoke test submitted (17264039, 14:49:05); the erratum to the prediction note's writing time (\\texttt{18ac5e6}, 14:24:49) reached GitHub at 14:49:22\\\\\n11-05 14:50 & MIRROR jobs submitted in the registered order (17264055--64, 14:50:52--53); the E0a, 17264061, failed its pre-run time check (14:51:57) and was resubmitted as 17264093 (14:53:08) with a longer time limit\\\\\n11-05 16:19 & errata to the prediction note's prose (\\texttt{d8c49b7}, 16:19:32) pushed (16:19:36), during the runs and before any MIRROR output was read\\\\\n11-05 16:59 & the E0a pulled (it ended at 16:27:41)\\\\\n11-05 17:22 & the nine MIRROR runs pulled (they ended at 17:20:42--17:21:03); registered verdict at 17:31\\\\\n\\bottomrule",
+  "set": "appx",
+  "lines": "883-884"
+ },
+ {
+  "key": "timeline_caption",
+  "file": "sections/v3_app_stampede.tex",
+  "current": "\\caption{Order of the round-15 events, 2026-11-05 (times CST; commit times by the committer, push times from GitHub's activity log, job times by Slurm's accounting, pull and verdict times from the pull records in \\fpath{results/nova/r15_*_pulled_*}).}",
+  "proposed": "\\caption{Order of the round-15 and round-16 (MIRROR) events, 2026-11-05 (times CST; commit times by the committer, push times from GitHub's activity log, job times by Slurm's accounting, pull and verdict times from the pull records in \\fpath{results/nova/r15_*_pulled_*} and \\fpath{results/nova/r16_*_pulled_*}).}",
+  "set": "appx",
+  "lines": "866"
+ },
+ {
+  "key": "conclusion_mirror",
+  "file": "sections/v3_conclusion.tex",
+  "current": "and sessions complete faster than the all-miss capacity.",
+  "proposed": "and sessions complete faster than the all-miss capacity, and with a 20-step budget slower, as a blind test found on the engine after a burst.",
+  "set": "opt",
+  "lines": "applied on top of conclusion_backlog_scope"
+ },
+ {
+  "key": "limits_mirror_scope",
+  "file": "sections/v3_conclusion.tex",
+  "current": "what singles out model~F against intermediate readings is post hoc. The from-empty runs",
+  "proposed": "what singles out model~F against intermediate readings is post hoc; MIRROR's rule rejects only the throughput-curve readings.\nThe from-empty runs",
+  "set": "opt",
+  "lines": "14"
+ }
+]

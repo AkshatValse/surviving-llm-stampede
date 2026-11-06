@@ -1158,3 +1158,34 @@ an append; the first scp was cut by the lead's own timeout).
   --time 01:30:00. Nothing ran.
 - It was resubmitted unchanged except --time 02:15:00 as 17264093 (14:53:08) and passed the check.
 - No registered rule uses the E0a (secondary W10 only).
+
+## 2026-11-05 evening — r16 MIRROR result: PASS at 1.65x (decisive) and at 1.35x (secondary)
+
+**Runs:** all nine BURST/NOBURST jobs COMPLETED 0:0 (ends 17:20:42-17:21:03 CST); the resubmitted E0a 17264093 COMPLETED at
+16:27:41. Pulled read-only: `results/nova/r16_mirror_1726405x_pulled_20261105-1722/` (archive sha256 342bd2a1...) and
+`results/nova/r16_mirror_e0a_1726409x_pulled_20261105-1659/` (sha256 3ab5012b...); COMMANDS.txt in each. Every run is
+bound to the registration (prereg sha256 88e20ce2..., run_blockers empty), uses the frozen plan, finished, and reached 8700 s.
+**Registered scoring** (`analysis.r16_mirror classify`, code identical to the tag; predictions read from the tag):
+`results/agentload_analysis_r16_mirror/20261105-173136/` (commit f641b02).
+- 1.65x DECISIVE: RENEWAL in seeds 0, 1 and 2 -> **PASS**. Rates in lambda_ref, measured (model F):
+  - blackout [2400, 3600): 0.070 (0.047), 0.058 (0.070), 0.093 (0.093); rule M1 <= 0.30;
+  - wave (median t_end of the 200 burst sessions, all completed): 4996 (5195), 4945 (5135), 5089 (5157) s; M2 +-599/590/594 s;
+  - late [6600, 8700): 0.592 (0.546), 0.606 (0.599), 0.499 (0.486); M3 <= 0.85;
+  - backlog slope [6000, 8700): 0.0767 (F 0.0789, QS 0.0478), 0.0837 (0.0857, 0.0441), 0.0935 (0.0930, 0.0518) /s; M4 holds;
+  - STUCK in all three (hit 0.000 over [5700, 8700)).
+- 1.35x SECONDARY: RENEWAL in seeds 0, 1 and 2 -> **PASS**. Blackout 0.105 / 0.093 / 0.163 (F 0.000 / 0.058 / 0.070); wave
+  4759 / 4673 / 4576 s (F 4883 / 4802 / 4870); late 0.619 / 0.739 / 0.845 (F 0.599 / 0.686 / 0.726); slope 0.0557 / 0.0504 /
+  0.0496 (F 0.0565 / 0.0534 / 0.0603; QS 0.0274 / 0.0192 / 0.0278). Near the threshold: seed 2's late 0.845 against M3's 0.85
+  (127 completions; 128 would have failed M3, making that seed MIXED and the cell still PASS 2/3).
+- Secondary: W5 (calibrated wave +-5%) holds in 5 of 6 runs; it fails for 1.65x seed 2 (5089 s against 4850 +- 182 s). W6 (wave
+  earlier at 1.35x) holds in every seed (shifts 237 / 271 / 513 s; model 287-334). W7 (composition +-5%) and W8 (late +-0.25)
+  hold in all six. W9: all three NOBURST controls GOOD (completions 1.66-1.82 lambda_ref in the two windows, hit 0.95, slope about
+  0). W10: the E0a puts this workload's all-miss capacity at 0.07597 /s = 1.062 lambda_ref (model 1.046); every trapped run's
+  late completions are below it (47-57% of it at 1.65x).
+- Model F's timing on this workload: (wave - 1200) / (F - 1200), the median-based ratio, 0.950 / 0.952 / 0.983 (1.65x) and 0.966 / 0.964 /
+  0.920 (1.35x), against 0.9125-0.9327 on the standard workload.
+**Provenance:** `provenance/push_times_2026-11-05-r16.tsv`: the registration was on GitHub 41.5 min before the first MIRROR job
+was submitted. The errata d8c49b7 (prose) were pushed at 16:19:36, during the runs and before any output was read.
+**Figure:** `results/theory/r16/fig_mirror.{pdf,png}` (figures/r16/fig_mirror.py with the three 1.65x BURST runs).
+**Next:** independent verification (blind recompute, provenance, rule audit, artifact skeptic, claims), then PAPER_INPUT_r16
+part 1 for the paper session.

@@ -14,7 +14,8 @@ On the PC:
 Jobs:
     17264039  smoke test, MODE=miss, 300 s, cache off (pm-mire0s)
     17264061  E0a, FAILED its pre-run time-budget check (needs 7080 s incl. the POP-64 check; --time 01:30:00); no run started
-    17264093  E0a resubmitted with --time 02:15:00 (pm-mire0a): closed POP 32 seeds 0-2 + the POP-64 check, cache off
+    17264093  E0a resubmitted with --time 02:15:00 (pm-mire0a): closed POP 32, seed 0 (as registered: SEEDS=0), plus the POP-64
+              check at seed 0, cache off. (Corrected after the verification: an earlier version said "seeds 0-2".)
 E0a calibration (results/agentload_analysis_miss/20261105-162735/calibration.json): lambda_miss_turns_based 0.075967 /s
 (1.062 lambda_ref of the standard workload), lambda_miss (sessions) 0.071666 /s, all-miss uncached tokens 12,120 /s.
 No registered rule uses E0a (secondary W10 reports it).

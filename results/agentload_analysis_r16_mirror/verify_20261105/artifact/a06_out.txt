@@ -1,0 +1,21 @@
+1.65x-burst-s0: plan==tagged frozen plan: True (rows 1294/1294, max |dt| 8.526512829121202e-14); session start lag max 0.0044 s p99 0.0031; scrape latency median 0.0131 max 1.554 s
+    pre-burst base sessions: 170, completed 170, completed after 2400 s: 2, last t_end 4052
+    late window [6600,8700): 3592 turns served; share that were turn 20: 0.0239 (1/20 = 0.05); mean turn index 9.12; share turn<=5: 0.302
+1.65x-burst-s1: plan==tagged frozen plan: True (rows 1246/1246, max |dt| 5.684341886080802e-14); session start lag max 0.0047 s p99 0.0032; scrape latency median 0.0132 max 1.760 s
+    pre-burst base sessions: 145, completed 145, completed after 2400 s: 4, last t_end 3972
+    late window [6600,8700): 3525 turns served; share that were turn 20: 0.0241 (1/20 = 0.05); mean turn index 9.29; share turn<=5: 0.287
+1.65x-burst-s2: plan==tagged frozen plan: True (rows 1289/1289, max |dt| 5.684341886080802e-14); session start lag max 0.0063 s p99 0.0034; scrape latency median 0.0133 max 1.332 s
+    pre-burst base sessions: 147, completed 147, completed after 2400 s: 3, last t_end 3300
+    late window [6600,8700): 3526 turns served; share that were turn 20: 0.0199 (1/20 = 0.05); mean turn index 8.94; share turn<=5: 0.308
+1.35x-burst-s0: plan==tagged frozen plan: True (rows 1101/1101, max |dt| 8.526512829121202e-14); session start lag max 0.0751 s p99 0.0033; scrape latency median 0.0144 max 0.496 s
+    pre-burst base sessions: 135, completed 135, completed after 2400 s: 1, last t_end 3404
+    late window [6600,8700): 3315 turns served; share that were turn 20: 0.0271 (1/20 = 0.05); mean turn index 9.75; share turn<=5: 0.287
+1.35x-burst-s1: plan==tagged frozen plan: True (rows 1057/1057, max |dt| 5.684341886080802e-14); session start lag max 0.0044 s p99 0.0030; scrape latency median 0.0139 max 0.123 s
+    pre-burst base sessions: 123, completed 123, completed after 2400 s: 4, last t_end 3620
+    late window [6600,8700): 3221 turns served; share that were turn 20: 0.0329 (1/20 = 0.05); mean turn index 10.23; share turn<=5: 0.263
+1.35x-burst-s2: plan==tagged frozen plan: True (rows 1097/1097, max |dt| 5.684341886080802e-14); session start lag max 0.0051 s p99 0.0037; scrape latency median 0.0130 max 0.632 s
+    pre-burst base sessions: 118, completed 118, completed after 2400 s: 3, last t_end 3368
+    late window [6600,8700): 3320 turns served; share that were turn 20: 0.0373 (1/20 = 0.05); mean turn index 10.01; share turn<=5: 0.284
+1.65x-noburst-s0: plan==tagged frozen plan: True (rows 1094/1094, max |dt| 8.526512829121202e-14); session start lag max 0.0033 s p99 0.0026; scrape latency median 0.0122 max 0.019 s
+1.65x-noburst-s1: plan==tagged frozen plan: True (rows 1046/1046, max |dt| 5.684341886080802e-14); session start lag max 0.0050 s p99 0.0024; scrape latency median 0.0115 max 0.021 s
+1.65x-noburst-s2: plan==tagged frozen plan: True (rows 1089/1089, max |dt| 5.684341886080802e-14); session start lag max 0.0052 s p99 0.0027; scrape latency median 0.0125 max 0.037 s
