@@ -42,10 +42,13 @@ In the restructured build (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`): Fig. 
   lambda_miss, backlog growth, gap slope against gamma/z = 1 - 1/z), from `results/theory/icml/trap_check.json`,
   `results/theory/icml/support.json` and `results/theory/icml/gap_slope_completion_time.json`. Not covered by `_style.py`'s
   tracked-file check.
-- **MIRROR figure** (Fig. 4; a framed placeholder until MIRROR's part 1), script `figures/r16/fig_mirror.py` on `r16/mirror`: (a)
-  completions per 300 s bin after the burst, (b) the backlog, for the standard workload's three committed traps, model F's frozen
-  predictions for the step-capped workload (`results/theory/r16/mirror_predictions.json`) and the MIRROR runs. It replaces the
-  placeholder of `paper/sections/v3_app_blind.tex` with part 1, and its entry here is completed then.
+- **`fig_mirror.pdf`** (Fig. 4, App. C; 6.60 x 2.35 in, a figure* at `\textwidth`), copied unchanged from
+  `results/theory/r16/fig_mirror.pdf` (f641b02), script `figures/r16/fig_mirror.py`: (a) completions per 300 s bin after the burst,
+  in lambda_ref, with the two workloads' model all-miss capacities (1.004 and 1.046) dotted; (b) sessions in the system, 300 s means.
+  Grey: the standard workload's three committed 1.65 x traps (jobs 17093390, 17093396, 17093402); blue dashed: model F's frozen
+  predictions for the step-capped workload (`results/theory/r16/mirror_predictions.json`, tag `r16-mirror-reg`); orange: the
+  decisive cell's three BURST runs (jobs 17264055-57, seeds 0-2). It replaced the framed placeholder of `v3_app_blind.tex` with
+  MIRROR's part 1.
 
 | file | width x height (in) | column |
 |---|---|---|

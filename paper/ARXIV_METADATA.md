@@ -4,23 +4,20 @@
 
 The draft below is under review by the authors (Akshat Valse; Dr. Ali Jannesari reviews before anything is posted). It is not
 submitted and nothing is posted. The TOOLSLOW-W, REPLICATE-EDGE, CUT and TOOLSLOW-D15 results were filled from the lead's
-PAPER_INPUT parts 1, 2a and 2b.
+PAPER_INPUT parts 1, 2a and 2b, and MIRROR's from `notes/PAPER_INPUT_r16.md` part 1 (merged from `r16/mirror` at 3531c4f).
 
-**Pending markers (9; the strict packager counts them in the sources and, independently, in the test build's PDF):** `\repourl`
-(the Code and data availability statement) and eight for MIRROR: Section 1 (contribution 2), Table 2 (the ledger's MIRROR row),
-Section 4.1 (the outcome), the Fig. 4 placeholder box and its caption (App. C), App. C's MIRROR outcome, Table 12
-(`tab:frozensum15`, MIRROR row) and Table 14 (`tab:ledger`, MIRROR row: jobs and outcome). Sentences that depend on MIRROR but carry
-no marker: Section 7 ("and MIRROR's runs", `v3_conclusion.tex`), App. E.1 (MIRROR among the tests registered on 2026-11-05,
-`v3_app_stampede.tex`), Section 3's pointer to Section 4.1 ("for a nearly deterministic T, H can be well below 1",
-`v3_theory.tex`), and the MIRROR row of Table 19 (`tab:prov`), which gets the runs' pull directory with part 1.
+**Pending markers (1; the strict packager counts them in the sources and, independently, in the test build's PDF):** `\repourl`
+(the Code and data availability statement) only. MIRROR's eight markers were filled with part 1 ("MIRROR round" below). The
+sentences that depended on MIRROR without a marker (Section 7, App. E.1, Section 3's pointer to Section 4.1, Table 19's MIRROR row)
+were checked against the outcome; Table 19's MIRROR row now names the runs' pull directories.
 
-**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. After the audit fix round: 65
-pages; main text pp. 1-12 (Section 8 and the three unnumbered statements end on p. 12, about four lines short of its foot; the
-references start on p. 13), references pp. 13-17, appendices A-F pp. 18-65 (A 18, B 21, C 22, D 26, E 26-63, F 63); 8 figures
-(Fig. 4, in Appendix C, is the MIRROR placeholder), 20 tables; clean build (pdflatex, bibtex, pdflatex x2; no errors, undefined
-references, overfull boxes or floats too large). Figures to upload: `fig1_e2_timeseries.pdf`, `fig_trap_universality.pdf`,
-`fig_rescue.pdf` (main text), `fig2_thrashing_curve.pdf`, `fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf`,
-`fig8_theory_curves.pdf` (Appendix E) and, with MIRROR's part 1, the MIRROR figure in place of the placeholder. The sources carry no
+**Restructure (2026-11-05, `notes/RESTRUCTURE_2026-11-05.md`):** one shorter, theory-led preprint. After the MIRROR round: 66
+pages; main text pp. 1-12 (Section 8 ends on p. 12; since part 1 the three unnumbered statements run onto p. 13, about nine lines,
+where the references start), references pp. 13-17, appendices A-F pp. 18-66 (A 18, B 21, C 22, D 27, E 27-64, F 64); 8 figures
+(Fig. 4, in Appendix C, is the MIRROR figure, a figure* at \textwidth), 20 tables; clean build (pdflatex, bibtex, pdflatex x2; no
+errors, undefined references, overfull boxes or floats too large). Figures to upload: `fig1_e2_timeseries.pdf`,
+`fig_trap_universality.pdf`, `fig_rescue.pdf` (main text), `fig_mirror.pdf` (Appendix C), `fig2_thrashing_curve.pdf`,
+`fig3_from_empty_stability.pdf`, `fig7_e2_native_timeseries.pdf` and `fig8_theory_curves.pdf` (Appendix E). The sources carry no
 comments with text, and `paper/sections/` holds only the 13 files `main.tex` inputs. Do not upload the other files in `figs/`
 (`fig4_mechanisms.pdf`, `fig5_robustness.pdf`, `fig6_policy_grid.pdf`, `fig9_theory_scaling.pdf`, `fig10_theory_fixed_points.pdf`,
 `fig_lpm_crossing.pdf`, `fig_trap_universality.png`, `README.md`).
@@ -30,6 +27,13 @@ merged `claude/theory-icml-2164a9` (fdb80c9, which the paper cites; this branch'
 sections A and B of the fix list were applied (record in `notes/RESTRUCTURE_2026-11-05.md`, "Audit fix round"). Strict packager
 (`make_arxiv_pkg_v3.sh`, `PKG_NAME=inside-the-trap ALLOW_PENDING=9`): OK; 13 inputs, 7 figures, 9 markers in the sources and 9 in
 the PDF, test build 65 pages, no missing file, undefined reference or overfull box.
+
+**MIRROR round (2026-11-05, part 1; record in `notes/RESTRUCTURE_2026-11-05.md`, "MIRROR round"):** `r16/mirror` (3531c4f) was
+merged with a merge commit (7519bef; the four conflicts resolved as the lead listed; PDF byte-identical). Then the claims verifier's
+diff (`results/agentload_analysis_r16_mirror/verify_20261105/claims/mirror_fillins_7ea6eef.diff`) was applied, `fig_mirror.pdf`
+copied from `results/theory/r16/` (f641b02), the lead's two polish notes and the abstract change made, App. C completed with part
+1's caveats, and round 16's provenance exports cited in App. E.12 and E.13. Strict packager (`ALLOW_PENDING=1`): OK; 13 inputs, 8
+figures, 1 marker in the sources and 1 in the PDF, test build 66 pages, no missing file, undefined reference or overfull box.
 
 **Categories (Akshat decides on the form; audit ARX-6):** primary cs.DC (LLM serving engines, SGLang and vLLM, and their admission
 and caching behaviour under load: Sections 2 and 5, App. E; the closest serving work, PEEK, CONCUR, MISA-T, VAMP and XPerf: Section 6
@@ -44,7 +48,7 @@ cross-list.
 **License:** author decision; record the choice here (options under "License options" below).
 
 **Upload rule:** exactly the strict packager's tarball, built at posting with `ALLOW_PENDING=0`: `main.tex`, `main.bbl`, the 13
-files of `paper/sections/`, the seven figure PDFs listed above and, with MIRROR's part 1, the MIRROR figure PDF; nothing else from
+files of `paper/sections/`, the eight figure PDFs listed above (with `fig_mirror.pdf`); nothing else from
 `paper/` (not `refs.bib`, `NUMBERS.md`, this file, `derived/`, `main.pdf` or the other files in `figs/`).
 
 **Release checklist (not markers in the paper; the repository decision is Akshat's):**
@@ -54,17 +58,17 @@ files of `paper/sections/`, the seven figure PDFs listed above and, with MIRROR'
   rerun the `\fpath` check against `git ls-tree -r` of the release tag in the built repository. If the stampede repository is
   reused, add the changes on top of its public history; never rewrite it.
 - Release tag `trap-arxiv-v1` (Table 19's caption; audit ARX-2), a name never published. Never move the published `arxiv-v1`.
-- After MIRROR's part 1 is committed on `r16/mirror`: merge `r16/mirror` (which contains `r15/tonight`) into the paper branch with a
-  merge commit, so that the paper's tree holds the MIRROR and round-15 files it cites (the lead's trial merge is clean).
-- MIRROR provenance (audit ARX-4, with part 1): the lead exports GitHub's activity log and tag refs, adds `push_times` rows for
-  bc81ee7, 18ac5e6 and d8c49b7 and exports `sacct` for 17264039, 17264055-64 and 17264093 (on `r16/mirror`); then cite these files
-  in E.13, add the MIRROR rows to Table 18 (`tab:timeline-r15`) and the runs' pull directory to Table 19's MIRROR row.
+- Done in the MIRROR round: `r16/mirror` (which contains `r15/tonight`) is merged into the paper branch with a merge commit
+  (7519bef), so the paper's tree holds the MIRROR and round-15 files it cites.
+- Done in the MIRROR round (audit ARX-4): the lead's exports of GitHub's activity log and tag refs, the `push_times` rows for
+  bc81ee7, 18ac5e6 and d8c49b7 and the `sacct` records of 17264039, 17264055-64 and 17264093 are cited in E.12 and E.13; Table 18
+  (`tab:timeline-r15`) has the MIRROR rows and Table 19's MIRROR row the runs' pull directories.
 - Akshat confirms in his arXiv account that the withdrawn submission was never announced (App. E's opening says so; audit HON-5).
 
 **Comments field (suggested; recount pages if the text changes):**
 
 ```text
-65 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
+66 pages, 8 figures, 20 tables. Code, registrations, frozen predictions and all real-engine data: [repository URL pending]
 ```
 
 Everything after the next horizontal rule is the record of the withdrawn r10/arxiv version.
@@ -80,14 +84,19 @@ Everything after the next horizontal rule is the record of the withdrawn r10/arx
 **Abstract (form text; the LaTeX abstract in `main.tex` expands to it with `count.py`):**
 
 ```text
-Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip an engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates), a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealization of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly, the backlog at 0.6 to 0.8 of the excess load here, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs in two cells trapped by a tool slowdown alone met 4 of 5 pre-set scores, and after arrival cuts the traps persisted, backlogs rising or falling slowly, as predicted. Of two exits, refusing arrivals sheds sessions; a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
+Prefix caching lets an LLM agent's follow-up turns reuse cached KV, but a burst can tip an engine into a trap in which every turn misses and the backlog does not drain, at a load it served before. Lu et al., who posted first, reported this metastable collapse, its feedback loop and a fluid model of its window. In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates), a 200-session burst left the engine at zero hits in all 30 runs, while every matched no-burst run stayed good. We analyse an idealization of the trapped state exactly: for a fluid FIFO server on which every turn misses, we prove that along FIFO orbits its cycles obey a linear renewal recursion. As is classical, the trap drains if and only if arrivals are below the all-miss capacity; above it, a Perron root fixes the dynamics: every trapped state converges to a known self-similar regime in which the gap between turns grows linearly, the backlog at 0.6 to 0.8 of the excess load here, and the turns served are young and short. For our workload, sessions then complete faster than the all-miss capacity, a youth premium with turn-count and cost-growth factors, so in the model a trap's measured throughput overstates the recovery threshold. Retrospectively, with nothing fitted to trap data, the theory matches 57 stuck runs: the turn mix within 3% in 50 runs, completions above the all-miss capacity in every run, and the pooled gap growth. Blind in outcome, 4 runs trapped by a tool slowdown met 4 of 5 pre-set scores, cut traps persisted, and with a 20-step budget, trapped runs completed below the all-miss capacity, as predicted. Of two exits, refusing arrivals sheds sessions; a session cap restores reuse: in registered tests it rescued 9 of 9 established zero-hit traps at the same load without shedding, and the engine stayed good after release. We do not prove that the engine converges to the model.
 ```
 
-Count (`COORD/release-tools/count.py paper/main.tex <out>`): 1917 form characters, limit 1920 (margin 3); no pending marker is left
+Count (`COORD/release-tools/count.py paper/main.tex <out>`): 1919 form characters, limit 1920 (margin 1); no pending marker is left
 in the abstract. The text is the final review's proposal (`notes/review_54d3529/abstract_proposed.tex` on `r15/tonight`) with the
 audit's HON-16 change, "In registered paired tests on two engines, two GPUs and two models (passed at 9 of 10 rates)", paid for by
 four trims that drop no claim: "tip a serving engine" to "tip an engine", "the backlog grows at" to "the backlog at", ", while a
-session cap" to "; a session cap", and "an idealized model of the trapped state" to "an idealization of the trapped state".
+session cap" to "; a session cap", and "an idealized model of the trapped state" to "an idealization of the trapped state". In the MIRROR round, part 1's change
+(the lead recommends it; flagged for Akshat's review) replaced "Blind in outcome, 4 runs in two cells trapped by a tool slowdown
+alone met 4 of 5 pre-set scores, and after arrival cuts the traps persisted, backlogs rising or falling slowly, as predicted." with
+"Blind in outcome, 4 runs trapped by a tool slowdown met 4 of 5 pre-set scores, cut traps persisted, and with a 20-step budget,
+trapped runs completed below the all-miss capacity, as predicted." It drops "in two cells", "alone" and the backlogs' slow rise
+or fall after the cuts, all still stated in Sections 1, 4 and 5.
 
 ---
 

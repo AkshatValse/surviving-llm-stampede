@@ -11,7 +11,8 @@ proved positive for our workload at $\rho\ge1.04$; below that it rests on a floa
 scoring tolerances were set on them. Only the runs submitted after tag \texttt{icml-trap-pred} test it blind, and only in outcome:
 the four runs trapped by a tool slowdown (three TOOLSLOW-W, one TOOLSLOW-D15), the six CUT runs and MIRROR's runs, all on the A100
 with the 300k pool. In the CUT runs each arm's registered rule rejected the naive reading, and CUT-A's also the quasi-static one;
-what singles out model~F against intermediate readings is post hoc. The from-empty runs are single runs per rate, and at 300k the
+what singles out model~F against intermediate readings is post hoc; MIRROR's rule rejects only the throughput-curve readings.
+The from-empty runs are single runs per rate, and at 300k the
 seed-0 bracket did not replicate on fresh seeds (\S\ref{sec:stampede}). In an exploratory replication on two plans chosen because
 their outcomes were known, three runs each reproduced both originals, one collapse and one stable run, which suggests that the spread
 across seeds at the edge comes from the plans rather than from service noise (six runs, on two GPUs of one node). The trapped windows
@@ -29,8 +30,8 @@ A burst can tip a prefix-cached agent server into a trap in which its cache stop
 observed this independently (in their disaggregated system the hit rate falls to about 0.3, in ours every turn misses). Idealized as
 model~F, the trap has an exact law: a linear renewal recursion along FIFO orbits carries every trapped state to the known
 self-similar regime~\citep{khanin2001steady}, fixed by a Perron root, in which the gap between turns grows linearly, the backlog grows
-at a fraction of the excess load (0.6 to 0.8 at our loads) and the turns served are young and short; for our workload sessions then
-complete faster than the all-miss capacity. Checked
+at a load-dependent multiple of the excess load and the turns served are young and short; for our workload the multiple is 0.6 to 0.8
+and sessions complete faster than the all-miss capacity; with a 20-step budget they complete slower, as a blind test on the engine found after a burst. Checked
 retrospectively on 57 stuck runs on two engines, two GPUs and two models, with no parameter fitted to any trap measurement, these laws
 hold for the runs taken together, and, with predictions frozen before the runs, on four runs in two cells trapped by a tool slowdown
 alone, in four of the five pre-set scores (a per-run slope check failed in two). The practical reading is

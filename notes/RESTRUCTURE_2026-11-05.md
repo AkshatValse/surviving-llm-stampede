@@ -144,6 +144,8 @@ Wording that changed:
   contribution (2) in Section 1; the pointer to Section 4.1 after Theorem 2 in Section 3; "and MIRROR's runs" in Section 7 (if MIRROR is dropped, put "and" before "the six CUT runs"); "CUT and
   MIRROR were registered on 5 November 2026" in Appendix E.1. Section 1's priority sentence covers MIRROR without naming it ("the
   blind tests of Sections 4 and 5 (registered on 2026-11-05)").
+- Filled with part 1 in the MIRROR round (the last section of this note). The push time 14:07:37 above was wrong; GitHub's
+  activity log gives 14:07:35 CST.
 
 ## Comments and unused files (the lead's request: arXiv publishes the source)
 
@@ -529,3 +531,81 @@ in the conclusion.
 65 pages; clean build. Strict packager (`make_arxiv_pkg_v3.sh`, PKG_NAME=inside-the-trap, ALLOW_PENDING=9): "inputs: 13 files",
 "figures: 7", "pending markers in sources: 9 (allowed 9)", "test build: 65 pages; 'not found': 0; 'undefined': 0; overfull: 0",
 "pending markers in the PDF: 9 (allowed 9)", "OK".
+
+## MIRROR round (2026-11-05, part 1)
+
+The lead's request after the MIRROR jobs: merge `r16/mirror`, apply the claims verifier's fill-ins, the figure, the two polish
+notes and the abstract change of `notes/PAPER_INPUT_r16.md` part 1, keep App. C's caveats, check every MIRROR number, package with
+one allowed marker. Commits: the merge 7519bef, then the fill-in commit on top of it.
+
+### 1. The merge
+
+`git merge --no-ff origin/r16/mirror` (3531c4f; merge base 8aaabdb). Exactly the four conflicts the lead's trial merge named:
+- `provenance/README.md` and `provenance/make_push_times.py`: r16/mirror's version (`--theirs`). Checked first that nothing of
+  this branch's is lost: the README differs only by r16's 12 added lines; the script's three differing lines generalize this
+  branch's (`args.r15` to `args.r15 or args.r16`) and add `R16_ROWS` and `--r16`.
+- `analysis/theory/icml/score_new.py` and `support.py`: this branch's version (`--ours`). Checked: ours is byte-identical to
+  fdb80c9's, theirs to fdb80c9^'s.
+Nothing under `paper/` changed (no paper file differs between the merge base and 3531c4f); fixed-date builds
+(`SOURCE_DATE_EPOCH=1762300000 FORCE_SOURCE_DATE=1`) before and after the merge are byte-identical (md5
+41c82b5d9a7ade042d3f8b8fd42f30c3, 65 pages).
+
+### 2. The claims verifier's diff
+
+`results/agentload_analysis_r16_mirror/verify_20261105/claims/mirror_fillins_7ea6eef.diff`: `git apply --check -p1` passed and
+it was applied unchanged (`paper/` was identical to 7ea6eef): the intro clause, the ledger cell, Section 4.1's outcome, Fig. 4 as a
+figure* at `\textwidth` with its caption, App. C's outcome (a table and the "What the pass shows" paragraph), the Table 12 and
+Table 14 cells, Table 18's MIRROR rows and caption, Table 19's MIRROR row, the push time 14:07:35 in three places, W10's use of the
+E0a, the scoping "of our workload" in five places, the conclusion's backlog sentence and the Limitations sentence.
+`paper/figs/fig_mirror.pdf` is `results/theory/r16/fig_mirror.pdf` of f641b02, unchanged.
+
+### 3. Beyond the diff
+
+- The lead's two polish notes, in the conclusion: "a load-dependent multiple of the excess load"; "; with a 20-step budget they
+  complete slower, as a blind test on the engine found after a burst".
+- The abstract change of part 1 (flagged for Akshat's review), in `main.tex` and in `paper/ARXIV_METADATA.md`'s form text (equal to
+  count.py's output): 1919 form characters, margin 1, as the verifier estimated.
+- App. C now carries part 1's caveats 1-9 (the diff had most of them):
+  1. near threshold: the diff's 1.35 x seed 2 sentence, plus the decisive cell's margins (at least 18 more blackout completions,
+     37 more late ones, 399 s of wave time or 0.013 /s of slope);
+  2. W5's miss: in the diff;
+  3. M4 not independent of M3: in the diff;
+  4. the late window is the post-wave lull: added the frozen 0.49-0.73 and "So the test confirms the plan-driven prediction of
+     the reversal; it does not measure the asymptotic premium";
+  5. scope: "other FIFO or age-structured models with the same turn count", and no alternative wave time registered;
+  6. the E0a: the diff's "(1.002 counting sessions)" replaced by the window dependence of the sessions-based rate (0.99-1.17;
+     quote the turns-based 1.062), plus seed 0 and the late values as a share of it (47-57% and 58-80%);
+  7. breadth: the 1.35 x cause rests on the 1.65 x controls and, post hoc, the pre-burst follow-up hit 1.00; the shared plans and
+     seeds (not independent trials); the pool, the burst, two rates, three seeds;
+  8. the verifiers' mechanism checks: not cited, so nothing to label;
+  9. provenance: GitHub's log records the commit's push (branch creation), not the tag's; 41.5 and 43.3 min before the jobs;
+     18ac5e6 17 s after the smoke test; d8c49b7 pushed during the runs, and "not read" rests on our own record (also in Table 18's
+     row).
+- Round 16's provenance exports (audit ARX-4) cited in E.13, the push-time file in the ledger paragraph of E.11, and a round-16
+  sentence in E.12's round-15 paragraph.
+- Two main-text precision fixes: the intro's "0.50-0.85 lref" now names its window, `[6600, 8700) s`; Section 4.1's outcome reads
+  "completions of 0.06-0.09 lref".
+
+### 4. The numbers
+
+Every MIRROR number the round writes was recomputed from `mirror_runs.csv` and `mirror_verdict.json` of the registered output
+(f641b02), or checked against `claims/claims_numbers.out`, `REPORT.md`, `provenance/push_times_2026-11-05-r16.tsv` and
+`provenance/sacct_cited_jobs_2026-11-05-r16.txt`; all match (sources per number in `paper/NUMBERS.md`, "MIRROR part 1"). None of
+the documentation errors part 1 lists is in the paper ("97.7-98.2%", W6 "270-330 s" except where the erratum quotes it, the 1.4
+backlog multiple except as the asymptote, the E0a "seeds 0-2").
+
+### 5. Space
+
+Section 8 ends on p. 12. The three unnumbered statements now run onto p. 13 (the AI statement's last line and the
+acknowledgments, about nine lines), and the references start there; the verifier's build had the main text ending on p. 12 too.
+Not trimmed: the lead's rule is to shorten Section 4.1's outcome if the main text spills, and nine lines would need cuts across
+Sections 1-8.
+
+### 6. Build and package
+
+66 pages; clean build (no errors, undefined references, multiply defined labels, overfull boxes or floats too large); 8 figures,
+20 tables; appendices A 18, B 21, C 22, D 27, E 27-64, F 64. Strict packager (`make_arxiv_pkg_v3.sh`, PKG_NAME=inside-the-trap,
+ALLOW_PENDING=1): "inputs: 13 files", "figures: 8", "pending markers in sources: 1 (allowed 1)", "test build: 66 pages; 'not
+found': 0; 'undefined': 0; overfull: 0; tarball 342319 bytes", "pending markers in the PDF: 1 (allowed 1)", "OK". The honesty facts of
+`COORD/LEAD_HANDOFF.md` were spot-checked in the PDF text (registered, not pre-registered; rule not met; seen by; blind by access
+only; the fresh-seed bracket not replicated; 4 of 9; not a fix; LPM-INF exploratory; no simulator prediction; the 150k misses).

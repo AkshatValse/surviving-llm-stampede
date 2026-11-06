@@ -134,12 +134,15 @@ arm's registered rule rejected the naive reading, and CUT-A's also the quasi-sta
 intermediate readings is post hoc: CUT-A's late-window slopes and CUT-B's completions below the all-miss capacity.
 \end{itemize}
 
-\begin{figure}[htbp]\centering
-\fbox{\parbox[c][0.5\columnwidth][c]{0.93\columnwidth}{\centering\footnotesize\pending{MIRROR figure,
-\fpath{figures/r16/fig_mirror.py}: (a) completions per 300\,s bin after the burst, (b) the backlog}}}
+\begin{figure*}[tbp]\centering
+\includegraphics[width=\textwidth]{figs/fig_mirror.pdf}
 \caption{MIRROR at 1.65~$\lref$: the standard workload's three committed traps (grey), model~F's frozen predictions for the
-step-capped workload (blue, dashed) and the MIRROR runs (orange). \pending{MIRROR runs}}\label{fig:mirror}
-\end{figure}
+step-capped workload (blue, dashed) and the MIRROR runs (orange). (a)~Session completions per 300\,s bin, in $\lref$; dotted:
+the model's all-miss capacities of the two workloads (1.004 and 1.046~$\lref$). (b)~Sessions in the system, 300\,s means.
+Orange: the decisive cell's three BURST runs (jobs 17264055--57, seeds 0--2), all RENEWAL; the dashed lines were frozen under
+tag \texttt{r16-mirror-reg} before any MIRROR job. Grey: jobs 17093390, 17093396 and 17093402
+(\fpath{figures/r16/fig_mirror.py}).}\label{fig:mirror}
+\end{figure*}
 
 \paragraph{MIRROR.} The test of \S\ref{sec:mirror} runs the E2 BURST protocol on cell \texttt{sglang-fcfs-r1-mirror-k20} (SGLang
 0.5.22, FCFS with the waiting-prefix refresh, 300k pool, Qwen2.5-7B-Instruct, A100 80GB PCIe) with
@@ -147,7 +150,7 @@ step-capped workload (blue, dashed) and the MIRROR runs (orange). \pending{MIRRO
 15 to 1000 and the maximum from 60 to 20, and nothing else; rates are multiples of the standard workload's registered
 $\lref=0.071534$\sps. The arms run one per job, seeds 0--2, for 8700\,s, with the burst of 200 sessions in $[1200,1260)$\,s: BURST at
 1.65~$\lref$ (the decisive cell), BURST at 1.35~$\lref$ (secondary) and NOBURST at 1.65~$\lref$ (controls), and one E0a run of the
-workload measures its all-miss capacity, which no rule uses. The step cap $K=20$ was chosen by computation only, comparing $K=15$,
+workload measures its all-miss capacity, which only the secondary check W10 uses. The step cap $K=20$ was chosen by computation only, comparing $K=15$,
 20 and 25 and mean turn counts of 30, 40 and 60 in the model: at $K=20$ the model's all-miss capacity matches the standard
 workload's (1.046 against 1.004~$\lref$) and the good state's basin at 1.65~$\lref$ is wide (stable point 14.3 sessions, unstable
 point 41.8), so the NOBURST controls should stay good; no engine run of the workload existed. Asymptotically, model~F gives
@@ -174,7 +177,7 @@ rate, seed & $[2400,3600)$ & wave (s) & burst IQR (s) & $[6600,8700)$ & slope F 
 In the quasi-static reading both completion windows are at 1.046~$\lref$.
 
 The rules (\fpath{analysis/r16_mirror.py}; registration \fpath{configs/agentload_prereg_2026-11-05_mirror_k20.yaml}, commit
-\texttt{bc81ee7}, tag \texttt{r16-mirror-reg}, pushed at 14:07:37 CST on 2026-11-05, before any job;
+\texttt{bc81ee7}, tag \texttt{r16-mirror-reg}, pushed at 14:07:35 CST on 2026-11-05, before any job;
 \fpath{notes/PREDICTIONS_r16_mirror.md}) score each BURST run: M1, completions over $[2400,3600)$\,s at most 0.30~$\lref$; M2, the
 wave within $0.15(F-1200\,\mathrm{s})$ of model~F's time $F$; M3, completions over $[6600,8700)$\,s at most 0.85~$\lref$; M4, the
 least-squares slope of the 10\,s backlog over $[6000,8700)$\,s closer to model~F's than to the quasi-static slope. A seed is RENEWAL
@@ -187,12 +190,69 @@ the wave earlier at 1.35 than at 1.65~$\lref$ in each seed (model~F: by 287--334
 $[5700,8700)$\,s within 5\% of model~F's; W8, the late completions within 0.25~$\lref$ of model~F's; W9, every NOBURST control good;
 W10, the workload's measured all-miss capacity, and whether the late completions lie below it. The prediction note committed
 with the registration quoted the asymptotic 1.4 for the backlog's growth in the late window and 270--330\,s for W6's shift; both
-were corrected in an erratum (commit \texttt{d8c49b7} on \texttt{r16/mirror}, after the tag and before any MIRROR run output
-was read), and M4 scores the per-seed slopes of the table above and W6 only the order of the waves, so neither error enters a
-rule. The tolerances come from committed
+were corrected in an erratum (commit \texttt{d8c49b7} on \texttt{r16/mirror}, pushed at 16:19:36, during the runs; that no MIRROR run
+output had been read by then rests on our own record), and M4 scores the per-seed slopes of the table above and W6 only the order of the waves, so neither error enters a
+rule. The registration's push time is GitHub's record of the commit's push, which created branch \texttt{r16/mirror} at
+\texttt{bc81ee7}; GitHub keeps no push time for the tag object. It came 41.5\,min before the first MIRROR job, a cache-off smoke
+test, was submitted and 43.3\,min before the nine counted jobs; an erratum to the prediction note's writing time (\texttt{18ac5e6})
+reached GitHub 17\,s after the smoke test was submitted and before the counted jobs (Table~\ref{tab:timeline-r15}). The tolerances come from committed
 data only: on the six committed standard-workload BURST runs, model~F's plan-driven FIFO times the burst sessions' completions about
 8\% late (measured over model elapsed time 0.9125--0.9327 per run, mean 0.9223), which M2's 15\% covers and W5's factor removes; M1,
 M3 and the CURVE threshold lie between model~F's values and the quasi-static ones, fixed from those values and from the standard
 workload's measured traps. Not blind: the workload was chosen after model~F's predictions for it and for a few alternatives had been
 computed; the timing factor comes from the standard workload's committed runs; no simulator prediction was made for MIRROR; and the
-test came after Lu et al.'s paper. Outcome: \pending{MIRROR runs, per-seed calls and scores, W5--W10}.
+test came after Lu et al.'s paper. Outcome: PASS in both cells, RENEWAL in 3 of 3 seeds each (the registered scorer at the tag's code, reading the
+predictions from the tag; \fpath{results/agentload_analysis_r16_mirror/20261105-173136/}). The nine runs (jobs 17264055--60 and
+17264062--64, submitted at 14:50:52--53 CST and ended at 17:20:42--17:21:03) all count: each is the registered cell's, finished
+at 8700\,s, is bound to the registration and was driven by its frozen plan (exact in sessions, turn counts and arrival times; tool
+times within $10^{-13}$\,s). Measured, with model~F's frozen value in parentheses (rates in $\lref$; slopes in sessions/s, model~F's
+and the quasi-static one):
+\begin{center}\footnotesize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}c c c c c@{}}
+\toprule
+rate, seed & $[2400,3600)$ & wave (s) & $[6600,8700)$ & slope (F / QS)\\
+\midrule
+1.65, 0 & 0.070 (0.047) & 4996 (5195) & 0.592 (0.546) & 0.0767 (0.0789 / 0.0478)\\
+1.65, 1 & 0.058 (0.070) & 4945 (5135) & 0.606 (0.599) & 0.0837 (0.0857 / 0.0441)\\
+1.65, 2 & 0.093 (0.093) & 5089 (5157) & 0.499 (0.486) & 0.0935 (0.0930 / 0.0518)\\
+1.35, 0 & 0.105 (0.000) & 4759 (4883) & 0.619 (0.599) & 0.0557 (0.0565 / 0.0274)\\
+1.35, 1 & 0.093 (0.058) & 4673 (4802) & 0.739 (0.686) & 0.0504 (0.0534 / 0.0192)\\
+1.35, 2 & 0.163 (0.070) & 4576 (4870) & 0.845 (0.726) & 0.0496 (0.0603 / 0.0278)\\
+\bottomrule
+\end{tabular}}
+\end{center}
+Every seed was called RENEWAL. All six BURST runs were stuck (hit fraction 0.000 over $[5700,8700)$\,s), and in each all 200
+burst sessions completed by 8700\,s. The rules held with room in every run but one. The blackout windows held 5--14 completions, against M1's ceiling of 25.75;
+the waves came 69--295\,s before model~F's times (1.7--8.0\% of the elapsed time, against M2's 15\%) and peaked at 2.8--3.5~$\lref$
+per 300\,s bin at 1.65~$\lref$ (model~F 3.2--4.4); the backlog grew 1.61--1.90 times as fast as the plan's excess load at
+1.65~$\lref$ (model~F 1.65--1.95), and every slope was nearer model~F's than the quasi-static one by at least 0.011\,/s. At
+1.35~$\lref$, seed~2's 127 late completions were 0.7 below M3's ceiling of 127.7 (0.845 against 0.85): one more would have made that
+seed MIXED, and the cell would still have passed, 2 of 3. In the decisive cell, changing any seed's call would have taken at
+least 18 more blackout completions (M1) or 37 more late ones (M3), a wave at least 399\,s further from model~F's time (M2), or a
+slope at least 0.013\,/s nearer the quasi-static one (M4). Secondary checks: W5 held in 5 of 6 runs and failed at 1.65~$\lref$,
+seed~2 (5089\,s against $F_{\mathrm{cal}}=4850\pm182$\,s); on this workload model~F's timing ran 2--8\% slow
+($(\text{wave}-1200)/(F-1200)=0.92$--0.98), not the 8\% that the factor 0.9223 removes. W6 held in 3 of 3 seeds, with shifts of
+237, 271 and 513\,s against model~F's 312, 334 and 287\,s. W7 held in 6 of 6 (served prompt $+0.2$ to $+2.6$\% of model~F's) and W8
+in 6 of 6 (late completions 0.007--0.120~$\lref$ above model~F's). W9: the three NOBURST controls stayed good, with hit fraction
+0.949--0.950, the ceiling $1-1/E[T]$ of this workload, completions of 1.66--1.82~$\lref$ in both windows and backlog slopes within
+0.001\,/s of zero. W10: the E0a of this workload (one run, seed~0, closed population 32, cache off) measured an all-miss rate of
+1.062~$\lref$ turns-based, against the model's $\lmiss=1.046~\lref$; the late completions were 47--57\% of it at 1.65~$\lref$
+and 58--80\% at 1.35~$\lref$. Counted in sessions, the E0a's rate depends on the window (0.99--1.17~$\lref$), because synchronized
+cohorts complete in waves; every late value lies below the lowest of these. The registered E0a job (17264061) failed its own
+pre-run time check, which needed 7080\,s where 5369\,s of the registered 01:30:00 limit were left, so no run started; it was
+resubmitted as 17264093 (14:53:08) with \texttt{-{}-time 02:15:00} and nothing else changed, and only W10 uses it.
+
+What the pass shows. The registered alternatives are throughput-curve readings, which predict neither the blackout nor the wave, so
+the pass rejects them but does not separate model~F from other FIFO or age-structured models with the same turn count, and no
+alternative wave time was registered. M4 is not an independent fourth check: the plan
+fixes the arrivals, so the backlog slope is the plan's arrival rate less a weighted completion rate over $[6000,8700)$\,s, nearly
+what M3 measures over $[6600,8700)$\,s; the pass rests on three observations, the blackout, the wave and the lull. The late window measures
+model~F's post-wave lull (frozen at 0.49--0.73~$\lref$), not its asymptotic $D$ (0.81 and 0.91~$\lref$ at 1.65 and 1.35~$\lref$); at 1.35~$\lref$ a second
+completion wave enters the window, and seed~2 completed 1.01~$\lref$ over $[7500,8700)$\,s (model~F 0.87). So the test confirms the plan-driven prediction of the
+reversal; it does not measure the asymptotic premium. The NOBURST
+controls ran at 1.65~$\lref$ only, by design, so that the burst caused the 1.35~$\lref$ traps rests on them and, post hoc, on
+those runs' follow-up hit fraction of 1.00 before the burst. The three decisive runs ran concurrently on one node (separate GPUs);
+the NOBURST runs use the same base plans as the BURST runs and the same seeds recur at both rates, so the runs are not independent
+trials. The test covers one engine, GPU type, model, pool (300k), synthetic workload family and burst, two rates and three seeds
+per cell.

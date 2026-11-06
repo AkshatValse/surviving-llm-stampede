@@ -2,7 +2,7 @@
 
 \begin{figure*}[t]\centering
 \includegraphics[width=\textwidth]{figs/fig_trap_universality.pdf}
-\caption{Theorem~\ref{thm:trap} against every stuck run, as a function of the load $\rho=\lambda/\lmiss$. Points: the 57 stuck
+\caption{Theorem~\ref{thm:trap} against every stuck run of our workload, as a function of the load $\rho=\lambda/\lmiss$. Points: the 57 stuck
 runs of the E2 protocol (orange) and the 13 from-empty runs that were stuck over $[1500,3000)$\,s (E0b, hollow). Lines: model~F
 for each of the eight cells, nearly coincident (\S\ref{sec:trap}). No parameter is fitted to any trap measurement. (a)~Mean prompt of the turns served, over the
 stationary mean: the tilted turn mix. (b)~Session completion rate over $\lmiss$: the youth premium, above 1. (c)~Backlog growth over
@@ -38,7 +38,7 @@ The backlog grows at $\alpha$, not $\lambda-\lmiss$ & same & retrospective & slo
 \multicolumn{5}{@{}l}{\emph{Blind tests, registered on 2026-11-05 after Lu et al.'s paper appeared (\S\ref{sec:validation}, \S\ref{sec:control})}}\\
 The trap-state law holds on traps with no burst & TOOLSLOW-W (3 stuck), TOOLSLOW-D15 (1 stuck) & pre-registered; blind in outcome & 4 of 5 pre-set scores pass pooled; the per-run slope check failed in 2 of 4 runs & \ref{app:blind}\\
 Which seeds a slowdown traps & TOOLSLOW-D15; 3 runs & pre-registered; two frozen predictors & NO-TRAP, as the simulator said per seed; the first-principles fluid verdict (TRAPS) missed & \ref{app:blind}\\
-Model~F's prediction that a near-deterministic turn count reverses the premium & MIRROR; 6 BURST, 3 NOBURST runs & pre-registered; blind in outcome; workload chosen with the model & \pending{MIRROR outcome} & \ref{app:blind}\\
+Model~F's prediction that a near-deterministic turn count reverses the premium & MIRROR; 6 BURST, 3 NOBURST runs & pre-registered; blind in outcome; workload chosen with the model & pass at both rates, RENEWAL 3/3 each; late 0.50--0.85~$\lref$, below the measured 1.06; rejects only the throughput-curve readings & \ref{app:blind}\\
 A cut into $[\lmiss,D)$ does not clear the trap & CUT-A; 3 runs & pre-registered; blind in outcome; rule fixed after the predictions were read & pass: theory-favoured 3/3, stuck 3/3; rejects only the naive and quasi-static readings (a constant rate at the cut fits as well); late slopes post hoc & \ref{app:blind}\\
 A cut below $\lmiss$ drains only slowly & CUT-B; 3 runs & as CUT-A & pass: theory-favoured 3/3, backlog falling 3/3, still trapped 3/3 at 8700\,s & \ref{app:blind}\\
 \addlinespace
@@ -52,7 +52,7 @@ The throughput curve from first principles & 8 cells; frozen tags & 5 cells blin
 \end{tabular}
 \end{table*}
 
-We test model~F on every trapped run we have, in eight cells: SGLang with the 300k pool (FCFS with and without its waiting-prefix
+We test model~F on every trapped run of our workload, in eight cells: SGLang with the 300k pool (FCFS with and without its waiting-prefix
 refresh, the BASIN, SHED and TOOLSLOW runs, and stock LPM past its 128-request fallback), SGLang's native pool, vLLM, the H200 at
 300k and 600k, Llama-3.1-8B, and the 150k and 600k pools. vLLM, the H200 and Llama take one speed factor, fitted to their own
 all-miss token rate, on the cost model of \S\ref{sec:trap}. No parameter is fitted to
@@ -127,7 +127,7 @@ side in 3 of 4. The frozen exploratory measures of both cells, hits and misses, 
 
 Theorem~\ref{thm:premium} factors the trapped completion rate as $D=\lmiss H(z)\Gamma(z)$: $\Gamma\ge1$ comes from the growth of
 the context, and $H$ from the law of the turn count. $H$ is about 1 for our geometric turn count (0.989 at 1.65~$\lref$), consistent
-with every trapped run at a load above the all-miss capacity completing sessions above it (CUT-B's runs, cut to below it,
+with every trapped run of our workload at a load above the all-miss capacity completing sessions above it (CUT-B's runs, cut to below it,
 completed 0.92--0.97~$\lref$, as model~F predicts). For agents that run to a fixed step budget, a nearly
 deterministic $T$ can put $H$ far enough below 1 to outweigh $\Gamma$, and the premium then reverses. MIRROR tests this. It repeats the E2
 BURST protocol on the 300k A100 cell, seeds 0--2, at 1.65~$\lref$ (decisive) and 1.35~$\lref$ (secondary), with NOBURST
@@ -141,9 +141,11 @@ all-miss capacity (0.49--0.60~$\lref$ over $[6600,8700)$\,s), while the backlog 
 throughput-curve reading (the quasi-static model, Lu et al.'s $\dot N=\lambda-X(N)/K$~\citep{lu2026cachetrap}, $K$ their requests per session, read on this workload,
 our Eq.~\eqref{eq:fluid} of Appendix~\ref{app:qs}) predicts steady completions near 1.05~$\lref$ and no wave; the standard workload's traps completed
 1.05--1.48~$\lref$ over the first window and 1.01--1.35~$\lref$ over the second. The registered rule (tag \texttt{r16-mirror-reg},
-pushed at 14:07:37 CST on 2026-11-05, before any job) calls a stuck BURST run RENEWAL if both completion windows, the wave and the
+pushed at 14:07:35 CST on 2026-11-05, before any job) calls a stuck BURST run RENEWAL if both completion windows, the wave and the
 backlog slope fall on model~F's side of frozen thresholds, and CURVE if both windows are at least 0.85~$\lref$; the cell passes with
 2 of 3 RENEWAL and fails with 2 of 3 CURVE (Appendix~\ref{app:blind}). The predictions are blind in outcome only:
 the workload was chosen after model~F's predictions for it and for a few alternatives had been computed, the timing tolerance comes
 from the standard workload's committed runs, no simulator prediction was made, and the test came after Lu et al.'s paper. Outcome:
-\pending{MIRROR outcome}.
+PASS at both rates, RENEWAL in 3 of 3 seeds each: at 1.65~$\lref$, completions of 0.06--0.09~$\lref$, waves at 4945--5089\,s,
+then 0.50--0.61~$\lref$, below the measured capacity of 1.06~$\lref$. This rejects only the throughput-curve readings; a
+secondary check, the calibrated wave time, missed in 1 of 6 runs.
