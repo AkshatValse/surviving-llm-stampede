@@ -1,10 +1,12 @@
 # Registration proofs
 
 The paper cites commit hashes of the authors' original development repository, which stays private.
-This repository's history is the same history with four notes files redacted, five local
-tool-configuration files removed and an older name and e-mail address of the first author replaced
-by a mailmap (`../REDACTIONS.md`), so its commit hashes differ. This directory binds the two
-together.
+This repository's history is the original repository's history, without six commits that hold
+nothing cited (five of a side branch and GitHub's test merge commit for an unmerged pull request
+from it), and with four notes files and a clause in each of two commit messages redacted, five
+local tool-configuration files removed and an older name and e-mail address of the first author
+replaced by a mailmap (`../REDACTIONS.md`), so its commit hashes differ; the public-release commits
+on top of it are new and have no original. This directory binds the two histories together.
 
 - `objects/` holds raw git objects of the **original** repository, named by their hash: each
   registration or blind-prediction commit, its root tree, its `notes/` tree, the trees on the path to
