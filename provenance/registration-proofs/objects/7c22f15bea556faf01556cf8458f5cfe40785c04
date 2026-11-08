@@ -1,0 +1,6 @@
+object bc81ee71f7f55c890f7f0cec33083b98e0be4807
+type commit
+tag r16-mirror-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793909228 -0600
+
+r16 MIRROR registration (frozen predictions and rules), pushed before any MIRROR job

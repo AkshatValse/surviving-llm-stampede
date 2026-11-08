@@ -1,0 +1,13 @@
+tree a1bbf32efd2d238cae7bac3ddfc928e324bdd2f4
+parent e05a2626dbf89f9726bf40b7c43347a53bca85c9
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793872468 -0600
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793872468 -0600
+
+r15 CUT registrations (Corollary 3 threshold-cut test): CUT-A lambda' 1.15 and CUT-B lambda' 0.85 x lambda_ref after a 1.65x burst, cut at 2400 s (FILLED)
+
+Rule fixed after the theory predictions (tag icml-cut-pred, pushed 02:25:43 CST) and before any
+CUT job. Per seed, THEORY-FAVOURED is judged against a frozen naive comparator (each seed's
+trapped throughput from its uncut 1.65x BURST control) and, for CUT-A, the quasi-static
+comparator (completions at lambda_ref). Sign clauses: CUT-A slope over [5700, 8700) > 0, CUT-B
+slope < 0. A run that leaves the trap counts against the theory. Code-only tree on e05a262
+(r15-reg), so the Nova clone needs only a small bundle.

@@ -1,0 +1,6 @@
+tree 85dc825cd4dfc0730144a4729b57b835b826c889
+parent 65b65e2d6e6730587eb9cd0aff7fe2d7a0c370a3
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792969578 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792969578 -0500
+
+vLLM exploratory registration derived from the E2 registration: cell vllm-fcfs, BURST arm only, lambda points 1.35 and 1.65 x vLLM's own lambda_ref, reference rates from the vLLM E0a calibration; never decisive

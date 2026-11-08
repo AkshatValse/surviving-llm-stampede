@@ -1,0 +1,18 @@
+tree 74287e58aaba1d3761c71b1d2aa5dbd1649de263
+parent 582c2a656f3ae43ce5704e10b737270a5a937077
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430295 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430295 -0500
+
+Round-13 theory frozen: fluid mean-field model of the thrashing curve, Proposition F, blind predictions for H200, Llama-3.1-8B, pool sweep, B1, R1/R4
+
+Merged model (B's fluid model with grafts from approach A) with one prediction code path
+(analysis/theory/predict.py, cell specs under analysis/theory/cells/). Post-review fixes applied before
+the freeze: closed-cap collapsed phase-1 bound in the rescue layer (R1 'released even if phase 1
+collapses' withdrawn), burst cohort cycle from the model's S_bar at n1, no hit fallback in the stuck-by
+time; Proposition F (exact fold identity) with tests; turns-based validation columns and all-points RMS;
+H200 ratio-fit variants and a Llama speed-conditional table; a frozen scoring declaration; a real
+leakage guard test.
+
+Frozen predictions: configs/r13_theory_predict.yaml, notes/PREDICTIONS_r13_theory.md,
+results/theory/merged/*.json. No measured mu(n), E0b or E2 outcome is an input to any blind prediction;
+no H200 Stage C n >= 40 / E0b, Llama, pool-sweep, B1 or rescue result was read.

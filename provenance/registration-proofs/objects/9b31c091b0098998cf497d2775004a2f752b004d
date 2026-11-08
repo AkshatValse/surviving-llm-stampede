@@ -1,0 +1,6 @@
+tree 113058773bef556cff185c3591ae86b73d8a5782
+parent 276c5f0080bb185a473c0f2abc18bf38057d5914
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793395567 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793395567 -0500
+
+STATE, LOG: vLLM Stage C curve and E0b edge (2.0 x), vLLM pre-registration 5a6fbcd (1.35 and 1.65 x, n_cap 20), paired test submitted 17166121-17166138

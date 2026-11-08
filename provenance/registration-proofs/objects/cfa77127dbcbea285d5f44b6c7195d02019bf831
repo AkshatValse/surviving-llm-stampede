@@ -1,0 +1,26 @@
+tree 76226ec6ba593643d615a930d7fa3e378b01678c
+parent 5271ff6b207749058a893daa2426d9b05422cf7a
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793438405 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793438405 -0500
+
+Round-13 theory, second prediction set (pred2): B2, N2, TOOLSLOW, SHED, E0F, Propositions S and E, Corollary C, blind tables
+
+Model unchanged from tag r13-theory-pred (997d2c4): git diff 997d2c4 -- analysis/theory lists only new
+files (paper/* from 5271ff6, the driver package analysis/theory/pred2/, the new cell spec
+analysis/theory/cells/h200_600k.yaml). Written before any B2, N2, TOOLSLOW or SHED job and without reading
+any B1, B2, H200, Llama, E0F, LPM-INF, rescue, pool-sweep, TOOLSLOW or SHED result.
+
+Headline (notes/PREDICTIONS_r13_pred2.md, configs/r13_theory_pred2.yaml, results/theory/pred2/*.json):
+- B2 (1.65 x, b40/b50/b60, seeds 0-2, exact client plans, calibrated cohort peak): P(STUCK) b40
+  0.78/0.36/0.09, b50 0.86/1.00/0.22, b60 1.00/1.00/0.81; bracketing rule P = 0.66 (uncalibrated 0.42,
+  bands 0.23-0.88, frozen exchangeable layer 0.94); b_c 53.4, committor 50% 49.5.
+- N2 (H200 Stage C n = 36/44/52): hit 0.564/0/0, mu 0.359/0.197/0.197; T3(c) rule P = 0.80.
+- TOOLSLOW: delta 10 P(GOOD) 0.71, delta 30 STUCK; rule P = 0.80; delta* 16.8 s fluid, 16.4 s stochastic.
+- SHED (Proposition S): tau_min 1,795 s; tau 600 STUCK, tau 3600 GOOD; registered rule (seeds 0, 1) P = 0.997.
+- E0F: P(unstable) 0.150 at 2.0 x, 0.691 at 2.5 x; replication P = 0.47.
+- Proposition E, Corollary C, h200_600k spec, trapped-state tables (H200 1.05-1.65 x, Llama 1.35-2.5 x,
+  caps 20-32), exogenous-gap rivals and pool-sweep lookups (remedy 2a.2-2a.4, 2a.7), conditional recipe.
+
+Revised after an adversarial check: B2 plan statistic calibrated to the frozen layer's scale; missing
+remedy 2a items added; TOOLSLOW stochastic 50% delta; SHED registered seeds and refused counts as a
+protocol check; rounding; E0F horizon approximation.

@@ -25,8 +25,8 @@
 # Parameters: SWAPP_ROOT (required), PHASE, VLLM_SPEC (default vllm==0.32.0), VLLM_PYTHON (default 3.12), EXPECT_TORCH (2.13.0),
 # EXPECT_CUDA_MAJOR (13), MICROMAMBA_MODULE. Every cache goes to class storage (home has a 10 GB quota).
 # ---- BILLING GUARD (identical in all .sbatch files; keep it before anything else) ----------------------------
-# SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is the
-# OTHER course (f2026.coms.6720.01). Refuse to run unless the allocation really is the COMS 6250 one. Values come from
+# SBATCH_* variables in the submitting shell override the #SBATCH lines above, and the user's default account is a
+# different allocation. Refuse to run unless the allocation really is the COMS 6250 one. Values come from
 # the job environment, falling back to `scontrol show job`. Before submitting, also run:  env | grep ^SBATCH_
 _ctx() {   # _ctx ENV_VAR_NAME SCONTROL_KEY
   local v; eval "v=\${$1:-}"

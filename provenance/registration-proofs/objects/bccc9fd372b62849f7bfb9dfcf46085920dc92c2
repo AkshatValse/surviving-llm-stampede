@@ -1,0 +1,6 @@
+object a62aea92206da11fc76e416b4b56d29c3a1b9028
+type commit
+tag r12-llama31-predictions-frozen
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430843 -0500
+
+Blind simulator predictions for the Llama-3.1-8B cell, frozen before any Llama Stage C (17166814-16, running) or E0b (17169565-70, pending) result was read

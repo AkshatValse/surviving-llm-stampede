@@ -1,0 +1,6 @@
+object e05a2626dbf89f9726bf40b7c43347a53bca85c9
+type commit
+tag r15-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793870299 -0600
+
+r15 tonight registrations: TOOLSLOW-W (sglang-fcfs-r1-toolslow-d30w1800), TOOLSLOW d15 at 1.65x (sglang-fcfs-r1-toolslow-d15-165), REPLICATE-EDGE (exploratory); frozen predictions in notes/PREDICTIONS_r15*.md and results/theory/r15; pushed before any r15 job

@@ -1,0 +1,16 @@
+tree fd8818df191cde716300c8b8de1b77b3f686c7a4
+parent 912899517fa50c571116a978c969c41d65ceac95
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793407880 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793407880 -0500
+
+r11 L1 step 1 (POST HOC, correlational): LPM-128 crossing analysis of the 24 committed 300k BURST runs
+
+- analysis/lpm_crossing.py (python -m analysis.lpm_crossing): port of the r11 lpm scout's queue_vs_128 / crossing
+  scripts over results/nova/r7_native_grid_vllm_pulled_20261025-145126 and e2_170933xx_pulled_20261025-144558.
+  Stock LPM held its waiting queue above SGLang's WAITING_QUEUE_PREFIX_MATCH_MAX = 128 (schedule_policy.py :132-133,
+  :300-311, md5 b8ec334a...) for >= 300 s in 5/12 runs, all 5 collapsed; 0/7 of the others did. Fisher one-sided
+  p = 0.0013 (stratified by rate 0.011, one unit per stream 0.05); reverse causation shown directly by FCFS.
+  Scheduler cost drops from about 0.011 to 0.003 s/s at the crossing.
+- notes/LPM_CROSSING_r11.md: tables, caveats (reverse causation, common cause, the 1.35 x seed-0 pair diverged from
+  1500 s), suggested 5.6 wording. Not causal: the causal test is L1 step 2 (sglang-lpminf), registered separately.
+- figures/paper/fig_lpm_crossing.py -> paper/figs/fig_lpm_crossing.pdf; tests/test_lpm_crossing.py pins every number.

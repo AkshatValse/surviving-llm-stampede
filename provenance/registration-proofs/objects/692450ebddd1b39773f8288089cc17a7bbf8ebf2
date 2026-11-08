@@ -1,0 +1,21 @@
+object 621d88f5f553462b39a6e1069aab9888472052a7
+type commit
+tag r14-basin2-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430635 -0500
+
+r14-basin2-reg: B2 basin dose-response registrations (remedy N1), frozen before any B2 job is submitted
+
+Registrations (FILLED, analysis.basin fill on prereg/inputs/2026-10-23; cell sglang-fcfs-r1 measured values, 1.65 x, n_cap 20):
+- configs/agentload_prereg_2026-10-31_b40.yaml  sha256 a8392c75d80315cdee76535fad77bfa0b0ab73bff932b977cc45433198ae6b26  (sglang-fcfs-r1-b40, burst_n 40)
+- configs/agentload_prereg_2026-10-31_b50.yaml  sha256 e0ae3c61137b06d832ea7bc2c58456d73ba0b52d3383d9a88c3b1fd536f3c348  (sglang-fcfs-r1-b50, burst_n 50)
+- configs/agentload_prereg_2026-10-31_b60.yaml  sha256 b37c9736661417cb66036b60ebb2409b04f1a7bd963f19f6350014fe3bb36f5e  (sglang-fcfs-r1-b60, burst_n 60)
+- cell configs configs/agentload_e2_burst_n40.yaml (33257fb768ce8420e78278c9dfd9e0cce0f91e2cdc802e952a0b3d24fcc3036b), _n50.yaml (7f5710cfeec5bdbe41c4d0b8e711c459d0e05b96b0841a6de8b53a287e5ce909),
+  _n60.yaml (284cc2d75c6e9cdb686ff73c6363a93168d2aa3cafc9b48651cf43e4d131eb2c): byte copies of configs/agentload_e2_burst.yaml except arrivals.burst.n
+Frozen endpoints: configs/r11_basin_predict.yaml, unchanged since r11-basin-reg (sha256 2f340909e707c967adf2b5051feae0dbbbb141843730c2044f3f20e3c823f334).
+Frozen rule (N1): the basin boundary is bracketed iff b=40 is GOOD in >=2/3 seeds and b=60 STUCK in >=2/3 seeds; the
+seven-point curve 0,25,40,50,60,100,200 is reported against the frozen committor (analysis/basin.py bracket_decision,
+curve_table). b=50 does not enter the rule.
+registration_diff against configs/agentload_prereg_2026-10-24.yaml: no forbidden leaves (all three).
+Blind theory predictions for these cells: pred2 (branch r13/pred2), committed and pushed separately before the first B2 job.
+Jobs: BURST arm, seeds 0-2, 9 jobs (n40, n60 nice 52; n50 nice 53), from the new Nova clone
+/work/classtmp/avalse/swapp/repo_r14_basin2.

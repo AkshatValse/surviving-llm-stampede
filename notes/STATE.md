@@ -113,7 +113,7 @@ The local watcher that polled them was stopped with the laptop session; nothing 
 ### [redacted: unrelated unpublished project, cluster-wide accounting data; see provenance/REDACTIONS.md]
 
 ## Nova setup (updated 2026-10-23)
-- **Project root:** `/work/classtmp/avalse/swapp`, class storage (deleted at semester end). Never touch the sibling `hpcml-*` dirs.
+- **Project root:** `/work/classtmp/avalse/swapp`, class storage (deleted at semester end).
 - **Repo:** `repo/` is a clone of the NEW history, at **`d279b7b`** since 2026-10-24 15:12 CDT (do not move it while E2 runs). The old clone with the old hashes is kept as `repo_old_history/` (its `results/` and `logs/` were copied into `repo/`; file lists and E0a data verified identical). To update from the PC (slow link, ~100 KB/s up and down): an **incremental** bundle `git bundle create swapp-main-incr.bundle <nova HEAD>..main`, `scp` it to `$W/`, `sha256sum` both ends, then in `repo/`: `git pull --ff-only ../swapp-main-incr.bundle main`. The full bundle is `swapp-main.bundle` (2026-10-23).
 - **Tests on Nova's env:** `tests/test_slurm_scripts.py::test_help_has_flag_large_help_under_pipefail` fails on the login node with `OSError: Argument list too long` (ARG_MAX, not a harness bug); deselect it. The remaining 258 harness/analysis tests pass (2026-10-23).
 - **Envs:** `envs/swapp` (generator; pandas 3, numpy 2.4), `envs/sglang` (sglang 0.5.22, torch 2.14.1+cu130). Lock files `envs/*.lock.txt`. CUDA_HOME shim `cuda13-home/`. Model Qwen/Qwen2.5-7B-Instruct @ a09a3545… in `hf/`. Caches in `cache/`.
@@ -121,7 +121,7 @@ The local watcher that polled them was stopped with the laptop session; nothing 
 
 ## Multi-machine setup
 - **Canonical repo:** private GitHub `AkshatValse/Nova-Research`, default branch `main`; `origin` on the laptop was missing and was re-added 2026-10-23. `jannesari-swapp` is the provenance archive (remote `archive`). **Do not delete it.** `provenance/commit-map.tsv` maps old → new hashes.
-- **Commits:** no AI attribution trailers.
+- **Commits:** no co-author trailers; the use of AI tools is disclosed in the paper.
 - **New machine:** `git clone https://github.com/AkshatValse/Nova-Research.git`, then README → "Setting up a machine". Copy the user-level `~/.claude` agents and skills, which are not in the repo.
 
 ## Branches and tags
@@ -130,10 +130,9 @@ The local watcher that polled them was stopped with the laptop session; nothing 
 
 ## Open decisions (Akshat)
 - ~~E2 submission~~: authorized 2026-10-24 and submitted (17093387–17093404).
-- Whether to merge-review round 6 further: the Codex verifier's unapplied wording patch for PREDICTIONS.md (B2 headline should state the operational trend rule) is in `C:\Users\Akshat\Documents\Codex\2026-10-24\cl\work\prediction-fixes.patch`; apply only as an explicit amendment, never by rewriting the frozen file.
+- Whether to merge-review round 6 further: an independent verifier's unapplied wording patch for PREDICTIONS.md (B2 headline should state the operational trend rule; not in this repository); apply only as an explicit amendment, never by rewriting the frozen file.
 - KV pool: 300k-token cap vs. native (native-pool replication ≈30–40 GPU-h, not included).
 - [redacted: third-party cluster usernames and storage; see provenance/REDACTIONS.md]
-- The Codex-folder read rule in `.claude/settings.local.json`.
 - [redacted: unrelated unpublished project, cluster-wide accounting data; see provenance/REDACTIONS.md]
 
 ## Next steps

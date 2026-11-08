@@ -1,0 +1,6 @@
+tree e5f07db5b508a48ef1d2c5ee5463b97b3716b6c7
+parent a78ce0784d8235fa942b838dd79b6d9393c2f599
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793395439 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793395439 -0500
+
+vLLM pre-registration (FILLED, valid): cell vllm-fcfs, window (1, 2.0) x lambda_ref from vLLM E0b (2.5 x unstable), lambda points 1.35 and 1.65 x by the 1/3-2/3 rule of 836063a, n_cap 20 by smallest_within_margin; inputs in prereg/inputs/2026-10-30-vllm (Stage C 17162959-61 combined curve, E0b bracket of the five runs 1.25-2.5 x)

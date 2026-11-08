@@ -1,0 +1,18 @@
+tree 53e558b5c06b5b2fac0587c1b4118468a71d3f3f
+parent 4d2bba245537a1b42801291217cb3e56d8d59513
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793413692 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793413692 -0500
+
+r11 S1 bundle 3: blind simulator predictions for the rescue cells R1 and R4 and the remedy comparison, result dir results/r11_predict_rescue/20261030-195231
+
+Driver experiments/r11_predict_rescue.py, spec configs/r11_predict_rescue.yaml, controller src/prefixmeta/gate_control.py
+(GateEngine subclass; engine.py untouched), lull fields in src/prefixmeta/workload.py, control/lull arms in probe.burst_arms
+(default path bit-identical to the r6 golden digests), src/agentload/config.py (GateCfg rescue mode; used by the exact-plan
+bridge and hashed in meta.json), tests/test_r11_gate_control.py. All file sha256 values in the result dir's meta.json equal
+the committed files.
+
+Predictions of record: R1 (300k, cap 20, t_on 1800) RESCUED 20/20 at 1.35 x and 20/20 at 1.65 x (both batching modes, all
+six exact plans). R4 (native, 4.0 x, cap 64) is engaged at t_on 2100 by the lead's decision, taken after the 2400-s
+prediction (13/20 mixed, 16/20 separate) was seen and before any real rescue run: prediction of record is cell R4s_t2100,
+16/20 mixed and 18/20 separate, exact seeds 0-2 RESCUED. Smoke: release predicted in 0/10 seeds before 2400 s, so the smoke
+check does not require a release. No rescue run (GPU or mock with the rescue gate) existed when this was produced.

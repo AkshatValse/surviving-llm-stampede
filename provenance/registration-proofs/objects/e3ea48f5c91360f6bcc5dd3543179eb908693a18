@@ -1,0 +1,8 @@
+tree 6095ee77f44505e648429c54356e2271a8cedb62
+parent 09b541d693d466703b7c9ae2ae159444e25b538c
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792958801 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792958801 -0500
+
+r8: blind simulator predictions for the native-KV-pool experiments (KV pool 955,757 tokens): notes/PREDICTIONS_native.md and the small result summaries
+
+Mixed (primary) and separate_prefill_priority (secondary): lambda_miss, closed curve, from-empty edge with the E0b-grid stable fraction, paired NOBURST/BURST/CAPPED test, 400-session burst sensitivity. Spec 29728e3 was committed before any run; all stages ran on 0336c91.

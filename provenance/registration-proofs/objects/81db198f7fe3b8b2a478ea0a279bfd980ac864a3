@@ -1,0 +1,21 @@
+object b006291e21c9f21d8845b32eea95afd359a08400
+type commit
+tag r14-extra-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793431679 -0500
+
+r14-extra-reg: TOOLSLOW (remedy N3) and SHED (remedy N4) registrations, frozen before any job of these cells is submitted
+
+Registrations (FILLED, analysis.r14_prereg fill on prereg/inputs/2026-10-23; cell sglang-fcfs-r1 measured values, 1.35 x, n_cap 20):
+- configs/agentload_prereg_2026-10-31_toolslow_d10.yaml  sha256 b734da5c92d03edbdd9835ea9669378dd734cf189ebbe20b8ef5a2debf0cf126  (sglang-fcfs-r1-toolslow-d10, arm noburst, seeds 0-2)
+- configs/agentload_prereg_2026-10-31_toolslow_d30.yaml  sha256 6b3323293309f8cd46e1b76e26f7cc0c2259f29e67460b30e10ab4247484c5c1  (sglang-fcfs-r1-toolslow-d30, arm noburst, seeds 0-2)
+- configs/agentload_prereg_2026-10-31_shed_t600.yaml     sha256 6aa069463e8b29d6c62feb3963ae605d0dd668bbfa62ad6953ba44434926c1f0  (sglang-fcfs-r1-shed-t600, arm burst, seeds 0-1)
+- configs/agentload_prereg_2026-10-31_shed_t3600.yaml    sha256 412fab68e5bcb7e940cdf3b075c2a7f5e4bdbe4c8b5351af18f8e48f54981ff3  (sglang-fcfs-r1-shed-t3600, arm burst, seeds 0-1)
+Cell configs (bound by protocol.e2_config_sha256): agentload_e2_toolslow_d10.yaml 374463c3602e943f2a367efb761e5068e5dda8f2f9ad9092cc9472ab2532fe40, _toolslow_d30.yaml 45dd1ba720ec1ccda415788e3108f23450c98bed8da471d789c8a674a01a0536,
+_shed_t600.yaml c9d49108c5ac77565a7e7cab95b6fbaa8a84ab16a4a09350c18a65157351b38d, _shed_t3600.yaml cce28d1bc0978d9c7e7586361d957c85f84de1d9ed58411728e6f48c86e2fda5.
+Frozen endpoints: configs/r11_basin_predict.yaml, unchanged since r11-basin-reg (sha256 2f340909e707c967adf2b5051feae0dbbbb141843730c2044f3f20e3c823f334), over [5700, 8700).
+Rules: TOOLSLOW 'causal test of the gap: d10 GOOD in >=2/3 seeds and d30 STUCK in >=2/3';
+SHED 'tau600 STUCK in >=2/3 and tau3600 GOOD in >=2/3; sessions shed reported; compared with R1 (0 shed)' (2 of 2 seeds).
+registration_diff against configs/agentload_prereg_2026-10-24.yaml: no forbidden leaves (all four).
+Blind theory predictions for these cells: pred2 (branch r13/pred2), committed and pushed separately before the first job.
+Jobs: 10 (toolslow d10/d30 s0-2 nice 56; shed t600/t3600 s0-1 nice 57), from the new Nova clone
+/work/classtmp/avalse/swapp/repo_r14_extra.

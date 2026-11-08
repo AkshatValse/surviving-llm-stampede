@@ -332,7 +332,7 @@ Each 2700 s run costs about 0.8 GPU-h on one A100.
 4. **Scaling M, about 5 GPU-h.** Use M ∈ {150k, native}, with n at 0.8, 1.1 and 1.7× n_fit(M). This tests whether hit vs n/n_fit falls on one curve, and whether compute limits arrive before the cliff at native M.
 5. **LPM causality, about 4 GPU-h.** Run LPM-300 with the 128-request threshold patched out, plus LPM at n ∈ {96, 128, 160}, plus LPM-48 and FCFS-48 on the same node. Without the patched run, "the fallback causes the degeneration" rests only on reading the code.
 
-The total is about 22 GPU-h, which fits within the 11-GPU per-user cap shared with COMS 6720. Each item needs your approval before any `sbatch`.
+The total is about 22 GPU-h, which fits within the 11-GPU per-user cap shared with the user's other allocation. Each item needs your approval before any `sbatch`.
 
 Files are in `/private/tmp/claude-501/-Users-akshat--claude-spares-spare-s4RBTK/35e553dd-58fc-4519-895b-5660310d7f7b/scratchpad/verify_stageC/review/`:
 - review_calc.py

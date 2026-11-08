@@ -1,0 +1,28 @@
+tree ddbb4c1046aa4a1fe748738e1eec6144bc9894fb
+parent 61dce1d07504e85c8be0d8aef2dd9f83ce873f32
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793416247 -0500
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793416247 -0500
+
+r11 R1/R4: FILLED rescue registrations (R1 sglang-fcfs-r1-rescue, R4 sglang-fcfs-r1-rescue-native, R1 smoke job), prereg rescue binding, rescue job glue
+
+Registrations (analysis/rescue_prereg.py fill, analysis.basin-style: prereg fill under the measured cell, then only
+inputs.engine_cell_label set):
+- configs/agentload_prereg_2026-10-31_rescue.yaml: inputs prereg/inputs/2026-10-23, e2 config configs/agentload_e2_rescue.yaml
+  (gate block and sha256 in protocol), lambda 1.35 and 1.65, n_cap 20 by smallest_within_margin.
+- configs/agentload_prereg_2026-10-31_rescue_native.yaml: inputs prereg/inputs/2026-10-25-native, e2 config
+  configs/agentload_e2_rescue_native.yaml (t_on 2100), lambda 4.0, n_cap 64.
+- configs/agentload_prereg_2026-10-31_rescue_smoke.yaml: the mechanical GPU smoke job (2400-s run, burst at 300, t_on 900),
+  never decisive.
+The rule text holds the registered per-run rule (a)-(c), the decision rule, the accepted changed constants (REFUTED takes
+precedence over PASS; failed sessions withhold the no-shed claim; R4 requires stuck controls; the CHECK tolerances), the
+hardware rule (a run on hardware other than 'NVIDIA A100 80GB PCIe, 81920 MiB' is INVALID) and the frozen constants of
+analysis/rescue.py by value. Scripted diff against the parents (analysis.rescue_prereg diff): only label, e2 config, gate
+block, its sha256, lambda list, rule and derived capped-drain numbers differ.
+
+analysis/prereg.py: fill copies a rescue gate block and the e2-config sha256 into protocol (default fill unchanged);
+check-job and run_blockers authorise the rescue arm only under a rescue registration, which authorises nothing else, and
+refuse a job whose e2 config gate block or bytes differ from the registered ones. analysis/load.py arm_derived returns rescue
+for gate mode rescue; analysis/guards.py check_gate leaves rescue runs to check-run. analysis/rescue.py: hardware rule.
+slurm/common.sh: ARMS=rescue (alone), cap resolution for capped|rescue, mode_burst rescue arm followed by analysis.rescue
+check-run (--smoke for the smoke config, no release required; a failure counts as a failed run), post_analysis skips
+summarize burst/burst2 for ARMS=rescue (blinding). slurm/local_smoke.sh ARMS=rescue: mock-scale smoke config end to end.

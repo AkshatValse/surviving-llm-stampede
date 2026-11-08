@@ -1,0 +1,6 @@
+object 997d2c4d9d25b1d2ef26fdbc8c7b35a9860ceff0
+type commit
+tag r13-theory-pred
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793430304 -0500
+
+Round-13 theory blind predictions frozen at 997d2c4 (2026-10-31 02:04 CDT): H200 300k, Llama-3.1-8B 300k, pool 150k/600k, B1, R1, R4. Predictions: configs/r13_theory_predict.yaml, notes/PREDICTIONS_r13_theory.md; scoring: notes/THEORY_r13_scoring.md.

@@ -1,0 +1,15 @@
+tree a31193af83e29d666b71566e3b14eac1882f62da
+parent b006291e21c9f21d8845b32eea95afd359a08400
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793870268 -0600
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793870268 -0600
+
+r15 tonight registrations: TOOLSLOW-W (d30 over [1200,3000) s, 1.35x) and TOOLSLOW d15 at 1.65x (FILLED), REPLICATE-EDGE exploratory rule, frozen simulator/pred2/edge predictions
+
+Code and config tree identical to r10/arxiv 8aaabdb plus the r15 files. results/nova is
+b006291's: the result pulls committed after b006291 are left out, so that the frozen Nova
+clone can be built from a small incremental bundle on top of b006291, which Nova has.
+Cells: sglang-fcfs-r1-toolslow-d30w1800 (decisive, chosen after the registered d30 cell
+trapped 1 of 3 seeds; every model predicts TRAPS), sglang-fcfs-r1-toolslow-d15-165
+(pred2 fluid verdict vs simulator), sglang-fcfs-r1-edgerep (exploratory, same-plan
+replicates of the 2.5x from-empty bracket). Predictions: notes/PREDICTIONS_r15.md,
+notes/PREDICTIONS_r15_edge.md, results/theory/r15/*.json.

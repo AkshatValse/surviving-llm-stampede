@@ -1,0 +1,6 @@
+object 6b47a6ca46db5a4aeff37037b0dad7f44344e8d6
+type commit
+tag icml-trap-pred
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793859880 -0600
+
+Frozen conditional predictions of Theorem 1/2 (trapped engine as an overloaded re-entrant FIFO queue). configs/icml_trap_predict.yaml sha256 95adb1891a7fa6772f010073170745346f9aa02d4d6433c4b7c8e6913f71a51a

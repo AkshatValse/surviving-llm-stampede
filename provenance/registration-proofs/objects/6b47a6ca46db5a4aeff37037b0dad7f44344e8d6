@@ -1,0 +1,19 @@
+tree f39acb8ea9d1aad40a18b126572b9ce11ba2a3d3
+parent 8aaabdb364ab156aed7c681828ad3b6d169e50e8
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793859879 -0600
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793859879 -0600
+
+Theory (ICML round): the trapped engine as an overloaded re-entrant FIFO queue; frozen conditional predictions
+
+Theorem 1 (notes/THEORY_ICML_2026-11.md, in progress): along FIFO orbits the trapped engine's cycle obeys the renewal
+recursion Delta_n = sum_k lambda c_k G_k Delta_{n-k}; its Perron root z gives the cycle growth gamma = z - 1, the backlog
+growth alpha = lambda (1 - E z^-T), the trapped completion rate lambda E z^-T > lambda_miss and the z-tilted turn mix.
+
+- analysis/theory/icml/: trap_renewal.py (costs from the frozen cell models, Perron root, asymptotics, exact FIFO fluid,
+  stochastic FIFO), measured.py (window statistics of committed runs), run_check.py (retrospective check),
+  freeze_predictions.py
+- configs/icml_trap_predict.yaml, results/theory/icml/frozen_predictions.json: conditional predictions for trapped runs
+  of new experiments, with scoring rules S1-S5 declared before any such run exists
+- results/theory/icml/trap_check.{md,json}, universality.csv: retrospective check on 57 trapped E2-protocol runs and 13
+  unstable E0b runs (all pulled by 2026-11-01)
+- notes/PREDICTIONS_icml_trap.md

@@ -1,0 +1,12 @@
+tree cbc8a0f2d3728c8ff62fa9848eb205240021111a
+parent e38735f5ecd354bfe4a04b16b1be12ae7459d7f4
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793867133 -0600
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793867133 -0600
+
+Theory (ICML round): frozen predictions for the arrival-cut test of Corollary 3 (CUT-A 1.15x, CUT-B 0.85x, seeds 0-2)
+
+analysis/theory/icml/cut_predict.py rebuilds the exact client plans (build_open_plan on the SHED config with the cut ramp;
+pre-cut sessions equal the committed 1.65x BURST controls). It runs the frozen model F with the cut: the fluid (Poisson
+average) and the per-seed plug-in (model F driven by the exact plan). It writes the registered numbers to
+configs/icml_cut_predict.yaml and the rule, P(PASS) and design caveats to notes/PREDICTIONS_icml_cut.md. No run newer
+than 2026-11-04 was read.

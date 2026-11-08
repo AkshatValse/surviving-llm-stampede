@@ -1,0 +1,17 @@
+tree f54bc572c677b59a84b2f19042381a89fa65b40c
+parent 662bb3f120a98a34eae6073257786b1c6492793b
+author Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793909228 -0600
+committer Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793909228 -0600
+
+r16 MIRROR registration: step-capped workload (mean_turns 1000, max_turns 20), frozen model-F predictions and rules, pushed before any job
+
+Cell sglang-fcfs-r1-mirror-k20: the E2 protocol (burst of 200 in [1200, 1260) s, 8700-s runs) with
+configs/agentload_e2_mirror_k20.yaml, which is configs/agentload_e2_burst.yaml with two workload values
+changed (mean_turns 15 -> 1000, max_turns 60 -> 20). BURST at 1.65x (decisive) and 1.35x (secondary),
+NOBURST controls at 1.65x, seeds 0-2, plus one E0a of the workload (MODE=miss with GEN_EXTRA).
+
+Theorem 2's turn-count factor reverses the youth premium for this workload; model F's plan-driven FIFO
+predicts a completion blackout after the burst, a completion wave when the burst cohort finishes, and
+completions below the all-miss capacity. Rules M1-M4 and secondary W5-W10 in analysis/r16_mirror.py;
+frozen numbers in results/theory/r16/mirror_predictions.json and notes/PREDICTIONS_r16_mirror.md.
+The theory code of analysis/theory/icml is taken unchanged from claude/reframe-draft-211a57.

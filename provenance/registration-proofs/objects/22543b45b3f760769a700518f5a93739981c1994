@@ -1,0 +1,6 @@
+object cc01dbf7727181e42033d7c4a5818630295f9115
+type commit
+tag r9-vllm-predictions-frozen
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793381561 -0500
+
+Blind vLLM simulator predictions (V0 unchanged SGLang-calibrated engine, V1 token-cost scaled to vLLM's measured all-miss rate), frozen before any vLLM Stage C or E0b result was read; spec 5806460, factors fd92caf, runs 29746a9, notes cc01dbf

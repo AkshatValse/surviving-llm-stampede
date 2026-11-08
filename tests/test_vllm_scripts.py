@@ -80,7 +80,7 @@ def test_setup_directives_are_cpu_only_and_on_the_course_account():
                  "--mem=32G", "--time=02:00:00", "--output=logs/%x-%j.out"):
         assert want in d, want
     assert not any("gres" in x or "gpus" in x for x in d), d         # the install phase must not reserve a GPU
-    assert not any("6720" in x for x in d)
+    assert not any("f2026.other" in x for x in d)
     text = SETUP.read_text()
     assert "NEVER SUBMITTED" in text and "PHASE=check" in text and "--gres=gpu:a100:1" in text and "--exclude=nova22-amp-7" in text
 
@@ -98,13 +98,13 @@ def test_setup_billing_guard_is_identical_to_the_other_scripts_and_comes_first()
     assert "source " not in head
 
 
-@pytest.mark.parametrize("ctx", [{"SLURM_JOB_ACCOUNT": "f2026.coms.6720.01"}, {"SLURM_JOB_PARTITION": "nova"},
+@pytest.mark.parametrize("ctx", [{"SLURM_JOB_ACCOUNT": "f2026.other.0000.01"}, {"SLURM_JOB_PARTITION": "nova"},
                                  {"SLURM_JOB_QOS": "normal"}, {"SLURM_JOB_ACCOUNT": ""}],
                          ids=["wrong-account", "wrong-partition", "wrong-qos", "unknown-account"])
 def test_setup_billing_guard_refuses_the_wrong_context(ctx, tmp_path):
     e = {k: v for k, v in os.environ.items() if not k.startswith("SLURM_")}
     e.update(GOOD_CTX)
-    e.update(ctx, SWAPP_ROOT=str(tmp_path / "swapp"), SBATCH_ACCOUNT="f2026.coms.6720.01")
+    e.update(ctx, SWAPP_ROOT=str(tmp_path / "swapp"), SBATCH_ACCOUNT="f2026.other.0000.01")
     r = subprocess.run([BASH, str(SETUP)], capture_output=True, text=True, env=e, cwd=tmp_path)
     assert r.returncode == 2 and "FATAL: wrong or unknown SLURM context" in r.stderr
     assert not (tmp_path / "swapp").exists()                             # nothing was created before the guard
@@ -533,7 +533,7 @@ def test_runbook_lines_agree_with_the_scripts_and_the_registration():
     for l in sbatch_lines:
         assert "$SLURMOPT" in l, l                                                # account, partition and QoS on every submission
         assert l.rstrip().endswith(".sbatch"), l
-    assert "--account=f2026.coms.6250.02" in t and "f2026.coms.6720" not in t
+    assert "--account=f2026.coms.6250.02" in t and "f2026.other" not in t
     assert 'SLURMOPT="--account=f2026.coms.6250.02 --partition=instruction --qos=instruction"' in t
     assert "ENGINE_LABEL=vllm-fcfs" in t and "ARMS=burst" in t and "MODE=miss" in t and "MODE=smoke" in t
     assert re.search(r"derive-exploratory --from configs/agentload_prereg_2026-10-24\.yaml", t)

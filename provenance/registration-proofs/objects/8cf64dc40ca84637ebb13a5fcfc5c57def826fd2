@@ -1,0 +1,6 @@
+object 2f90267ba6d3e2d13f3a192b26b822eb8a6c525e
+type commit
+tag icml-cut-pred
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793867139 -0600
+
+Frozen model-F predictions for the arrival-cut test of Corollary 3 (configs/icml_cut_predict.yaml, notes/PREDICTIONS_icml_cut.md)

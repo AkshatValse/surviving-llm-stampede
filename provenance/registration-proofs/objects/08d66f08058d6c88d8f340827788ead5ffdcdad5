@@ -1,0 +1,6 @@
+object 11b0e4ef1881f8463cf1b50ec72abb8966fd8600
+type commit
+tag r15-cut-reg
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793872468 -0600
+
+r15 CUT registrations: sglang-fcfs-r1-cut-a115 and sglang-fcfs-r1-cut-b085 (Corollary 3 threshold-cut test); theory predictions at tag icml-cut-pred; pushed before any CUT job

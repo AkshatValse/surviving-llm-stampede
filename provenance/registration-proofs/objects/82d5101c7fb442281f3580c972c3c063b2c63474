@@ -1,0 +1,6 @@
+object e3ea48f5c91360f6bcc5dd3543179eb908693a18
+type commit
+tag r8-native-predictions-frozen
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1792958906 -0500
+
+Blind simulator predictions for the native-KV-pool experiments (pool 955,757 tokens): B1n, B4n, B2n (from-empty edge), B3n (paired kill test), frozen before native E0b (17100938-39) and the native kill test were read. Spec 29728e3; runs on clean 0336c91.

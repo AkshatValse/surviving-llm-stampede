@@ -1,0 +1,44 @@
+NOTICE
+
+This repository contains code by the authors (MIT, see LICENSE) and experiment data by the authors
+(CC BY 4.0, see LICENSE-DATA). It also contains material derived from, or measurements of, the
+third-party works below. Their licenses continue to apply to those parts. No third-party source
+code, model weights or raw third-party datasets are included.
+
+1. SyFI TraceLab (University of Washington), v0.0.2
+   https://github.com/uw-syfi/TraceLab
+   Dataset license: Creative Commons Attribution 4.0 International (CC BY 4.0).
+   Code license: Apache License 2.0 (no TraceLab code is included here).
+   Used: aggregate statistics computed from the public coding-agent traces by our own parser
+   (scripts/traces/parse_tracelab.py); stored in results/traces_summary/tracelab/ and
+   configs/workload_trace_tracelab.yaml. Changes: the traces were reduced to per-session and
+   per-turn summary statistics (counts and quantiles); no individual trace is redistributed.
+   Citation: Kan Zhu, Mathew Jacob, Chenxi Ma, Yi Pan, Stephanie Wang, Arvind Krishnamurthy and
+   Baris Kasikci, "TraceLab: Characterizing Coding Agent Workloads for LLM Serving".
+
+2. mini-SWE-agent trajectories (SWE-bench experiments)
+   https://github.com/SWE-agent/mini-swe-agent  https://github.com/SWE-bench/experiments
+   mini-SWE-agent license: MIT License, Copyright (c) 2025 Kilian A. Lieret and Carlos E. Jimenez.
+   The trajectories (mini-SWE-agent v2.0.0, SWE-bench Verified "bash-only" leaderboard runs) are
+   published in SWE-bench/experiments, which states no license for them.
+   Used: aggregate statistics (counts and quantiles of tool-call times, turn counts and tokens)
+   computed by our own parser (scripts/traces/parse_mini_swe.py); stored in
+   results/traces_summary/mini_swe_v2/ and configs/workload_trace_mini_swe_v2.yaml. No trajectory
+   or instance identifier is redistributed.
+
+3. Qwen2.5-7B-Instruct (Qwen team, Alibaba Cloud)
+   https://huggingface.co/Qwen/Qwen2.5-7B-Instruct
+   License: Apache License 2.0.
+   Used: served by the engines under test; only measurements and logs are included, no weights.
+
+4. SGLang and vLLM
+   https://github.com/sgl-project/sglang  https://github.com/vllm-project/vllm
+   License: Apache License 2.0.
+   Used: the serving engines measured; no source code is included. Environment lock files and
+   server logs are factual records of the runs.
+
+5. Llama 3.1 (Meta)
+   Llama 3.1 is licensed under the Llama 3.1 Community License, Copyright © Meta Platforms, Inc. All Rights
+   Reserved. Built with Llama.
+   Used: served by the engines under test; only measurements and logs are included, no weights.
+

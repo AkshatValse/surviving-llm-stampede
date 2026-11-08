@@ -1,0 +1,6 @@
+object 72501f093bd1ec7db0e4856bc200a9ee14a05f5b
+type commit
+tag r11-rescue-pred
+tagger Akshat Valse <162109855+AkshatValse@users.noreply.github.com> 1793413821 -0500
+
+r11 S1 bundle 3: frozen blind simulator predictions for the rescue cells (R1 at 300k, cap 20, t_on 1800; R4 at the native pool, cap 64, t_on 2100, prediction of record cell R4s_t2100) and the remedy comparison; result dir results/r11_predict_rescue/20261030-195231; committed before any rescue run
