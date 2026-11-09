@@ -1,124 +1,137 @@
-# Nova Research
+# Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving
 
-> **The paper.** This repository accompanies the preprint *Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving* (Akshat Valse and Ali Jannesari), submitted to arXiv on 2026-11-05 (US Central time; 2026-11-06 UTC). It holds the code, the registrations and frozen predictions, and all real-engine data; tag `trap-arxiv-v1` marks the commit the preprint describes. Readers of the paper can start at [For readers of the paper](#for-readers-of-the-paper-verifying-the-pre-registrations). The project overview below is the original description from October 2026, kept unchanged; the paper states the current results.
+Code, data and registrations for the preprint by Akshat Valse and Ali Jannesari (Department of Computer Science, Iowa State University), [arXiv:2611.08902](https://arxiv.org/abs/2611.08902). Tag [`trap-arxiv-v1`](https://github.com/AkshatValse/surviving-llm-stampede/tree/trap-arxiv-v1) marks the commit the preprint describes; the manuscript source is in [`paper/`](paper/). The repository's name comes from an earlier draft of the paper, withdrawn before it was announced (*Branches and tags* below).
 
-### Metastable failures in prefix-cached LLM agent serving
+## The problem
 
-**Akshat Valse**, Iowa State University (Statistics, Mathematics, Data Science and Computer Science; Honors). Advised by **Dr. Ali Jannesari**, ISU SwaPP Lab (systems, parallel computing, ML efficiency). This is my COMS 6250 (Advanced HPC) research project, working toward an arXiv preprint and a systems/ML workshop submission.
+An LLM agent that calls tools sends sessions of many turns to its serving engine: each prompt is the previous context plus the output of the tool just run. Prefix caching keeps the key-value (KV) state of the previous turn, so a follow-up turn whose prefix is still cached prefills only its new tokens. In our workload a hit prefills 551 tokens and a miss about 11,100 (a turn *hits* if more than half of its prompt is cached). The cached KV belongs to sessions that sit idle in tool calls, and admitting waiting work evicts it. A burst of new sessions can therefore tip the engine into a trap: every turn misses, the queue grows, the gap between a session's turns grows with it, and the backlog does not drain, at a load the engine served before.
 
----
+## Main results
 
-## The problem in one paragraph
-LLM agents work in loops: model call, tool call, model call. Each turn re-sends the whole growing conversation. Serving engines such as SGLang and vLLM keep that shared prefix in a GPU **KV cache** so they don't recompute it, which makes follow-up turns much cheaper. The cache is small, though. When too many agent sessions compete for it, sessions lose their cached prefix during tool calls. Every turn then becomes a full recompute, and the extra work keeps the cache too full to recover. This project asks two questions. **Can a transient burst of agents push an otherwise healthy server into a persistent low-throughput, all-miss regime, a metastable failure? And which deployed scheduling and admission mechanisms prevent it?**
+- **The trap.** We ran five registered paired tests (each test's rule was committed to git before its jobs were submitted; there is no third-party registry) on two engines (SGLang 0.5.22, vLLM 0.32.0), two GPUs (A100 80GB, H200 NVL) and two models (Qwen2.5-7B-Instruct, Llama-3.1-8B-Instruct), each at two arrival rates with three seeds. Each seed ran three arms on the same arrivals: a burst of 200 sessions (BURST), no burst (NOBURST) and the burst behind a client-side session cap (CAPPED). The registered rule (in at least two of three seeds: BURST trapped, that is, prefilling at the all-miss token rate, within 15%, with a backlog growing faster than half the excess of the arrival rate over the all-miss capacity defined below; NOBURST good; CAPPED recovered) was met at 9 of the 10 rates. It called 23 of the 30 BURST runs trapped; the tenth rate (Llama-3.1-8B at the lower rate) failed on the backlog-growth condition, which only one of its three BURST runs met. Still, in all 30 BURST runs the burst left the engine at zero hits to the end of the run, every NOBURST run stayed in the good, cache-hitting state, and the cap prevented the trap in all 30 CAPPED runs.
+- **A renewal law.** The paper idealizes the trapped engine as a fluid FIFO server on which every turn misses (model F). Following a FIFO orbit (the time a request joins, the time it completes and its session's next turn joins, and so on), it proves that the cycle lengths obey a linear renewal recursion. The model's drain threshold is its all-miss capacity λ<sub>miss</sub>, computed from a cost model fitted to server-log timings (for vLLM, the H200 and Llama, scaled by one speed factor fitted to the all-miss token rate measured for that engine, GPU and model with prefix caching disabled). It is within 4% of the all-miss capacity measured on the engine with prefix caching disabled and 32 sessions kept running: the rate at which the engine completes sessions when every turn misses and the turns are in their normal mix, which is what "the all-miss capacity" means elsewhere in this README. As is classical, model F's trap drains if and only if arrivals are below λ<sub>miss</sub>. Above it, the recursion's Perron root carries every trapped state to a known self-similar regime in which the gap between a session's turns grows linearly.
+- **A youth premium.** In that regime the turns served are young (early in their sessions) and short, so for our workload model F completes sessions faster than λ<sub>miss</sub> at every load the paper checked. In the model, a cut in arrivals to just below a trap's measured throughput therefore does not clear it; only a cut below λ<sub>miss</sub> does.
+- **The law on the engine.** With nothing fitted to trap data, model F matches, retrospectively, 57 stuck runs of the paired-test protocol (follow-up hit fraction below 0.2 over the last 3000 s of the run; the 30 BURST runs above are among them): the mean served prompt within 3% in 50 of them, completions above the all-miss capacity in every run, and the pooled growth of the gap between turns.
+- **Blind tests.** Some predictions were frozen before the runs they score existed (blind in outcome). Four runs trapped with no burst, by a temporary slowdown of tool calls, met 4 of the 5 pre-set scores. Arrivals cut to 1.15 times the all-miss capacity, below the 1.32-1.41 times at which the same seeds' uncut traps completed sessions, left all three traps in place to the end of the run. After a cut to 0.85 times it, the backlogs shrank only slowly, and all three runs were still trapped at the end, 6300 s after the cut. Both outcomes are what model F predicted. With sessions that nearly all run exactly 20 turns, for which the model predicts completions below the all-miss capacity, trapped runs did complete below it.
+- **Two ways out.** Refusing arrivals drains a trap by shedding sessions. A session cap restores cache reuse: in registered tests it rescued 9 of 9 established traps at the same load without shedding a session, at a price of 386-569 s of waiting at the client per paused session on average, and the engine stayed good after the cap was removed.
+- **Limits.** Model F is an idealization, and the paper does not prove that the engine converges to it. Sessions are synthetic (exponential 5 s tool times, no shared prefixes), and the models are dense and 7-8B in size.
 
-## What I built and found so far
-- **A discrete-event simulator** of a continuous-batching LLM engine with prefix caching (`src/prefixmeta/`). It covers scheduling policies (FCFS, LPM, aging), eviction rules, KV-allocation modes, and re-implementations of recent mechanisms (PEEK, Continuum TTL pins, CONCUR-style adaptive caps). Five rounds of **pre-registered** predictions were each independently re-computed and re-run bit-identically.
-- **A queueing-theoretic model.** The closed-population "thrashing curve" μ(n) drives an open-system fluid model. A small checked proposition shows that FCFS-type ordering cannot escape the all-miss regime under any eviction rule. A cap identity says when session caps restore stability.
-- **A real-engine harness** (`src/agentload/`, `analysis/`, `slurm/`) that drives SGLang 0.5.22 serving Qwen2.5-7B on NVIDIA A100 80GB GPUs. It runs on ISU's **Nova HPC cluster** through SLURM. It includes an open- and closed-loop agent load generator, cache-flush verification, a billing-safe job layer, a pre-registration tool that refuses to run unregistered experiments, and paired-arm burst experiments with common random numbers.
-- **Result so far (real engine).** Throughput rises to a peak at about 20–24 concurrent agent sessions. Then the prefix-cache hit rate collapses from 0.93 to **exactly 0** by 48 sessions, and throughput falls about 3×. Three independent measurement sources confirm the collapse, and its shape matches the simulator. The open-system burst test that decides whether the regime is truly metastable is in progress.
+![Four panels plotting, against the load, the mean served prompt, the completion rate, the backlog slope and the gap slope of every stuck run, with model F's curves through the points](paper/figs/fig_trap_universality.png)
 
-**Methods and tools:** Python (NumPy, SciPy, pandas, asyncio/aiohttp), discrete-event simulation, queueing and fluid models, rare-event and escape-time analysis, SLURM, CUDA toolchains, SGLang, Prometheus metrics, and pytest (about 860 tests). Every reported number traces to a results directory, a commit and a cluster job ID.
+*The paper's Fig. 2: model F (blue lines, one for each of the eight cells, that is, each combination of engine, GPU, model and KV-pool size tested; no parameter fitted to any trap measurement) against the 57 stuck runs of the paired-test protocol (orange; "E2 protocol" in the legend) and 13 runs that got stuck from an empty start (green; "E0b"), as a function of the load ρ = λ/λ<sub>miss</sub>, the session arrival rate over model F's all-miss capacity. Dashed gray: the quasi-static fluid model read literally in congestion (the stationary turn mix, completions at λ<sub>miss</sub>, backlog growth at ρ − 1). The check is retrospective: the theory was derived after these runs were read.*
 
----
+## What is in the repository
 
-## For readers of the paper: verifying the pre-registrations
+| Path | Contents |
+|---|---|
+| `paper/` | The manuscript source (`main.tex`, `sections/`, `refs.bib`) and figures (`figs/`), a local build (`main.pdf`), `NUMBERS.md` (every number in the paper with its source file and commit or Slurm job) and `derived/` (tables computed from committed run data) |
+| `src/prefixmeta/` | Discrete-event simulator of a continuous-batching engine with prefix caching |
+| `src/agentload/` | Real-engine load generator, mock server, cache-flush canary and client-side session gate |
+| `analysis/` | Analysis code, including the scorers that apply the registered rules (their verdicts are written under `results/`); `analysis/theory/` holds the first-principles model of the throughput curve and model F |
+| `configs/`, `prereg/` | Experiment configurations, registrations (`configs/*prereg*.yaml`) and their inputs |
+| `experiments/`, `calibration/` | Simulator and prediction run scripts; the simulator's cost model, fitted to engine server-log timings |
+| `slurm/` | Job scripts for the engine runs |
+| `scripts/traces/` | Download and parsing scripts that reduce the public TraceLab and mini-SWE-agent traces to the summary statistics in `results/traces_summary/` and the trace workload configurations `configs/workload_trace_*.yaml` |
+| `env/` | The pinned local Python environment (`requirements-local.txt`) |
+| `results/` | Real-engine data pulled from the cluster (`results/nova/`: requests, metrics, server and job logs) and the reports, verdicts and summaries of analysis and simulator runs |
+| `figures/` | The scripts behind the paper's figures |
+| `notes/` | Research log (`LOG.md`), status, runbooks, theory notes, frozen predictions and review and verification reports |
+| `tests/` | One pytest suite |
+| `provenance/` | `commit-map-public.tsv` (the development repository's commit hashes to this repository's), `REDACTIONS.md` (what the public copy changed, and the public-release commits), `REGISTRATIONS.md` (the registrations and how to check them), `registration-proofs/`, and the GitHub push logs and Slurm accounting records; `provenance/README.md` describes the records archived before the public release |
 
-Every registration and blind prediction in the paper was committed and pushed to GitHub before the data it concerns was read, except where the paper's Appendix E.12 says otherwise: its paragraphs on the prediction rounds give each round's exceptions (B1, for example, was made after the E0a results it predicts had been committed), and its paragraph "Slips in the registration record" collects the others. Tables 11 and 12 (Appendix E.10) and Appendix E.12 say what each prediction is blind to. The paper cites the commit hashes of the original development repository. That repository stays private, because four of its notes files hold information about other people and an unrelated project; this repository is the same history, without six commits that hold nothing cited (five of a side branch and GitHub's test merge commit for an unmerged pull request from it), and with those passages and a clause in each of two commit messages redacted, five local tool-configuration files removed and an older name and e-mail address of the first author replaced by a mailmap (`provenance/REDACTIONS.md`), so its commit hashes differ. No code, experiment configuration, registration or data file differs in any commit of that history, except the redacted notes files that two registrations include (*How to check*, item 2, below). The first public-release commit of `trap/arxiv` (tag `trap-arxiv-v1`; the paper's Appendix E.13 calls it "a final release commit") rewords or removes a few lines in the notes and Slurm comments, replaces another allocation's account name in the tests with a placeholder (so three checks that no Slurm directive or runbook names that account now always pass), and adds a fallback to the freeze check in `analysis/theory/pred2/common.py`, which compares against tag `r13-theory-pred` when the original commit is absent; `provenance/REDACTIONS.md` describes all of its changes, and `git show --name-status trap-arxiv-v1` lists the files it adds (A) and edits (M). A later public-release commit on `trap/arxiv` changes only the wording of this README, `provenance/REDACTIONS.md` and `provenance/registration-proofs/README.md`.
+**Data policy.** `results/nova/` (real-engine data) and `results/vat_alignment/` and `results/vat_collect/` (wall-clock timing measurements of the archived VAT pilot, tag `archive/pilot-vat`, which the paper does not use; a rerun does not reproduce them exactly) are tracked in full. Full simulator outputs are not stored, apart from their summaries; each can be regenerated from the command, commit and configuration recorded with the run (`meta.json`, `config.yaml`). The commits recorded there, in `paper/NUMBERS.md`, in the notes and in the job logs are the development repository's; `provenance/commit-map-public.tsv` maps them to this repository's (for the 103 commits made before the history rewrite of 2026-10-22, first through `provenance/commit-map.tsv`).
 
-| Registration | Original commit (cited in the paper) | Tag | This repository | First GitHub push of the original (Chicago time) | Slurm jobs |
-|---|---|---|---|---|---|
-| r6 blind predictions B1-B4 | `64bc4e3` | `r6-predictions-frozen` | `4e5e08b` | 2026-10-24 14:53:07 CDT (`r6/validation`) | E0a 17072634-17072637 (results committed before the predictions); E0b 17084750-17084755 (results read after the tag); E2 17093387-17093404; native Stage C 17096856-17096857 |
-| E2 registration (configs/agentload_prereg_2026-10-24.yaml) | `d279b7b` | - | `a171d3a` | 2026-10-24 15:09:54 CDT (`main`) | E2 17093387-17093404, submitted 2026-10-24 15:13 CDT |
-| exploratory grid registrations (SGLang FCFS r0, LPM r0, LPM r1) | `499c0df` | - | `be32cc8` | 2026-10-24 23:31:32 CDT (`main`) | see notes/STATE.md |
-| r8 native-pool predictions B1n-B4n | `e3ea48f` | `r8-native-predictions-frozen` | `0ade9fc` | 2026-10-25 15:08:28 CDT (`r8/native-predict`) | native E0b 17100938-17100939; native kill test 17102173-17102190 |
-| native rate rule (notes/STATE.md) | `6cb43e9` | - | `00e0805` | 2026-10-25 15:08:57 CDT (`main`) | - |
-| native-pool registration (configs/agentload_prereg_2026-10-25_native.yaml) | `b8c19ec` | - | `1ad5e5e` | 2026-10-25 17:31:56 CDT (`main`) | 17102173-17102190, submitted 2026-10-25 17:42 CDT |
-| vLLM exploratory registration (BURST arm) | `a78ce07` | - | `9f3979a` | 2026-10-25 18:06:33 CDT (`main`) | vLLM BURST 17102318 and later |
-| r9 vLLM predictions | `cc01dbf` | `r9-vllm-predictions-frozen` | `52fe829` | 2026-10-30 12:32:44 CDT (`r9/vllm-predict`) | vLLM Stage C 17162959-17162961 and E0b 17162962-17162963 (results read after the tag) |
-| vLLM registration (configs/agentload_prereg_2026-10-30_vllm.yaml) | `5a6fbcd` | - | `5b1401b` | 2026-10-30 16:26:35 CDT (`r9/vllm-register`) | 17166121-17166138, submitted 2026-10-30 16:24:36 CDT, 1 min 59 s before this push, by which two had started (the paper calls the test registered, not pre-registered) |
-| r11 frozen mechanism, occupancy and detector predictions (vLLM paired test) | `f1338e3` | - | `877581d` | 2026-10-30 18:20:13 CDT (`r11/strengthen`) | 17166121-17166138 |
-| r11 basin registrations and S1 bundle-1 predictions | `9b67c26` | `r11-basin-reg` | `0739b63` | 2026-10-30 20:04:30 CDT (`r11/strengthen`) | see notes/STATE.md |
-| r11 LPM-INF predictions and exploratory registration | `5064580` | `r11-lpminf-pred` | `f861a36` | 2026-10-30 21:02:46 CDT (`r11/lpminf`) | see notes/STATE.md |
-| r11 rescue-cell predictions | `72501f0` | `r11-rescue-pred` | `f997e3e` | 2026-10-30 21:30:40 CDT (`r11/rescue`) | see notes/STATE.md |
-| r11 rescue registrations (R1, R4) | `f0bc3ad` | `r11-rescue-reg` | `cedca55` | 2026-10-30 22:39:02 CDT (`r11/rescue`) | see notes/STATE.md |
-| r14 BASIN-2 registrations (bursts 40, 50, 60) | `621d88f` | `r14-basin2-reg` | `c9502f3` | 2026-10-31 02:10:48 CDT (`r11/strengthen`) | 17169893-17169901, submitted 2026-10-31 04:21 CDT |
-| r13 first-principles theory, frozen predictions | `997d2c4` | `r13-theory-pred` | `6200bea` | 2026-10-31 02:05:30 CDT (`r13/theory`) | H200 n=36/44/52 17169612-17169614; pool sweep 17168864-17168881; rescue R1/R4 17168966-17168974; Llama E0b/E2 (see notes/PREDICTIONS_r13_theory.md) |
-| r12 Llama-3.1-8B blind simulator predictions | `a62aea9` | `r12-llama31-predictions-frozen` | `ed52546` | 2026-10-31 02:14:06 CDT (`r12/llama31-predict`) | Llama Stage C 17166814-17166816, E0b 17169565-17169570, E2 17170409-17170426 |
-| r14 TOOLSLOW and SHED registrations | `b006291` | `r14-extra-reg` | `eaedd03` | 2026-10-31 02:28:09 CDT (`r14/extra`) | 17169902-17169911, submitted 2026-10-31 04:21 CDT |
-| r13 theory, second prediction set (pred2) | `cfa7712` | `r13-theory-pred2` | `f932e86` | 2026-10-31 04:20:20 CDT (`r13/pred2`) | BASIN-2 17169893-17169901; TOOLSLOW 17169902-17169907; SHED 17169908-17169911; H200 600k 17169672-17169680 and 17169682-17169687, E2 17171020-17171037; pool sweep 17168864-17168881; not blind (the runs had ended and been read before this push; Appendix E.12): pred2's tables for H200 n=36/44/52 (17169612-17169614) and fresh-seed E0b (17168506-17168507), its rows for BASIN-1's bursts of 25 and 100 (17168500-17168505), and its rival scoring of the 0.5-hit crossing on the 300k H200 and Llama-3.1-8B curves; pred2's record says its own agents read none of these runs, and its erratum (*How to check*, item 1, below) calls its tables for the H200 and fresh-seed runs blind by access only |
-| Llama-3.1-8B registration (configs/agentload_prereg_2026-10-30_llama31.yaml) | `1559f8e` | - | `16ff6df` | 2026-10-31 07:49:15 CDT (`r12/llama31`) | 17170409-17170426, submitted 2026-10-31 07:50 CDT |
-| Llama-3.1-8B theory conditional | `a36f441` | - | `64bcd2a` | 2026-10-31 07:52:42 CDT (`r12/llama31-theory-cond`) | - |
-| Llama-3.1-8B theory conditional, YAML outputs | `d12eef2` | - | `20f765e` | 2026-10-31 07:52:56 CDT (`r12/llama31-theory-cond`) | 17170409-17170426 |
-| H200 600k-pool registration (configs/agentload_prereg_2026-10-31_h200_p600k.yaml) | `4d1d431` | - | `56ea644` | 2026-10-31 09:26:41 CDT (`r12/h200-prereg`) | 17171020-17171037, submitted 2026-10-31 09:27 CDT |
-| model-F trap-state predictions (rules S1-S5) | `6b47a6c` | `icml-trap-pred` | `71bacf5` | 2026-11-05 00:24:47 CST (`claude/theory-icml-2164a9`) | TOOLSLOW-W 17256674-17256676; TOOLSLOW-D15 17256873-17256875 |
-| model-F arrival-cut predictions (CUT-A, CUT-B) | `2f90267` | `icml-cut-pred` | `16e56bf` | 2026-11-05 02:25:43 CST (`claude/theory-icml-2164a9`) | CUT-A 17256867-17256869; CUT-B 17256870-17256872 |
-| r15 registrations (TOOLSLOW-W, TOOLSLOW-D15, REPLICATE-EDGE) | `e05a262` | `r15-reg` | `d5cf526` | 2026-11-05 03:18:36 CST (`r15/tonight`) | 17256674-17256678, 17256873-17256875 |
-| r15 arrival-cut registrations (CUT-A, CUT-B) | `11b0e4e` | `r15-cut-reg` | `94f8636` | 2026-11-05 03:54:49 CST (`r15/tonight`) | 17256867-17256872 |
-| r16 MIRROR registration and frozen model-F predictions | `bc81ee7` | `r16-mirror-reg` | `412008f` | 2026-11-05 14:07:35 CST (`r16/mirror`) | 17264055-17264060, 17264062-17264064, submitted 2026-11-05 14:50 CST; E0a 17264093 (17264061 failed its time check); smoke 17264039 |
+## Getting started
 
-How to check:
+### Clone
 
-1. **Tags.** `git tag -n99 -l 'r*' 'icml-*'` lists the frozen tags with their messages, and `git for-each-ref --format='%(refname:short) %(taggerdate:iso)' refs/tags` their tagger times. The frozen tags' names, messages and tagger times are identical to the original tags; only the commit they point to differs, so each tag object, like its commit, has a new hash (`provenance/commit-map-public.tsv` lists both). The five `archive/*` tags are original tags as well, with the same names, messages and tagger times; the mailmap normalised their tagger's name and e-mail address (*Provenance* below); `verify.py` does not check them. `trap-arxiv-v1` and `arxiv-v1` are this repository's release tags and have no original. The messages are as written at the freeze and are not corrected afterwards: the message of `r13-theory-pred2` says pred2 was frozen before any N2 job, but the N2 runs (the closed H200 runs at n = 36, 44 and 52, jobs 17169612-17169614) had ended before its push, as the dated erratum at the end of `notes/PREDICTIONS_r13_pred2.md` (`bf19385`; `bb3dff7` here) and the paper's Appendix E.12 say.
-2. **Registration content.** In a POSIX shell, `git show trap-arxiv-v1:configs/agentload_prereg_2026-10-24.yaml | sha256sum` gives the SHA-256 printed in the paper's Appendix E.11. Hash the committed bytes this way: `sha256sum` of a checked-out file gives a different value wherever Git converts line endings on checkout (the Git for Windows default, `core.autocrlf=true`). Appendix E.11 also prints the vLLM registration's SHA-256 and names the tags whose messages give the SHA-256 of their files. Two of those messages give only the first eight hex digits for some files: `r11-lpminf-pred` for its registration (`f4454c5b`), and `r11-basin-reg` for its two cell configs (`3fd25217`, `967d9bbf`) and its frozen endpoints `configs/r11_basin_predict.yaml` (`2f340909`, given in full in the messages of `r14-basin2-reg` and `r14-extra-reg`); `git show <tag>:<path> | sha256sum` gives the full value. `verify.py` (item 4) checks every registered file against its original commit except the redacted notes files that two registrations include (`notes/STATE.md` for the native rate rule; `notes/LOG.md`, `notes/STATE.md` and `notes/STATE_h200.md` at `r15-reg`), which it reports as differing by design.
-3. **Push times.** `provenance/github-activity-2026-11-06.json` is an export of GitHub's activity log for the original repository (`gh api --paginate repos/AkshatValse/Nova-Research/activity`), and `provenance/ls-remote-2026-11-06.txt` a `git ls-remote` snapshot of it taken when this repository was built. Reviewers can get read access to the original repository to see the same log on GitHub. GitHub logs branch pushes, not tag pushes, so each tag is dated by the first push whose new tip contains the tagged commit.
-4. **Old to new hashes.** `provenance/commit-map-public.tsv` maps every original commit of the published branches and tags, and every tag of the original repository, to this repository's; the public-release commits (the tip of `r10/arxiv`, and on `trap/arxiv` the commit tagged `trap-arxiv-v1` and every commit after it) are new and are not in it. `python provenance/registration-proofs/verify.py` recomputes each original commit hash from its raw object, follows the parent chain to the commit GitHub recorded, and checks that the original `configs/`, `prereg/`, `src/`, `results/`, `analysis/` and `slurm/` trees, the registered files other than the redacted notes files of item 2, the commit dates and messages, the mapped parents and the tags (apart from the commit each points to) are identical to this repository's. Because this history was rewritten with a mailmap (`mailmap_applied` in `provenance/registration-proofs/proofs.json`), it does not compare author, committer and tagger names and e-mail addresses; those of every registration commit and frozen tag are unchanged, as the stored original objects in `provenance/registration-proofs/objects/` show.
-5. **Slurm job IDs.** The job logs under `results/nova/**/` print, for each Slurm job, the job ID and the commit it ran at (an original hash; look it up in the commit map). Submit, start and end times of the jobs are recorded by Iowa State's Slurm accounting, a third party.
-6. The 103 commits made before 2026-10-22 17:45 CDT come from an earlier repository (`provenance/commit-map.tsv`). The earliest push record of 98 of them is the original repository's first push to GitHub, at 17:45:50 CDT that day, or one 2 s later; the other five are reachable only from `archive/*` tags, which have no push record. No registration is among them.
+```bash
+git clone https://github.com/AkshatValse/surviving-llm-stampede.git
+cd surviving-llm-stampede
+```
+
+On Windows, add `-c core.autocrlf=false -c core.longpaths=true` after `git clone`. By default Git for Windows converts line endings on checkout, which changes the bytes of the registrations and scripts that several tests check, and the longest path in the repository has 166 characters, so a clone in a deeply nested folder can exceed the 260-character path limit.
+
+The download is about 1 GB, and checking out `trap/arxiv` writes about 14 GB of files, nearly all of them the real-engine data in `results/nova/`, so a clone needs about 15 GB of free disk space.
+
+### Python environment
+
+Use Python 3.12 and the pinned versions in `env/requirements-local.txt`. Newer NumPy and pandas versions should give the same verdicts but may change low-order digits of simulator results.
+
+```bash
+python3.12 -m venv .venv    # Windows: py -3.12 -m venv .venv
+echo .venv/ >> .git/info/exclude
+source .venv/bin/activate    # Windows: see below
+python -m pip install -r env/requirements-local.txt
+python -m pytest
+```
+
+The second line keeps the environment out of `git status`: simulator runs record in `meta.json` whether the working tree was clean (untracked files count as dirty), some reports flag results from a dirty tree, and the round-5 runner refuses a registered (non-quick) run on one. On Windows, activate the environment with `.venv\Scripts\activate` in cmd, `.venv\Scripts\Activate.ps1` in PowerShell (if its execution policy allows local scripts) or `source .venv/Scripts/activate` in Git Bash; in PowerShell, add the line `.venv/` to `.git/info/exclude` with an editor, since its `echo` would write the file in UTF-16. The commands below assume the environment is active.
+
+The recorded local results and test runs come from two machines with the pinned versions: a MacBook Pro (Apple M3 Max, Python 3.12.7) and a Windows 11 PC (Python 3.12.10). A run's `meta.json` names its machine in `hostname`; its `hardware` field reads "Apple M3 Max CPU (simulation)" on both, because it is a hard-coded string.
+
+The suite has about 1,950 tests and takes about 25 minutes on that PC. There, with a clone made as above, 32 of them fail for platform reasons, the same 32 that `notes/PREDICTIONS.md` (section 7) records for an earlier commit: last-bit differences in the simulator's bit-identity tests, tests that run the Slurm job scripts locally or check client timing, signal handling or file-descriptor limits, and one test whose temporary directory name contains colons. The job-script tests of the cap and burst modes fail on any machine with `nvidia-smi` (on that PC they are among the 32), because their test calibration records a machine without one. One test compares the theory code with a frozen tag, so it fails in a clone without the tags, such as a shallow one; `git clone` fetches them.
+
+### Numbers, tables and figures
+
+- `paper/NUMBERS.md` lists every number in the paper with its source file and its commit or Slurm job. The paper's Appendix E.13 gives the data directory and commit behind each result.
+- `python figures/paper/derived_numbers.py` recomputes 13 of the 16 tables in `paper/derived/` from committed run data; the three `loopvars_*.csv` come from a frozen script whose runs `paper/NUMBERS.md` records (source LV).
+- `paper/figs/README.md` names the script behind each of the paper's figures and what it reads (for Fig. 3, the docstring of `figures/paper/fig_rescue.py` names its input). `bash figures/paper/build_all.sh` rebuilds Figs. 1 and 5-8 (and five figures the paper no longer uses) and runs as is on Linux, macOS and Windows (Git Bash): the scripts that import repository code put it on the Python path themselves, so the advice in `paper/figs/README.md` to change the script's `PYTHONPATH` on Linux or macOS is unnecessary.
+- With the pinned environment, `derived_numbers.py` and `build_all.sh` reproduce their committed outputs byte for byte from a fresh clone (checked on the Windows PC).
+- Figs. 2-4 have scripts of their own: `figures/theory_icml/fig_trap_universality.py`, `figures/paper/fig_rescue.py` and `figures/r16/fig_mirror.py`. The first and the third import `analysis`, so run them from the repository root with `PYTHONPATH=src:.` (in Git Bash on Windows, quoted: `PYTHONPATH="src;."`). `fig_mirror.py` writes `results/theory/r16/fig_mirror.pdf`, of which `paper/figs/fig_mirror.pdf` is a copy, and draws the measured MIRROR runs only when their run directories are passed with `--mirror-runs`; the paper's figure used the three BURST runs of jobs 17264055-57, `20261105-145227`, `20261105-145244-2` and `20261105-145240` under `results/nova/r16_mirror_1726405x_pulled_20261105-1722/results/agentload_e2_burst/`. `fig_trap_universality.py` and `fig_mirror.py` write PDFs that carry a creation date, so their rebuilds are not byte-identical, and they overwrite tracked files (`paper/figs/fig_trap_universality.*`, `results/theory/r16/fig_mirror.*`); `git checkout -- paper results/theory/r16` restores them.
+- To build the paper, run `pdflatex main`, `bibtex main` and then `pdflatex main` twice more in `paper/`. This overwrites the committed `paper/main.pdf`; `git checkout -- paper/main.pdf` restores it.
+
+### Engine runs
+
+The engine runs used Slurm on Iowa State University's Nova cluster: SGLang 0.5.22 or vLLM 0.32.0 serving Qwen2.5-7B-Instruct or Llama-3.1-8B-Instruct on one NVIDIA A100 80GB PCIe or H200 NVL. `slurm/sglang_job.sbatch` and `slurm/vllm_job.sbatch` run them, and `slurm/setup_nova.sbatch` and `slurm/setup_vllm_env.sbatch` build their environments; the job logs under `results/nova/` record the exact `pip freeze` of the engine and load-generator environments. For a registered test, the job checks the registration file (`python -m analysis.prereg check-job`) before it starts and writes the file's SHA-256 into every run's `meta.json`. The job scripts stop unless they run under the cluster account, partition and QoS they were written for, so they need editing before they run elsewhere.
+
+## Checking the registrations
+
+Every registration and blind prediction in the paper was committed and pushed to GitHub before the data it concerns was read, except where the paper's Appendix E.12 says otherwise. The paper cites the commit hashes of the authors' development repository, which stays private; this repository's hashes differ (next section). [`provenance/REGISTRATIONS.md`](provenance/REGISTRATIONS.md) lists each registration with its original commit, its tag, its commit here, its first push to GitHub and its Slurm jobs, and says how to check them. The main check is one command, run from the repository root of a git clone (it needs the history and the tags, which `git clone` fetches):
+
+```bash
+python provenance/registration-proofs/verify.py
+```
+
+It needs only Python 3.8 or later and git, not the environment above, and ends with `28 proofs, 0 failures` (exit status 0). It recomputes each original commit hash from stored raw objects, follows the parent chain to the commit GitHub's push log recorded, and checks that the original code, configuration and data trees, the registered files, the commit dates and messages and the tags (apart from the commit each points to) are identical to this repository's. It reports the redacted notes files that two registrations include as differing, by design.
+
+## How this repository relates to the development repository
+
+This repository's history is a redacted copy of the authors' private development repository, `AkshatValse/Nova-Research`, whose commit hashes the paper cites. Four of its notes files hold information about other people and an unrelated project, so passages of those files and a clause in each of two commit messages were redacted; five local tool-configuration files were removed from every commit; and an older name and e-mail address of the first author were replaced by a mailmap. No code, experiment configuration, registration or data file differs in any commit of that history, except the redacted notes files that two registrations include. Six commits of the original that hold nothing cited are not published (five of a side branch and GitHub's test merge commit for an unmerged pull request from it).
+
+On `trap/arxiv`, public-release commits follow that history. The one tagged `trap-arxiv-v1` adds the licenses, `NOTICE`, the public-release files in `provenance/` and the README's sections for readers of the paper (now in `provenance/REGISTRATIONS.md`), and makes the small edits that `provenance/REDACTIONS.md` lists, among them rewording a few lines of notes and Slurm comments, putting a placeholder for another allocation's account name in the tests, dropping the lines naming local tool files from `.gitignore` and adding a fallback to the freeze check of `analysis/theory/pred2/common.py`. The later ones change only documentation. [`provenance/REDACTIONS.md`](provenance/REDACTIONS.md) gives the details, and `provenance/commit-map-public.tsv` maps the original hashes to this repository's. The development repository is kept unchanged; reviewers can get read access to it on request.
+
+## Branches and tags
+
+- **`trap/arxiv`** (the default branch) is this version of the paper. Tag `trap-arxiv-v1` marks the commit the arXiv version describes; the commits after it change only documentation.
+- `r10/arxiv` (tag `arxiv-v1`) is an earlier draft of the paper, *Surviving an Agentic LLM Stampede*, which was withdrawn from arXiv before it was announced and gave this repository its name. It was published here on 2026-11-04 and is left unchanged with its own public-release commit; `trap/arxiv` continues the same development history.
+- `main` is the earlier development line; the result branches below were merged into `r10/arxiv` and so into `trap/arxiv`, except `wip/r6-separate-batching`, whose one unmerged commit (`6ea9f0c`; `fc870c2` in the development repository) is an interrupted, unreviewed work in progress that `paper/NUMBERS.md` and `provenance/README.md` cite for its push time.
+- Other published branches, kept because frozen tags or cited commits are on them: `r11/lpminf`, `r11/rescue`, `r11/strengthen`, `r12/h200`, `r12/h200-prereg`, `r12/llama31`, `r12/llama31-predict`, `r12/llama31-theory-cond`, `r13/pool-sweep`, `r13/pred2`, `r13/theory`, `r14/extra`, `r6/validation`, `r8/native-predict`, `r9/vllm-predict`, `r9/vllm-register`, `wip/r6-separate-batching`.
+- Frozen registration and prediction tags: `icml-cut-pred`, `icml-trap-pred`, `r11-basin-reg`, `r11-lpminf-pred`, `r11-rescue-pred`, `r11-rescue-reg`, `r12-llama31-predictions-frozen`, `r13-theory-pred`, `r13-theory-pred2`, `r14-basin2-reg`, `r14-extra-reg`, `r15-cut-reg`, `r15-reg`, `r16-mirror-reg`, `r6-predictions-frozen`, `r8-native-predictions-frozen`, `r9-vllm-predictions-frozen`.
+- The `archive/*` tags (`archive/harness-prefix-meta`, `archive/pilot-delay-eos`, `archive/pilot-kvrent`, `archive/pilot-prefix-meta`, `archive/pilot-vat`) are earlier lines of work kept for provenance. They include killed directions (KV rent-or-buy, statistically valid agentic tuning, delayed-gradient edge of stability) that `notes/DIRECTIONS.md` and `notes/LOG.md` explain.
+- The original repository's other branches, named in `provenance/ls-remote-2026-11-06.txt`, are not published; every commit on them is on a published branch or tag, except five commits of 2026-11-03 on the side branch `claude/inspiring-mendel-iofn3w`, which hold nothing cited. Some notes mention these branches by name. The snapshot also lists `refs/pull/1/head` and `refs/pull/1/merge`, GitHub's refs for an unmerged pull request from that side branch into `main`; they are not published either. `refs/pull/1/head` is the side branch's tip, and `refs/pull/1/merge` is `b015b50`, the test merge commit GitHub made for the pull request on 2026-11-03, which has the same tree as that tip.
+
+## Citation
+
+```bibtex
+@misc{valse2026inside,
+  title         = {Inside the Trap: A Renewal Law for Prefix-Cache Collapse in {LLM} Agent Serving},
+  author        = {Valse, Akshat and Jannesari, Ali},
+  year          = {2026},
+  eprint        = {2611.08902},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.DC},
+  url           = {https://arxiv.org/abs/2611.08902}
+}
+```
 
 ## License
 
 - Code (everything outside `results/` and `paper/`): MIT License, see `LICENSE`.
 - Data in `results/`: Creative Commons Attribution 4.0 International (CC BY 4.0), see `LICENSE-DATA`.
 - The manuscript source in `paper/`: the license of the paper's arXiv version.
-- Third-party material (TraceLab and mini-SWE-agent trace statistics; Qwen2.5, SGLang and vLLM as measured systems): see `NOTICE`.
+- Third-party material (TraceLab and mini-SWE-agent trace statistics; Qwen2.5, Llama 3.1, SGLang and vLLM as measured systems): see `NOTICE`.
 
----
+## Contact
 
-## Repository guide
-| Path | What |
-|---|---|
-| `src/prefixmeta/` | The simulator |
-| `src/agentload/` | Real-engine load generator, mock server, canary flush check, client-side session gate |
-| `analysis/` | `python -m analysis.summarize {windows,miss,closed,stable,burst,burst2}` and `python -m analysis.prereg {fill,validate,check-job}` |
-| `slurm/` | Nova job scripts (`sglang_job.sbatch` modes smoke / miss / closed / cap / burst; `setup_nova.sbatch`), the CUDA_HOME shim, and a billing guard in every script |
-| `configs/` | Experiment configs, each starting with its research question; pre-registrations are `*_prereg*.yaml` |
-| `experiments/` | Run scripts |
-| `calibration/` | Simulator cost model fitted to real SGLang server-log timing |
-| `results/` | Outputs (see the data policy below) |
-| `notes/` | `STATE.md` (live status and resume steps), `LOG.md` (research log), runbooks, theory, related work, review and verification reports |
-| `tests/` | One pytest suite for both packages |
-| `provenance/` | `commit-map.tsv` (2026-10-22 rewrite), `commit-map-public.tsv`, the GitHub activity log export, `registration-proofs/` and `REDACTIONS.md` (public release; see Provenance) |
-
-### Branches and tags
-- **`trap/arxiv`** (the default branch) is the version of the paper "Inside the Trap: A Renewal Law for Prefix-Cache Collapse in LLM Agent Serving": the manuscript, all code and data, and the first public-release commit (licenses, `NOTICE`, the public-release files in `provenance/`, these README sections and the small edits that `provenance/REDACTIONS.md` describes) on top, followed by a later public-release commit that only rewords this README and two files in `provenance/`. Tag `trap-arxiv-v1` marks the first of these, the commit the arXiv version describes.
-- `r10/arxiv` (tag `arxiv-v1`) is an earlier, withdrawn version of the paper, published here on 2026-11-04 and left unchanged with its own public-release commit; `trap/arxiv` continues the same development history.
-- `main` is the earlier development line; the result branches below were merged into `r10/arxiv` and so into `trap/arxiv`.
-- Other published branches, kept because frozen tags or cited commits are on them: `r11/lpminf`, `r11/rescue`, `r11/strengthen`, `r12/h200`, `r12/h200-prereg`, `r12/llama31`, `r12/llama31-predict`, `r12/llama31-theory-cond`, `r13/pool-sweep`, `r13/pred2`, `r13/theory`, `r14/extra`, `r6/validation`, `r8/native-predict`, `r9/vllm-predict`, `r9/vllm-register`, `wip/r6-separate-batching`.
-- Frozen registration and prediction tags: `icml-cut-pred`, `icml-trap-pred`, `r11-basin-reg`, `r11-lpminf-pred`, `r11-rescue-pred`, `r11-rescue-reg`, `r12-llama31-predictions-frozen`, `r13-theory-pred`, `r13-theory-pred2`, `r14-basin2-reg`, `r14-extra-reg`, `r15-cut-reg`, `r15-reg`, `r16-mirror-reg`, `r6-predictions-frozen`, `r8-native-predictions-frozen`, `r9-vllm-predictions-frozen`.
-- The `archive/*` tags (`archive/harness-prefix-meta`, `archive/pilot-delay-eos`, `archive/pilot-kvrent`, `archive/pilot-prefix-meta`, `archive/pilot-vat`) are earlier lines of work kept for provenance. They include killed directions (KV rent-or-buy, statistically valid agentic tuning, delayed-gradient edge of stability) that `notes/DIRECTIONS.md` and `notes/LOG.md` explain.
-- The original repository's other branches, named in `provenance/ls-remote-2026-11-06.txt`, are not published; every commit on them is on a published branch or tag, except five commits of 2026-11-03 on the side branch `claude/inspiring-mendel-iofn3w`, which hold nothing cited. Some notes mention these branches by name. The snapshot also lists `refs/pull/1/head` and `refs/pull/1/merge`, GitHub's refs for an unmerged pull request from that side branch into `main`; they are not published either. `refs/pull/1/head` is the side branch's tip, and `refs/pull/1/merge` is `b015b50`, the test merge commit GitHub made for the pull request on 2026-11-03, which has the same tree as that tip.
-
-### Setting up a machine
-1. `git clone` the repo.
-2. Create a Python 3.12 env: `python -m venv .venv && .venv/bin/pip install -r env/requirements-local.txt`.
-3. Run `.venv/bin/python -m pytest -q`. On a fresh clone on an M3 Max this gave 860 passed and 1 skipped in 13 min. The skipped test needs gitignored simulator outputs.
-4. For Nova, `ssh nova` must work non-interactively (`ssh -o BatchMode=yes nova true`). Nova only resolves on the ISU network or VPN.
-5. Keep machine-specific paths and credentials out of the repository.
-
-### Data policy
-- **Tracked:**
-  - `results/nova/`: real-engine data pulled from Nova, including raw requests, metrics, server logs, canary checks and verification. It is irreplaceable, because ISU deletes class storage at semester end. Pull each new Nova result into a new dir there and commit it.
-  - `results/vat_*`: timing measurements.
-- **Ignored:** all other simulator outputs. They regenerate bit-identically from the commit recorded in each `meta.json`. Their small summaries are force-added.
-
-### Nova workflow
-- **Account:** `f2026.coms.6250.02` on partition/QoS `instruction`. The scripts refuse any other account.
-- **Code:** `/work/classtmp/avalse/swapp/repo` is synced from a `git bundle`, so no GitHub credentials live on the shared cluster.
-- **Envs, model and caches:** `/work/classtmp/avalse/swapp/`.
-- **Runbooks:** `notes/STAGE0_RUNBOOK.md`, `notes/E2_RUNBOOK.md`.
-- **Approval:** ask before every `sbatch`, and run a short test job first.
-
-### Provenance
-This history has been rewritten twice. Both rewrites kept every commit of the branches and tags published here, with its author, committer, dates, tags and parent relations, except that the public release gave the 111 commits of 2026-10-20 to 2026-10-23 and the five `archive/*` tags, which in the original record the first author under another name and e-mail address, the name and GitHub noreply address that every later commit and tag here uses (a mailmap; `provenance/REDACTIONS.md`). The original's other branches and its pull-request refs are not published (*Branches and tags*).
-1. **2026-10-22**, when the work moved from the earlier private repository `jannesari-swapp`: only commit-message trailers changed (co-author trailers were removed). Every file tree is identical. Notes and `meta.json` files from before then cite the original hashes; look them up in `provenance/commit-map.tsv` (columns: `old`, `new`).
-2. **Public release**: this repository was built from a mirror of the private development repository `AkshatValse/Nova-Research` by redacting passages of four files in `notes/`, removing five local tool-configuration files from every commit and replacing an older name and e-mail address of the first author by a mailmap (`provenance/REDACTIONS.md`). Commit and tag messages are unchanged, except 2 commit messages in which a clause about the same redacted topics was replaced by a marker (listed in `provenance/REDACTIONS.md`). In every rewritten commit every other file keeps its hash: every code, configuration and data blob, and every registered file except the redacted notes files that two registrations include (item 2 of *How to check* above). The public-release commits on top of this history (the tip of `r10/arxiv`, and on `trap/arxiv` the commit tagged `trap-arxiv-v1` and every commit after it) are new commits that, between them, add files and edit a few (*For readers of the paper* above; `provenance/REDACTIONS.md`). The paper, the notes and the job logs cite the development repository's hashes; `provenance/commit-map-public.tsv` maps them to this repository's, and `provenance/registration-proofs/verify.py` checks the correspondence for every registration.
+Akshat Valse (corresponding author), avalse@iastate.edu.
